@@ -43,10 +43,10 @@ The seven design screenshots are in-repository reference images. The Trufo strin
 
 - [ ] Start from a clean checkout of the publication candidate and run the documented build, unit tests, coverage gate, and relevant evaluation suites.
 - [ ] Build the `.app` and versioned ZIP using `scripts/build-app.sh`. Inspect the app bundle contents, executable architecture, bundled frameworks/libraries, resources, and absence of developer-only files.
-- [x] Install the cask from the public tap using `brew install --cask vnglst/captainslog/captainslog`. Verified the app lands in Applications, `cl` runs, and the quarantine attribute is removed; then uninstalled both app and CLI. `brew audit --cask --strict vnglst/captainslog/captainslog` passes. GUI launch was verified separately during release testing.
+- [x] Install the cask from the public tap using `brew install --cask vnglst/captainslog/captainslog`. Verified the app lands in Applications, `cl` runs, and the quarantine attribute is removed. Launched the GUI and let first-run downloads complete (about 5.7 GB in Application Support and 2.9 GB in Caches), then ran `brew uninstall --cask --zap captainslog`. The app, CLI, and active model folders were removed; the config checksum stayed unchanged and the default log folder remained. Homebrew moved the model folders to Trash. `brew audit --cask --strict vnglst/captainslog/captainslog` passes.
 - [ ] Test the downloaded release archive and Homebrew flow on a clean macOS user account or another Apple Silicon Mac with no development tools or existing model cache. Confirm first launch, model download, recording, processing, search, and CLI operation.
 - [ ] Test failure and recovery paths that affect release readiness: interrupted model download, unavailable network, insufficient disk space, permission errors, and an existing user data folder.
-- [ ] Confirm generated ZIP checksum exactly matches the cask. Verify install/uninstall behavior and that uninstall leaves user data intact.
+- [x] Confirm generated ZIP checksum exactly matches the cask. Verify install/uninstall behavior and that uninstall leaves user data intact. The optional zap cleanup targets only CaptainsLog-managed model folders.
 - [ ] Review screenshots, README commands, release notes, cask metadata, and archive one final time from the perspective of a new user.
 
 ## Phase 4 — Publish
