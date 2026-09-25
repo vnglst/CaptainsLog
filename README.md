@@ -51,6 +51,7 @@ Transcription uses Whisper Large-v2. Cleanup, categorization, filenames, and met
 - [Troubleshooting](./docs/TROUBLESHOOTING.md)
 - [Project plan](./docs/PLAN.md)
 - [Publishing plan](./docs/PUBLISHING-PLAN.md)
+- [Third-party notices](./THIRD-PARTY-NOTICES.md)
 - [Evaluation fixtures and scripts](./docs/tng-eval/README.md)
 - [Design references](./design/README.md)
 - [Architecture decisions](./docs/)

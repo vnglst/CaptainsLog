@@ -95,9 +95,30 @@ if [ -d "prompts" ]; then
     ditto "prompts" "$APP/Contents/Resources/prompts"
 fi
 
-mkdir -p "$APP/Contents/Resources/ThirdPartyLicenses/sqlite-vec"
-cp Sources/CSQLiteVec/LICENSE-MIT "$APP/Contents/Resources/ThirdPartyLicenses/sqlite-vec/"
-cp Sources/CSQLiteVec/LICENSE-APACHE "$APP/Contents/Resources/ThirdPartyLicenses/sqlite-vec/"
+THIRD_PARTY_DIR="$APP/Contents/Resources/ThirdPartyLicenses"
+mkdir -p "$THIRD_PARTY_DIR/sqlite-vec" "$THIRD_PARTY_DIR/Antonio" \
+    "$THIRD_PARTY_DIR/llama.cpp" "$THIRD_PARTY_DIR/LLVM-OpenMP"
+cp THIRD-PARTY-NOTICES.md "$APP/Contents/Resources/"
+cp Sources/CSQLiteVec/LICENSE-MIT "$THIRD_PARTY_DIR/sqlite-vec/"
+cp Sources/CSQLiteVec/LICENSE-APACHE "$THIRD_PARTY_DIR/sqlite-vec/"
+cp Sources/CaptainsLog/Resources/ThirdPartyLicenses/Antonio-OFL-1.1.txt "$THIRD_PARTY_DIR/Antonio/"
+
+for checkout in .build/checkouts/*; do
+    [ -d "$checkout" ] || continue
+    package_name="$(basename "$checkout")"
+    package_license_dir="$THIRD_PARTY_DIR/SwiftPackages/$package_name"
+    while IFS= read -r -d '' license_file; do
+        relative_path="${license_file#"$checkout"/}"
+        destination="$package_license_dir/$relative_path"
+        mkdir -p "$(dirname "$destination")"
+        cp "$license_file" "$destination"
+    done < <(find "$checkout" -type f \
+        \( -iname 'LICENSE' -o -iname 'LICENSE.*' -o -iname 'NOTICE' \
+        -o -iname 'NOTICE.*' -o -iname 'COPYING*' \) -print0)
+done
+
+cp "$LLAMA_PREFIX/LICENSE" "$THIRD_PARTY_DIR/llama.cpp/"
+cp "$OMP_PREFIX/LICENSE.TXT" "$THIRD_PARTY_DIR/LLVM-OpenMP/"
 
 GIT_COMMIT="$(git rev-parse --short HEAD 2>/dev/null || echo unknown)"
 cat > "$APP/Contents/Info.plist" <<PLIST
@@ -142,6 +163,7 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 PLIST
 
 echo "==> Applying ad-hoc signatures..."
+chmod -R u+w "$APP/Contents/Resources/ThirdPartyLicenses"
 xattr -cr "$APP"
 codesign --force --sign - "$APP/Contents/Frameworks/"*.dylib
 codesign --force --deep --sign - "$APP"

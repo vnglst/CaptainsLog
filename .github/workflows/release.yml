@@ -1,0 +1,140 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Build and publish release
+    runs-on: macos-26
+    steps:
+      - name: Check out tagged source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate release tag and source branch
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+          TAG_SHA: ${{ github.sha }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          VERSION="${TAG#v}"
+          if [[ "$TAG" != "v$VERSION" || ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Expected a release tag in vMAJOR.MINOR.PATCH form; got $TAG" >&2
+            exit 1
+          fi
+
+          SOURCE_VERSION="$(tr -d '[:space:]' < VERSION)"
+          if [[ "$SOURCE_VERSION" != "$VERSION" ]]; then
+            echo "Tag version $VERSION does not match VERSION file ($SOURCE_VERSION)." >&2
+            exit 1
+          fi
+
+          DEFAULT_BRANCH="$(gh api "repos/$REPOSITORY" --jq .default_branch)"
+          git fetch origin "$DEFAULT_BRANCH"
+          DEFAULT_SHA="$(git rev-parse FETCH_HEAD)"
+          BRANCH_VERSION="$(git show "$DEFAULT_SHA:VERSION" | tr -d '[:space:]')"
+          if [[ "$BRANCH_VERSION" != "$VERSION" ]]; then
+            echo "Tag version $VERSION does not match VERSION on $DEFAULT_BRANCH ($BRANCH_VERSION)." >&2
+            exit 1
+          fi
+          if ! git merge-base --is-ancestor "$TAG_SHA" "$DEFAULT_SHA"; then
+            echo "Release tag commit must be present on $DEFAULT_BRANCH." >&2
+            exit 1
+          fi
+
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "default_branch=$DEFAULT_BRANCH" >> "$GITHUB_OUTPUT"
+
+      - name: Install build dependencies
+        run: brew install llama.cpp
+
+      - name: Run tests
+        run: swift test
+
+      - name: Build app, CLI, and release archive
+        run: ./scripts/build-app.sh
+
+      - name: Verify archive and calculate checksum
+        id: archive
+        env:
+          VERSION: ${{ steps.release.outputs.version }}
+        run: |
+          set -euo pipefail
+          ARCHIVE="dist/CaptainsLog-$VERSION.zip"
+          test -f "$ARCHIVE"
+          shasum -a 256 "$ARCHIVE"
+          echo "path=$ARCHIVE" >> "$GITHUB_OUTPUT"
+          echo "sha256=$(shasum -a 256 "$ARCHIVE" | awk '{print $1}')" >> "$GITHUB_OUTPUT"
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+          VERSION: ${{ steps.release.outputs.version }}
+          ARCHIVE: ${{ steps.archive.outputs.path }}
+        run: |
+          set -euo pipefail
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$ARCHIVE" --clobber
+          else
+            gh release create "$TAG" "$ARCHIVE" \
+              --title "CaptainsLog $VERSION" \
+              --generate-notes \
+              --verify-tag
+          fi
+
+      - name: Update Homebrew cask
+        env:
+          VERSION: ${{ steps.release.outputs.version }}
+          SHA256: ${{ steps.archive.outputs.sha256 }}
+          DEFAULT_BRANCH: ${{ steps.release.outputs.default_branch }}
+        run: |
+          set -euo pipefail
+          git fetch origin "$DEFAULT_BRANCH"
+          git switch --force-create "$DEFAULT_BRANCH" "origin/$DEFAULT_BRANCH"
+
+          python3 - "$VERSION" "$SHA256" <<'PY'
+          from pathlib import Path
+          import re
+          import sys
+
+          version, sha256 = sys.argv[1:]
+          path = Path("Casks/captainslog.rb")
+          content = path.read_text()
+          content, version_count = re.subn(
+              r'^  version "[^"]+"$', f'  version "{version}"', content, count=1, flags=re.MULTILINE
+          )
+          content, checksum_count = re.subn(
+              r'^  sha256 "[0-9a-f]{64}"$', f'  sha256 "{sha256}"', content, count=1, flags=re.MULTILINE
+          )
+          if version_count != 1 or checksum_count != 1:
+              raise SystemExit("Could not find exactly one cask version and SHA-256 to update")
+          path.write_text(content)
+          PY
+
+          git diff --check
+          if git diff --quiet -- Casks/captainslog.rb; then
+            echo "Cask already matches this release."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Casks/captainslog.rb
+          git commit -m "Update Homebrew cask to $VERSION"
+          git push origin "$DEFAULT_BRANCH"

@@ -996,6 +996,7 @@ private struct FieldNotesRecordDock: View {
 
 private struct FieldNotesSettingsView: View {
     @Environment(AppState.self) private var appState
+    @CLState private var showThirdPartyNotices = false
 
     var body: some View {
         @Bindable var state = appState
@@ -1030,12 +1031,22 @@ private struct FieldNotesSettingsView: View {
                     modelStatus
                     helper("Model paths and identifiers are managed through the CLI.")
                 }
-                Text(appState.versionString).font(FieldNotes.Typography.metadata()).foregroundStyle(FieldNotes.ColorToken.tertiaryText)
+                section("About") {
+                    Text(appState.versionString)
+                        .font(FieldNotes.Typography.metadata())
+                        .foregroundStyle(FieldNotes.ColorToken.tertiaryText)
+                    FieldNotesButton(title: "Third-party notices", kind: .secondary) {
+                        showThirdPartyNotices = true
+                    }
+                }
             }
             .padding(FieldNotes.Spacing.xl)
             .padding(.bottom, FieldNotes.Spacing.xxl)
         }
         .onAppear { appState.config.loadContextFilesIfNeeded() }
+        .sheet(isPresented: $showThirdPartyNotices) {
+            ThirdPartyNoticesView()
+        }
     }
 
     private var isDemoMode: Bool {
@@ -1067,6 +1078,71 @@ private struct FieldNotesSettingsView: View {
     private func shortenedPath(_ path: String) -> String {
         let home = FileManager.default.homeDirectoryForCurrentUser.path
         return path.hasPrefix(home) ? "~" + path.dropFirst(home.count) : path
+    }
+}
+
+private struct ThirdPartyNoticesView: View {
+    @Environment(\.dismiss) private var dismiss
+
+    private let licenseFolderURL = Bundle.main.resourceURL?
+        .appendingPathComponent("ThirdPartyLicenses", isDirectory: true)
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: FieldNotes.Spacing.l) {
+            HStack {
+                Text("Third-party notices")
+                    .font(FieldNotes.Typography.title(24))
+                    .foregroundStyle(FieldNotes.ColorToken.primaryText)
+                Spacer()
+                Button("Done") { dismiss() }
+                    .keyboardShortcut(.defaultAction)
+            }
+
+            ScrollView {
+                VStack(alignment: .leading, spacing: FieldNotes.Spacing.l) {
+                    notice("Antonio font", "Copyright 2013 The Antonio Project Authors. SIL Open Font License 1.1.", url: "https://github.com/googlefonts/antonioFont")
+                    notice("Open-source software", "CaptainsLog includes Swift packages, sqlite-vec, llama.cpp, and LLVM OpenMP. Their license texts are bundled with the app.", url: "https://github.com/ggml-org/llama.cpp")
+                    notice("Whisper Large-v2 · Apache-2.0", "Downloaded separately; model weights are not included in the app archive.", url: "https://huggingface.co/openai/whisper-large-v2")
+                    notice("Qwen 3.5 9B GGUF · Apache-2.0", "Downloaded separately; this GGUF is a community conversion of the Qwen model.", url: "https://huggingface.co/bartowski/Qwen_Qwen3.5-9B-GGUF")
+                    notice("multilingual-e5-small GGUF · MIT", "Downloaded separately; this Q8_0 GGUF is a community conversion of the E5 model.", url: "https://huggingface.co/TwinSunsLLC/multilingual-e5-small-gguf")
+                    notice("Evaluation examples", "The test corpus includes unofficial Star Trek fan-created examples and readings from published literary works. The respective rights remain with their owners. CaptainsLog is unaffiliated with Star Trek rights holders.", url: "https://github.com/vnglst/CaptainsLog/blob/main/THIRD-PARTY-NOTICES.md")
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+
+            HStack {
+                if let licenseFolderURL, FileManager.default.fileExists(atPath: licenseFolderURL.path) {
+                    FieldNotesButton(title: "Open full license texts", kind: .secondary) {
+                        NSWorkspace.shared.open(licenseFolderURL)
+                    }
+                }
+                Spacer()
+            }
+        }
+        .padding(FieldNotes.Spacing.xl)
+        .frame(minWidth: 560, minHeight: 480)
+        .background(FieldNotes.ColorToken.canvas)
+        .preferredColorScheme(.dark)
+    }
+
+    private func notice(_ title: String, _ detail: String, url: String) -> some View {
+        VStack(alignment: .leading, spacing: FieldNotes.Spacing.xs) {
+            Text(title)
+                .font(FieldNotes.Typography.title(16))
+                .foregroundStyle(FieldNotes.ColorToken.primaryText)
+            Text(detail)
+                .font(FieldNotes.Typography.body(13))
+                .foregroundStyle(FieldNotes.ColorToken.secondaryText)
+                .fixedSize(horizontal: false, vertical: true)
+            if let destination = URL(string: url) {
+                Link("Source and license details", destination: destination)
+                    .font(FieldNotes.Typography.body(12))
+                    .tint(FieldNotes.ColorToken.amber)
+            }
+        }
+        .padding(FieldNotes.Spacing.m)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .fieldNotesSurface()
     }
 }
 

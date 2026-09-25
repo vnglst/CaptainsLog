@@ -22,20 +22,20 @@ Removing a file from the latest tree does not remove it from existing commits. B
 ## Phase 2 — Review content, rights, and project metadata
 
 - [ ] Review README, docs, plans, design references, examples, and comments for obsolete behavior, machine-specific instructions, unfinished internal notes, and contradictory install claims. Current product terminology is “Logs.”
-- [ ] Review TNG demo and evaluation content, names, references, visual branding, and assets for the intended public use. Decide whether the first public release will include this fan-themed material, replace it with original fictional examples, or keep it out of the public repository. Do not imply Star Trek affiliation.
-- [ ] Add a project license or state clearly that the source is currently all rights reserved. Review licenses and attribution for dependencies, bundled llama.cpp libraries, models, model conversions, fonts, and included assets. A model's license may differ from the code license.
+- [x] Review TNG demo and evaluation content, names, references, visual branding, and assets for the intended public use. The repository owner approved retaining the fan-themed material and reviewed literary fixtures; attribution and a no-affiliation statement are in `THIRD-PARTY-NOTICES.md`.
+- [ ] Add a project license or state clearly that the source is currently all rights reserved. `THIRD-PARTY-NOTICES.md` inventories the bundled font, software, runtime models, and reviewed fixture attributions; verify its inventory and app-bundle copies on a release build. A model's license may differ from the code license.
 - [ ] Review the app's data handling and privacy claims against implementation: audio and entries remain local, models are downloaded from their documented sources, and no inference service receives user content. Document any update checks, telemetry, or network behavior if present.
 - [ ] Review the ad-hoc signing and quarantine-removal behavior. Explain the trust tradeoff and install only from the project's intended release source. Verify the cask removes quarantine from the intended app path only.
 - [ ] Confirm the app name, bundle identifier, CLI name, version, support/contact route, minimum macOS version, Apple Silicon requirement, storage estimate, and known limitations agree across app, cask, README, and release notes.
 
 ### Third-party asset inventory
 
-- `Sources/CaptainsLog/Resources/Antonio-VariableFont_wght.ttf` is the Antonio typeface by the Antonio Project Authors. The upstream font repository provides it under SIL Open Font License 1.1; add the license and attribution alongside the bundled font and in the app's third-party notices.
+- `Sources/CaptainsLog/Resources/Antonio-VariableFont_wght.ttf` is the Antonio typeface by the Antonio Project Authors. Its SIL Open Font License 1.1 is now included alongside the font and in the app's third-party notices.
 - `Sources/CSQLiteVec/` vendors sqlite-vec source. Its MIT and Apache-2.0 license texts are already present in that directory.
 - Swift packages are pinned in `Package.resolved`; review and include applicable notices for the shipped dependency set. The app bundle also includes llama.cpp runtime libraries; preserve their license and notices in the bundle.
-- Whisper Large-v2, Qwen 3.5 GGUF, and multilingual-e5-small GGUF are downloaded at runtime rather than committed as model files. Record their exact source artifacts, versions, conversion provenance, and licenses in the model documentation and review each source's usage and redistribution terms.
-- `eval/transcribe/audio/world-war-z.m4a` and `durins-volk.m4a` appear to be readings of published literary text. Verify permission or replace them with original/public-domain fixtures before public release. Other literary fixtures also need source and rights checks.
-- The demo and `docs/tng-eval` use Star Trek names and settings. Decide whether to keep the fan-themed content in a public repo, replace it with original fiction, or exclude it. Avoid implying endorsement or affiliation.
+- Whisper Large-v2, Qwen 3.5 GGUF, and multilingual-e5-small GGUF are downloaded at runtime rather than committed as model files. Their source artifacts and stated license identifiers are listed in `THIRD-PARTY-NOTICES.md`; retain the source links and review again if the model versions change.
+- `eval/transcribe/audio/world-war-z.m4a` and `durins-volk.m4a` are readings of published literary text. The repository owner approved retaining the reviewed files, and their underlying rights are attributed in `THIRD-PARTY-NOTICES.md`.
+- The demo and `docs/tng-eval` use Star Trek names and settings. The repository owner approved keeping the fan-created examples; the notices state that CaptainsLog is independent and unaffiliated.
 
 The seven design screenshots are in-repository reference images. The Trufo string found in their metadata was provenance metadata, not an app dependency or visible artwork; it has been removed from the local screenshot files.
 
@@ -52,10 +52,14 @@ The seven design screenshots are in-repository reference images. The Trufo strin
 ## Phase 4 — Publish
 
 - [ ] Choose the public source layout: make a fully reviewed sanitized repository public, or publish a separate sanitized repository and keep the current repository private.
-- [ ] Tag the release and upload the versioned ZIP. Publish concise release notes with supported macOS/architecture, install options, model storage/download requirements, known limitations, and the ad-hoc signing/quarantine behavior.
-- [ ] Update the Homebrew cask version, checksum, and release URL. Test the cask against the public release URL before announcing it.
+- [ ] Verify `.github/workflows/release.yml` on the reviewed source branch. It runs on a pushed `vMAJOR.MINOR.PATCH` tag, builds on an Apple Silicon macOS runner, publishes the versioned ZIP as a GitHub Release asset, and commits the archive checksum and version to `Casks/captainslog.rb`.
+- [ ] For each release, update `VERSION`, run the release checks, commit and push that version to the default branch, then create and push its matching `vMAJOR.MINOR.PATCH` tag. The workflow rejects tags if the tag, `VERSION`, and default branch disagree or if the tagged commit is not on the default branch.
+- [ ] Review the workflow run and generated release notes. GitHub generates notes from repository history; edit them as needed to include supported macOS/architecture, model storage/download requirements, known limitations, and ad-hoc signing/quarantine behavior.
+- [ ] Test the cask against the published release URL and test upgrading from the prior release before announcing it. The workflow updates the cask automatically, but it does not perform a clean-Mac install test.
 - [ ] Publish the repository and release only after the Git-history gate and release-candidate checks are complete.
 - [ ] Verify the documented tap/install commands from a clean machine using the public endpoints. Keep a rollback path by retaining the previous release archive and cask revision.
+
+The release workflow uses the standard `GITHUB_TOKEN` with repository contents write permission; it needs no Developer ID certificate or separate secret. GitHub-hosted macOS Actions minutes may use the account's included Actions allowance while the repository is private.
 
 ## Publication review record
 
