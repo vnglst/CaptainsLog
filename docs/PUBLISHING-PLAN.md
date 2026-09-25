@@ -2,7 +2,7 @@
 
 ## Goal and release boundary
 
-CaptainsLog's GitHub repository is public, and release `v0.1.0` is available through GitHub Releases and the Homebrew tap. Continue the review and cleanup gates below as post-publication maintenance. The app is ad-hoc signed, is not notarized, and the Homebrew cask removes the quarantine attribute from the installed app bundle. State that plainly wherever installation is described.
+CaptainsLog's GitHub repository is public, and release `v0.1.0` is available through GitHub Releases and the Homebrew tap at `vnglst/homebrew-captainslog`. The supported direct install is `brew install --cask vnglst/captainslog/captainslog`. Continue the review and cleanup gates below as post-publication maintenance. The app is ad-hoc signed, is not notarized, and the Homebrew cask removes the quarantine attribute from the installed app bundle. State that plainly wherever installation is described.
 
 The initial release includes the macOS app, the `cl` CLI, bundled llama.cpp runtime, source code, build instructions, and synthetic TNG demo fixtures. The repository owner reviewed and approved the specific `2025-01-14 side project` evaluation recording and transcript copies; this approval does not cover other personal recordings.
 
@@ -53,13 +53,14 @@ The seven design screenshots are in-repository reference images. The Trufo strin
 
 - [x] Choose the public source layout: the existing `CaptainsLog` repository is public.
 - [x] Verify `.github/workflows/release.yml`: the `v0.1.0` run passed on an Apple Silicon macOS runner, published the versioned ZIP as a GitHub Release asset, and committed its archive checksum and version to `Casks/captainslog.rb`.
+- [x] Create the public `vnglst/homebrew-captainslog` tap with the initial `captainslog` cask. The supported direct install is `brew install --cask vnglst/captainslog/captainslog`.
 - [ ] For each release, update `VERSION`, run the release checks, commit and push that version to the default branch, then create and push its matching `vMAJOR.MINOR.PATCH` tag. The workflow rejects tags if the tag, `VERSION`, and default branch disagree or if the tagged commit is not on the default branch.
 - [ ] Review the workflow run and generated release notes. GitHub generates notes from repository history; edit them as needed to include supported macOS/architecture, model storage/download requirements, known limitations, and ad-hoc signing/quarantine behavior.
 - [ ] Test the cask against the published release URL and test upgrading from the prior release before announcing it. The workflow updates the cask automatically, but it does not perform a clean-Mac install test.
 - [x] Publish the repository and initial release. The repository owner made the repository public and approved release `v0.1.0` on 2026-09-25; remaining review and clean-Mac checks above are still open for follow-up.
 - [ ] Verify the documented tap/install commands from a clean machine using the public endpoints. Keep a rollback path by retaining the previous release archive and cask revision.
 
-The release workflow uses the standard `GITHUB_TOKEN` with repository contents write permission; it needs no Developer ID certificate or separate secret. GitHub-hosted macOS Actions minutes may use the account's included Actions allowance while the repository is private.
+The release workflow uses the standard `GITHUB_TOKEN` for source releases. To publish cask updates into the separate tap, add a fine-grained personal access token as the `HOMEBREW_TAP_TOKEN` Actions secret in `vnglst/CaptainsLog`. Grant it Contents read/write access to `vnglst/homebrew-captainslog`. This is separate from Developer ID signing, which is not used. GitHub-hosted macOS Actions minutes may use the account's included Actions allowance while the repository is private.
 
 ## Publication review record
 

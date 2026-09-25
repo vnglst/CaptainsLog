@@ -138,3 +138,35 @@ jobs:
           git add Casks/captainslog.rb
           git commit -m "Update Homebrew cask to $VERSION"
           git push origin "$DEFAULT_BRANCH"
+
+      - name: Check out Homebrew tap
+        uses: actions/checkout@v7
+        with:
+          repository: vnglst/homebrew-captainslog
+          token: ${{ secrets.HOMEBREW_TAP_TOKEN || github.token }}
+          path: homebrew-captainslog
+
+      - name: Publish cask to Homebrew tap
+        env:
+          VERSION: ${{ steps.release.outputs.version }}
+          DEFAULT_BRANCH: ${{ steps.release.outputs.default_branch }}
+          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$HOMEBREW_TAP_TOKEN" ]]; then
+            echo "Add the HOMEBREW_TAP_TOKEN Actions secret before creating releases." >&2
+            exit 1
+          fi
+          mkdir -p homebrew-captainslog/Casks
+          cp Casks/captainslog.rb homebrew-captainslog/Casks/captainslog.rb
+          git -C homebrew-captainslog diff --check
+          if git -C homebrew-captainslog diff --quiet -- Casks/captainslog.rb; then
+            echo "Homebrew tap already matches this release."
+            exit 0
+          fi
+
+          git -C homebrew-captainslog config user.name "github-actions[bot]"
+          git -C homebrew-captainslog config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git -C homebrew-captainslog add Casks/captainslog.rb
+          git -C homebrew-captainslog commit -m "Update CaptainsLog cask to $VERSION"
+          git -C homebrew-captainslog push origin "HEAD:$DEFAULT_BRANCH"
