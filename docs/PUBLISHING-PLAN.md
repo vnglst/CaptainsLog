@@ -4,14 +4,14 @@
 
 Prepare CaptainsLog for its first public GitHub release and Homebrew installation while keeping the source repository private until the review and cleanup gates below are complete. The app is ad-hoc signed, is not notarized, and the Homebrew cask removes the quarantine attribute from the installed app bundle. State that plainly wherever installation is described.
 
-The initial release includes the macOS app, the `cl` CLI, bundled llama.cpp runtime, source code, build instructions, and synthetic TNG demo fixtures. Do not publish real personal recordings or transcripts as test data.
+The initial release includes the macOS app, the `cl` CLI, bundled llama.cpp runtime, source code, build instructions, and synthetic TNG demo fixtures. The repository owner reviewed and approved the specific `2025-01-14 side project` evaluation recording and transcript copies; this approval does not cover other personal recordings.
 
 ## Phase 1 — Remove private material from the publication candidate
 
 - [x] Remove `.claude/settings.local.json` from the working tree. It contained a machine-specific absolute path and a local cleanup permission. `.gitignore` now excludes this path so a local copy is not accidentally added again. The file remains in Git history and must be handled by the history review below.
 - [x] Review `eval/transcribe/audio/2025-01-14 side project.m4a` and matching copies in transcription, cleanup, filename, and enrichment inputs/expected outputs. The repository owner reviewed them and approved retaining them in the public candidate. Keep this approval scoped to these reviewed files; review any new recordings or generated copies before publication.
 - [ ] Search all tracked files, including hidden files and Git LFS objects if present, for names and email addresses other than the user's, absolute home paths, machine and account identifiers, credentials, tokens, private URLs, local config, and personal content. The user's name and email may remain.
-- [ ] Inspect images and binary files for visible paths, account names, device labels, recordings, screenshots, embedded metadata, and other identifying details. Design references already contain illustrative paths, counts, microphone labels, and a version; label them as concepts or replace them before using them as product screenshots.
+- [x] Inspect images and binary files for visible paths, account names, device labels, recordings, screenshots, embedded metadata, and other identifying details. The seven design references remain conceptual (per owner approval); creator metadata, including the Trufo email, was stripped without changing image pixels. The images still contain illustrative paths, counts, microphone labels, version text, and “Field notes” UI labels; they are documented as concepts, not current product screenshots.
 - [ ] Inspect demo and evaluation fixtures. Keep synthetic TNG examples clearly labeled as fictional, and verify no real personal content has entered a generated file or report.
 - [ ] Check `.gitignore`, build scripts, test scripts, and CI workflows so config files, model caches, recordings, generated outputs, signing material, and build artifacts cannot be accidentally added.
 
@@ -27,6 +27,17 @@ Removing a file from the latest tree does not remove it from existing commits. B
 - [ ] Review the app's data handling and privacy claims against implementation: audio and entries remain local, models are downloaded from their documented sources, and no inference service receives user content. Document any update checks, telemetry, or network behavior if present.
 - [ ] Review the ad-hoc signing and quarantine-removal behavior. Explain the trust tradeoff and install only from the project's intended release source. Verify the cask removes quarantine from the intended app path only.
 - [ ] Confirm the app name, bundle identifier, CLI name, version, support/contact route, minimum macOS version, Apple Silicon requirement, storage estimate, and known limitations agree across app, cask, README, and release notes.
+
+### Third-party asset inventory
+
+- `Sources/CaptainsLog/Resources/Antonio-VariableFont_wght.ttf` is the Antonio typeface by the Antonio Project Authors. The upstream font repository provides it under SIL Open Font License 1.1; add the license and attribution alongside the bundled font and in the app's third-party notices.
+- `Sources/CSQLiteVec/` vendors sqlite-vec source. Its MIT and Apache-2.0 license texts are already present in that directory.
+- Swift packages are pinned in `Package.resolved`; review and include applicable notices for the shipped dependency set. The app bundle also includes llama.cpp runtime libraries; preserve their license and notices in the bundle.
+- Whisper Large-v2, Qwen 3.5 GGUF, and multilingual-e5-small GGUF are downloaded at runtime rather than committed as model files. Record their exact source artifacts, versions, conversion provenance, and licenses in the model documentation and review each source's usage and redistribution terms.
+- `eval/transcribe/audio/world-war-z.m4a` and `durins-volk.m4a` appear to be readings of published literary text. Verify permission or replace them with original/public-domain fixtures before public release. Other literary fixtures also need source and rights checks.
+- The demo and `docs/tng-eval` use Star Trek names and settings. Decide whether to keep the fan-themed content in a public repo, replace it with original fiction, or exclude it. Avoid implying endorsement or affiliation.
+
+The seven design screenshots are in-repository reference images. The Trufo string found in their metadata was provenance metadata, not an app dependency or visible artwork; it has been removed from the local screenshot files.
 
 ## Phase 3 — Verify the release candidate
 
