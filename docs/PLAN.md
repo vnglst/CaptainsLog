@@ -36,6 +36,8 @@ See [PLAN-004](PLAN-004-logs-implementation.md) for current functionality, remai
 - Historical LCARS-specific implementation notes are preserved in git history. They describe the retired interface and are not current requirements.
 - [ ] Add git commit hash to the Settings page (currently only shown in the main UI header)
 - [ ] Add a way to configure categories (how logs are categorized into folders); make this configurable both in Settings and as part of onboarding
+- [ ] Add a copy button to copy the entire cleaned-up transcript for a log entry to the clipboard
+- [ ] Add a macOS menu bar presence so CaptainsLog can be minimized to the menu bar, with controls to start and stop recording there
 
 ### Release v0.1.0 — Enable Public Distribution
 Enable anyone with an Apple Silicon Mac to download and use CaptainsLog without building from source. Single download provides both GUI app and CLI — users choose their interface. Local ad-hoc packaging and the cask are prepared; publishing is pending repository cleanup.
