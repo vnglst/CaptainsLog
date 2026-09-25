@@ -25,4 +25,4 @@ Read `README.md` before working here. Follow its product requirements, build ins
 
 ## Evaluations
 
-Stage evaluation workflows are documented in `.claude/skills/<stage>-eval/SKILL.md` for transcription, cleanup, filename, and enrichment. Use the applicable skill when evaluating output. Reports should describe concrete changes and semantic impact, including missing or added content and hallucinations; scores alone are not enough. Human review makes the final quality judgment.
+Stage-specific evaluation workflows live in `skills/<stage>-eval/SKILL.md` for transcription, cleanup, filename, and enrichment. Use the relevant workflow when evaluating output. Reports should describe concrete changes and semantic impact, including missing or added content and hallucinations; scores alone are not enough. Human review makes the final quality judgment.

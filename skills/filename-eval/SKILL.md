@@ -55,7 +55,7 @@ Run the script to get a starting point for format and length checks:
 
 ```bash
 MODEL=<resolved model name from step 1>
-swift .claude/skills/filename-eval/scripts/compare.swift \
+swift skills/filename-eval/scripts/compare.swift \
   --expected eval/filename/expected/<test-case>.md \
   --generated eval/filename/generated/${TIMESTAMP}_${MODEL}_<test-case>.md
 ```

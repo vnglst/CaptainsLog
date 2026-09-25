@@ -59,7 +59,7 @@ You may run the script to get a starting point, but verify every difference manu
 
 ```bash
 MODEL=<resolved model name from step 1>
-swift .claude/skills/transcription-eval/scripts/compare.swift \
+swift skills/transcription-eval/scripts/compare.swift \
   --expected eval/transcribe/expected/<test-case>.md \
   --generated eval/transcribe/generated/${MODEL}_<test-case>.md \
   --output ./tmp/comparison.md
@@ -127,4 +127,3 @@ REPORT_PATH="eval/transcribe/reports/${TIMESTAMP}_<model-name>_<test-case>.md"
 - List missing content words
 - List added content words
 - Read the actual text files yourself
-

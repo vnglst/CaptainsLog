@@ -25,7 +25,7 @@ The `2025-01-14 side project` recording flows through all four stages as a cross
 
 ## Usage
 
-Evaluations are run by invoking the corresponding skill (see `.claude/skills/<stage>-eval/SKILL.md`).
+Evaluations are run using the corresponding workflow in [`skills/`](../skills/): `skills/<stage>-eval/SKILL.md`.
 
 Quick CLI tests:
 

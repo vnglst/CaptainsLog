@@ -70,7 +70,7 @@ Run the script to get a starting point for list and string comparisons:
 
 ```bash
 MODEL=<resolved model name from step 1>
-swift .claude/skills/enrich-eval/scripts/compare.swift \
+swift skills/enrich-eval/scripts/compare.swift \
   --expected eval/enrich/expected/<test-case>.md \
   --generated eval/enrich/generated/${TIMESTAMP}_${MODEL}_<test-case>.md
 ```
