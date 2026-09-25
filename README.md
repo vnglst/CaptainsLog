@@ -4,11 +4,18 @@ CaptainsLog turns voice memos into searchable log entries. Recording, transcript
 
 ## Install
 
-The Homebrew cask supports Apple Silicon Macs running macOS 26 or later. The app is ad-hoc signed and not notarized. The cask removes macOS quarantine from the app bundle, so install it only from a tap you trust. The source repository and release are private while the project is being prepared for publication; these commands will work after publication:
+The Homebrew cask supports Apple Silicon Macs running macOS 26 or later. The app is ad-hoc signed and not notarized. The cask removes macOS quarantine from the app bundle, so install it only from a tap you trust:
 
 ```sh
 brew tap vnglst/captainslog https://github.com/vnglst/CaptainsLog.git
 brew install --cask vnglst/captainslog/captainslog
+```
+
+Update later with:
+
+```sh
+brew update
+brew upgrade --cask captainslog
 ```
 
 The first launch downloads the on-device models and needs an internet connection. The models use several gigabytes of storage. After download, recording and inference run locally.
