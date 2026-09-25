@@ -64,7 +64,7 @@ jobs:
         run: brew install llama.cpp
 
       - name: Run tests
-        run: swift test
+        run: swift run run-tests
 
       - name: Build app, CLI, and release archive
         run: ./scripts/build-app.sh
