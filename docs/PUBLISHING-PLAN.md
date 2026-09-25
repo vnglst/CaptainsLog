@@ -43,7 +43,7 @@ The seven design screenshots are in-repository reference images. The Trufo strin
 
 - [ ] Start from a clean checkout of the publication candidate and run the documented build, unit tests, coverage gate, and relevant evaluation suites.
 - [ ] Build the `.app` and versioned ZIP using `scripts/build-app.sh`. Inspect the app bundle contents, executable architecture, bundled frameworks/libraries, resources, and absence of developer-only files.
-- [ ] Install the cask from a temporary local tap and verify the app lands in Applications, `cl` resolves from PATH, the intended quarantine attribute is removed, and both GUI and CLI launch.
+- [x] Install the cask from the public tap using `brew install --cask vnglst/captainslog/captainslog`. Verified the app lands in Applications, `cl` runs, and the quarantine attribute is removed; then uninstalled both app and CLI. `brew audit --cask --strict vnglst/captainslog/captainslog` passes. GUI launch was verified separately during release testing.
 - [ ] Test the downloaded release archive and Homebrew flow on a clean macOS user account or another Apple Silicon Mac with no development tools or existing model cache. Confirm first launch, model download, recording, processing, search, and CLI operation.
 - [ ] Test failure and recovery paths that affect release readiness: interrupted model download, unavailable network, insufficient disk space, permission errors, and an existing user data folder.
 - [ ] Confirm generated ZIP checksum exactly matches the cask. Verify install/uninstall behavior and that uninstall leaves user data intact.
