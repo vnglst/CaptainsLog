@@ -17,6 +17,14 @@ brew update
 brew upgrade --cask captainslog
 ```
 
+To uninstall CaptainsLog and move its downloaded models to the Trash while keeping your logs and configuration:
+
+```sh
+brew uninstall --cask --zap captainslog
+```
+
+Empty the Trash to reclaim the model storage. Models in folders you selected yourself are left untouched.
+
 The first launch downloads the on-device models and needs an internet connection. The models use several gigabytes of storage. After download, recording and inference run locally.
 
 ## Build

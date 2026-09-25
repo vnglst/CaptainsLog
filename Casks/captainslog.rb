@@ -24,4 +24,11 @@ cask "captainslog" do
   end
 
   uninstall quit: "nl.koenvangilst.CaptainsLog"
+
+  # Remove only models downloaded into CaptainsLog's managed locations. Keep
+  # logs, configuration, and models stored in user-selected external folders.
+  zap trash: [
+    "~/Library/Application Support/CaptainsLog/models",
+    "~/Library/Caches/CaptainsLog/models",
+  ]
 end
