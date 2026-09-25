@@ -1,0 +1,1 @@
+Garden planning has been on my mind a lot lately. Working on the garden layout and figuring out which vegetables to plant in the garden beds. The garden project is really coming together, though the garden soil needs more compost. Thinking about adding a garden fence and maybe a small garden pond. The garden team is meeting this weekend to discuss the garden improvements.

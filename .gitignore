@@ -1,0 +1,23 @@
+# Swift
+.build/
+.swiftpm/
+*.xcodeproj
+*.xcworkspace
+DerivedData/
+
+# macOS
+.DS_Store
+
+# App data
+processed/
+dist/
+
+# Eval generated outputs and reports (not version-controlled)
+eval/*/generated/*.md
+eval/*/reports/*.md
+
+# Local temp directory
+tmp/
+
+# Local Claude permissions and machine-specific settings
+.claude/settings.local.json

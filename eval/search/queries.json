@@ -1,0 +1,17 @@
+[
+  {
+    "query": "How should we make local setup easier to understand?",
+    "expected": "onboarding-local-ai.md",
+    "kind": "semantic-paraphrase"
+  },
+  {
+    "query": "Waar staat het plan voor de fietstocht langs de kust?",
+    "expected": "cycling-route.md",
+    "kind": "cross-language"
+  },
+  {
+    "query": "Wann ist die Reise nach Hamburg?",
+    "expected": "hamburg-trip.md",
+    "kind": "named-entity"
+  }
+]

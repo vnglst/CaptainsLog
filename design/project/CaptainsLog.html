@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>CaptainsLog — Design Canvas</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Antonio:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; padding: 0; background: #0a0a0d; color: #f3e9d8; font-family: 'Inter', sans-serif; }
+  * { box-sizing: border-box; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="lcars-kit.jsx"></script>
+<script type="text/babel" src="main-window.jsx"></script>
+<script type="text/babel" src="other-screens.jsx"></script>
+
+<script type="text/babel">
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "palette": "violet",
+  "recordStyle": "hero"
+}/*EDITMODE-END*/;
+
+const PALETTES = {
+  classic: { orange: '#FF9933', wheat: '#FFCC66', russet: '#CC6666', plum: '#9966CC', steel: '#6688CC', label: 'Classic — Warm Orange' },
+  amber:   { orange: '#FFAA33', wheat: '#FFDD88', russet: '#FF6666', plum: '#CC99CC', steel: '#99AACC', label: 'Amber — High Contrast' },
+  dusk:    { orange: '#FF7744', wheat: '#E8B06C', russet: '#B85C5C', plum: '#8B6DB3', steel: '#5F7FB8', label: 'Dusk — Muted' },
+  violet:  { orange: '#E89B3C', wheat: '#C8A97E', russet: '#A86B9E', plum: '#9966CC', steel: '#6688CC', label: 'Violet — Evening Shift' },
+};
+
+function App() {
+  const [tweaks, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  const accent = PALETTES[tweaks.palette] || PALETTES.classic;
+  const recordStyle = tweaks.recordStyle || 'pill';
+
+  return (
+    <>
+      <DesignCanvas initialScale={0.8} bg="#0a0a0d">
+        <DCSection id="brief" title="CaptainsLog · Design Direction" subtitle="LCARS-influenced voice-to-log for macOS. Balanced fidelity — clear DNA, modern restraint.">
+          <DCArtboard id="readme" label="README · System" width={720} height={780}>
+            <ReadmeCard accent={accent} />
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="main" title="Main Window" subtitle="Single-column timeline · record dock · per-entry stage indicators. 720×780, dark, titleless.">
+          <DCArtboard id="main-idle" label="A · Ready" width={720} height={780}>
+            <MainWindow accent={accent} recordStyle={recordStyle} recording={false} />
+          </DCArtboard>
+          <DCArtboard id="main-recording" label="B · Recording" width={720} height={780}>
+            <MainWindow accent={accent} recordStyle={recordStyle} recording={true} />
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="onboarding" title="First-Launch Onboarding" subtitle="Pick data folder · download ~3 GB of local ML models. Offline after this point.">
+          <DCArtboard id="onboard-1" label="Step 2 · Models downloading" width={720} height={780}>
+            <OnboardingWindow accent={accent} />
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="settings" title="Settings" subtitle="Daily-use preferences. Advanced config lives in the CLI + config file, not the GUI.">
+          <DCArtboard id="settings-general" label="General · Storage · Models" width={720} height={780}>
+            <SettingsWindow accent={accent} />
+          </DCArtboard>
+          <DCArtboard id="settings-mic" label="Mic · Context · Corrections" width={720} height={780}>
+            <MicContextWindow accent={accent} />
+          </DCArtboard>
+        </DCSection>
+      </DesignCanvas>
+
+      <TweaksPanel title="Tweaks">
+        <TweakSection label="Accent Palette" />
+        <TweakRadio
+          label="Palette"
+          value={tweaks.palette}
+          options={['classic', 'amber', 'dusk', 'violet']}
+          onChange={(v) => setTweak('palette', v)}
+        />
+        <div style={{ padding: '6px 12px 10px', fontFamily: "'JetBrains Mono', monospace", fontSize: 10, color: '#8a8173', letterSpacing: '0.05em' }}>
+          {accent.label}
+        </div>
+        <TweakSection label="Record Button Style" />
+        <TweakRadio
+          label="Style"
+          value={recordStyle}
+          options={['pill', 'hero', 'command']}
+          onChange={(v) => setTweak('recordStyle', v)}
+        />
+        <div style={{ padding: '6px 12px 10px', fontFamily: "'JetBrains Mono', monospace", fontSize: 10, color: '#8a8173', letterSpacing: '0.05em', lineHeight: 1.5 }}>
+          pill · compact docked w/ waveform<br />
+          hero · large circular button + label<br />
+          command · full-width command strip
+        </div>
+      </TweaksPanel>
+    </>
+  );
+}
+
+function ReadmeCard({ accent }) {
+  const O = accent.orange, W = accent.wheat, R = accent.russet, P = accent.plum, S = accent.steel;
+  return (
+    <div style={{
+      width: 720, height: 780, background: '#07070a',
+      padding: 32, fontFamily: "'Inter', sans-serif", color: '#f3e9d8',
+      display: 'flex', flexDirection: 'column', gap: 20,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <Cell color={O} height={34} pad={18}>CAPTAINSLOG</Cell>
+        <Cell color={W} height={34} pad={18}>DESIGN BRIEF</Cell>
+        <div style={{ flex: 1, height: 34, background: R, borderRadius: '0 17px 17px 0' }} />
+      </div>
+
+      <div style={{ fontFamily: "'Antonio', sans-serif", fontSize: 36, letterSpacing: '0.02em', lineHeight: 1.05, textTransform: 'uppercase' }}>
+        <span style={{ color: '#f3e9d8' }}>Voice. Structured.</span><br />
+        <span style={{ color: O }}>Locally. On this Mac.</span>
+      </div>
+
+      <div style={{ fontSize: 13.5, lineHeight: 1.6, color: '#a9a090', maxWidth: 620 }}>
+        A balanced LCARS-influenced interface: asymmetric elbow frames, pill controls,
+        color-blocked cells, and saturated warm hues on deep black — restrained enough
+        to feel like a modern macOS tool, recognizable enough to feel like a personal
+        ship's computer.
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+        <Spec label="TYPE — DISPLAY" value="Antonio · condensed, wide-caps" color={O} mono="ANT" />
+        <Spec label="TYPE — BODY" value="Inter · 13px default" color={W} mono="INT" />
+        <Spec label="TYPE — META" value="JetBrains Mono · 10–11px" color={P} mono="JBM" />
+        <Spec label="WINDOW" value="720×780 · titleless · dark only" color={S} mono="WIN" />
+      </div>
+
+      <div>
+        <div style={{ fontFamily: "'Antonio', sans-serif", fontSize: 11, letterSpacing: '0.2em', color: W, marginBottom: 8 }}>
+          PALETTE · {accent.label.toUpperCase()}
+        </div>
+        <div style={{ display: 'flex', gap: 6 }}>
+          {[['ORANGE', O], ['WHEAT', W], ['RUSSET', R], ['PLUM', P], ['STEEL', S], ['INK', '#f3e9d8'], ['PANEL', '#0f0b08'], ['VOID', '#07070a']].map(([n, c]) => (
+            <div key={n} style={{ flex: 1 }}>
+              <div style={{ height: 56, background: c, border: c === '#07070a' ? '1px solid #2a2520' : 'none' }} />
+              <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, color: '#8a8173', letterSpacing: '0.08em', marginTop: 4 }}>
+                {n}<br /><span style={{ color: '#5a5348' }}>{c}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <div style={{ fontFamily: "'Antonio', sans-serif", fontSize: 11, letterSpacing: '0.2em', color: W, marginBottom: 8 }}>
+          SYSTEM NOTES
+        </div>
+        <ul style={{ margin: 0, paddingLeft: 18, fontSize: 12.5, lineHeight: 1.7, color: '#a9a090' }}>
+          <li>Elbow frame top-left anchors every window — a single visual signature.</li>
+          <li>Left rail stacks colored cells: each category gets a dedicated hue.</li>
+          <li>Status surfaces via per-entry stage dots (TRN · CLN · NAM · ENR), never popovers.</li>
+          <li>No gradients, no shadows, no icons drawn in SVG — flat color blocks only.</li>
+          <li>Advanced config (model paths, IDs) lives in <code style={{ fontFamily: "'JetBrains Mono', monospace", color: O }}>~/.captainslog/config</code>, managed via <code style={{ fontFamily: "'JetBrains Mono', monospace", color: O }}>cl</code> CLI.</li>
+        </ul>
+      </div>
+
+      <div style={{ flex: 1 }} />
+
+      <div style={{ display: 'flex', gap: 6 }}>
+        <Cell color={O} height={20} width={80} pad={10}>041</Cell>
+        <Cell color={'#1a1613'} height={20} pad={10} style={{ flex: 1, color: '#8a8173', justifyContent: 'flex-start' }}>
+          <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, letterSpacing: '0.1em' }}>
+            STARDATE 79512.3 · COMPILED FOR APPLE SILICON · M1+
+          </span>
+        </Cell>
+      </div>
+    </div>
+  );
+}
+
+function Spec({ label, value, color, mono }) {
+  return (
+    <div style={{ display: 'flex', gap: 8, alignItems: 'stretch' }}>
+      <Cell color={color} height={44} width={56} pad={8} align="center">{mono}</Cell>
+      <div style={{ background: '#0f0b08', padding: '6px 12px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        <div style={{ fontFamily: "'Antonio', sans-serif", fontSize: 10, letterSpacing: '0.14em', color: '#8a8173' }}>{label}</div>
+        <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 12.5, color: '#f3e9d8', marginTop: 2 }}>{value}</div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

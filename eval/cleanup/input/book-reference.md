@@ -1,0 +1,1 @@
+In that same vein, I want to read a book by Andrew Harmel Law that I saw at the GoTo Conference last year on facilitating software architecture, is the book called. So, just to to read up on it. So that's one thing I want to introduce.

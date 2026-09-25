@@ -1,0 +1,1 @@
+Quick note: we shipped the dark mode feature today. Users have been asking for it for months. Feels good to finally get it out.
