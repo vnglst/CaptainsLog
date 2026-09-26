@@ -1,0 +1,9 @@
+[category 2026-09-26T10:44:07Z] Category prompt ready: input=324 bytes.
+[category 2026-09-26T10:44:07Z] Starting category inference (max tokens 64).
+[category 2026-09-26T10:44:07Z] LLM inference entered; preparing llama context.
+[category 2026-09-26T10:44:07Z] Llama context created (allocated=512, model maximum=262144, batch=512, threads=9).
+[category 2026-09-26T10:44:07Z] Prompt tokenized: 300 token(s); generation capacity=64.
+[category 2026-09-26T10:44:07Z] Prompt decoded; token generation started.
+[category 2026-09-26T10:44:10Z] Generation reached end-of-output after 13 token(s).
+[category 2026-09-26T10:44:10Z] Category inference completed in 2.8s with 68 output bytes.
+[category 2026-09-26T10:44:10Z] Category parsed: professional.

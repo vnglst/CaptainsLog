@@ -1,0 +1,1 @@
+I am building a small voice-journaling app as an independent evening project. I want to record short memos, run speech recognition locally, and turn each recording into a searchable note. I am experimenting with the interface and storage format, and I may publish the tool as open source once the prototype is useful.

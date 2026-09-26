@@ -1,0 +1,1 @@
+I spent Saturday with my sister and her children. We walked along the river, made lunch at home, and played a board game. On Sunday I worked in the garden and called my parents. It was a relaxing weekend and I want to remember how nice it was to spend unhurried time with family.

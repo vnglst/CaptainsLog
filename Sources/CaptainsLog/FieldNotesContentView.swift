@@ -9,8 +9,10 @@ public struct FieldNotesContentView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @CLState private var section: Section = .entries
     @CLState private var deleteTarget: LogEntry?
-    @CLState private var selectedEntry: LogEntry?
+    @CLState private var navigation = EntryNavigationState()
     private let bootstrap: Bool
+
+    private var selectedEntry: LogEntry? { navigation.selectedEntry }
 
     enum Section { case entries, settings }
 
@@ -106,11 +108,19 @@ public struct FieldNotesContentView: View {
 
     private func updateSelection(_ entry: LogEntry?) {
         if reduceMotion {
-            selectedEntry = entry
+            setSelection(entry)
         } else {
             withAnimation(.snappy(duration: 0.3, extraBounce: 0)) {
-                selectedEntry = entry
+                setSelection(entry)
             }
+        }
+    }
+
+    private func setSelection(_ entry: LogEntry?) {
+        if let entry {
+            navigation.show(entry)
+        } else {
+            navigation.returnToList()
         }
     }
 }
@@ -359,11 +369,16 @@ private struct FieldNotesEntriesView: View {
     }
 
     private var queueStrip: some View {
-        HStack(spacing: FieldNotes.Spacing.s) {
-            FieldNotesStatus(state: appState.isProcessing ? .active : .paused,
-                             label: appState.isProcessing ? appState.statusMessage : "\(appState.pendingEntries.count) logs waiting")
+        let behavior = QueueStripBehavior(
+            isProcessing: appState.isProcessing,
+            statusMessage: appState.statusMessage,
+            pendingCount: appState.pendingEntries.count
+        )
+        return HStack(spacing: FieldNotes.Spacing.s) {
+            FieldNotesStatus(state: behavior.action == .pause ? .active : .paused,
+                             label: behavior.statusLabel)
             Spacer()
-            if appState.isProcessing {
+            if behavior.action == .pause {
                 FieldNotesButton(title: "Pause", kind: .secondary) { appState.pauseProcessing() }
             } else {
                 FieldNotesButton(title: "Process pending", kind: .primary) { appState.batchResumePending() }
@@ -559,9 +574,7 @@ private struct FieldNotesEntryRow: View {
     let onSelect: () -> Void
     @CLState private var isHovered = false
 
-    private var failed: Bool { entry.processingError != nil }
-    private var paused: Bool { entry.stage != .done && !entry.isActive && !failed }
-    private var canOpen: Bool { entry.stage == .done }
+    private var behavior: EntryRowBehavior { EntryRowBehavior(entry: entry) }
 
     var body: some View {
         HStack(alignment: .top, spacing: FieldNotes.Spacing.m) {
@@ -569,9 +582,9 @@ private struct FieldNotesEntryRow: View {
                 Text(entry.recordingTime ?? "—")
                     .font(FieldNotes.Typography.metadata(11, weight: .medium))
                     .foregroundStyle(FieldNotes.ColorToken.secondaryText)
-                Text(entry.isActive ? "LIVE" : paused ? "PAUSED" : failed ? "ERROR" : "")
+                Text(behavior.compactStatusLabel)
                     .font(FieldNotes.Typography.metadata(9))
-                    .foregroundStyle(failed ? FieldNotes.ColorToken.danger : FieldNotes.ColorToken.tertiaryText)
+                    .foregroundStyle(behavior.isFailure ? FieldNotes.ColorToken.danger : FieldNotes.ColorToken.tertiaryText)
             }
             .frame(width: 56, alignment: .trailing)
 
@@ -607,15 +620,15 @@ private struct FieldNotesEntryRow: View {
                     }
                     Spacer()
                     Menu {
-                        if !entry.path.isEmpty {
+                        if behavior.canRevealInFinder {
                             Button("Reveal in Finder") { NSWorkspace.shared.selectFile(entry.path, inFileViewerRootedAtPath: "") }
                         }
-                        if paused || failed {
-                            Button(failed ? "Retry processing" : "Resume processing") {
+                        if behavior.canResume, let title = behavior.resumeTitle {
+                            Button(title) {
                                 appState.resumeProcessing(stem: entry.stem, fromStage: entry.stage)
                             }
                         }
-                        if entry.stage == .done {
+                        if behavior.canReprocess {
                             Button("Reprocess from audio") { appState.reprocessEntry(stem: entry.stem, slug: entry.slug) }
                         }
                         Divider()
@@ -634,31 +647,32 @@ private struct FieldNotesEntryRow: View {
         .padding(.vertical, FieldNotes.Spacing.m)
         .padding(.horizontal, FieldNotes.Spacing.s)
         .contentShape(Rectangle())
-        .background(isHovered && canOpen ? FieldNotes.ColorToken.raisedSurface.opacity(0.65) : .clear)
+        .background(isHovered && behavior.canOpen ? FieldNotes.ColorToken.raisedSurface.opacity(0.65) : .clear)
         .clipShape(RoundedRectangle(cornerRadius: FieldNotes.Radius.control, style: .continuous))
         .overlay(alignment: .bottom) { Rectangle().fill(FieldNotes.ColorToken.stroke.opacity(0.7)).frame(height: 1) }
         .onTapGesture {
-            if canOpen { onSelect() }
+            if behavior.canOpen { onSelect() }
         }
         .onHover { isHovered = $0 }
         .accessibilityElement(children: .contain)
-        .accessibilityAddTraits(canOpen ? .isButton : [])
+        .accessibilityAddTraits(behavior.canOpen ? .isButton : [])
         .accessibilityAction(named: "Open enriched entry") {
-            if canOpen { onSelect() }
+            if behavior.canOpen { onSelect() }
         }
         .animation(.easeOut(duration: 0.12), value: isHovered)
     }
 
     @ViewBuilder
     private var status: some View {
-        if entry.stage == .done {
+        switch behavior.status {
+        case .processed:
             FieldNotesStatus(state: .processed, label: "Processed")
-        } else if failed {
+        case .failed:
             FieldNotesStatus(state: .failed, label: "Needs attention")
-        } else if paused {
+        case .paused:
             FieldNotesStatus(state: .paused, label: "Paused")
-        } else {
-            FieldNotesStatus(state: .active, label: entry.stage.rawValue.capitalized)
+        case .active(let label):
+            FieldNotesStatus(state: .active, label: label)
         }
     }
 }
@@ -904,14 +918,26 @@ private struct FieldNotesMetadataFlowLayout: Layout {
 private struct FieldNotesRecordDock: View {
     @Environment(AppState.self) private var appState
 
+    private var behavior: RecordDockBehavior {
+        RecordDockBehavior(
+            isRecording: appState.isRecording,
+            isPaused: appState.isRecordingPaused,
+            inputDeviceCount: appState.inputDevices.count
+        )
+    }
+
     var body: some View {
         HStack(spacing: FieldNotes.Spacing.m) {
             Button {
-                appState.isRecording ? appState.stopRecording() : appState.startRecording()
+                if behavior.primaryAction == .stop {
+                    appState.stopRecording()
+                } else {
+                    appState.startRecording()
+                }
             } label: {
                 ZStack {
-                    Circle().fill(appState.isRecording ? FieldNotes.ColorToken.danger : FieldNotes.ColorToken.amber)
-                    if appState.isRecording {
+                    Circle().fill(behavior.primaryAction == .stop ? FieldNotes.ColorToken.danger : FieldNotes.ColorToken.amber)
+                    if behavior.primaryAction == .stop {
                         RoundedRectangle(cornerRadius: 4).fill(FieldNotes.ColorToken.canvas).frame(width: 17, height: 17)
                     } else {
                         Circle().fill(FieldNotes.ColorToken.canvas).frame(width: 21, height: 21)
@@ -921,28 +947,32 @@ private struct FieldNotesRecordDock: View {
             }
             .buttonStyle(.plain)
             .keyboardShortcut("r", modifiers: .command)
-            .accessibilityLabel(appState.isRecording ? "Stop recording" : "Start recording")
-            .accessibilityHint(appState.isRecording ? "Saves this note and begins processing it." : "Starts a new voice note.")
+            .accessibilityLabel(behavior.primaryAction == .stop ? "Stop recording" : "Start recording")
+            .accessibilityHint(behavior.primaryAction == .stop ? "Saves this note and begins processing it." : "Starts a new voice note.")
 
-            if appState.isRecording {
+            if let pauseAction = behavior.pauseAction {
                 Button {
-                    appState.isRecordingPaused ? appState.resumeRecording() : appState.pauseRecording()
+                    if pauseAction == .resume {
+                        appState.resumeRecording()
+                    } else {
+                        appState.pauseRecording()
+                    }
                 } label: {
-                    Image(systemName: appState.isRecordingPaused ? "play.fill" : "pause.fill")
+                    Image(systemName: pauseAction == .resume ? "play.fill" : "pause.fill")
                         .foregroundStyle(FieldNotes.ColorToken.primaryText)
                         .frame(width: 36, height: 36)
                         .background(Circle().fill(FieldNotes.ColorToken.raisedSurface))
                 }
                 .buttonStyle(.plain)
                 .keyboardShortcut("p", modifiers: [.command, .shift])
-                .accessibilityLabel(appState.isRecordingPaused ? "Resume recording" : "Pause recording")
+                .accessibilityLabel(pauseAction == .resume ? "Resume recording" : "Pause recording")
             }
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(dockLabel)
                     .font(FieldNotes.Typography.body(14, weight: .medium))
                     .foregroundStyle(appState.isRecording ? FieldNotes.ColorToken.amber : FieldNotes.ColorToken.primaryText)
-                if appState.isRecording && !appState.isRecordingPaused {
+                if behavior.showsAudioLevel {
                     FieldNotesAudioRuler(level: normalizedLevel, height: 22, count: 44)
                 } else {
                     Text(appState.isRecordingPaused ? "Recording is paused" : "Press ⌘R to start a new note")
@@ -974,7 +1004,7 @@ private struct FieldNotesRecordDock: View {
                 .fieldNotesSurface(.flat, radius: FieldNotes.Radius.control)
             }
             .menuStyle(.borderlessButton)
-            .disabled(appState.inputDevices.isEmpty)
+            .disabled(!behavior.canSelectInputDevice)
         }
         .padding(FieldNotes.Spacing.m)
         .fieldNotesSurface(.floating, radius: FieldNotes.Radius.dock)

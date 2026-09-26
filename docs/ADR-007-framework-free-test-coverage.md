@@ -11,9 +11,11 @@ CaptainsLog must build and test with Apple Command Line Tools; a full Xcode inst
 
 Keep `run-tests` as the framework-free test executable. It exits non-zero on failures and contains deterministic tests that use temporary directories instead of audio hardware or model inference.
 
-Use `scripts/test-coverage.sh` to compile the runner and CLI with LLVM coverage instrumentation, execute deterministic CLI smoke/validation cases, and write a filtered JSON report to `.build/coverage/coverage.json`. The script enforces a production line-coverage floor.
+Use `scripts/test-coverage.sh` to compile the runner and CLI with LLVM coverage instrumentation, execute deterministic CLI smoke/validation cases, and write the full-production JSON report to `.build/coverage/coverage.json`. The script reports total production coverage and enforces an 80% line-coverage floor over deterministic production logic.
 
-Remaining coverage work is tracked in [PLAN-003](PLAN-003-test-coverage-gaps.md). That plan prioritizes extracting testable UI decisions, executing complete CLI workflows with fakes, isolating recorder hardware boundaries, and covering core parsing and recovery paths. Declarative SwiftUI rendering, real audio hardware, and native model inference remain separate integration concerns rather than requirements of the deterministic gate.
+The 80% floor is a project-chosen regression threshold, not a Swift, GitHub, or industry-mandated number. It sets a substantial minimum for the deterministic code that the lightweight, model-free suite can exercise, while keeping declarative UI and direct hardware/native-inference adapters visible in the aggregate report without making their platform prerequisites part of this gate. The percentage is a guardrail rather than a quality score; behavior assertions and the separate semantic evaluation review remain necessary. Raise the floor only after repeated stable coverage runs, not by excluding ordinary logic.
+
+The completed deterministic coverage work is recorded in [PLAN-003](PLAN-003-test-coverage-gaps.md): UI decisions, CLI workflows, recorder lifecycle operations, and core recovery paths now have framework-free behavioral tests. Declarative SwiftUI rendering and design fixtures, real audio hardware, and direct native model-inference adapters remain separate integration concerns rather than requirements of the deterministic gate. Their files remain visible in the all-source report, while excluded from the 80% deterministic-production metric. App state, model orchestration, CLI and filesystem workflows, search, pure audio-level calculations, and pipeline logic remain inside the enforced scope.
 
 ## Consequences
 

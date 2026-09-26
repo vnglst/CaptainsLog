@@ -85,7 +85,7 @@ public final class ProcessingCoordinator {
                         .transcribing,
                         { [weak self] p in
                             Task { @MainActor in
-                                guard let self else { return }
+                                guard let self, self.processingStem == p.stem else { return }
                                 self.stage = Self.appStage(for: p.stage)
                                 self.statusMessage = "\(p.stage.rawValue.capitalized)..."
                             }
@@ -100,6 +100,9 @@ public final class ProcessingCoordinator {
                     onError(error)
                     continue
                 }
+            }
+            guard !Task.isCancelled else {
+                return
             }
             if !isRecording {
                 stage = .done
@@ -166,7 +169,7 @@ public final class ProcessingCoordinator {
                         detected,
                         { [weak self] p in
                             Task { @MainActor in
-                                guard let self else { return }
+                                guard let self, self.processingStem == p.stem else { return }
                                 self.stage = Self.appStage(for: p.stage)
                                 self.statusMessage = "\(p.stage.rawValue.capitalized)..."
                             }
@@ -181,6 +184,9 @@ public final class ProcessingCoordinator {
                     onError(error)
                     continue
                 }
+            }
+            guard !Task.isCancelled else {
+                return
             }
             stage = .done
             statusMessage = "Done"
@@ -208,12 +214,12 @@ public final class ProcessingCoordinator {
                 detected,
                 // The Task hop keeps UI updates on the main actor.
                 { [weak self] p in
-                            Task { @MainActor in
-                                guard let self else { return }
-                                self.stage = Self.appStage(for: p.stage)
-                                self.statusMessage = "\(p.stage.rawValue.capitalized)..."
-                            }
-                        }
+                    Task { @MainActor in
+                        guard let self, self.processingStem == p.stem else { return }
+                        self.stage = Self.appStage(for: p.stage)
+                        self.statusMessage = "\(p.stage.rawValue.capitalized)..."
+                    }
+                }
             )
             failedEntries.removeValue(forKey: stem)
             stage = .done

@@ -2,6 +2,12 @@ import CaptainsLogCore
 import Foundation
 import SwiftUI
 
+enum FirstRunPresentationPolicy {
+    static func shouldPresent(hasLaunched: Bool, demoMode: Bool) -> Bool {
+        !demoMode && !hasLaunched
+    }
+}
+
 /// Manages app configuration, settings persistence, and user data directory selection.
 @MainActor
 @Observable
@@ -20,15 +26,29 @@ public final class ConfigManager {
     public var qwenModelFolder: String { didSet { scheduleConfigSave() } }
 
     public var needsFirstRun: Bool {
-        if ProcessInfo.processInfo.environment["CAPTAINSLOG_DEMO_MODE"] == "1" { return false }
-        return !UserDefaults.standard.bool(forKey: "CaptainsLogHasLaunched")
+        FirstRunPresentationPolicy.shouldPresent(
+            hasLaunched: UserDefaults.standard.bool(forKey: "CaptainsLogHasLaunched"),
+            demoMode: ProcessInfo.processInfo.environment["CAPTAINSLOG_DEMO_MODE"] == "1"
+        )
     }
 
     private var configSaveTask: Task<Void, Never>?
     private var contextSaveTask: Task<Void, Never>?
     private var contextFilesLoaded: Bool
+    private let dataDirectoryPicker: (URL?) -> URL?
 
-    public init(loadContextFiles: Bool = true) {
+    public convenience init(loadContextFiles: Bool = true) {
+        self.init(
+            loadContextFiles: loadContextFiles,
+            dataDirectoryPicker: Self.presentDataDirectoryPicker
+        )
+    }
+
+    init(
+        loadContextFiles: Bool = true,
+        dataDirectoryPicker: @escaping (URL?) -> URL?
+    ) {
+        self.dataDirectoryPicker = dataDirectoryPicker
         let cfg = CaptainsLogConfig.load()
         if let saved = cfg.dataDir {
             dataDir = saved
@@ -139,6 +159,20 @@ public final class ConfigManager {
 
     public func pickDataDirectory() {
         guard ProcessInfo.processInfo.environment["CAPTAINSLOG_DEMO_MODE"] != "1" else { return }
+        let configuredPath = (dataDir as NSString).expandingTildeInPath
+        var isDirectory: ObjCBool = false
+        let currentDirectory = URL(fileURLWithPath: configuredPath, isDirectory: true)
+        let initialDirectory: URL? =
+            FileManager.default.fileExists(atPath: currentDirectory.path, isDirectory: &isDirectory)
+                && isDirectory.boolValue
+                ? currentDirectory
+                : nil
+        if let url = dataDirectoryPicker(initialDirectory) {
+            dataDir = url.path
+        }
+    }
+
+    private static func presentDataDirectoryPicker(initialDirectory: URL?) -> URL? {
         let panel = NSOpenPanel()
         panel.title = "Choose data folder"
         panel.message = "Select the folder where CaptainsLog stores audio, transcripts, and enriched logs."
@@ -146,8 +180,8 @@ public final class ConfigManager {
         panel.canChooseDirectories = true
         panel.canCreateDirectories = true
         panel.allowsMultipleSelection = false
-        if panel.runModal() == .OK, let url = panel.url {
-            dataDir = url.path
-        }
+        panel.directoryURL = initialDirectory
+        guard panel.runModal() == .OK else { return nil }
+        return panel.url
     }
 }

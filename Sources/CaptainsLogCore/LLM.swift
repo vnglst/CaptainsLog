@@ -43,23 +43,29 @@ public enum LLM {
     /// Returns the configured model file path.
     private static func resolveModelPath(modelId: String? = nil) -> String? {
         let cfg = CaptainsLogConfig.load()
-        
-        if let folder = cfg.qwenModelFolder, !folder.isEmpty,
-            FileManager.default.fileExists(atPath: folder)
-        {
-            let fm = FileManager.default
-            if fm.fileExists(atPath: URL(fileURLWithPath: folder).appendingPathComponent(ggufFilename).path) {
-                return URL(fileURLWithPath: folder).appendingPathComponent(ggufFilename).path
-            }
-            if let files = try? fm.contentsOfDirectory(atPath: folder) {
-                let ggufFiles = files.filter { $0.hasSuffix(".gguf") }.sorted()
-                if let ggufFile = ggufFiles.first {
-                    return URL(fileURLWithPath: folder).appendingPathComponent(ggufFile).path
-                }
-            }
+        return configuredModelFile(in: cfg.qwenModelFolder)
+    }
+
+    /// Chooses the configured GGUF without loading llama.cpp or reading model contents.
+    static func configuredModelFile(in folder: String?) -> String? {
+        guard let folder, !folder.isEmpty, FileManager.default.fileExists(atPath: folder) else {
+            return nil
         }
-        
-        return nil
+
+        let directory = URL(fileURLWithPath: folder, isDirectory: true)
+        let preferred = directory.appendingPathComponent(ggufFilename).path
+        if FileManager.default.fileExists(atPath: preferred) {
+            return preferred
+        }
+
+        guard let files = try? FileManager.default.contentsOfDirectory(atPath: folder) else {
+            return nil
+        }
+        return files
+            .filter { $0.hasSuffix(".gguf") }
+            .sorted()
+            .first
+            .map { directory.appendingPathComponent($0).path }
     }
 
     private static func defaultModelsDirectory() -> URL {

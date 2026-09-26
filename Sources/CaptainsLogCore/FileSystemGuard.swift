@@ -47,10 +47,18 @@ public enum FileSystemGuard {
     public static let minimumFreeBytesBeforeTranscription: Int64 = 5_000_000_000
 
     public static func requireFreeSpaceForTranscription(paths: [String]) throws {
+        try requireFreeSpaceForTranscription(paths: paths) { availableBytes(containing: $0) }
+    }
+
+    static func requireFreeSpaceForTranscription(
+        paths: [String],
+        availableBytes: (URL) -> Int64?
+    ) throws {
         for path in paths {
             try requireFreeSpace(
                 containing: URL(fileURLWithPath: path),
-                minimumBytes: minimumFreeBytesBeforeTranscription
+                minimumBytes: minimumFreeBytesBeforeTranscription,
+                availableBytes: availableBytes
             )
         }
     }
@@ -78,8 +86,12 @@ public enum FileSystemGuard {
         return nil
     }
 
-    private static func requireFreeSpace(containing url: URL, minimumBytes: Int64) throws {
-        guard let availableBytes = availableBytes(containing: url) else { return }
+    private static func requireFreeSpace(
+        containing url: URL,
+        minimumBytes: Int64,
+        availableBytes: (URL) -> Int64?
+    ) throws {
+        guard let availableBytes = availableBytes(url) else { return }
         guard availableBytes >= minimumBytes else {
             throw CaptainsLogFileSystemError.insufficientDiskSpace(
                 path: url.path,

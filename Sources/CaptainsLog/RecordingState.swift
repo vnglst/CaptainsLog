@@ -46,7 +46,23 @@ public final class RecordingState {
     private var recordingTask: Task<Void, Never>?
     private let dependencies: Dependencies
 
-    public var isRecording: Bool { recordingTask != nil }
+    public var isRecording: Bool {
+        #if DEBUG
+        if let fixtureIsRecording { return fixtureIsRecording }
+        #endif
+        return recordingTask != nil
+    }
+
+    #if DEBUG
+    private var fixtureIsRecording: Bool?
+
+    func applyDesignFixture(isPaused: Bool, duration: TimeInterval, audioLevel: Float) {
+        fixtureIsRecording = true
+        isRecordingPaused = isPaused
+        recordingDuration = duration
+        self.audioLevel = audioLevel
+    }
+    #endif
 
     public init() {
         self.dependencies = Dependencies(
@@ -171,12 +187,23 @@ public final class RecordingState {
                 { @Sendable in flag.value }
             )
 
+            guard !Task.isCancelled else {
+                stopRecording()
+                audioLevel = 0
+                recordingTask = nil
+                return
+            }
+
+            stopRecording()
             audioLevel = 0
             recordingTask = nil
             onComplete(stem)
 
         } catch {
+            stopRecording()
+            audioLevel = 0
             recordingTask = nil
+            guard !Task.isCancelled else { return }
             errorMessage = error.localizedDescription
             onError(error)
         }

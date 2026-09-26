@@ -29,6 +29,13 @@ public enum Categorize {
         }
     }
 
+    public typealias CommandOperation = @Sendable (
+        _ logText: String,
+        _ config: CaptainsLogConfig,
+        _ promptPath: String,
+        _ diagnostic: @escaping @Sendable (String) async -> Void
+    ) async throws -> Category
+
     public enum CategorizeError: LocalizedError, Equatable {
         case invalidXML(outputByteCount: Int)
         case missingManifest(path: String)
@@ -85,6 +92,40 @@ public enum Categorize {
             ),
             userMessage: PromptXML.document([PromptXML.element("log_entry", logText)])
         )
+    }
+
+    /// Runs the file and manifest part of the categorize CLI command with an injectable inference operation.
+    public static func runCommand(
+        inputPath: String,
+        outputPath: String,
+        promptPath: String = defaultPromptPath,
+        config: CaptainsLogConfig = CaptainsLogConfig.load(),
+        printPrompt: Bool = false,
+        operation: CommandOperation
+    ) async throws -> Category? {
+        let logText = try String(contentsOfFile: inputPath, encoding: .utf8)
+        let rendered = try renderedPrompt(logText: logText, config: config, promptPath: promptPath)
+        if printPrompt {
+            print(PromptDebug.render(rendered))
+            return nil
+        }
+
+        let diagnostics = DiagnosticLog(path: "\(outputPath).log", label: "category")
+        let category = try await operation(logText, config, promptPath) { message in
+            await diagnostics.log(message)
+        }
+        let manifest = Manifest(
+            sourceStem: URL(fileURLWithPath: inputPath).deletingPathExtension().lastPathComponent,
+            category: category
+        )
+        let data = try JSONEncoder().encode(manifest)
+        try FileManager.default.createDirectory(
+            at: URL(fileURLWithPath: outputPath).deletingLastPathComponent(),
+            withIntermediateDirectories: true
+        )
+        try FileSystemGuard.writeText(String(decoding: data, as: UTF8.self), to: outputPath)
+        print("Category manifest saved to \(outputPath)")
+        return category
     }
 
     public static func parseCategory(_ raw: String) throws -> Category {

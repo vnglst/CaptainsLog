@@ -13,6 +13,10 @@ public enum SearchViewState: Equatable {
 @MainActor
 @Observable
 public final class SearchManager {
+    typealias SearchFactory = @Sendable (
+        String, @escaping @Sendable (Progress) -> Void
+    ) async throws -> SemanticSearch
+
     public var query = ""
     public private(set) var results: [SearchResult] = []
     public private(set) var state: SearchViewState = .idle
@@ -24,11 +28,22 @@ public final class SearchManager {
     private var searchTask: Task<Void, Never>?
     private var engine: SemanticSearch?
     private var engineDataDir: String?
+    private let debounceInterval: Duration
+    private let searchFactory: SearchFactory
     #if DEBUG
     private var isFixtureMode = false
     #endif
 
-    public init() {}
+    public convenience init() {
+        self.init(debounceInterval: .milliseconds(300)) { dataDir, progress in
+            try await SemanticSearch.live(dataDir: dataDir, downloadProgress: progress)
+        }
+    }
+
+    init(debounceInterval: Duration, searchFactory: @escaping SearchFactory) {
+        self.debounceInterval = debounceInterval
+        self.searchFactory = searchFactory
+    }
 
     #if DEBUG
     func applyFixture(query: String, results: [SearchResult], state: SearchViewState = .ready) {
@@ -57,8 +72,9 @@ public final class SearchManager {
             state = .idle
             return
         }
+        let debounceInterval = self.debounceInterval
         searchTask = Task { [weak self] in
-            try? await Task.sleep(for: .milliseconds(300))
+            try? await Task.sleep(for: debounceInterval)
             guard !Task.isCancelled, let self else { return }
             await self.performSearch(dataDir: dataDir)
         }
@@ -82,7 +98,7 @@ public final class SearchManager {
                 search = engine
             } else {
                 state = .preparingModel
-                search = try await SemanticSearch.live(dataDir: dataDir) { [weak self] _ in
+                search = try await searchFactory(dataDir) { [weak self] _ in
                     Task { @MainActor in self?.state = .preparingModel }
                 }
                 guard !Task.isCancelled else { return }

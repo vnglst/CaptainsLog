@@ -13,10 +13,11 @@ struct CL: AsyncParsableCommand {
 
 /// Resolves the pipeline data directory: explicit arg > config > env > "processed".
 func resolveDataDir(_ explicit: String? = nil) -> String {
-    explicit
-        ?? CaptainsLogConfig.load().dataDir
-        ?? ProcessInfo.processInfo.environment["CAPTAINS_LOG_DATA_DIR"]
-        ?? "processed"
+    CaptainsLogConfig.resolveDataDir(
+        explicit: explicit,
+        configured: CaptainsLogConfig.load().dataDir,
+        environment: ProcessInfo.processInfo.environment["CAPTAINS_LOG_DATA_DIR"]
+    )
 }
 
 struct Ping: AsyncParsableCommand {
@@ -39,6 +40,12 @@ struct Record: AsyncParsableCommand {
 
     @Option(help: "Output file path (default: YYYY-MM-DD-HHMM.m4a in current directory).")
     var output: String?
+
+    func validate() throws {
+        if let duration, duration <= 0 {
+            throw ValidationError("--duration must be greater than zero.")
+        }
+    }
 
     func run() async throws {
         let outputPath = output ?? Recorder.defaultOutputPath()
@@ -65,25 +72,14 @@ struct Transcribe: AsyncParsableCommand {
     var language: String?
 
     func run() async throws {
-        let outputPath = output ?? defaultOutputPath(for: input)
-        try FileSystemGuard.requireFreeSpaceForTranscription(paths: [
-            outputPath,
-            CaptainsLogConfig.configURL.path,
-            NSTemporaryDirectory(),
-        ])
-        let transcript = try await Transcriber.transcribe(
-            audioPath: input,
+        _ = try await Transcriber.runCommand(
+            inputPath: input,
+            outputPath: output,
             model: model,
             language: language
-        )
-
-        try FileSystemGuard.writeText(transcript, to: outputPath)
-        print("Transcript saved to \(outputPath)")
-    }
-
-    private func defaultOutputPath(for inputPath: String) -> String {
-        let url = URL(fileURLWithPath: inputPath)
-        return url.deletingPathExtension().appendingPathExtension("md").path
+        ) { audioPath, model, language in
+            try await Transcriber.transcribe(audioPath: audioPath, model: model, language: language)
+        }
     }
 }
 
@@ -109,27 +105,20 @@ struct CleanupCommand: AsyncParsableCommand {
     var printPrompt = false
 
     func run() async throws {
-        let transcript = try String(contentsOfFile: input, encoding: .utf8)
-        let renderedPrompt = try Cleanup.renderedPrompt(
-            transcript: transcript,
-            promptPath: prompt ?? Cleanup.defaultPromptPath
-        )
-
-        if printPrompt {
-            print(PromptDebug.render(renderedPrompt))
-            return
+        _ = try await Cleanup.runCommand(
+            inputPath: input,
+            outputPath: output,
+            promptPath: prompt ?? Cleanup.defaultPromptPath,
+            printPrompt: printPrompt
+        ) { transcript, config, promptPath in
+            let container = try await LLM.loadModel(modelId: model)
+            return try await Cleanup.cleanup(
+                transcript: transcript,
+                container: container,
+                config: config,
+                promptPath: promptPath
+            )
         }
-        let container = try await LLM.loadModel(modelId: model)
-
-        let result = try await Cleanup.cleanup(
-            transcript: transcript,
-            container: container,
-            promptPath: prompt ?? Cleanup.defaultPromptPath
-        )
-
-        let outputPath = output ?? URL(fileURLWithPath: input).lastPathComponent
-        try FileSystemGuard.writeText(result, to: outputPath)
-        print("Saved to \(outputPath)")
     }
 }
 
@@ -155,28 +144,21 @@ struct FilenameCommand: AsyncParsableCommand {
     var printPrompt = false
 
     func run() async throws {
-        let logText = try String(contentsOfFile: input, encoding: .utf8)
         let dateStr = date ?? defaultDate()
-        let renderedPrompt = try Filename.renderedPrompt(
-            logText: logText,
+        _ = try await Filename.runCommand(
+            inputPath: input,
             date: dateStr,
-            promptPath: prompt ?? Filename.defaultPromptPath
-        )
-
-        if printPrompt {
-            print(PromptDebug.render(renderedPrompt))
-            return
+            promptPath: prompt ?? Filename.defaultPromptPath,
+            printPrompt: printPrompt
+        ) { logText, date, promptPath in
+            let container = try await LLM.loadModel(modelId: model)
+            return try await Filename.generateFilename(
+                logText: logText,
+                date: date,
+                container: container,
+                promptPath: promptPath
+            )
         }
-        let container = try await LLM.loadModel(modelId: model)
-
-        let filename = try await Filename.generateFilename(
-            logText: logText,
-            date: dateStr,
-            container: container,
-            promptPath: prompt ?? Filename.defaultPromptPath
-        )
-
-        print(filename)
     }
 
     private func defaultDate() -> String {
@@ -199,19 +181,21 @@ struct CategorizeCommand: AsyncParsableCommand {
     @Flag(help: "Print the fully rendered prompt and exit.") var printPrompt = false
 
     func run() async throws {
-        let text = try String(contentsOfFile: input, encoding: .utf8)
-        let rendered = try Categorize.renderedPrompt(logText: text, promptPath: prompt ?? Categorize.defaultPromptPath)
-        if printPrompt { print(PromptDebug.render(rendered)); return }
-        let diagnostics = DiagnosticLog(path: "\(output).log", label: "category")
-        let container = try await LLM.loadModel(modelId: model)
-        let category = try await Categorize.categorize(
-            logText: text, container: container, promptPath: prompt ?? Categorize.defaultPromptPath,
-            diagnostic: { message in await diagnostics.log(message) })
-        let manifest = Categorize.Manifest(sourceStem: URL(fileURLWithPath: input).deletingPathExtension().lastPathComponent, category: category)
-        let data = try JSONEncoder().encode(manifest)
-        try FileManager.default.createDirectory(at: URL(fileURLWithPath: output).deletingLastPathComponent(), withIntermediateDirectories: true)
-        try FileSystemGuard.writeText(String(decoding: data, as: UTF8.self), to: output)
-        print("Category manifest saved to \(output)")
+        _ = try await Categorize.runCommand(
+            inputPath: input,
+            outputPath: output,
+            promptPath: prompt ?? Categorize.defaultPromptPath,
+            printPrompt: printPrompt
+        ) { text, config, promptPath, diagnostic in
+            let container = try await LLM.loadModel(modelId: model)
+            return try await Categorize.categorize(
+                logText: text,
+                container: container,
+                config: config,
+                promptPath: promptPath,
+                diagnostic: diagnostic
+            )
+        }
     }
 }
 
@@ -243,32 +227,25 @@ struct EnrichCommand: AsyncParsableCommand {
     var printPrompt = false
 
     func run() async throws {
-        let logText = try String(contentsOfFile: input, encoding: .utf8)
         let dateStr = date ?? defaultDate()
-        let renderedPrompt = try Enrich.renderedPrompt(
-            logText: logText,
+        _ = try await Enrich.runCommand(
+            inputPath: input,
+            outputPath: output,
             date: dateStr,
             recordingTime: recordingTime,
-            promptPath: prompt ?? Enrich.defaultPromptPath
-        )
-
-        if printPrompt {
-            print(PromptDebug.render(renderedPrompt))
-            return
+            promptPath: prompt ?? Enrich.defaultPromptPath,
+            printPrompt: printPrompt
+        ) { logText, date, recordingTime, config, promptPath in
+            let container = try await LLM.loadModel(modelId: model)
+            return try await Enrich.enrich(
+                logText: logText,
+                date: date,
+                recordingTime: recordingTime,
+                container: container,
+                config: config,
+                promptPath: promptPath
+            )
         }
-        let container = try await LLM.loadModel(modelId: model)
-
-        let result = try await Enrich.enrich(
-            logText: logText,
-            date: dateStr,
-            recordingTime: recordingTime,
-            container: container,
-            promptPath: prompt ?? Enrich.defaultPromptPath
-        )
-
-        let outputPath = output ?? URL(fileURLWithPath: input).lastPathComponent
-        try FileSystemGuard.writeText(result, to: outputPath)
-        print("Saved to \(outputPath)")
     }
 
     private func defaultDate() -> String {
@@ -299,9 +276,15 @@ struct PipelineCommand: AsyncParsableCommand {
     @Option(help: "ISO-639-1 language code to pin (e.g. 'nl'). Default: auto-detect.")
     var language: String?
 
+    func validate() throws {
+        if let duration, duration <= 0 {
+            throw ValidationError("--duration must be greater than zero.")
+        }
+    }
+
     func run() async throws {
         let dir = resolveDataDir(dataDir)
-        let result = try await Pipeline.run(
+        let result = try await Pipeline.runCommand(
             audioInput: input,
             dataDir: dir,
             language: language,
@@ -342,13 +325,29 @@ struct ResumeCommand: AsyncParsableCommand {
     @Option(help: "ISO-639-1 language code to pin (e.g. 'nl'). Default: auto-detect.")
     var language: String?
 
+    func validate() throws {
+        guard let fromStage else { return }
+        let supportedStages: Set<String> = [
+            Pipeline.Stage.transcribing.rawValue,
+            Pipeline.Stage.cleaning.rawValue,
+            Pipeline.Stage.categorizing.rawValue,
+            Pipeline.Stage.naming.rawValue,
+            Pipeline.Stage.enriching.rawValue,
+        ]
+        guard supportedStages.contains(fromStage) else {
+            throw ValidationError(
+                "--from-stage must be one of transcribing, cleaning, categorizing, naming, or enriching."
+            )
+        }
+    }
+
     func run() async throws {
         let dir = resolveDataDir(dataDir)
 
         if let singleStem = stem {
             // Resume single entry
             let stage = fromStage.flatMap { Pipeline.Stage(rawValue: $0) }
-            let result = try await Pipeline.resume(
+            let result = try await Pipeline.resumeCommand(
                 stem: singleStem,
                 dataDir: dir,
                 fromStage: stage,
@@ -365,35 +364,14 @@ struct ResumeCommand: AsyncParsableCommand {
             print("  Enriched:   \(result.enrichedPath)")
             print("  Category:   \(result.category.rawValue)")
         } else {
-            // Resume all pending entries
-            let entries = Pipeline.listEntries(dataDir: dir).filter { $0.nextStage != .done }
-
-            if entries.isEmpty {
-                print("No pending entries to resume.")
-                return
-            }
-
-            print("Resuming \(entries.count) pending entr\(entries.count == 1 ? "y" : "ies")...\n")
-
-            for entry in entries {
-                let detected = Pipeline.detectNextStage(stem: entry.stem, dataDir: dir)
-                print("Processing \(entry.displayName) (starting at \(detected.rawValue))...")
-
-                _ = try await Pipeline.resume(
-                    stem: entry.stem,
-                    dataDir: dir,
-                    fromStage: detected,
-                    language: language,
-                    modelId: model,
-                    progress: { p in
-                        print("[stage:\(p.stage.rawValue)] \(p.stem)")
-                    }
-                )
-
-                print("✓ Completed \(entry.displayName)\n")
-            }
-
-            print("All entries processed!")
+            _ = try await Pipeline.resumePendingCommand(
+                dataDir: dir,
+                language: language,
+                modelId: model,
+                progress: { p in
+                    print("[stage:\(p.stage.rawValue)] \(p.stem)")
+                }
+            )
         }
     }
 }

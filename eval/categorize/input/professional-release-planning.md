@@ -1,0 +1,1 @@
+On Monday I met with the product and engineering teams to plan the next release. We reviewed delivery dates, assigned owners for the remaining work, and agreed to move two lower-priority features into the following sprint. I will coordinate with the design lead and send the updated release plan to the group before Friday.

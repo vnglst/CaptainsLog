@@ -6,6 +6,14 @@ public enum Enrich {
     public static let defaultMaxTokens = 0
     public static let defaultTemperature: Float = 0.3
 
+    public typealias CommandOperation = @Sendable (
+        _ logText: String,
+        _ date: String,
+        _ recordingTime: String?,
+        _ config: CaptainsLogConfig,
+        _ promptPath: String
+    ) async throws -> String
+
     public static func enrich(
         logText: String,
         date: String,
@@ -57,6 +65,37 @@ public enum Enrich {
         )
     }
 
+    /// Runs the file and output part of the enrich CLI command with an injectable inference operation.
+    public static func runCommand(
+        inputPath: String,
+        outputPath: String? = nil,
+        date: String,
+        recordingTime: String? = nil,
+        promptPath: String = defaultPromptPath,
+        config: CaptainsLogConfig = CaptainsLogConfig.load(),
+        printPrompt: Bool = false,
+        operation: CommandOperation
+    ) async throws -> String? {
+        let logText = try String(contentsOfFile: inputPath, encoding: .utf8)
+        let renderedPrompt = try renderedPrompt(
+            logText: logText,
+            date: date,
+            recordingTime: recordingTime,
+            config: config,
+            promptPath: promptPath
+        )
+        if printPrompt {
+            print(PromptDebug.render(renderedPrompt))
+            return nil
+        }
+
+        let result = try await operation(logText, date, recordingTime, config, promptPath)
+        let resolvedOutputPath = outputPath ?? URL(fileURLWithPath: inputPath).lastPathComponent
+        try FileSystemGuard.writeText(result, to: resolvedOutputPath)
+        print("Saved to \(resolvedOutputPath)")
+        return result
+    }
+
     static func loadPrompt(
         from path: String,
         date: String,
@@ -77,7 +116,13 @@ public enum Enrich {
         // so the model doesn't output an empty or hallucinated time.
         if recordingTime == nil || recordingTime!.isEmpty {
             prompt = prompt.components(separatedBy: CharacterSet.newlines)
-                .filter { !$0.contains("recording_time") }
+                .filter { line in
+                    let trimmedLine = line.trimmingCharacters(in: .whitespaces)
+                    let yamlField = trimmedLine.hasPrefix("- ")
+                        ? String(trimmedLine.dropFirst(2))
+                        : trimmedLine
+                    return !yamlField.hasPrefix("recording_time:")
+                }
                 .joined(separator: "\n")
         }
         return prompt

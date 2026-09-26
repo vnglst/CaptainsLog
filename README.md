@@ -62,6 +62,10 @@ Transcription uses Whisper Large-v2. Cleanup, categorization, filenames, and met
 
 ## Documentation
 
+- [Testing plan and coverage matrix](./docs/TESTING-PLAN.md)
+- [CLI end-to-end and evaluation report](./docs/TESTING-EVAL-REPORT.md)
+- [Native UI coverage report](./docs/TESTING-UI-REPORT.md)
+- [Dead and legacy code review](./docs/DEAD-CODE-REPORT.md)
 - [Troubleshooting](./docs/TROUBLESHOOTING.md)
 - [Project plan](./docs/PLAN.md)
 - [Publishing plan](./docs/PUBLISHING-PLAN.md)
@@ -69,3 +73,16 @@ Transcription uses Whisper Large-v2. Cleanup, categorization, filenames, and met
 - [Evaluation fixtures and scripts](./docs/tng-eval/README.md)
 - [Design references](./design/README.md)
 - [Architecture decisions](./docs/)
+
+## Testing
+
+The test runner and CLI coverage script use Swift Package Manager and do not require the Xcode IDE:
+
+```sh
+swift run run-tests
+bash scripts/test-coverage.sh
+```
+
+GitHub Actions runs only the lightweight, model-free unit suite on pushes and pull requests to `main` (`swift run run-tests --unit`). Run `swift run run-tests` locally for the full deterministic suite. Coverage instrumentation, CLI coverage, model evaluations, and UI checks remain opt-in so routine CI stays short.
+
+For the sequential model-backed fixture pipeline, run `bash scripts/run-evals.sh --pipeline`. Run every stage evaluation with `bash scripts/run-evals.sh --suites`; validate saved outputs without inference using `bash scripts/run-evals.sh --validate-run <run-stamp>`. Review generated files against `eval/*/expected/` and the matching stage skill; the current execution report is [here](./docs/TESTING-EVAL-REPORT.md). For native macOS UI checks, use `bash scripts/test-ui.sh eval`; it builds a temporary app bundle and isolates config/data under a temporary directory. Prepared-machine model checks use `scripts/test-model-smoke.sh` with the four `CAPTAINSLOG_*_MODEL_*` environment variables set. Actual microphone capture is a separately confirmed, interactive check via `scripts/test-recorder-hardware.sh`. Neither smoke check runs in GitHub Actions. See the [testing plan](./docs/TESTING-PLAN.md) for fixture and hardware constraints.

@@ -41,7 +41,9 @@ public enum Pipeline {
     public enum PipelineError: LocalizedError {
         case promptNotFound(stage: String, path: String)
         case missingSlugMarker(path: String)
+        case invalidSlug(value: String)
         case missingSourceAudio(path: String)
+        case injectedOperationsRequireAudioInput
 
         public var errorDescription: String? {
             switch self {
@@ -49,8 +51,12 @@ public enum Pipeline {
                 return "[\(stage)] Prompt file not found: \(path)"
             case .missingSlugMarker(let path):
                 return "Slug marker missing or empty — re-run from naming stage. Path: \(path)"
+            case .invalidSlug(let value):
+                return "Filename output must be a single path-free name: \(value)"
             case .missingSourceAudio(let path):
                 return "Cannot redo processing because the source recording is missing: \(path)"
+            case .injectedOperationsRequireAudioInput:
+                return "An audio input is required when pipeline operations are injected."
             }
         }
     }
@@ -70,27 +76,41 @@ public enum Pipeline {
         public let category: Categorize.Category
     }
 
-    typealias TranscribeOperation = @Sendable (_ audioPath: String, _ language: String?) async throws -> String
-    typealias CleanupOperation = @Sendable (_ transcript: String, _ config: CaptainsLogConfig) async throws -> String
-    typealias CategorizeOperation = @Sendable (
+    public typealias TranscribeOperation = @Sendable (_ audioPath: String, _ language: String?) async throws -> String
+    public typealias CleanupOperation = @Sendable (_ transcript: String, _ config: CaptainsLogConfig) async throws -> String
+    public typealias CategorizeOperation = @Sendable (
         _ cleaned: String,
         _ config: CaptainsLogConfig,
         _ diagnostic: @escaping @Sendable (String) async -> Void
     ) async throws -> Categorize.Category
-    typealias FilenameOperation = @Sendable (_ cleaned: String, _ date: String) async throws -> String
-    typealias EnrichOperation = @Sendable (
+    public typealias FilenameOperation = @Sendable (_ cleaned: String, _ date: String) async throws -> String
+    public typealias EnrichOperation = @Sendable (
         _ cleaned: String,
         _ date: String,
         _ recordingTime: String,
         _ config: CaptainsLogConfig
     ) async throws -> String
 
-    struct Operations {
-        let transcribe: TranscribeOperation
-        let cleanup: CleanupOperation
-        let categorize: CategorizeOperation
-        let filename: FilenameOperation
-        let enrich: EnrichOperation
+    public struct Operations: Sendable {
+        public let transcribe: TranscribeOperation
+        public let cleanup: CleanupOperation
+        public let categorize: CategorizeOperation
+        public let filename: FilenameOperation
+        public let enrich: EnrichOperation
+
+        public init(
+            transcribe: @escaping TranscribeOperation,
+            cleanup: @escaping CleanupOperation,
+            categorize: @escaping CategorizeOperation,
+            filename: @escaping FilenameOperation,
+            enrich: @escaping EnrichOperation
+        ) {
+            self.transcribe = transcribe
+            self.cleanup = cleanup
+            self.categorize = categorize
+            self.filename = filename
+            self.enrich = enrich
+        }
     }
 
     public static func run(
@@ -101,7 +121,6 @@ public enum Pipeline {
         modelId: String? = nil,
         progress: (@Sendable (Progress) -> Void)? = nil
     ) async throws -> Result {
-        let fm = FileManager.default
         let dataDirURL = URL(fileURLWithPath: dataDir)
 
         try ensurePipelineDirectories(dataDirURL: dataDirURL)
@@ -113,15 +132,7 @@ public enum Pipeline {
 
         if let audioInput {
             print("[1/6] Copying audio...")
-            let inputURL = URL(fileURLWithPath: audioInput)
-            let inputStem = inputURL.deletingPathExtension().lastPathComponent
-            let dest = dataDirURL.appendingPathComponent(Directory.audio.path).appendingPathComponent("\(inputStem).m4a")
-            if fm.fileExists(atPath: dest.path) {
-                try fm.removeItem(at: dest)
-            }
-            try fm.copyItem(at: inputURL, to: dest)
-            audioPath = dest.path
-            print("Audio copied to \(dest.path)")
+            audioPath = try copyAudioInput(audioInput, dataDirURL: dataDirURL)
         } else {
             print("[1/6] Recording...")
             try await Recorder.record(to: audioDestURL, duration: recordDuration)
@@ -137,6 +148,80 @@ public enum Pipeline {
             modelId: modelId,
             progress: progress
         )
+    }
+
+    /// Runs a fresh fixture-backed pipeline without loading local inference models.
+    /// The recorder path stays on the public production overload because it requires audio hardware.
+    public static func run(
+        audioInput: String,
+        dataDir: String,
+        language: String? = nil,
+        operations: Operations,
+        progress: (@Sendable (Progress) -> Void)? = nil
+    ) async throws -> Result {
+        let dataDirURL = URL(fileURLWithPath: dataDir)
+        try ensurePipelineDirectories(dataDirURL: dataDirURL)
+        print("[1/6] Copying audio...")
+        let audioPath = try copyAudioInput(audioInput, dataDirURL: dataDirURL)
+        let stem = URL(fileURLWithPath: audioPath).deletingPathExtension().lastPathComponent
+        return try await processStages(
+            stem: stem,
+            dataDir: dataDir,
+            fromStage: .transcribing,
+            language: language,
+            progress: progress,
+            operations: operations
+        )
+    }
+
+    /// Routes the CLI pipeline command through the production path or injected fixture operations.
+    public static func runCommand(
+        audioInput: String? = nil,
+        dataDir: String,
+        language: String? = nil,
+        recordDuration: TimeInterval? = nil,
+        modelId: String? = nil,
+        operations: Operations? = nil,
+        progress: (@Sendable (Progress) -> Void)? = nil
+    ) async throws -> Result {
+        if let operations {
+            guard let audioInput else { throw PipelineError.injectedOperationsRequireAudioInput }
+            return try await run(
+                audioInput: audioInput,
+                dataDir: dataDir,
+                language: language,
+                operations: operations,
+                progress: progress
+            )
+        }
+        return try await run(
+            audioInput: audioInput,
+            dataDir: dataDir,
+            language: language,
+            recordDuration: recordDuration,
+            modelId: modelId,
+            progress: progress
+        )
+    }
+
+    private static func copyAudioInput(_ audioInput: String, dataDirURL: URL) throws -> String {
+        let inputURL = URL(fileURLWithPath: audioInput)
+        let inputStem = inputURL.deletingPathExtension().lastPathComponent
+        let destination = dataDirURL
+            .appendingPathComponent(Directory.audio.path)
+            .appendingPathComponent("\(inputStem).m4a")
+        if inputURL.standardizedFileURL == destination.standardizedFileURL {
+            return destination.path
+        }
+        guard FileManager.default.fileExists(atPath: inputURL.path) else {
+            throw CocoaError(.fileNoSuchFile, userInfo: [NSFilePathErrorKey: inputURL.path])
+        }
+        if FileManager.default.fileExists(atPath: destination.path) {
+            try FileManager.default.removeItem(at: destination)
+        }
+        try FileManager.default.copyItem(at: inputURL, to: destination)
+        print("Audio copied to \(destination.path)")
+        return destination.path
     }
 
     /// Resume processing for an existing stem in `dataDir`. If `fromStage` is nil,
@@ -163,7 +248,7 @@ public enum Pipeline {
         )
     }
 
-    static func resume(
+    public static func resume(
         stem: String,
         dataDir: String,
         fromStage: Stage? = nil,
@@ -183,6 +268,71 @@ public enum Pipeline {
             progress: progress,
             operations: operations
         )
+    }
+
+    /// Routes a single-entry resume command through production inference or injected fixture operations.
+    public static func resumeCommand(
+        stem: String,
+        dataDir: String,
+        fromStage: Stage? = nil,
+        language: String? = nil,
+        modelId: String? = nil,
+        operations: Operations? = nil,
+        progress: (@Sendable (Progress) -> Void)? = nil
+    ) async throws -> Result {
+        if let operations {
+            return try await resume(
+                stem: stem,
+                dataDir: dataDir,
+                fromStage: fromStage,
+                language: language,
+                operations: operations,
+                progress: progress
+            )
+        }
+        return try await resume(
+            stem: stem,
+            dataDir: dataDir,
+            fromStage: fromStage,
+            language: language,
+            modelId: modelId,
+            progress: progress
+        )
+    }
+
+    /// Resumes every pending CLI entry sequentially, with an injectable operation set for fixture tests.
+    public static func resumePendingCommand(
+        dataDir: String,
+        language: String? = nil,
+        modelId: String? = nil,
+        operations: Operations? = nil,
+        progress: (@Sendable (Progress) -> Void)? = nil
+    ) async throws -> [Result] {
+        let entries = listEntries(dataDir: dataDir).filter { $0.nextStage != .done }
+        guard !entries.isEmpty else {
+            print("No pending entries to resume.")
+            return []
+        }
+
+        print("Resuming \(entries.count) pending entr\(entries.count == 1 ? "y" : "ies")...\n")
+        var results: [Result] = []
+        for entry in entries {
+            let detected = detectNextStage(stem: entry.stem, dataDir: dataDir)
+            print("Processing \(entry.displayName) (starting at \(detected.rawValue))...")
+            results.append(try await resumeCommand(
+                stem: entry.stem,
+                dataDir: dataDir,
+                fromStage: detected,
+                language: language,
+                modelId: modelId,
+                operations: operations,
+                progress: progress
+            ))
+            print("✓ Completed \(entry.displayName)\n")
+        }
+
+        print("All entries processed!")
+        return results
     }
 
     public struct EntryListing: Sendable {
@@ -216,9 +366,7 @@ public enum Pipeline {
         for marker in markers where marker.hasSuffix(FileExt.slug.path) {
             let stem = String(marker.dropLast(FileExt.slug.path.count))
             let markerURL = renameDirURL.appendingPathComponent(marker)
-            guard let slug = try? String(
-                contentsOf: markerURL, encoding: .utf8
-            ).trimmingCharacters(in: .whitespacesAndNewlines), !slug.isEmpty else { continue }
+            guard let slug = readStoredSlug(markerPath: markerURL.path) else { continue }
             claimedStems.insert(stem)
             let nextStage = detectNextStage(stem: stem, dataDir: dataDir)
             let renamedPath = renameDirURL.appendingPathComponent("\(slug).md").path
@@ -309,7 +457,8 @@ public enum Pipeline {
     ) -> [String] {
         let dataDirURL = URL(fileURLWithPath: dataDir)
         let markerURL = canonicalMarkerURL(stem: stem, dataDirURL: dataDirURL)
-        let storedSlug = slug ?? readStoredSlug(markerPath: markerURL.path)
+        let storedSlug = slug.flatMap { isSafeSlug($0) ? $0 : nil }
+            ?? readStoredSlug(markerPath: markerURL.path)
         var candidates: [String] = [
             dataDirURL.appendingPathComponent(Directory.transcribed.path).appendingPathComponent("\(stem).md").path,
             dataDirURL.appendingPathComponent(Directory.logs.path).appendingPathComponent("\(stem).md").path,
@@ -347,14 +496,13 @@ public enum Pipeline {
     /// Falls back to earlier stages if prerequisite files are missing, so processStages
     /// never tries to load a file that doesn't exist.
     public static func detectNextStage(stem: String, dataDir: String) -> Stage {
-        let fm = FileManager.default
         let dataDirURL = URL(fileURLWithPath: dataDir)
         let transcriptPath = dataDirURL.appendingPathComponent(Directory.transcribed.path).appendingPathComponent("\(stem).md").path
         let cleanedPath = dataDirURL.appendingPathComponent(Directory.logs.path).appendingPathComponent("\(stem).md").path
         let markerPath = canonicalMarkerURL(stem: stem, dataDirURL: dataDirURL).path
 
-        if !fm.fileExists(atPath: transcriptPath) { return .transcribing }
-        if !fm.fileExists(atPath: cleanedPath) { return .cleaning }
+        if !isRegularFile(atPath: transcriptPath) { return .transcribing }
+        if !isRegularFile(atPath: cleanedPath) { return .cleaning }
 
         guard let categoryManifest = try? Categorize.loadManifest(stem: stem, dataDirURL: dataDirURL) else {
             return .categorizing
@@ -365,12 +513,12 @@ public enum Pipeline {
         }
 
         let renamedPath = dataDirURL.appendingPathComponent(Directory.rename.path).appendingPathComponent("\(slug).md").path
-        if !fm.fileExists(atPath: renamedPath) {
+        if !isRegularFile(atPath: renamedPath) {
             return .naming
         }
 
         let enrichedPath = dataDirURL.appendingPathComponent(Directory.enriched.path).appendingPathComponent(categoryManifest.category.folderName).appendingPathComponent("\(slug).md").path
-        if !fm.fileExists(atPath: enrichedPath) {
+        if !isRegularFile(atPath: enrichedPath) {
             return .enriching
         }
 
@@ -603,6 +751,9 @@ public enum Pipeline {
         progress?(Progress(stem: stem, stage: .naming))
         print("[5/6] Generating filename...")
         let slug = try await operation(cleaned, date)
+        guard isSafeSlug(slug) else {
+            throw PipelineError.invalidSlug(value: slug)
+        }
         let slugStem = URL(fileURLWithPath: slug).deletingPathExtension().lastPathComponent
         try FileManager.default.createDirectory(
             at: dataDirURL.appendingPathComponent(Directory.rename.path),
@@ -677,12 +828,19 @@ public enum Pipeline {
 
     private static func readStoredSlug(markerPath: String) -> String? {
         guard let slug = try? String(contentsOfFile: markerPath, encoding: .utf8)
-            .trimmingCharacters(in: .whitespacesAndNewlines),
-              !slug.isEmpty
-        else {
+            .trimmingCharacters(in: .whitespacesAndNewlines), isSafeSlug(slug) else {
             return nil
         }
         return slug
+    }
+
+    private static func isSafeSlug(_ slug: String) -> Bool {
+        !slug.isEmpty && !slug.contains("/") && !slug.contains("\\") && slug != "." && slug != ".."
+    }
+
+    private static func isRegularFile(atPath path: String) -> Bool {
+        let values = try? URL(fileURLWithPath: path).resourceValues(forKeys: [.isRegularFileKey])
+        return values?.isRegularFile == true
     }
 
     private static func effectiveStartStage(preferred: Stage?, detected: Stage) -> Stage {

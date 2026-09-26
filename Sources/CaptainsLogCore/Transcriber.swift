@@ -5,6 +5,12 @@ public enum Transcriber {
 
     public static let defaultModel = "openai_whisper-large-v2"
 
+    public typealias CommandOperation = @Sendable (
+        _ audioPath: String,
+        _ model: String?,
+        _ language: String?
+    ) async throws -> String
+
     private static func downloadBaseURL() -> URL {
         let caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
         return caches
@@ -124,6 +130,31 @@ public enum Transcriber {
         }
 
         return result.map { $0.text }.joined(separator: " ").trimmingCharacters(in: CharacterSet.whitespaces)
+    }
+
+    /// Runs the input validation, transcription, and output part of the transcribe CLI command with injectable inference.
+    public static func runCommand(
+        inputPath: String,
+        outputPath: String? = nil,
+        model: String? = nil,
+        language: String? = nil,
+        operation: CommandOperation
+    ) async throws -> String {
+        let resolvedOutputPath = outputPath ?? defaultOutputPath(for: inputPath)
+        try FileSystemGuard.requireFreeSpaceForTranscription(paths: [
+            resolvedOutputPath,
+            CaptainsLogConfig.configURL.path,
+            NSTemporaryDirectory(),
+        ])
+        let transcript = try await operation(inputPath, model, language)
+        try FileSystemGuard.writeText(transcript, to: resolvedOutputPath)
+        print("Transcript saved to \(resolvedOutputPath)")
+        return transcript
+    }
+
+    private static func defaultOutputPath(for inputPath: String) -> String {
+        let url = URL(fileURLWithPath: inputPath)
+        return url.deletingPathExtension().appendingPathExtension("md").path
     }
 
     enum TranscriberError: LocalizedError {

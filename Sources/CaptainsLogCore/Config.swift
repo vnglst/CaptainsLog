@@ -4,6 +4,12 @@ public struct CaptainsLogConfig: Codable {
     public static let defaultDataDirName = "Documents/CaptainsLog"
     public static let currentSchemaVersion = 1
 
+    public static func resolveDataDir(
+        explicit: String?, configured: String?, environment: String?
+    ) -> String {
+        explicit ?? configured ?? environment ?? "processed"
+    }
+
     public var schemaVersion: Int
     public var dataDir: String?
     public var whisperModelFolder: String?

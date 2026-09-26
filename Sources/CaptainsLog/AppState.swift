@@ -27,6 +27,7 @@ public final class AppState {
     public let models: ModelManager
     public let directoryWatcher: DirectoryWatcher
     public let search: SearchManager
+    private let moveToTrash: (URL) -> Void
 
     // MARK: - Entries
 
@@ -120,6 +121,7 @@ public final class AppState {
         processing = ProcessingCoordinator()
         models = ModelManager()
         search = SearchManager()
+        moveToTrash = { url in try? FileManager.default.trashItem(at: url, resultingItemURL: nil) }
         // Initialize with placeholder closure - will be configured after init
         directoryWatcher = DirectoryWatcher(onReload: { })
         // Set initial first-run state from config
@@ -132,7 +134,10 @@ public final class AppState {
         processing: ProcessingCoordinator = ProcessingCoordinator(),
         models: ModelManager = ModelManager(),
         search: SearchManager = SearchManager(),
-        directoryWatcher: DirectoryWatcher = DirectoryWatcher(onReload: { })
+        directoryWatcher: DirectoryWatcher = DirectoryWatcher(onReload: { }),
+        moveToTrash: @escaping (URL) -> Void = {
+            try? FileManager.default.trashItem(at: $0, resultingItemURL: nil)
+        }
     ) {
         self.config = config
         self.recording = recording
@@ -140,6 +145,7 @@ public final class AppState {
         self.models = models
         self.search = search
         self.directoryWatcher = directoryWatcher
+        self.moveToTrash = moveToTrash
         needsFirstRunDisplay = config.needsFirstRun
     }
 
@@ -165,6 +171,10 @@ public final class AppState {
     /// `AppState` preserves the production first-run encapsulation.
     func suppressFirstRunForDesignFixture() {
         needsFirstRunDisplay = false
+    }
+
+    func presentFirstRunForDesignFixture() {
+        needsFirstRunDisplay = true
     }
     #endif
 
@@ -288,15 +298,13 @@ public final class AppState {
 
     public func deleteEntry(stem: String, slug: String?) {
         guard processing.processingStem != stem else { return }
-        let fm = FileManager.default
         let candidates = Pipeline.deletionCandidatePaths(
             stem: stem,
             slug: slug,
             dataDir: config.dataDir
         )
         for path in candidates {
-            let url = URL(fileURLWithPath: path)
-            try? fm.trashItem(at: url, resultingItemURL: nil)
+            moveToTrash(URL(fileURLWithPath: path))
         }
         loadEntries()
     }
@@ -404,6 +412,7 @@ struct LogEntry: Identifiable, Sendable {
         f.calendar = Calendar(identifier: .gregorian)
         f.timeZone = TimeZone(secondsFromGMT: 0)
         f.dateFormat = "yyyy-MM-dd"
+        f.isLenient = false
         return f
     }()
 

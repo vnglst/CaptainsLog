@@ -117,18 +117,20 @@ public final class ModelManager {
         }
     }
 
-    nonisolated private static func whisperModelIsDownloaded() -> Bool {
-        let config = CaptainsLogConfig.load()
+    nonisolated static func whisperModelIsDownloaded(
+        config: CaptainsLogConfig = CaptainsLogConfig.load()
+    ) -> Bool {
         guard let folder = config.whisperModelFolder,
-              FileManager.default.fileExists(atPath: folder)
+              (try? URL(fileURLWithPath: folder).resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true
         else { return false }
         return true
     }
 
-    nonisolated private static func qwenModelIsDownloaded() -> Bool {
-        let config = CaptainsLogConfig.load()
+    nonisolated static func qwenModelIsDownloaded(
+        config: CaptainsLogConfig = CaptainsLogConfig.load()
+    ) -> Bool {
         guard let folder = config.qwenModelFolder,
-              FileManager.default.fileExists(atPath: folder)
+              (try? URL(fileURLWithPath: folder).resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true
         else { return false }
         guard let files = try? FileManager.default.contentsOfDirectory(atPath: folder),
               files.contains(where: { $0.hasSuffix(".gguf") })

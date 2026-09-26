@@ -4,6 +4,12 @@ public enum Cleanup {
 
     public static let defaultPromptPath = "prompts/cleanup.md"
 
+    public typealias CommandOperation = @Sendable (
+        _ transcript: String,
+        _ config: CaptainsLogConfig,
+        _ promptPath: String
+    ) async throws -> String
+
     public static func cleanup(
         transcript: String,
         container: ModelContainer,
@@ -36,6 +42,29 @@ public enum Cleanup {
             systemPrompt: try loadPrompt(from: promptPath, config: config),
             userMessage: userMessage(transcript: transcript)
         )
+    }
+
+    /// Runs the file and output part of the cleanup CLI command with an injectable inference operation.
+    public static func runCommand(
+        inputPath: String,
+        outputPath: String? = nil,
+        promptPath: String = defaultPromptPath,
+        config: CaptainsLogConfig = CaptainsLogConfig.load(),
+        printPrompt: Bool = false,
+        operation: CommandOperation
+    ) async throws -> String? {
+        let transcript = try String(contentsOfFile: inputPath, encoding: .utf8)
+        let renderedPrompt = try renderedPrompt(transcript: transcript, config: config, promptPath: promptPath)
+        if printPrompt {
+            print(PromptDebug.render(renderedPrompt))
+            return nil
+        }
+
+        let result = try await operation(transcript, config, promptPath)
+        let resolvedOutputPath = outputPath ?? URL(fileURLWithPath: inputPath).lastPathComponent
+        try FileSystemGuard.writeText(result, to: resolvedOutputPath)
+        print("Saved to \(resolvedOutputPath)")
+        return result
     }
 
     static func loadPrompt(from path: String, config: CaptainsLogConfig = CaptainsLogConfig.load()) throws -> String {

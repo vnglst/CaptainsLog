@@ -71,6 +71,8 @@ public final class DirectoryWatcher {
         watchSetupTask = nil
         dirWatchers.forEach { $0.cancel() }
         dirWatchers = []
+        watchReloadTask?.cancel()
+        watchReloadTask = nil
     }
 
     /// Debounced reload to batch rapid file system events.

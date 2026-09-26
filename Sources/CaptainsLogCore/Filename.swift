@@ -6,6 +6,12 @@ public enum Filename {
     public static let defaultMaxTokens = 0
     public static let defaultTemperature: Float = 0.3
 
+    public typealias CommandOperation = @Sendable (
+        _ logText: String,
+        _ date: String,
+        _ promptPath: String
+    ) async throws -> String
+
     public static func generateFilename(
         logText: String,
         date: String,
@@ -40,6 +46,26 @@ public enum Filename {
             systemPrompt: try loadPrompt(from: promptPath, date: date),
             userMessage: userMessage(logText: logText)
         )
+    }
+
+    /// Runs the file and output part of the filename CLI command with an injectable inference operation.
+    public static func runCommand(
+        inputPath: String,
+        date: String,
+        promptPath: String = defaultPromptPath,
+        printPrompt: Bool = false,
+        operation: CommandOperation
+    ) async throws -> String? {
+        let logText = try String(contentsOfFile: inputPath, encoding: .utf8)
+        let renderedPrompt = try renderedPrompt(logText: logText, date: date, promptPath: promptPath)
+        if printPrompt {
+            print(PromptDebug.render(renderedPrompt))
+            return nil
+        }
+
+        let filename = try await operation(logText, date, promptPath)
+        print(filename)
+        return filename
     }
 
     static func loadPrompt(from path: String, date: String) throws -> String {

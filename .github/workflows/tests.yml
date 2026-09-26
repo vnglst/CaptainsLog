@@ -1,0 +1,29 @@
+name: Unit tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: unit-tests-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit-tests:
+    name: Lightweight deterministic tests
+    runs-on: macos-26
+    timeout-minutes: 15
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+
+      - name: Install native build dependency
+        run: brew install llama.cpp
+
+      - name: Run unit tests
+        run: swift run run-tests --unit
