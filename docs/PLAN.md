@@ -35,7 +35,8 @@ See [PLAN-004](PLAN-004-logs-implementation.md) for current functionality, remai
 
 - Historical LCARS-specific implementation notes are preserved in git history. They describe the retired interface and are not current requirements.
 - [x] Display version and git commit hash in Settings (About section).
-- [ ] Add a way to configure categories (how logs are categorized into folders); make this configurable both in Settings and as part of onboarding
+- [ ] Add UI controls in Settings to configure categories (how logs are categorized into folders), and include category setup in onboarding
+- [ ] Show categories in the Logs UI as a filter
 - [ ] Add a copy button to copy the entire cleaned-up transcript for a log entry to the clipboard
 - [ ] Add a macOS menu bar presence so CaptainsLog can be minimized to the menu bar, with controls to start and stop recording there
 
