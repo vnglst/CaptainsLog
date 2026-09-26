@@ -1,8 +1,10 @@
 # PLAN-003: Close Remaining Test Coverage Gaps
 
-**Status**: Planned  
-**Baseline date**: 2026-07-10  
-**Baseline**: 114 tests passing; 32.69% production line coverage
+**Status**: In progress
+**Baseline date**: 2026-07-10
+**Baseline snapshot (historical; remeasure before comparing)**: 114 tests passing; 32.69% production line coverage
+
+The implementation review on 2026-09-26 found partial coverage in all six work areas. Existing injected pipeline and recording-state tests are useful foundations, but the UI decision, full CLI workflow, raw recorder hardware, native integration, and coverage-ratchet criteria below remain open. ADR-007 should not be read as claiming that the AVFoundation recorder boundary is already injected.
 
 ## Goal
 

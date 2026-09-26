@@ -2,26 +2,26 @@
 
 ## Goal and release boundary
 
-CaptainsLog's GitHub repository is public, and release `v0.1.0` is available through GitHub Releases and the Homebrew tap at `vnglst/homebrew-captainslog`. The supported direct install is `brew install --cask vnglst/captainslog/captainslog`. Continue the review and cleanup gates below as post-publication maintenance. The app is ad-hoc signed, is not notarized, and the Homebrew cask removes the quarantine attribute from the installed app bundle. State that plainly wherever installation is described.
+CaptainsLog's GitHub repository is public. The initial public release was `v0.1.0`; the repository's current `VERSION` and cask target `0.1.1` (verify public endpoints as part of release checks). The supported Homebrew install is `brew install --cask vnglst/captainslog/captainslog`. Continue the review and cleanup gates below as post-publication maintenance. The app is ad-hoc signed, is not notarized, and the Homebrew cask removes the quarantine attribute from the installed app bundle. State that plainly wherever installation is described.
 
 The initial release includes the macOS app, the `cl` CLI, bundled llama.cpp runtime, source code, build instructions, and synthetic TNG demo fixtures. The repository owner reviewed and approved the specific `2025-01-14 side project` evaluation recording and transcript copies; this approval does not cover other personal recordings.
 
 ## Phase 1 — Remove private material from the publication candidate
 
-- [x] Remove `.claude/settings.local.json` from the working tree. It contained a machine-specific absolute path and a local cleanup permission. `.gitignore` now excludes this path so a local copy is not accidentally added again. The file remains in Git history and must be handled by the history review below.
+- [x] Remove `.claude/settings.local.json` from the working tree. It contained a machine-specific absolute path and a local cleanup permission. `.gitignore` now excludes this exact path so a local copy is not accidentally added again. The file remains in Git history and must be handled by the history review below.
 - [x] Review `eval/transcribe/audio/2025-01-14 side project.m4a` and matching copies in transcription, cleanup, filename, and enrichment inputs/expected outputs. The repository owner reviewed them and approved retaining them in the public candidate. Keep this approval scoped to these reviewed files; review any new recordings or generated copies before publication.
 - [ ] Search all tracked files, including hidden files and Git LFS objects if present, for names and email addresses other than the user's, absolute home paths, machine and account identifiers, credentials, tokens, private URLs, local config, and personal content. The user's name and email may remain.
 - [x] Inspect images and binary files for visible paths, account names, device labels, recordings, screenshots, embedded metadata, and other identifying details. The seven design references remain conceptual (per owner approval); creator metadata, including the Trufo email, was stripped without changing image pixels. The images still contain illustrative paths, counts, microphone labels, version text, and “Field notes” UI labels; they are documented as concepts, not current product screenshots.
 - [ ] Inspect demo and evaluation fixtures. Keep synthetic TNG examples clearly labeled as fictional, and verify no real personal content has entered a generated file or report.
-- [ ] Check `.gitignore`, build scripts, test scripts, and CI workflows so config files, model caches, recordings, generated outputs, signing material, and build artifacts cannot be accidentally added.
+- [ ] Complete a safeguard review of `.gitignore`, build/test scripts, and CI workflows for config files, model caches, recordings, generated outputs, signing material, and build artifacts. The exact `.claude/settings.local.json` ignore rule is now present; the broader review remains open.
 
 ### Git history gate
 
-Removing a file from the latest tree does not remove it from existing commits. Before the repository becomes public, inspect every reachable branch, tag, and release for the same material. If private content appears in history, prepare a clean public history or a fresh sanitized public repository; preserve the current private repository as the archival source. Do not make the existing repository public until its complete reachable history and release assets have passed review.
+Removing a file from the latest tree does not remove it from existing commits. The repository is already public, so inspect every reachable branch, tag, and release for the same material as an urgent post-publication review. If private content appears in history, assess exposure and remediation, including a clean public history or fresh sanitized repository; preserve an archival copy as appropriate. Do not treat current-tree cleanup as completion of this history gate.
 
 ## Phase 2 — Review content, rights, and project metadata
 
-- [ ] Review README, docs, plans, design references, examples, and comments for obsolete behavior, machine-specific instructions, unfinished internal notes, and contradictory install claims. Current product terminology is “Logs.”
+- [ ] Review README, docs, plans, design references, examples, and comments for obsolete behavior, machine-specific instructions, unfinished internal notes, and contradictory install claims. This plan review found stale release statements in `PLAN.md`; the seven images in `design/logs/screens/` are conceptual references and must not be presented as current screenshots. Current product terminology is “Logs.”
 - [x] Review TNG demo and evaluation content, names, references, visual branding, and assets for the intended public use. The repository owner approved retaining the fan-themed material and reviewed literary fixtures; attribution and a no-affiliation statement are in `THIRD-PARTY-NOTICES.md`.
 - [ ] Add a project license or state clearly that the source is currently all rights reserved. `THIRD-PARTY-NOTICES.md` inventories the bundled font, software, runtime models, and reviewed fixture attributions; verify its inventory and app-bundle copies on a release build. A model's license may differ from the code license.
 - [ ] Review the app's data handling and privacy claims against implementation: audio and entries remain local, models are downloaded from their documented sources, and no inference service receives user content. Document any update checks, telemetry, or network behavior if present.
@@ -52,7 +52,7 @@ The seven design screenshots are in-repository reference images. The Trufo strin
 ## Phase 4 — Publish
 
 - [x] Choose the public source layout: the existing `CaptainsLog` repository is public.
-- [x] Verify `.github/workflows/release.yml`: the `v0.1.0` run passed on an Apple Silicon macOS runner, published the versioned ZIP as a GitHub Release asset, and committed its archive checksum and version to `Casks/captainslog.rb`.
+- [x] Verify `.github/workflows/release.yml` for initial release `v0.1.0`: its run passed on an Apple Silicon macOS runner, published the versioned ZIP as a GitHub Release asset, and committed its archive checksum and version to `Casks/captainslog.rb`. This records the initial run, not verification of every later release.
 - [x] Create the public `vnglst/homebrew-captainslog` tap with the initial `captainslog` cask. The supported direct install is `brew install --cask vnglst/captainslog/captainslog`.
 - [ ] For each release, update `VERSION`, run the release checks, commit and push that version to the default branch, then create and push its matching `vMAJOR.MINOR.PATCH` tag. The workflow rejects tags if the tag, `VERSION`, and default branch disagree or if the tagged commit is not on the default branch.
 - [ ] Review the workflow run and generated release notes. GitHub generates notes from repository history; edit them as needed to include supported macOS/architecture, model storage/download requirements, known limitations, and ad-hoc signing/quarantine behavior.
@@ -60,7 +60,7 @@ The seven design screenshots are in-repository reference images. The Trufo strin
 - [x] Publish the repository and initial release. The repository owner made the repository public and approved release `v0.1.0` on 2026-09-25; remaining review and clean-Mac checks above are still open for follow-up.
 - [ ] Verify the documented tap/install commands from a clean machine using the public endpoints. Keep a rollback path by retaining the previous release archive and cask revision.
 
-The release workflow uses the standard `GITHUB_TOKEN` for source releases. To publish cask updates into the separate tap, add a fine-grained personal access token as the `HOMEBREW_TAP_TOKEN` Actions secret in `vnglst/CaptainsLog`. Grant it Contents read/write access to `vnglst/homebrew-captainslog`. This is separate from Developer ID signing, which is not used. GitHub-hosted macOS Actions minutes may use the account's included Actions allowance while the repository is private.
+The release workflow uses `GITHUB_TOKEN` for source releases and `HOMEBREW_TAP_TOKEN` for updates to the separate tap. The successful initial tap publication demonstrates the secret was configured then; confirm it remains valid if a future release fails at the tap-publishing step. The token needs Contents read/write access to `vnglst/homebrew-captainslog`. This is separate from Developer ID signing, which is not used.
 
 ## Publication review record
 

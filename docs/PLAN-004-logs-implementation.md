@@ -15,6 +15,6 @@ The debug app launch supports deterministic TNG demo data through `CAPTAINSLOG_U
 
 ## Design references
 
-The references in [`design/logs/DESIGN-SYSTEM.md`](../design/logs/DESIGN-SYSTEM.md) are conceptual, not current screenshots. Some images contain illustrative paths, entry counts, device names, and version text. They should not be treated as live product state or published as current screenshots without review.
+The seven images in [`design/logs/screens/`](../design/logs/screens/) are conceptual references, not captures of the current app. They show intended workspace, onboarding, model preparation, recording, processing, settings, and entry-management states. Some include illustrative paths, entry counts, device names, version text, or older “Field notes” labels. See the [design README](../design/README.md) and [design system](../design/logs/DESIGN-SYSTEM.md); review or replace these images before presenting them as current product screenshots. The older HTML/CSS LCARS exploration in `design/project/` is historical, not the current product specification.
 
 The design iteration loop remains useful for future visual changes: exercise a deterministic fixture, build and launch the native app, try the interactions, capture the state, inspect it against the design system, then run the relevant automated checks. Keep fixtures isolated from real user data.

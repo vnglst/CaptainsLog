@@ -20,3 +20,4 @@ eval/*/reports/*.md
 tmp/
 
 # Local agent permissions and machine-specific settings
+.claude/settings.local.json

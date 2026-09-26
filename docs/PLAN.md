@@ -23,24 +23,24 @@ Extend the no-Xcode deterministic test gate around UI decision logic, complete C
 - [ ] Document opt-in native integration checks and ratchet the coverage floor
 - [ ] Find a way to test the onboarding flow and other crucial flows end-to-end
 
-See [PLAN-003](PLAN-003-test-coverage-gaps.md) for the measured baseline, implementation order, and completion criteria.
+See [PLAN-003](PLAN-003-test-coverage-gaps.md) for the dated baseline, implementation order, and completion criteria. The baseline is from July 2026 and needs remeasurement before use as a current metric.
 
 ### UI/UX Improvements
 
 #### Logs interface ([PLAN-004](PLAN-004-logs-implementation.md))
 
-The app now uses the Logs workspace. Remaining work is audio playback, collections/projects, and the native visual and interaction acceptance pass. See the current status and design references in `PLAN-004` and `design/logs/`.
+The app now uses the Logs workspace. Remaining work is audio playback, collections/projects, native visual and interaction acceptance, and clean-machine packaged-app smoke checks. See [PLAN-004](PLAN-004-logs-implementation.md) and the conceptual screenshots in [design/README.md](../design/README.md) and [design/logs/](../design/logs/).
 
 See [PLAN-004](PLAN-004-logs-implementation.md) for current functionality, remaining capabilities, and verification work.
 
 - Historical LCARS-specific implementation notes are preserved in git history. They describe the retired interface and are not current requirements.
-- [ ] Add git commit hash to the Settings page (currently only shown in the main UI header)
+- [x] Display version and git commit hash in Settings (About section).
 - [ ] Add a way to configure categories (how logs are categorized into folders); make this configurable both in Settings and as part of onboarding
 - [ ] Add a copy button to copy the entire cleaned-up transcript for a log entry to the clipboard
 - [ ] Add a macOS menu bar presence so CaptainsLog can be minimized to the menu bar, with controls to start and stop recording there
 
-### Release v0.1.0 — Enable Public Distribution
-Enable anyone with an Apple Silicon Mac to download and use CaptainsLog without building from source. Single download provides both GUI app and CLI — users choose their interface. Local ad-hoc packaging and the cask are prepared; publishing is pending repository cleanup.
+### Public distribution and release maintenance
+The repository has a versioned app/CLI archive and public Homebrew tap. The current source version and cask are 0.1.1; see [PUBLISHING-PLAN.md](PUBLISHING-PLAN.md) for publication history and remaining post-publication review and validation.
 
 See [PUBLISHING-PLAN.md](PUBLISHING-PLAN.md) for the required privacy/history review, rights review, release checks, and publication sequence.
 
@@ -48,24 +48,24 @@ See [PUBLISHING-PLAN.md](PUBLISHING-PLAN.md) for the required privacy/history re
 - [x] Document Homebrew installation and automatic quarantine removal at the top of `README.md`.
 
 **Distribution channels:**
-- [ ] Downloadable `.app` bundle from GitHub — planned; open the app from Finder, or run `CaptainsLog.app/Contents/MacOS/cl` for CLI
-- [ ] Public Homebrew tap — the cask installs the app in Applications and `cl` in PATH; local installation was tested. Publishing is pending repository cleanup.
+- [x] Publish a versioned `.app` bundle containing the GUI and CLI on GitHub Releases. Clean-machine direct-download usability remains to be validated.
+- [x] Publish the Homebrew tap; the cask installs the app in Applications and links `cl` in PATH. Local installation was tested.
 - [ ] Website landing page at `captainslog.koenvangilst.nl` — clear download, requirements, install steps
 
 **User experience:**
-- [ ] GUI users: Double-click app, drag to Applications, open the app from Finder; the Homebrew cask clears quarantine during installation
-- [ ] CLI users: Same download, run `cl` from the bundle or PATH after Homebrew install
-- [ ] First-launch flow: Choose data folder, download several GB of models, start recording
+- [ ] Validate the full GUI user journey on a clean machine: install/open the direct archive from Finder and verify first launch. The Homebrew cask removes quarantine; direct archive behavior needs explicit review.
+- [ ] Validate the CLI user journey from the downloaded bundle and from PATH after Homebrew install on a clean machine.
+- [ ] Validate first launch end-to-end on a clean machine: choose a data folder, download models, record, process, and search.
 
 **Documentation:**
 - [ ] Changelog tracking what's new in each release
-- [ ] Installation guide and model download explanation
+- [x] Installation and model-download guidance in README.md; expand it if clean-machine review finds gaps.
 
 **Validation:**
 - [ ] Fresh machine test setup — verify a non-developer can download, install, and run end-to-end, automate this
-- [x] Local Homebrew install test — verify a temporary tap installs the app, clears quarantine, links `cl` to PATH, and both app and CLI start. A public release download remains pending.
-- [ ] Release process — tag-driven automated builds, as little as possible on Github Actionsm, if possible locally and the uploading to GitHub
-- [ ] Prepare a release using just GitHub (Releases + Actions, no external infra) plus instructions for how people can build CaptainsLog themselves from source
+- [x] Local Homebrew install test — verify a temporary tap installs the app, clears quarantine, links `cl` to PATH, and both app and CLI start. Clean-machine testing against the published archive remains open in `PUBLISHING-PLAN.md`.
+- [x] Implement tag-driven release builds and publishing through GitHub Actions; see `.github/workflows/release.yml` and [ADR-010](ADR-010-tag-driven-homebrew-releases.md). Each release still needs its listed review and upgrade checks.
+- [x] Publish releases using GitHub Releases and Actions, with source-build instructions in README.md.
 
 **Future distribution improvements:**
 - [ ] Apple Developer account — Signed distribution removes Gatekeeper warnings
@@ -86,6 +86,7 @@ See [PUBLISHING-PLAN.md](PUBLISHING-PLAN.md) for the required privacy/history re
 - [x] Hover states on interactive elements (buttons, list items)
 - [x] Remove model folder management from Settings UI — `SettingsView` deleted; paths managed via `cl config set`
 - [x] Display version and commit hash in main UI (`appState.versionString` in header cell)
+- [x] Display version and commit hash in Settings.
 
 ## Locked decisions
 
