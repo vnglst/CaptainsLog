@@ -22,7 +22,14 @@ Read `README.md` before working here. Follow its product requirements, build ins
 
 - Never read, copy, or use personal recordings or data from `processed/`, Obsidian, or CaptainsLog data folders for tests, evaluations, reproductions, or debugging.
 - Use only repository fixtures under `eval/`, including `eval/transcribe/audio/` for audio tests. Treat evaluation inputs as synthetic fixtures; do not replace them with personal recordings.
+- Set `CAPTAINS_LOG_CONFIG_PATH` to an isolated temporary config and data directory for CLI/app checks. Bypass default demo seeding; `demo/` and hard-coded design examples are presentation material, not evaluation inputs.
 
 ## Evaluations
 
 Stage-specific evaluation workflows live in `skills/<stage>-eval/SKILL.md` for transcription, cleanup, filename, and enrichment. Use the relevant workflow when evaluating output. Reports should describe concrete changes and semantic impact, including missing or added content and hallucinations; scores alone are not enough. Human review makes the final quality judgment.
+
+## Documentation
+
+- Keep architecture decisions in `docs/ADR-*.md`. Consolidate dated verification findings and unresolved limits into the relevant ADR; keep ongoing development rules here.
+- Plans track unfinished work. Remove completed plans once their durable decisions and remaining acceptance checks are preserved, and update links to their replacement.
+- Testing gates, dated evaluation evidence, native UI limits, and legacy-code review are consolidated in [ADR-007](docs/ADR-007-framework-free-test-coverage.md). Check downstream SwiftPM clients, previews, debug flags and resource dependencies before deleting apparently unused public symbols or vendored headers.
