@@ -25,6 +25,13 @@ The CLI exposes `cl update --check` and `cl update`. CLI installation requires t
 GUI to be closed. Source runs, demos, and UI fixtures do not auto-update; the GUI
 also verifies that the running bundle matches the cask's installed app path.
 
+Homebrew Git commands route the public CaptainsLog tap through HTTPS using a
+private temporary Git wrapper passed through `HOMEBREW_GIT_PATH`. The route applies
+to this tap's SSH and HTTPS URLs; other repositories retain their transport.
+Homebrew filters `GIT_CONFIG_*` environment variables, so environment-only Git
+rewrites cannot fix this failure. The updater does not modify persistent Git or
+SSH configuration, and removes the wrapper after each command.
+
 ## Consequences
 
 Updates require the supported Apple Silicon Homebrew installation. Homebrew
@@ -136,3 +143,30 @@ acceptance checks on a working Mac/Homebrew session. Logs for this recheck are
 under `/tmp/captainslog-update-reverify-*`. Reproduce the fixture command checks
 with [`scripts/test-updates.sh`](../scripts/test-updates.sh) and the controller
 checks with `swift run run-tests --unit`.
+
+## SSH transport correction: 2026-10-01
+
+Release 0.1.2 exposed an update-check failure when the installed Homebrew tap used
+`git@github.com:vnglst/homebrew-captainslog.git`. The GUI reported SSH public-key
+authentication failure. An isolated CLI reproduction failed at the same tap
+fetch (with this execution environment's UID lookup error). Temporary
+`GIT_CONFIG_COUNT` rewrites failed because Homebrew strips them from its environment.
+
+The temporary Git wrapper fixes the actual published-cask check: the rebuilt CLI
+reported installed/available 0.1.2 and up to date while the tap's stored remote was
+still SSH. The fixture now resolves real Git remotes for both SSH URL forms and
+HTTPS under a filtered environment, including an existing broad HTTPS-to-SSH
+rewrite. It asserts that stored remotes are unchanged and other taps retain SSH.
+Check/install/check, checksum-required upgrade arguments, and failure propagation
+passed with isolated config/data (`tmp/update-verification.bfVgQl/`).
+
+`swift build` passed. The full deterministic suite again passed 193 of 200 cases;
+all updater cases passed and the same seven transcription/pipeline cases failed
+at the unchanged zero-capacity disk guard. The repository fixture pipeline also
+stopped at that guard before inference
+(`tmp/evals-2026-10-01_21-34-50_58527-58527/`).
+
+As an immediate repair for the already installed 0.1.2 app, this machine's
+CaptainsLog tap remote was separately changed to its public HTTPS URL. The
+installed release CLI then completed `update --check` successfully using isolated
+config/data. No application installation or relaunch was performed.

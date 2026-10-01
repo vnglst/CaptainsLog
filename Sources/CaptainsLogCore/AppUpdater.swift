@@ -105,6 +105,23 @@ public struct AppUpdater: Sendable {
             process.executableURL = executable
             process.arguments = arguments
             var environment = ProcessInfo.processInfo.environment
+            // Homebrew filters GIT_CONFIG_* out of its environment. Its supported
+            // Git executable override survives that filter, so apply a temporary,
+            // narrowly scoped HTTPS route for our public tap on every Git call.
+            // Never edit the user's tap remote or global Git/SSH configuration.
+            let gitURL = root.appendingPathComponent("git")
+            let gitWrapper = """
+            #!/bin/sh
+            export GIT_TERMINAL_PROMPT=0
+            exec /usr/bin/git \\
+              -c 'url.https://github.com/vnglst/homebrew-captainslog.insteadOf=git@github.com:vnglst/homebrew-captainslog' \\
+              -c 'url.https://github.com/vnglst/homebrew-captainslog.insteadOf=ssh://git@github.com/vnglst/homebrew-captainslog' \\
+              -c 'url.https://github.com/vnglst/homebrew-captainslog.insteadOf=https://github.com/vnglst/homebrew-captainslog' \\
+              "$@"
+            """
+            try gitWrapper.write(to: gitURL, atomically: true, encoding: .utf8)
+            try FileManager.default.setAttributes([.posixPermissions: 0o700], ofItemAtPath: gitURL.path)
+            environment["HOMEBREW_GIT_PATH"] = gitURL.path
             environment["HOMEBREW_NO_AUTO_UPDATE"] = "1"
             environment["HOMEBREW_NO_ANALYTICS"] = "1"
             environment["HOMEBREW_NO_INSTALL_CLEANUP"] = "1"

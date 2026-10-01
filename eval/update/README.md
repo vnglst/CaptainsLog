@@ -7,6 +7,11 @@ exercise the actual scheduled monitor iteration, preference persistence, model
 setup/recording/processing gates (including queued work), restart success/failure,
 and retry timing. Relaunch and termination are injected to keep tests isolated.
 
+The fake `brew update` also invokes the updater's temporary Git executable under
+a filtered environment. It verifies HTTPS routing for the public tap's SSH and
+HTTPS URLs despite a broad HTTPS-to-SSH rewrite, without fetching repositories,
+changing stored remotes, or changing transport for unrelated taps.
+
 Run the reproducible CLI verification suite with `bash scripts/test-updates.sh`.
 It creates its own isolated config/data and preserves logs under `tmp/`.
 Run controller tests with `swift run run-tests --unit`.
