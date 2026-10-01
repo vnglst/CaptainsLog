@@ -21,6 +21,7 @@ public enum AppStage: String {
 public final class AppState {
     // MARK: - Child Managers
 
+    public let updates: UpdateManager
     public let config: ConfigManager
     public let recording: RecordingState
     public let processing: ProcessingCoordinator
@@ -73,7 +74,8 @@ public final class AppState {
         "v\(Self.appVersion) · \(Self.gitCommitHash)"
     }
 
-    private static let appVersion = "0.1.0"
+    private static let appVersion =
+        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "dev"
 
     // Read from the app bundle's Info.plist (injected by build-app.sh at package time).
     // Falls back to "dev" in plain `swift build` or `swift run` invocations.
@@ -116,6 +118,7 @@ public final class AppState {
     public init() {
         // Context Markdown is settings-only UI state and the pipeline reads it
         // directly. Avoid touching those files before the recording UI appears.
+        updates = UpdateManager()
         config = ConfigManager(loadContextFiles: false)
         recording = RecordingState()
         processing = ProcessingCoordinator()
@@ -129,6 +132,7 @@ public final class AppState {
     }
 
     init(
+        updates: UpdateManager = UpdateManager(),
         config: ConfigManager = ConfigManager(),
         recording: RecordingState = RecordingState(),
         processing: ProcessingCoordinator = ProcessingCoordinator(),
@@ -139,6 +143,7 @@ public final class AppState {
             try? FileManager.default.trashItem(at: $0, resultingItemURL: nil)
         }
     ) {
+        self.updates = updates
         self.config = config
         self.recording = recording
         self.processing = processing
@@ -199,6 +204,7 @@ public final class AppState {
     }
 
     func startRecording() {
+        guard !updates.isInstalling, !updates.needsRestart else { return }
         guard !recording.isRecording else { return }
         processing.stage = .recording
         recording.startRecording(
@@ -262,6 +268,7 @@ public final class AppState {
     }
 
     func resumeProcessing(stem: String, fromStage: Pipeline.Stage? = nil) {
+        guard !updates.isInstalling, !updates.needsRestart else { return }
         processing.resumeEntry(
             stem: stem,
             fromStage: fromStage,
@@ -272,6 +279,7 @@ public final class AppState {
     }
 
     func reprocessEntry(stem: String, slug: String?) {
+        guard !updates.isInstalling, !updates.needsRestart else { return }
         guard processing.processingStem == nil else { return }
         do {
             try Pipeline.resetForReprocessing(stem: stem, slug: slug, dataDir: config.dataDir)
@@ -284,6 +292,7 @@ public final class AppState {
     }
 
     public func batchResumePending() {
+        guard !updates.isInstalling, !updates.needsRestart else { return }
         processing.batchResumePending(
             pendingEntries: pendingEntries,
             dataDir: config.dataDir,
@@ -315,8 +324,16 @@ public final class AppState {
         }
     }
 
-    /// Starts nonessential launch work only after SwiftUI has had a chance to
-    /// present the recording UI. Recording itself does not depend on any of it.
+    var canInstallUpdate: Bool {
+        !isRecording && !isProcessing && !processing.hasScheduledWork && modelsReady
+    }
+
+    public func installUpdate() async {
+        guard canInstallUpdate else { return }
+        await updates.install()
+    }
+
+    /// Starts nonessential launch work after the recording UI appears.
     public func bootstrap() async {
         guard !hasBootstrapped else { return }
         hasBootstrapped = true

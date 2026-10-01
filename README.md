@@ -10,7 +10,25 @@ The Homebrew cask supports Apple Silicon Macs running macOS 26 or later. Homebre
 brew install --cask vnglst/captainslog/captainslog
 ```
 
-Update later with:
+The installed app checks for updates at launch and once every 24 hours while open.
+Available updates install automatically once recording, processing, and model
+setup finish, then the app restarts. Settings → Updates lets you disable automatic
+checks or automatic installation, check manually, and install an available update.
+After a manual install, use the Restart app button. Updates use the same
+Homebrew cask and checksum verification as the initial install; checks refresh
+Homebrew metadata over the network without sending recordings or notes.
+Source builds and demo mode do not run automatic checks.
+
+You can also check or update through the CLI (quit the app before installing):
+
+```sh
+cl update --check
+cl update
+cl config set automaticUpdates false
+cl config set automaticUpdateChecks false
+```
+
+Or update directly with:
 
 ```sh
 brew update

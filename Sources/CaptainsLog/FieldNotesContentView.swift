@@ -18,6 +18,11 @@ public struct FieldNotesContentView: View {
 
     public init(bootstrap: Bool = true) {
         self.bootstrap = bootstrap
+        #if DEBUG
+        if ProcessInfo.processInfo.environment["CAPTAINSLOG_UI_FIXTURE"] == "eval-settings" {
+            _section = CLState(wrappedValue: .settings)
+        }
+        #endif
     }
 
     public var body: some View {
@@ -57,6 +62,7 @@ public struct FieldNotesContentView: View {
                 }
             }
             .clipped()
+            .disabled(section == .entries && (appState.updates.isInstalling || appState.updates.needsRestart))
         }
         .frame(minWidth: 720, minHeight: 780)
         .background(FieldNotes.ColorToken.canvas)
@@ -73,6 +79,14 @@ public struct FieldNotesContentView: View {
         .task {
             guard bootstrap else { return }
             await appState.bootstrap()
+        }
+        .task {
+            guard bootstrap else { return }
+            let state = appState
+            state.updates.startMonitoring { [weak state] in
+                guard let state else { return false }
+                return state.canInstallUpdate
+            }
         }
         #if DEBUG
         .task {
@@ -126,6 +140,7 @@ public struct FieldNotesContentView: View {
 }
 
 private struct FieldNotesSidebar: View {
+    @Environment(AppState.self) private var appState
     @Binding var section: FieldNotesContentView.Section
     let onShowEntries: () -> Void
 
@@ -149,6 +164,15 @@ private struct FieldNotesSidebar: View {
             }
             FieldNotesSidebarItem(title: "Settings", icon: "gearshape", isSelected: section == .settings) {
                 section = .settings
+            }
+            .overlay(alignment: .trailing) {
+                Circle()
+                    .fill(FieldNotes.ColorToken.amber)
+                    .frame(width: 6, height: 6)
+                    .padding(.trailing, 12)
+                    .opacity(appState.updates.availableVersion != nil || appState.updates.needsRestart ? 1 : 0)
+                    .allowsHitTesting(false)
+                    .accessibilityLabel("Update available")
             }
 
             Spacer()
@@ -1031,51 +1055,149 @@ private struct FieldNotesSettingsView: View {
     var body: some View {
         @Bindable var state = appState
         ScrollView {
-            VStack(alignment: .leading, spacing: FieldNotes.Spacing.l) {
-                Text("Settings")
-                    .font(FieldNotes.Typography.title(28))
-                    .foregroundStyle(FieldNotes.ColorToken.primaryText)
+            VStack(alignment: .leading, spacing: 16) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Settings")
+                        .font(FieldNotes.Typography.title(30))
+                        .foregroundStyle(FieldNotes.ColorToken.primaryText)
+                    Text("Make CaptainsLog work your way.")
+                        .font(FieldNotes.Typography.body(14))
+                        .foregroundStyle(FieldNotes.ColorToken.secondaryText)
+                }
+                .padding(.bottom, 8)
+
+                section("Updates") { updatePreferences }
 
                 section("Storage") {
-                    Text(shortenedPath(appState.dataDir)).font(FieldNotes.Typography.metadata(12)).foregroundStyle(FieldNotes.ColorToken.primaryText)
-                    HStack { FieldNotesButton(title: "Choose folder", isDisabled: isDemoMode) { appState.pickDataDirectory() }; FieldNotesButton(title: "Reveal in Finder", kind: .secondary) { NSWorkspace.shared.selectFile(nil, inFileViewerRootedAtPath: appState.dataDir) } }
-                    helper(isDemoMode ? "Demo data stays in this repository's temporary working copy." : "Audio, transcripts, and enriched Markdown notes are stored here.")
+                    HStack(spacing: 12) {
+                        Image(systemName: "folder")
+                            .font(.system(size: 19))
+                            .foregroundStyle(FieldNotes.ColorToken.secondaryText)
+                        Text(shortenedPath(appState.dataDir))
+                            .font(FieldNotes.Typography.metadata(12))
+                            .foregroundStyle(FieldNotes.ColorToken.primaryText)
+                            .lineLimit(2)
+                            .truncationMode(.middle)
+                            .textSelection(.enabled)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .padding(12)
+                    .background(FieldNotes.ColorToken.canvas, in: RoundedRectangle(cornerRadius: 8))
+                    .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(FieldNotes.ColorToken.stroke))
+                    HStack(spacing: 8) {
+                        FieldNotesButton(title: "Choose folder", kind: .secondary, isDisabled: isDemoMode) {
+                            appState.pickDataDirectory()
+                        }
+                        FieldNotesButton(title: "Reveal in Finder", kind: .secondary) {
+                            NSWorkspace.shared.selectFile(nil, inFileViewerRootedAtPath: appState.dataDir)
+                        }
+                    }
+                    helper(isDemoMode ? "Demo data stays in this repository's temporary working copy."
+                        : "Audio, transcripts, and Markdown notes are saved here.")
                 }
-                section("Personal context") {
-                    FieldNotesTextEditor(text: $state.personalContext, placeholder: "Information that helps CaptainsLog understand your work and vocabulary.")
-                    helper("\(appState.personalContext.count) characters · Used during cleanup.")
+
+                section("Writing context") {
+                    fieldLabel("Personal context")
+                    FieldNotesTextEditor(text: $state.personalContext,
+                        placeholder: "Your work, interests, and vocabulary.")
+                        .accessibilityLabel("Personal context")
+                    HStack(alignment: .top, spacing: 12) {
+                        helper("Helps CaptainsLog understand your vocabulary during cleanup.")
+                        Spacer(minLength: 0)
+                        Text("\(appState.personalContext.count) characters")
+                            .font(FieldNotes.Typography.metadata(11))
+                            .foregroundStyle(FieldNotes.ColorToken.secondaryText)
+                            .fixedSize()
+                    }
+                    divider.padding(.vertical, 4)
+                    fieldLabel("Name and term corrections")
+                    FieldNotesTextEditor(text: $state.corrections,
+                        placeholder: "One correction per line, for example:\nKoenh → Koen")
+                        .accessibilityLabel("Name and term corrections")
+                    helper("Help cleanup recognize names and terms. Use one correction per line.")
                 }
-                section("Name and term corrections") {
-                    FieldNotesTextEditor(text: $state.corrections, placeholder: "One correction per line, for example:\nKoenh → Koen")
-                    helper("These replacement rules are used during cleanup.")
-                }
+
                 section("Audio input") {
-                    HStack {
+                    HStack(spacing: 12) {
+                        Image(systemName: "mic")
+                            .font(.system(size: 18))
+                            .foregroundStyle(FieldNotes.ColorToken.secondaryText)
                         Text(appState.inputDevices.first { $0.uid == appState.selectedDeviceUID }?.name ?? "No input device")
-                            .font(FieldNotes.Typography.body()).foregroundStyle(FieldNotes.ColorToken.primaryText)
-                        Spacer()
+                            .font(FieldNotes.Typography.body(13))
+                            .foregroundStyle(FieldNotes.ColorToken.primaryText)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                         FieldNotesButton(title: "Refresh devices", kind: .secondary) { appState.refreshDevices() }
                     }
+                    helper("The microphone currently selected for recordings.")
                 }
                 section("Models") {
                     modelStatus
                     helper("Model paths and identifiers are managed through the CLI.")
                 }
-                section("About") {
+                HStack(spacing: 12) {
                     Text(appState.versionString)
-                        .font(FieldNotes.Typography.metadata())
-                        .foregroundStyle(FieldNotes.ColorToken.tertiaryText)
+                        .font(FieldNotes.Typography.metadata(11))
+                        .foregroundStyle(FieldNotes.ColorToken.secondaryText)
+                    Spacer()
                     FieldNotesButton(title: "Third-party notices", kind: .secondary) {
                         showThirdPartyNotices = true
                     }
                 }
+                .padding(.top, 4)
             }
-            .padding(FieldNotes.Spacing.xl)
-            .padding(.bottom, FieldNotes.Spacing.xxl)
+            .frame(maxWidth: 760, alignment: .leading)
+            .padding(24)
+            .padding(.bottom, 16)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .onAppear { appState.config.loadContextFilesIfNeeded() }
-        .sheet(isPresented: $showThirdPartyNotices) {
-            ThirdPartyNoticesView()
+        .sheet(isPresented: $showThirdPartyNotices) { ThirdPartyNoticesView() }
+    }
+
+    private var updatePreferences: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Toggle(isOn: Binding(
+                get: { appState.updates.automaticChecks },
+                set: { appState.updates.setAutomaticChecks($0) }
+            )) {
+                preferenceLabel("Automatic update checks", description: "Check once a day while the app is open.")
+            }
+            .toggleStyle(FieldNotesToggleStyle())
+            .disabled(!appState.updates.supported)
+
+            divider
+            Toggle(isOn: Binding(
+                get: { appState.updates.automaticUpdates },
+                set: { appState.updates.setAutomaticUpdates($0) }
+            )) {
+                preferenceLabel("Install when idle",
+                    description: "Wait for recording and processing to finish, then restart.")
+            }
+            .toggleStyle(FieldNotesToggleStyle(appearance: .checkbox))
+            .padding(.leading, 16)
+            .disabled(!appState.updates.supported || !appState.updates.automaticChecks)
+
+            divider
+            HStack(spacing: 8) {
+                FieldNotesButton(title: "Check for updates", kind: .secondary,
+                    isDisabled: !appState.updates.supported || appState.updates.isChecking
+                        || appState.updates.isInstalling || appState.updates.needsRestart) {
+                    Task { await appState.updates.check() }
+                }
+                FieldNotesButton(title: appState.updates.needsRestart ? "Restart app" : "Install update", kind: .primary,
+                    isDisabled: (appState.updates.availableVersion == nil && !appState.updates.needsRestart)
+                        || appState.updates.isChecking || appState.updates.isInstalling || appState.updates.isRestarting
+                        || !appState.canInstallUpdate) {
+                    if appState.updates.needsRestart { appState.updates.restart() }
+                    else { Task { await appState.installUpdate() } }
+                }
+            }
+            helper(appState.updates.supported ? appState.updates.message
+                : "Auto-updates are available in the installed app, outside demo mode.")
+                .lineLimit(3)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .frame(height: 48, alignment: .topLeading)
+                .help(appState.updates.message)
         }
     }
 
@@ -1084,27 +1206,51 @@ private struct FieldNotesSettingsView: View {
     }
 
     private func section<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
-        VStack(alignment: .leading, spacing: FieldNotes.Spacing.s) {
-            Text(title).font(FieldNotes.Typography.title(18)).foregroundStyle(FieldNotes.ColorToken.primaryText)
-            content().padding(FieldNotes.Spacing.m).fieldNotesSurface()
+        VStack(alignment: .leading, spacing: 16) {
+            Text(title)
+                .font(FieldNotes.Typography.title(17))
+                .foregroundStyle(FieldNotes.ColorToken.primaryText)
+            content()
         }
+        .padding(20)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .fieldNotesSurface()
+    }
+
+    private var divider: some View {
+        Rectangle().fill(FieldNotes.ColorToken.stroke).frame(height: 1)
+    }
+
+    private func fieldLabel(_ title: String) -> some View {
+        Text(title).font(FieldNotes.Typography.body(13, weight: .medium))
+            .foregroundStyle(FieldNotes.ColorToken.primaryText)
+    }
+
+    private func preferenceLabel(_ title: String, description: String) -> some View {
+        VStack(alignment: .leading, spacing: 5) {
+            Text(title).font(FieldNotes.Typography.body(14, weight: .medium))
+                .foregroundStyle(FieldNotes.ColorToken.primaryText)
+            helper(description)
+        }
+        .fixedSize(horizontal: false, vertical: true)
+        .accessibilityElement(children: .combine)
     }
 
     private func helper(_ text: String) -> some View {
-        Text(text).font(FieldNotes.Typography.body(12)).foregroundStyle(FieldNotes.ColorToken.secondaryText)
+        Text(text).font(FieldNotes.Typography.body(12))
+            .foregroundStyle(FieldNotes.ColorToken.secondaryText)
+            .fixedSize(horizontal: false, vertical: true)
     }
 
     @ViewBuilder
     private var modelStatus: some View {
         switch appState.modelState {
-        case .ready:
-            FieldNotesStatus(state: .processed, label: "Local models ready")
-        case .downloading:
-            FieldNotesStatus(state: .active, label: "Preparing local models")
-        case .error:
-            FieldNotesStatus(state: .failed, label: "Local models need attention")
+        case .ready: FieldNotesStatus(state: .processed, label: "Local models ready")
+        case .downloading: FieldNotesStatus(state: .active, label: "Preparing local models")
+        case .error: FieldNotesStatus(state: .failed, label: "Local models need attention")
         }
     }
+
     private func shortenedPath(_ path: String) -> String {
         let home = FileManager.default.homeDirectoryForCurrentUser.path
         return path.hasPrefix(home) ? "~" + path.dropFirst(home.count) : path

@@ -10,6 +10,9 @@ public struct CaptainsLogConfig: Codable {
         explicit ?? configured ?? environment ?? "processed"
     }
 
+    /// Missing in older config files means enabled.
+    public var automaticUpdates: Bool?
+    public var automaticUpdateChecks: Bool?
     public var schemaVersion: Int
     public var dataDir: String?
     public var whisperModelFolder: String?
@@ -18,12 +21,16 @@ public struct CaptainsLogConfig: Codable {
     public var qwenModelFolder: String?
     public init(
         schemaVersion: Int = currentSchemaVersion,
+        automaticUpdateChecks: Bool? = nil,
+        automaticUpdates: Bool? = nil,
         dataDir: String? = nil,
         whisperModelFolder: String? = nil,
         whisperModel: String? = nil,
         qwenModelId: String? = nil,
         qwenModelFolder: String? = nil
     ) {
+        self.automaticUpdates = automaticUpdates
+        self.automaticUpdateChecks = automaticUpdateChecks
         self.schemaVersion = schemaVersion
         self.dataDir = dataDir
         self.whisperModelFolder = whisperModelFolder

@@ -7,7 +7,7 @@ struct CL: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "cl",
         abstract: "CaptainsLog command-line interface.",
-        subcommands: [Ping.self, Record.self, Warm.self, Transcribe.self, CleanupCommand.self, CategorizeCommand.self, FilenameCommand.self, EnrichCommand.self, PipelineCommand.self, ResumeCommand.self, ListCommand.self, SearchIndexCommand.self, SearchCommand.self, ConfigCommand.self]
+        subcommands: [Ping.self, Record.self, Warm.self, Transcribe.self, CleanupCommand.self, CategorizeCommand.self, FilenameCommand.self, EnrichCommand.self, PipelineCommand.self, ResumeCommand.self, ListCommand.self, SearchIndexCommand.self, SearchCommand.self, ConfigCommand.self, UpdateCommand.self]
     )
 }
 
@@ -534,6 +534,8 @@ struct ConfigShow: AsyncParsableCommand {
     func run() async throws {
         let cfg = CaptainsLogConfig.load()
         print("Config file: \(CaptainsLogConfig.configURL.path)")
+        print("  automaticUpdates: \(cfg.automaticUpdates ?? true)")
+        print("  automaticUpdateChecks: \(cfg.automaticUpdateChecks ?? true)")
         print("  dataDir:             \(cfg.dataDir ?? "(unset)")")
         print("  whisperModel:        \(cfg.whisperModel ?? "(unset, default: \(Transcriber.defaultModel))")")
         print("  whisperModelFolder:  \(cfg.whisperModelFolder ?? "(unset — will fetch from network)")")
@@ -550,7 +552,7 @@ struct ConfigSet: AsyncParsableCommand {
         abstract: "Set a config value."
     )
 
-    @Argument(help: "Key (dataDir, whisperModel, whisperModelFolder, qwenModelId, qwenModelFolder).")
+    @Argument(help: "Key (dataDir, whisperModel, whisperModelFolder, qwenModelId, qwenModelFolder, automaticUpdateChecks, automaticUpdates).")
     var key: String
 
     @Argument(help: "Value (use 'unset' to clear).")
@@ -559,6 +561,8 @@ struct ConfigSet: AsyncParsableCommand {
     func run() async throws {
         let v: String? = (value == "unset") ? nil : value
         let knownKeys = Set([
+            "automaticUpdates",
+            "automaticUpdateChecks",
             "dataDir",
             "whisperModel",
             "whisperModelFolder",
@@ -570,15 +574,20 @@ struct ConfigSet: AsyncParsableCommand {
             throw ValidationError(
                 """
                 Unknown key: \(key)
-                Valid keys: dataDir, whisperModel, whisperModelFolder, qwenModelId, qwenModelFolder
+                Valid keys: dataDir, whisperModel, whisperModelFolder, qwenModelId, qwenModelFolder, automaticUpdateChecks, automaticUpdates
                 Edit context files directly:
                   personal_info: \(cfg.contextDir().path)/personal_info.md
                   corrections:   \(cfg.contextDir().path)/corrections.md
                 """
             )
         }
+        if ["automaticUpdateChecks", "automaticUpdates"].contains(key), let v, v != "true", v != "false" {
+            throw ValidationError("\(key) must be true, false, or unset.")
+        }
         try CaptainsLogConfig.update { cfg in
             switch key {
+            case "automaticUpdates": cfg.automaticUpdates = v.map { $0 == "true" }
+            case "automaticUpdateChecks": cfg.automaticUpdateChecks = v.map { $0 == "true" }
             case "dataDir": cfg.dataDir = v
             case "whisperModel": cfg.whisperModel = v
             case "whisperModelFolder": cfg.whisperModelFolder = v
@@ -589,5 +598,33 @@ struct ConfigSet: AsyncParsableCommand {
             }
         }
         print("Saved.")
+    }
+}
+
+struct UpdateCommand: AsyncParsableCommand {
+    static let configuration = CommandConfiguration(
+        commandName: "update", abstract: "Check for or install a CaptainsLog Homebrew update.")
+
+    @Flag(help: "Only check for an update; do not install it.")
+    var check = false
+
+    @Option(help: "Homebrew executable path.")
+    var brewPath = "/opt/homebrew/bin/brew"
+
+    func run() async throws {
+        let updater = AppUpdater(brewURL: URL(fileURLWithPath: brewPath))
+        let status = try await updater.check()
+        print("Installed: \(status.installedVersion); available: \(status.availableVersion)")
+        guard status.updateAvailable else {
+            print("CaptainsLog is up to date.")
+            return
+        }
+        if check {
+            print("Update available. Run cl update to install it when CaptainsLog is idle.")
+        } else {
+            print("Installing update… CaptainsLog must be closed.")
+            try await updater.install()
+            print("Update installed. Quit and reopen CaptainsLog to use the new version.")
+        }
     }
 }

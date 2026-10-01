@@ -5,7 +5,7 @@ cd "$(dirname "$0")/.."
 
 fixture="${1:-eval}"
 case "$fixture" in
-    onboarding|eval|eval-empty|eval-processing|eval-paused|eval-failed|\
+    onboarding|eval|eval-settings|eval-empty|eval-processing|eval-paused|eval-failed|\
     eval-search-results|eval-search-empty|eval-search-error|eval-search-preparing|\
     eval-searching|eval-indexing|eval-model-downloading|eval-model-error|\
     eval-recording|eval-recording-paused) ;;

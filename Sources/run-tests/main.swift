@@ -4687,7 +4687,7 @@ func runTests() async {
         try expect(appState.recordingDuration == appState.recording.recordingDuration)
         try expect(appState.isRecordingPaused == appState.recording.isRecordingPaused)
         try expect(appState.processingStem == appState.processing.processingStem)
-        try expect(appState.versionString.hasPrefix("v0.1.0 · "))
+        try expect(appState.versionString == "vdev · dev")
     }
 
     test("AppState: selected device UID can be set") {
@@ -4972,6 +4972,7 @@ func runTests() async {
         try expect(FieldNotesAudioRuler.tickHeights(seed: 1, count: -1, height: 24).isEmpty)
     }
 
+    await runUpdateTests()
     runCoreCoverageTests()
     if !lightweightUnitOnly {
         await runAppWorkflowCoverageTests()
@@ -4990,6 +4991,343 @@ func runTests() async {
     if testsFailed > 0 {
         exit(1)
     }
+}
+
+@MainActor
+private final class UpdateManagerHarness {
+    var now = Date(timeIntervalSince1970: 10_000)
+    var events: [String] = []
+    var supported = true
+    var installed = false
+    var checkError: Error?
+    var installError: Error?
+    var restartError: Error?
+    var holdRestart = false
+    var restartCompletion: (@MainActor (Error?) -> Void)?
+    let available: AppUpdater.Status
+    let current: AppUpdater.Status
+
+    init(fixtures: URL) throws {
+        available = try AppUpdater.parseStatus(Data(contentsOf: fixtures.appendingPathComponent("available.json")))
+        current = try AppUpdater.parseStatus(Data(contentsOf: fixtures.appendingPathComponent("current.json")))
+        let dataDir = CaptainsLogConfig.configURL.deletingLastPathComponent().appendingPathComponent("data")
+        try FileManager.default.createDirectory(at: dataDir, withIntermediateDirectories: true)
+        try CaptainsLogConfig(automaticUpdateChecks: true, automaticUpdates: true, dataDir: dataDir.path).save()
+    }
+
+    func dependencies(appPath: String? = nil) -> UpdateManager.Dependencies {
+        .init(
+            supported: { self.supported }, appPath: appPath ?? available.appPath,
+            appVersion: available.installedVersion, now: { self.now },
+            check: {
+                self.events.append("check")
+                if let error = self.checkError { throw error }
+                return self.installed ? self.current : self.available
+            },
+            install: {
+                self.events.append("install")
+                if let error = self.installError { throw error }
+                self.installed = true
+            },
+            relaunch: { completion in
+                self.events.append("relaunch")
+                if self.holdRestart { self.restartCompletion = completion }
+                else { completion(self.restartError) }
+            },
+            terminate: { self.events.append("terminate") }
+        )
+    }
+}
+
+@MainActor
+private func runUpdateManagerTests(fixtures: URL) async {
+    let root = FileManager.default.temporaryDirectory.appendingPathComponent("UpdateManagerTests-\(UUID().uuidString)")
+    try? FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+    let previousConfig = ProcessInfo.processInfo.environment["CAPTAINS_LOG_CONFIG_PATH"]
+    setenv("CAPTAINS_LOG_CONFIG_PATH", root.appendingPathComponent("config.json").path, 1)
+    defer {
+        if let previousConfig { setenv("CAPTAINS_LOG_CONFIG_PATH", previousConfig, 1) }
+        else { unsetenv("CAPTAINS_LOG_CONFIG_PATH") }
+        try? FileManager.default.removeItem(at: root)
+    }
+
+    await testAsync("UpdateManager: automatic flow uses the real Homebrew fixture transport through installation and restart") {
+        let state = root.appendingPathComponent("installed")
+        let log = root.appendingPathComponent("commands")
+        setenv("CAPTAINS_LOG_UPDATE_FIXTURE_STATE", state.path, 1)
+        setenv("CAPTAINS_LOG_UPDATE_FIXTURE_LOG", log.path, 1)
+        defer {
+            unsetenv("CAPTAINS_LOG_UPDATE_FIXTURE_STATE")
+            unsetenv("CAPTAINS_LOG_UPDATE_FIXTURE_LOG")
+        }
+        try CaptainsLogConfig(automaticUpdateChecks: true, automaticUpdates: true).save()
+        let updater = AppUpdater(brewURL: fixtures.appendingPathComponent("brew-fixture.sh"))
+        var lifecycle: [String] = []
+        let manager = UpdateManager(dependencies: .init(
+            supported: { true }, appPath: "/Applications/CaptainsLog.app", appVersion: "0.1.0", now: { Date() },
+            check: { try await updater.check() },
+            install: { try await updater.install() },
+            relaunch: { completion in lifecycle.append("relaunch"); completion(nil) },
+            terminate: { lifecycle.append("terminate") }
+        ))
+        await manager.runScheduledUpdate { false }
+        try expect(manager.availableVersion == "0.1.1" && !FileManager.default.fileExists(atPath: state.path))
+        try expect(lifecycle.isEmpty)
+        await manager.runScheduledUpdate { true }
+        try expect(FileManager.default.fileExists(atPath: state.path))
+        try expect(manager.needsRestart && manager.availableVersion == nil)
+        try expect(lifecycle == ["relaunch", "terminate"])
+        let commands = try String(contentsOf: log, encoding: .utf8).split(separator: "\n")
+        try expect(commands.filter { $0.hasPrefix("upgrade ") }.count == 1)
+        try expect(commands.contains("upgrade --cask --no-quit --require-sha vnglst/captainslog/captainslog"))
+    }
+
+    await testAsync("UpdateManager: redesigned Settings preferences persist and control automatic installation") {
+        let harness = try UpdateManagerHarness(fixtures: fixtures)
+        let manager = UpdateManager(dependencies: harness.dependencies())
+        manager.setAutomaticChecks(false)
+        manager.setAutomaticUpdates(false)
+        let restored = UpdateManager(dependencies: harness.dependencies())
+        try expect(!restored.automaticChecks && !restored.automaticUpdates)
+        await manager.runScheduledUpdate { true }
+        try expect(harness.events.isEmpty)
+        // Manual checks still work when automatic checking is turned off.
+        await manager.check()
+        try expect(manager.availableVersion == "0.1.1")
+        manager.setAutomaticChecks(true)
+        await manager.runScheduledUpdate { true }
+        try expect(harness.events == ["check"], "Turning on checks must not enable automatic installation")
+        manager.setAutomaticUpdates(true)
+        await manager.runScheduledUpdate { true }
+        try expect(harness.events == ["check", "install", "relaunch", "terminate"])
+    }
+
+    await testAsync("AppState updates: model setup, recording, paused recording, and every processing stage block installation") {
+        let harness = try UpdateManagerHarness(fixtures: fixtures)
+        let manager = UpdateManager(dependencies: harness.dependencies())
+        let state = AppState(updates: manager, config: ConfigManager(loadContextFiles: false))
+        await manager.check()
+        state.models.modelState = .downloading(model: "fixture", progress: 0.5)
+        try expect(!state.canInstallUpdate)
+        await state.installUpdate()
+        state.models.modelState = .ready
+        for stage in [AppStage.transcribing, .cleaning, .categorizing, .naming, .enriching] {
+            state.processing.stage = stage
+            try expect(!state.canInstallUpdate)
+            await state.installUpdate()
+            await manager.runScheduledUpdate { state.canInstallUpdate }
+        }
+        state.processing.stage = .idle
+        let recording = RecordingState()
+        for paused in [false, true] {
+            recording.applyDesignFixture(isPaused: paused, duration: 10, audioLevel: 0.1)
+            let recordingState = AppState(updates: manager, config: ConfigManager(loadContextFiles: false), recording: recording)
+            recordingState.models.modelState = .ready
+            try expect(!recordingState.canInstallUpdate)
+            await recordingState.installUpdate()
+            await manager.runScheduledUpdate { recordingState.canInstallUpdate }
+        }
+        try expect(harness.events == ["check"], "Busy states must not install or restart")
+        try expect(state.canInstallUpdate)
+        await manager.runScheduledUpdate { state.canInstallUpdate }
+        try expect(harness.events == ["check", "install", "relaunch", "terminate"])
+    }
+
+    await testAsync("AppState updates: queued processing blocks installation before its first progress callback") {
+        let harness = try UpdateManagerHarness(fixtures: fixtures)
+        let manager = UpdateManager(dependencies: harness.dependencies())
+        let processing = ProcessingCoordinator(resumePipeline: { _, _, _, _ in
+            try await Task.sleep(for: .seconds(60))
+            throw CancellationError()
+        })
+        let state = AppState(updates: manager, config: ConfigManager(loadContextFiles: false), processing: processing)
+        state.models.modelState = .ready
+        await manager.check()
+        processing.queueProcessing(stem: "synthetic-queued-update-test")
+        try expect(!state.isProcessing && processing.hasScheduledWork && !state.canInstallUpdate)
+        await state.installUpdate()
+        processing.pauseProcessing()
+        processing.resumeEntry(stem: "synthetic-update-test", fromStage: .transcribing,
+            dataDir: root.path, onComplete: {}, onError: { _ in })
+        defer { processing.pauseProcessing() }
+        // Deliberately assert before yielding to the reserved processing task.
+        try expect(!state.isProcessing && processing.hasScheduledWork)
+        try expect(!state.canInstallUpdate)
+        await state.installUpdate()
+        await manager.runScheduledUpdate { state.canInstallUpdate }
+        try expect(harness.events == ["check"])
+    }
+
+    await testAsync("UpdateManager: real monitor iteration waits for idle, installs once, then restarts") {
+        let harness = try UpdateManagerHarness(fixtures: fixtures)
+        let manager = UpdateManager(dependencies: harness.dependencies())
+        await manager.runScheduledUpdate { false }
+        try expect(harness.events == ["check"] && manager.availableVersion == "0.1.1")
+        await manager.runScheduledUpdate { false }
+        try expect(harness.events == ["check"], "Busy polling must not refresh metadata or install")
+        await manager.runScheduledUpdate { true }
+        try expect(harness.events == ["check", "install", "relaunch", "terminate"])
+        try expect(manager.needsRestart && !manager.isInstalling && !manager.isChecking)
+        await manager.runScheduledUpdate { true }
+        try expect(harness.events.count == 4, "Successful installation must not repeat")
+    }
+
+    await testAsync("UpdateManager: check failures keep the app running and respect the daily interval") {
+        let harness = try UpdateManagerHarness(fixtures: fixtures)
+        harness.checkError = AppUpdater.UpdateError.commandFailed("fixture check failed")
+        let manager = UpdateManager(dependencies: harness.dependencies())
+        await manager.runScheduledUpdate { true }
+        try expect(harness.events == ["check"] && !manager.needsRestart && !manager.isChecking)
+        try expect(manager.message.contains("fixture check failed"))
+        harness.checkError = nil
+        harness.now.addTimeInterval(86_399)
+        await manager.runScheduledUpdate { true }
+        try expect(harness.events == ["check"])
+        harness.now.addTimeInterval(1)
+        await manager.runScheduledUpdate { true }
+        try expect(harness.events == ["check", "check", "install", "relaunch", "terminate"])
+    }
+
+    await testAsync("UpdateManager: failed installs do not restart, and retry only after an hour") {
+        let harness = try UpdateManagerHarness(fixtures: fixtures)
+        harness.installError = AppUpdater.UpdateError.commandFailed("fixture install failed")
+        let manager = UpdateManager(dependencies: harness.dependencies())
+        await manager.runScheduledUpdate { true }
+        try expect(harness.events == ["check", "install"])
+        try expect(!manager.needsRestart && !manager.isInstalling && manager.availableVersion != nil)
+        try expect(manager.message.contains("fixture install failed"))
+        harness.installError = nil
+        harness.now.addTimeInterval(3_599)
+        await manager.runScheduledUpdate { true }
+        try expect(harness.events == ["check", "install"])
+        harness.now.addTimeInterval(1)
+        await manager.runScheduledUpdate { true }
+        try expect(harness.events == ["check", "install", "install", "relaunch", "terminate"])
+    }
+
+    await testAsync("UpdateManager: restart failure preserves the running app and permits manual retry") {
+        let harness = try UpdateManagerHarness(fixtures: fixtures)
+        harness.restartError = AppUpdater.UpdateError.commandFailed("fixture relaunch failed")
+        let manager = UpdateManager(dependencies: harness.dependencies())
+        await manager.runScheduledUpdate { true }
+        try expect(harness.events == ["check", "install", "relaunch"])
+        try expect(manager.needsRestart && !manager.isRestarting && manager.message.contains("Could not restart"))
+        harness.restartError = nil
+        manager.restart()
+        try expect(harness.events == ["check", "install", "relaunch", "relaunch", "terminate"])
+    }
+
+    await testAsync("UpdateManager: overlapping restart actions launch only one replacement") {
+        let harness = try UpdateManagerHarness(fixtures: fixtures)
+        harness.holdRestart = true
+        let manager = UpdateManager(dependencies: harness.dependencies())
+        await manager.check()
+        await manager.install()
+        manager.restart()
+        manager.restart()
+        try expect(manager.isRestarting && harness.events == ["check", "install", "relaunch"])
+        harness.restartCompletion?(nil)
+        try expect(!manager.isRestarting && harness.events.last == "terminate")
+    }
+
+    await testAsync("UpdateManager: unsupported runs and a different installed bundle cannot auto-update") {
+        let harness = try UpdateManagerHarness(fixtures: fixtures)
+        harness.supported = false
+        let manager = UpdateManager(dependencies: harness.dependencies())
+        await manager.runScheduledUpdate { true }
+        await manager.check()
+        await manager.install()
+        try expect(harness.events.isEmpty)
+        harness.supported = true
+        let other = UpdateManager(dependencies: harness.dependencies(appPath: "/tmp/Other.app"))
+        await other.runScheduledUpdate { true }
+        try expect(harness.events == ["check"] && other.availableVersion == nil && !other.needsRestart)
+    }
+}
+
+@MainActor
+func runUpdateTests() async {
+    let fixtures = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+        .appendingPathComponent("eval/update/input")
+    test("Updater: installed and available cask versions") {
+        let status = try AppUpdater.parseStatus(Data(contentsOf: fixtures.appendingPathComponent("available.json")))
+        try expect(status.updateAvailable && status.installedVersion == "0.1.0")
+        try expect(status.availableVersion == "0.1.1")
+        let current = try AppUpdater.parseStatus(Data(contentsOf: fixtures.appendingPathComponent("current.json")))
+        try expect(!current.updateAvailable)
+    }
+    test("Updater: rejects malformed, unrelated, and uninstalled casks") {
+        let source = try String(contentsOf: fixtures.appendingPathComponent("available.json"), encoding: .utf8)
+        for value in ["{}", source.replacingOccurrences(of: "vnglst/captainslog/captainslog", with: "other/tap/app"),
+                      source.replacingOccurrences(of: "\"installed\":\"0.1.0\"", with: "\"installed\":null")] {
+            do {
+                _ = try AppUpdater.parseStatus(Data(value.utf8))
+                throw NSError(domain: "TestError", code: 1)
+            } catch is AppUpdater.UpdateError { }
+        }
+    }
+    test("Updater: automatic installation requires idle state, enabled preferences, and retry delay") {
+        let now = Date(timeIntervalSince1970: 10_000)
+        func allowed(checks: Bool = true, updates: Bool = true, available: Bool = true,
+                     idle: Bool = true, attempt: Date? = nil) -> Bool {
+            UpdatePolicy.shouldInstall(automaticChecks: checks, automaticUpdates: updates,
+                updateAvailable: available, isIdle: idle, lastAttempt: attempt, now: now)
+        }
+        try expect(allowed())
+        try expect(!allowed(checks: false) && !allowed(updates: false))
+        try expect(!allowed(available: false) && !allowed(idle: false))
+        try expect(!allowed(attempt: now))
+        try expect(allowed(attempt: now.addingTimeInterval(-3600)))
+        try expect(!UpdatePolicy.isDue(now, interval: 86400, now: now))
+        try expect(UpdatePolicy.isDue(nil, interval: 86400, now: now))
+    }
+    test("Updater: older config retains enabled default") {
+        let old = try JSONDecoder().decode(CaptainsLogConfig.self, from: Data("{\"schemaVersion\":1}".utf8))
+        try expect(old.automaticUpdateChecks == nil && old.automaticUpdates == nil)
+        var config = old
+        config.automaticUpdateChecks = false
+        config.automaticUpdates = false
+        let restored = try JSONDecoder().decode(CaptainsLogConfig.self, from: JSONEncoder().encode(config))
+        try expect(restored.automaticUpdateChecks == false && restored.automaticUpdates == false)
+    }
+    await testAsync("Updater: fixture check, upgrade, and failure propagation") {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("UpdateTests-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer {
+            for key in ["CAPTAINS_LOG_UPDATE_FIXTURE_STATE", "CAPTAINS_LOG_UPDATE_FIXTURE_LOG", "CAPTAINS_LOG_UPDATE_FIXTURE_FAIL"] { unsetenv(key) }
+            try? FileManager.default.removeItem(at: root)
+        }
+        let state = root.appendingPathComponent("installed")
+        let log = root.appendingPathComponent("commands")
+        setenv("CAPTAINS_LOG_UPDATE_FIXTURE_STATE", state.path, 1)
+        setenv("CAPTAINS_LOG_UPDATE_FIXTURE_LOG", log.path, 1)
+        let updater = AppUpdater(brewURL: fixtures.appendingPathComponent("brew-fixture.sh"))
+        let before = try await updater.check()
+        try expect(before.updateAvailable)
+        try expect(!FileManager.default.fileExists(atPath: state.path), "Checking must not install")
+        try await updater.install()
+        let after = try await updater.check(refresh: false)
+        try expect(!after.updateAvailable)
+        let commands = try String(contentsOf: log, encoding: .utf8)
+        try expect(commands.contains("upgrade --cask --no-quit --require-sha vnglst/captainslog/captainslog"))
+        setenv("CAPTAINS_LOG_UPDATE_FIXTURE_FAIL", "update", 1)
+        do {
+            _ = try await updater.check()
+            throw NSError(domain: "TestError", code: 1)
+        } catch let error as AppUpdater.UpdateError {
+            try expect(error.localizedDescription.contains("Synthetic network failure"))
+        }
+    }
+    await testAsync("Updater: missing Homebrew is actionable") {
+        do {
+            _ = try await AppUpdater(brewURL: URL(fileURLWithPath: "/nonexistent/brew")).check()
+            throw NSError(domain: "TestError", code: 1)
+        } catch let error as AppUpdater.UpdateError {
+            try expect(error.localizedDescription.contains("Homebrew"))
+        }
+    }
+    await runUpdateManagerTests(fixtures: fixtures)
+
 }
 
 @main

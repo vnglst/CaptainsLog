@@ -87,3 +87,52 @@ A real published old-to-new Homebrew upgrade, automatic restart, and visible
 Settings layout still need release QA. Synthetic fixtures validate update command
 flow and scheduling without replacing the user's installed app. Human review
 remains the final judgment for model output when inference can run.
+
+## Verification after the Settings redesign: 2026-10-01
+
+The redesigned switch and checkbox retain the existing `setAutomaticChecks` and
+`setAutomaticUpdates` bindings. Ten new controller/app-state integration cases
+exercise the monitor iteration used in production, including a check/install
+sequence through the repository's actual fixture subprocesses. Only relaunch and
+termination are substituted in that sequence; no installed app is replaced.
+
+Verification exposed a gap in the idle check: queued processing and reserved
+processing tasks can exist before a progress callback updates the visible stage.
+Automatic and manual installation now share `AppState.canInstallUpdate`, which
+also checks the processing queue/task reservation. Recording (including pause),
+all processing stages, and model setup prevent installation. A restart-in-flight
+guard prevents repeated restart actions from launching multiple replacements.
+
+Results:
+
+- `swift build`: passed without warnings.
+- `swift run run-tests --unit`: 148 passed, zero failed; all 16 update-related
+  cases passed. Tests cover restored preferences, manual checks when automatic
+  checks are off, idle transitions, no duplicate installation, daily checks,
+  hourly failure retries, failed-install recovery, restart failure/manual retry,
+  duplicate restart actions, and unsupported/mismatched app bundles.
+- `bash scripts/test-updates.sh`: passed check-only, one simulated installation,
+  current-version readback, network-error exit status, Boolean persistence,
+  invalid-value rejection, and restoring default preferences. Its config/data and
+  logs are isolated under `tmp/update-verification.0D6KIg/`.
+- Full deterministic runner: 193 passed, seven failed (200 total). The same
+  unchanged transcription disk-space guard reports zero available bytes and
+  prevents three transcription and four pipeline/resume cases reaching their
+  intended fake operations.
+- Fixture pipeline rerun: blocked at that guard before inference. Isolated run:
+  `tmp/evals-2026-10-01_21-01-49_50077-50077/`. No new model output was produced.
+- Native `eval-settings` fixture: assembled, but LaunchServices again rejected
+  launch with `kLSNoExecutableErr` (-10827). Live clicks, keyboard behavior, and
+  native relaunch could not be verified.
+- Real `cl update --check`, with isolated config/data, reached Homebrew and failed
+  fetching the CaptainsLog tap: SSH reported “No user exists for uid 501.” A
+  process-only Git HTTPS rewrite retry hit the same failure. Tap configuration
+  was not changed, and no application was upgraded. The updater surfaced the
+  command failure instead of reporting successful installation.
+
+The automatic controller flow and preference persistence are verified with
+fixtures. An actual published-version replacement and OS relaunch remain release
+acceptance checks on a working Mac/Homebrew session. Logs for this recheck are
+under `/tmp/captainslog-update-reverify-*`. Reproduce the fixture command checks
+with [`scripts/test-updates.sh`](../scripts/test-updates.sh) and the controller
+checks with `swift run run-tests --unit`.

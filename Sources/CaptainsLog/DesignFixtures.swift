@@ -25,7 +25,7 @@ extension AppState {
         switch fixtureName {
         case "onboarding":
             entries = []
-        case "eval":
+        case "eval", "eval-settings":
             entries = Pipeline.listEntries(dataDir: dataDir).map(LogEntry.from)
         case "eval-empty":
             entries = []

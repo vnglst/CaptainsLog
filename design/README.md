@@ -5,3 +5,8 @@ The shipped interface is the Logs workspace implemented in `Sources/CaptainsLogA
 The images in `design/logs/screens/` are conceptual design references. They are not captures of the current app and include illustrative values such as folder paths, entry counts, microphone names, and version numbers. Review or replace them before presenting them as product screenshots.
 
 The HTML/CSS prototype in `design/project/` is an older LCARS exploration. It is retained as historical material and is not the current product specification. The TNG wording and data in the demo and evaluation fixtures are intentional test content.
+
+The [Settings redesign](logs/SETTINGS-REDESIGN.md) records the ImageGen concept and
+native toggle/checkbox implementation. Its image is also a concept reference,
+not a product screenshot. Preview the Settings page with repository fixtures via
+`bash scripts/test-ui.sh eval-settings`.

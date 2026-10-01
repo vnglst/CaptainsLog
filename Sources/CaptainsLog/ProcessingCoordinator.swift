@@ -22,6 +22,9 @@ public final class ProcessingCoordinator {
     private var pendingProcessingStems: [String] = []
     private let resumePipeline: PipelineResume
 
+    /// Includes queued entries and the interval before a task reports its first stage.
+    var hasScheduledWork: Bool { processingTask != nil || !pendingProcessingStems.isEmpty }
+
     public var isProcessing: Bool {
         [.transcribing, .cleaning, .categorizing, .naming, .enriching].contains(stage)
     }
