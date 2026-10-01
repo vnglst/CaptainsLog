@@ -81,6 +81,7 @@ Transcription uses Whisper Large-v2. Cleanup, categorization, filenames, and met
 ## Documentation
 
 - [Testing gates, evaluation evidence, and remaining checks](./docs/ADR-007-framework-free-test-coverage.md)
+- [Build and verification scripts](./scripts/README.md)
 - [Troubleshooting](./docs/TROUBLESHOOTING.md)
 - [Open product and release work](./docs/PLAN.md)
 - [Publishing plan](./docs/PUBLISHING-PLAN.md)

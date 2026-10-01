@@ -105,6 +105,16 @@ The source-reference review removed no code. `AppMain` constructs `FieldNotesCon
 
 `DesignFixtures.swift`/`CAPTAINSLOG_UI_FIXTURE` and `DemoMode.swift` are active debug seams. Tests must bypass default demo seeding with an explicit isolated config. The vendored `sqlite-vec.h` remains a required public/include surface; its `TODO rm` comment alone is not evidence for deletion.
 
+### Script review: 2026-10-01
+
+The 2026-10-01 script review removed `scripts/benchmark-startup.sh` and its
+internal debug-only recording hooks. It used an obsolete binary path, read the
+personal app config, and started microphone capture automatically. The remaining
+scripts support current build, asset-generation, evaluation, or integration
+workflows; see the [script index](../scripts/README.md). Real recording checks
+remain in the explicitly confirmed `test-recorder-hardware.sh` workflow. A future
+startup benchmark needs isolated fixture data and an explicit hardware boundary.
+
 ## Remaining acceptance work
 
 - Repair meaning-changing transcription errors and rerun transcription and full-pipeline semantic review.

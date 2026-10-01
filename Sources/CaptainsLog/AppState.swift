@@ -353,35 +353,6 @@ public final class AppState {
         entries = Pipeline.listEntries(dataDir: config.dataDir).map(LogEntry.from)
     }
 
-    #if DEBUG
-    /// End-to-end startup probe used by scripts/benchmark-startup.sh. The marker
-    /// is written only after the real recorder has produced audio bytes.
-    func benchmarkRecordingStartup(markerPath: String) async {
-        let audioDir = URL(fileURLWithPath: config.dataDir)
-            .appendingPathComponent(Pipeline.Directory.audio.path)
-        startRecording()
-
-        for _ in 0..<200 {
-            if let files = try? FileManager.default.contentsOfDirectory(
-                at: audioDir,
-                includingPropertiesForKeys: [.fileSizeKey]
-            ), files.contains(where: {
-                ((try? $0.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0) > 1_024
-            }) {
-                try? "ready\n".write(
-                    toFile: markerPath,
-                    atomically: true,
-                    encoding: .utf8
-                )
-                stopRecording()
-                return
-            }
-            try? await Task.sleep(for: .milliseconds(25))
-        }
-        stopRecording()
-    }
-    #endif
-
 }
 
 struct LogEntry: Identifiable, Sendable {

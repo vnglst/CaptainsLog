@@ -88,14 +88,6 @@ public struct FieldNotesContentView: View {
                 return state.canInstallUpdate
             }
         }
-        #if DEBUG
-        .task {
-            guard let marker = ProcessInfo.processInfo.environment[
-                "CAPTAINSLOG_STARTUP_BENCHMARK_MARKER"
-            ] else { return }
-            await appState.benchmarkRecordingStartup(markerPath: marker)
-        }
-        #endif
     }
 
     private var listTransition: AnyTransition {
