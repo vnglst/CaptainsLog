@@ -6,6 +6,8 @@ the Xcode IDE is not required. Run commands from the repository root.
 
 | Script | Purpose / when to use |
 |---|---|
+| `release.swift` | Infer a version bump from Conventional Commits (or use an explicit override), prepare a dated changelog, release checks, commit and tag; also validate Git change coverage, extract notes, and update cask metadata; `--dry-run` previews and `--publish` pushes main/tag atomically. See the [release checklist](../README.md#changelog-and-releases). |
+| `test-release-tooling.sh` | Model-free release/changelog tests using synthetic notes and temporary local Git repositories. |
 | `build-app.sh` | Build the release app and CLI, bundle runtime libraries and notices, sign ad hoc, and create the versioned ZIP. Used by release CI. |
 | `make-iconset.sh` | Regenerate the committed `Resources/AppIcon.icns` after changing the icon design. Requires macOS `sips` and `iconutil`. |
 | `make-icon.swift` | AppKit icon renderer called by `make-iconset.sh`; also accepts a PNG output path for previews. |

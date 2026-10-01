@@ -60,6 +60,11 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "default_branch=$DEFAULT_BRANCH" >> "$GITHUB_OUTPUT"
 
+      - name: Validate and prepare changelog release notes
+        env:
+          VERSION: ${{ steps.release.outputs.version }}
+        run: swift scripts/release.swift notes "$VERSION" > "$RUNNER_TEMP/release-notes.md"
+
       - name: Install build dependencies
         run: brew install llama.cpp
 
@@ -91,10 +96,11 @@ jobs:
           set -euo pipefail
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" "$ARCHIVE" --clobber
+            gh release edit "$TAG" --notes-file "$RUNNER_TEMP/release-notes.md"
           else
             gh release create "$TAG" "$ARCHIVE" \
               --title "CaptainsLog $VERSION" \
-              --generate-notes \
+              --notes-file "$RUNNER_TEMP/release-notes.md" \
               --verify-tag
           fi
 
@@ -108,24 +114,7 @@ jobs:
           git fetch origin "$DEFAULT_BRANCH"
           git switch --force-create "$DEFAULT_BRANCH" "origin/$DEFAULT_BRANCH"
 
-          python3 - "$VERSION" "$SHA256" <<'PY'
-          from pathlib import Path
-          import re
-          import sys
-
-          version, sha256 = sys.argv[1:]
-          path = Path("Casks/captainslog.rb")
-          content = path.read_text()
-          content, version_count = re.subn(
-              r'^  version "[^"]+"$', f'  version "{version}"', content, count=1, flags=re.MULTILINE
-          )
-          content, checksum_count = re.subn(
-              r'^  sha256 "[0-9a-f]{64}"$', f'  sha256 "{sha256}"', content, count=1, flags=re.MULTILINE
-          )
-          if version_count != 1 or checksum_count != 1:
-              raise SystemExit("Could not find exactly one cask version and SHA-256 to update")
-          path.write_text(content)
-          PY
+          swift scripts/release.swift cask "$VERSION" "$SHA256"
 
           git diff --check
           if git diff --quiet -- Casks/captainslog.rb; then
@@ -136,7 +125,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add Casks/captainslog.rb
-          git commit -m "Update Homebrew cask to $VERSION"
+          git commit -m "chore(release): update Homebrew cask to $VERSION"
           git push origin "$DEFAULT_BRANCH"
 
       - name: Check out Homebrew tap
@@ -168,5 +157,5 @@ jobs:
           git -C homebrew-captainslog config user.name "github-actions[bot]"
           git -C homebrew-captainslog config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git -C homebrew-captainslog add Casks/captainslog.rb
-          git -C homebrew-captainslog commit -m "Update CaptainsLog cask to $VERSION"
+          git -C homebrew-captainslog commit -m "chore(release): update CaptainsLog cask to $VERSION"
           git -C homebrew-captainslog push origin "HEAD:$DEFAULT_BRANCH"

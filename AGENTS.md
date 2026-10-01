@@ -4,6 +4,7 @@ Read `README.md` before working here. Follow its product requirements, build ins
 
 ## Development
 
+- Use Conventional Commits for every new commit: `type(scope): description`, with an optional scope. Use `feat` for features, `fix` for fixes, `perf` for performance improvements, and `!` or a `BREAKING CHANGE:` footer for breaking changes. Documentation, tests, CI, refactors, and maintenance use their matching types. Do not rewrite older history to retrofit the convention.
 - Think through assumptions before changing code. Prefer the smallest change that solves the request; avoid unrelated refactors.
 - Keep the CLI usable without Xcode. Use Swift and command-line tools for builds and tests.
 - Test code changes with the affected CLI command and a repository fixture. Reproduce pipeline issues in the CLI before debugging through the UI.
@@ -30,6 +31,8 @@ Stage-specific evaluation workflows live in `skills/<stage>-eval/SKILL.md` for t
 
 ## Documentation
 
+- Update `CHANGELOG.md` in the same commit as every change, including code, prompts, dependencies, fixtures, tests, documentation, and tooling. Describe concrete changes under `Unreleased`; keep planned work in the plans. Review `git status`, `git diff`, and `git log` so nothing is missed. Backfill using release tags as boundaries; do not invent earlier history.
+- Prepare releases with `swift scripts/release.swift [auto|patch|minor|major|version]` (preview with `--dry-run`, push with `--publish`). By default it infers the highest bump from commits after the latest reachable release tag: fix/perf → patch, feat → minor, breaking → major (minor for 0.x); maintenance-only commits do not trigger a release. Manual overrides remain available. It updates `VERSION`, dates and moves Unreleased entries, updates Git comparison links, runs sequential release checks, and creates a commit and tag. Record archive/cask publication in each release; generated cask-only version/checksum commits are covered by that entry. Follow the release checklist in `README.md` and review evaluation semantics before publishing.
 - Keep architecture decisions in `docs/ADR-*.md`. Consolidate dated verification findings and unresolved limits into the relevant ADR; keep ongoing development rules here.
 - Plans track unfinished work. Remove completed plans once their durable decisions and remaining acceptance checks are preserved, and update links to their replacement.
 - Testing gates, dated evaluation evidence, native UI limits, and legacy-code review are consolidated in [ADR-007](docs/ADR-007-framework-free-test-coverage.md). Check downstream SwiftPM clients, previews, debug flags and resource dependencies before deleting apparently unused public symbols or vendored headers.

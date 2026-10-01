@@ -80,6 +80,7 @@ Transcription uses Whisper Large-v2. Cleanup, categorization, filenames, and met
 
 ## Documentation
 
+- [Changelog and release history](./CHANGELOG.md)
 - [Testing gates, evaluation evidence, and remaining checks](./docs/ADR-007-framework-free-test-coverage.md)
 - [Build and verification scripts](./scripts/README.md)
 - [Troubleshooting](./docs/TROUBLESHOOTING.md)
@@ -99,6 +100,81 @@ swift run run-tests
 bash scripts/test-coverage.sh
 ```
 
-GitHub Actions runs only the lightweight, model-free unit suite on pushes and pull requests to `main` (`swift run run-tests --unit`). Run `swift run run-tests` locally for the full deterministic suite. Coverage instrumentation, CLI coverage, model evaluations, and UI checks remain opt-in so routine CI stays short.
+GitHub Actions runs the lightweight, model-free unit suite on pushes and pull requests to `main` (`swift run run-tests --unit`), plus changelog coverage and release-tooling checks. Run `swift run run-tests` locally for the full deterministic suite. Coverage instrumentation, CLI coverage, model evaluations, and UI checks remain opt-in so routine CI stays short.
 
 For the sequential model-backed fixture pipeline, run `bash scripts/run-evals.sh --pipeline`. Run every stage evaluation with `bash scripts/run-evals.sh --suites`; validate saved outputs without inference using `bash scripts/run-evals.sh --validate-run <run-stamp>`. Review generated files against `eval/*/expected/` and the matching stage skill; dated results and semantic findings are recorded in [ADR-007](./docs/ADR-007-framework-free-test-coverage.md#dated-verification-evidence). For native macOS UI checks, use `bash scripts/test-ui.sh eval`; it builds a temporary app bundle and isolates config/data under a temporary directory. Prepared-machine model checks use `scripts/test-model-smoke.sh` with the four `CAPTAINSLOG_*_MODEL_*` environment variables set. Actual microphone capture is a separately confirmed, interactive check via `scripts/test-recorder-hardware.sh`. Neither smoke check runs in GitHub Actions. See [ADR-007](./docs/ADR-007-framework-free-test-coverage.md#test-gates-and-isolation) for fixture and hardware constraints.
+
+## Changelog and releases
+
+Update [CHANGELOG.md](./CHANGELOG.md) under `Unreleased` in the same commit as
+any repository change, including documentation, fixtures, and tooling. Use
+`Added`, `Changed`, `Fixed`, `Removed`, or `Security` as appropriate; describe
+what actually changed. Review `git diff` and `git log` against the latest release
+tag. CI checks for a changelog update in each push or pull request; human review
+checks that the entries cover the changes. Generated cask-only release commits
+are covered by the corresponding release's packaging entry.
+
+Use [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
+for new commits, for example `fix(updater): repair tap fetches` or
+`feat(search): add filters`. The default release command reads full commit
+messages since the latest reachable `vMAJOR.MINOR.PATCH` tag, which must match
+`VERSION`, and chooses the highest applicable bump:
+
+- `fix` and `perf`: patch.
+- `feat`: minor.
+- A `!` after the type/scope, or a `BREAKING CHANGE:` / `BREAKING-CHANGE:` footer:
+  major for `1.x` and later; minor during `0.x` development.
+- Other types (`docs`, `chore`, `test`, `ci`, etc.): no automatic release unless
+  marked as breaking. If no releasable commits exist, the command exits without
+  changing files or creating a commit/tag.
+
+Legacy messages are reported and ignored for version selection; their changes
+remain in the changelog. New commit messages must follow the convention.
+Dry runs use local tags and committed history without fetching. Actual release
+preparation fetches tags first. Changelog entries still require human review.
+
+From a clean `main` checkout with the local models installed, preview a release:
+
+```sh
+swift scripts/release.swift --dry-run
+```
+
+Create the release locally, or create and publish it in one command:
+
+```sh
+swift scripts/release.swift
+# Or, after reviewing the changes and evaluation findings:
+swift scripts/release.swift --publish
+```
+
+Use `auto` explicitly if desired, or override with `patch`, `minor`, `major`, or
+an explicit version (for example, a maintenance-only release).
+The command checks Git state and existing tags, fetches `origin/main`, runs the
+release-tooling tests, `swift build`, `swift run run-tests`, and the full fixture
+pipeline and stage suites sequentially with isolated config/data. Failed checks
+stop before version/changelog edits, commits, or tags. Model evaluation scores
+and artifacts still need semantic review under the stage skills; see [the
+publication gates](./docs/PUBLISHING-PLAN.md) for remaining manual checks.
+
+After checks pass, the command bumps `VERSION`, moves Unreleased entries into a
+dated release section, adds the packaging entry, updates comparison links, and
+creates a `chore(release): CaptainsLog <version>` commit and annotated tag.
+Without `--publish`, inspect the
+commit and then push both together using the command printed by the script.
+If a push fails, the local commit and tag remain; retry that printed push instead
+of running another version bump.
+
+Pushing the tag triggers GitHub Actions to validate the matching dated changelog
+entry, build the app/CLI archive, publish those notes and the archive, and update
+the source cask and Homebrew tap. Reruns also refresh the release notes. Check the
+workflow results and test the published install/upgrade before announcing the
+release. `HOMEBREW_TAP_TOKEN` must be configured as described in
+[ADR-010](./docs/ADR-010-tag-driven-homebrew-releases.md).
+
+Release-tooling tests use Swift, Bash, and Git:
+
+```sh
+bash scripts/test-release-tooling.sh
+swift scripts/release.swift notes 0.1.2
+swift scripts/release.swift check <base-commit> <head-commit>
+```

@@ -25,7 +25,6 @@ See [PLAN-004](PLAN-004-logs-implementation.md) for the current workspace and de
 The app/CLI bundle, public Homebrew tap and tag-driven release workflow are implemented. Keep release checks and unresolved publication reviews in [PUBLISHING-PLAN](PUBLISHING-PLAN.md).
 
 - [ ] Landing page at `captainslog.koenvangilst.nl` with requirements and install steps.
-- [ ] Changelog for each release.
 - [ ] Clean-machine GUI/CLI install, first-launch model download, recording, processing and search checks, including the direct ZIP flow.
 - [ ] Real published Homebrew upgrade and automatic relaunch QA; see [the update ADR](ADR-011-homebrew-auto-updates.md).
 - [ ] Explore Developer ID signing and Mac App Store distribution.
