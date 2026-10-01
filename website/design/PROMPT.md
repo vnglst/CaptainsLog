@@ -1,0 +1,24 @@
+# Website design concept
+
+Generated with the built-in ImageGen tool. Style reference: `design/logs/screens/01-main-workspace.png`, a conceptual app design reference. Output: `landing-page-concept.png`.
+
+This is a visual design concept, not a native app capture. Image-generated copy, sample durations, and illustrative notes should be replaced with verified product copy and synthetic fixture content during implementation. This initial concept predates the documentation review. The implemented HTML now uses revised product copy sourced from the README, ADRs, prompts, and current product plans, and reserves the walkthrough for the owner’s recording. See `../README.md` for source mapping and recording setup; the HTML copy is authoritative.
+
+## Final prompt
+
+Use case: ui-mockup.
+Asset type: high-fidelity desktop website design concept for CaptainsLog, a native Mac app that turns voice memos into searchable Markdown logs entirely on-device.
+Input image 1 is a STYLE REFERENCE of the app's conceptual interface, not an edit target. Create a new website layout, faithfully translating that app's visual language into a polished landing page.
+
+Visual style must match the reference closely: charcoal and graphite surfaces (#0D0E0D, #161715, #1C1D1B), warm off-white text (#F1EEE7), subdued gray secondary text (#B8B5AD), very thin quiet borders (#30312E), scarce warm amber (#F5B544) for primary actions and active audio, small moss-green status dots. Soft native macOS rounded corners, understated depth. Regular/medium native sans-serif, readable compact mono for timestamps and note text. Audio waveform ticks are the identity. This should feel like the app's own website, calm, personal, precise, warm, and intentionally designed.
+
+Composition: a straight-on full landing page mockup, portrait canvas approximately 1440 x 2000, crisp readable UI with generous margins and considered spacing. No perspective device render, no laptop photo, no outer browser chrome.
+Top navigation: amber circle waveform logo beside exact text "CaptainsLog", quiet links "How it works", "Privacy", "GitHub", and an amber "Get the Mac app" button.
+Hero: centered warm off-white headline on two lines, exact text "Make room\nfor your thoughts." Native sans-serif, medium weight, elegant not extremely bold, no italic accent. Below: "Turn voice memos into searchable notes. Everything runs on your Mac." An amber button "Get CaptainsLog" beside a quiet outlined "Watch the demo" button with play icon. Small muted note "Apple Silicon · macOS 26 or later".
+Hero product showcase: one large faithful three-pane app window inspired by the reference, with small native traffic-light window controls. Left dark sidebar with CaptainsLog logo, selected "Logs", "Search", "Settings". Middle list of three synthetic notes: "A bookshop field guide", "A lamp for the weekend", "One sentence a day", with amber/graphite audio rulers, timestamps, and small tags. Right reading pane: "A bookshop field guide", short natural paragraphs about exploring three neighbourhood bookshops this weekend, compact category and date, and an elegant playable audio ruler. A floating recording dock with amber record button and exact text "Ready to record". Show an actual coherent realistic UI, no invented charts. Beneath window small note "Illustrative preview · synthetic audio".
+Next section: "From a passing thought to a useful note." Three compact understated horizontal steps "Record", "Transcribe", "Find it again" separated by hairline rules, short readable copy and small matching line icons. Avoid identical bulky marketing cards.
+Next section: "Hear the thought. Read the note." Wide quiet charcoal recording panel with a circular amber play button, waveform, duration "0:21", label "A bookshop field guide", adjacent brief cleaned note excerpt. Small label "Synthetic sample recording".
+Lower section: "Your thoughts stay with you." Two concise benefit columns: "On-device processing" and "Works offline after setup", with exact support line "Models download once. Audio and notes stay local."
+Final install area: heading "Start with your next thought." A tasteful dark command bar showing exact command "brew install --cask vnglst/captainslog/captainslog" and "Copy" control. Small honest footer line "Ad-hoc signed, not notarized. Install only if you trust the project." Footer CaptainsLog and GitHub.
+
+Constraints: stay faithful to the supplied app reference, not the previous pale-blue website. NO blue backgrounds, no purple, no neon, no gradients as decoration, no sci-fi or LCARS visuals, no Star Trek imagery, no glassmorphism, no stock photographs, no giant decorative waveforms, no oversaturated amber washes, no excessive marketing badges. Distinctive restrained native desktop software aesthetic. All copy sentence case, clean and legible. The image is a website DESIGN CONCEPT, not an actual screenshot of the native app.

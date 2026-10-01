@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0d0e0d">
+  <meta name="description" content="A voice journal for your life, work, and side projects. CaptainsLog turns spoken thoughts into searchable Markdown logs, entirely on your Mac.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <title>CaptainsLog — Keep a log. In your own words.</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --canvas: #0d0e0d;
+      --surface: #161715;
+      --raised: #1c1d1b;
+      --stroke: #30312e;
+      --text: #f1eee7;
+      --secondary: #b8b5ad;
+      --muted: #99988f;
+      --amber: #f5b544;
+      --green: #8fbd78;
+      --mono: ui-monospace, "SFMono-Regular", Consolas, monospace;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 32px; }
+    body { margin: 0; background: var(--canvas); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; }
+    button, input { font: inherit; }
+    a { color: inherit; }
+    button, summary { cursor: pointer; }
+    a, button { -webkit-tap-highlight-color: transparent; }
+    :focus-visible { outline: 2px solid var(--amber); outline-offset: 5px; }
+    .wrap { max-width: 1160px; margin-inline: auto; padding-inline: 40px; }
+    .brand { display: inline-flex; align-items: center; gap: 12px; text-decoration: none; font-size: 20px; font-weight: 500; letter-spacing: -.5px; }
+    .mark { display: inline-flex; align-items: center; justify-content: center; gap: 3px; width: 37px; height: 37px; border: 1px solid var(--amber); border-radius: 50%; color: var(--amber); flex-shrink: 0; }
+    .mark i { width: 2px; height: 9px; border-radius: 2px; background: currentColor; }
+    .mark i:nth-child(2), .mark i:nth-child(4) { height: 16px; }
+    .mark i:nth-child(3) { height: 24px; }
+    .nav { min-height: 91px; display: flex; align-items: center; justify-content: space-between; gap: 24px; border-bottom: 1px solid var(--stroke); }
+    .nav-links { display: flex; align-items: center; gap: 28px; font-size: 13px; color: var(--secondary); }
+    .nav-links a { text-decoration: none; }
+    .nav-links a:hover { color: var(--text); }
+    .button { display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 14px 24px; border: 1px solid var(--amber); border-radius: 8px; background: var(--amber); color: #201a0f; font-size: 14px; font-weight: 550; line-height: 1.3; text-decoration: none; }
+    .button:hover { background: #ffca6a; color: #201a0f; }
+    .button.small { padding: 10px 17px; font-size: 12px; }
+    .button.secondary { background: transparent; border-color: #4b4b43; color: var(--text); }
+    .button.secondary:hover { background: var(--raised); }
+    .hero { padding-top: 69px; text-align: center; }
+    .hero h1 { font-size: clamp(44px, 6.6vw, 78px); font-weight: 500; letter-spacing: -3.7px; line-height: 1.1; margin: 0 0 24px; }
+    .hero-copy { max-width: 590px; color: var(--secondary); font-size: 18px; line-height: 1.75; margin: 0 auto 27px; }
+    .hero-actions { display: flex; justify-content: center; gap: 14px; }
+    .requirements { font-size: 12px; color: var(--muted); margin: 18px 0 43px; }
+    .app { border: 1px solid #3b3c36; border-radius: 13px; background: var(--surface); overflow: hidden; text-align: left; position: relative; box-shadow: 0 28px 50px -25px #000; }
+    .chrome { height: 41px; background: #191a18; border-bottom: 1px solid var(--stroke); display: flex; align-items: center; padding: 0 17px; position: relative; }
+    .traffic { display: flex; gap: 7px; }
+    .traffic i { width: 9px; height: 9px; border-radius: 50%; background: #ed6a5f; }
+    .traffic i:nth-child(2) { background: #f5bf50; }
+    .traffic i:nth-child(3) { background: #62c555; }
+    .chrome span { position: absolute; left: 50%; transform: translateX(-50%); font-size: 11px; color: var(--muted); }
+    .app-body { display: grid; grid-template-columns: 174px 283px 1fr; min-height: 439px; }
+    .sidebar { border-right: 1px solid var(--stroke); padding: 23px 15px 22px; display: flex; flex-direction: column; }
+    .app-brand { display: flex; align-items: center; gap: 8px; font-size: 14px; margin-bottom: 29px; }
+    .app-brand .mark { width: 26px; height: 26px; gap: 2px; }
+    .app-brand .mark i { width: 1.5px; height: 7px; }
+    .app-brand .mark i:nth-child(2), .app-brand .mark i:nth-child(4) { height: 12px; }
+    .app-brand .mark i:nth-child(3) { height: 18px; }
+    .side-item { display: flex; align-items: center; gap: 10px; padding: 11px 10px; color: var(--secondary); font-size: 12px; border-radius: 6px; }
+    .side-item.active { background: #292b25; color: var(--text); }
+    .side-item svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.5; }
+    .side-item.active svg { color: var(--amber); }
+    .side-item b { margin-left: auto; font-size: 11px; font-weight: 400; color: var(--amber); }
+    .sidebar-status { display: flex; align-items: center; gap: 6px; color: #a6b49a; font-size: 10px; margin-top: 18px; }
+    .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--green); display: inline-block; flex-shrink: 0; }
+    .entries { padding: 24px 15px 86px; border-right: 1px solid var(--stroke); }
+    .entries h2 { margin: 0 10px 17px; font-size: 17px; font-weight: 500; }
+    .list-label { margin: 0 10px 9px; font-size: 10px; color: var(--muted); }
+    .entry { width: 100%; padding: 16px 12px; text-align: left; border: 1px solid transparent; border-radius: 8px; color: var(--text); background: transparent; margin-bottom: 5px; }
+    .entry:hover { background: #22241e; }
+    .entry[aria-pressed="true"] { border-color: #9b7a39; background: #24251f; }
+    .entry strong { display: block; font-size: 13px; font-weight: 500; margin-bottom: 9px; }
+    .entry p { color: var(--secondary); font-size: 11px; line-height: 1.6; margin: 0 0 10px; }
+    .entry-meta { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); }
+    .detail { padding: 31px 31px 100px; }
+    .note-meta { font-size: 10px; color: var(--muted); display: flex; align-items: center; gap: 7px; margin-bottom: 14px; }
+    .detail h2 { font-size: 27px; letter-spacing: -.7px; font-weight: 500; margin: 0 0 20px; line-height: 1.2; }
+    .note-text { font-family: var(--mono); font-size: 12px; line-height: 1.95; color: #d6d3ca; min-height: 172px; }
+    .note-text p { margin: 0 0 16px; }
+    .tags { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 15px; margin-top: 8px; border-top: 1px solid var(--stroke); }
+    .tags span { font-family: var(--mono); font-size: 10px; color: #aeb49f; }
+    .dock { position: absolute; bottom: 16px; left: calc(50% - 199px); width: 398px; display: flex; align-items: center; gap: 13px; border: 1px solid #414335; border-radius: 14px; background: #20211def; padding: 13px 17px; box-shadow: 0 7px 25px #0005; }
+    .record-dot { width: 35px; height: 35px; border-radius: 50%; background: var(--amber); display: grid; place-items: center; flex-shrink: 0; }
+    .record-dot::after { content: ""; width: 11px; height: 11px; border-radius: 50%; background: #302713; }
+    .dock strong { display: block; color: var(--amber); font-size: 12px; font-weight: 500; margin-bottom: 4px; }
+    .dock span { color: var(--secondary); font-size: 10px; }
+    .dock kbd { border: 1px solid #45473e; padding: 5px; border-radius: 4px; color: var(--muted); font-size: 10px; margin-left: auto; }
+    .preview-caption { font-size: 11px; color: var(--muted); line-height: 1.7; margin: 19px 0 0; }
+    .workflow { padding-block: 72px 59px; }
+    .section-title { font-size: 35px; font-weight: 500; line-height: 1.2; letter-spacing: -1px; margin: 0 0 18px; }
+    .section-copy { color: var(--secondary); font-size: 16px; line-height: 1.8; max-width: 550px; margin: 0; }
+    .workflow-heading { text-align: center; max-width: 640px; margin: 0 auto 35px; }
+    .workflow-heading .section-copy { margin: auto; }
+    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; }
+    .step { border-top: 1px solid var(--stroke); padding-top: 22px; }
+    .step h3 { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 500; margin: 0 0 12px; }
+    .step-number { font-family: var(--mono); color: var(--muted); font-size: 12px; }
+    .step p { font-size: 14px; color: var(--secondary); line-height: 1.8; margin: 0; }
+    .walkthrough { padding-block: 14px 61px; }
+    .walkthrough-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 25px; margin-bottom: 24px; }
+    .walkthrough-heading .section-title { margin-bottom: 10px; }
+    .walkthrough-heading p { color: var(--secondary); font-size: 14px; line-height: 1.7; margin: 0; }
+    .media-placeholder { width: 100%; aspect-ratio: 16 / 9; border: 1px solid var(--stroke); border-radius: 13px; background: var(--surface); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 17px; text-align: center; padding: 24px; }
+    .media-placeholder svg { width: 37px; height: 37px; fill: none; stroke: #929387; stroke-width: 1.3; }
+    .media-placeholder strong { font-size: 19px; font-weight: 400; }
+    .media-placeholder span { color: var(--muted); font-size: 13px; }
+    .walkthrough video { width: 100%; aspect-ratio: 16 / 9; border: 1px solid var(--stroke); border-radius: 13px; background: var(--surface); display: block; }
+    .media-caption { font-size: 12px; color: var(--muted); margin: 14px 0 0; line-height: 1.7; }
+    .principles { border-top: 1px solid var(--stroke); padding-block: 58px 59px; display: grid; grid-template-columns: 1fr 1.1fr; gap: 80px; }
+    .principles .section-title { max-width: 340px; }
+    .principle { margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid var(--stroke); }
+    .principle:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: 0; }
+    .principle h3 { font-size: 18px; font-weight: 500; margin: 0 0 10px; }
+    .principle p { color: var(--secondary); font-size: 14px; line-height: 1.8; margin: 0; }
+    .origin { background: var(--surface); border-block: 1px solid var(--stroke); padding-block: 49px; }
+    .origin-inner { display: grid; grid-template-columns: 1fr 1.1fr; gap: 80px; align-items: start; }
+    .origin .section-title { font-size: 30px; }
+    .origin p { color: var(--secondary); font-size: 15px; line-height: 1.9; margin: 0; max-width: 550px; }
+    .faq { padding-block: 58px; display: grid; grid-template-columns: 1fr 1.1fr; gap: 80px; }
+    .faq .section-title { max-width: 280px; font-size: 31px; }
+    details { border-bottom: 1px solid var(--stroke); padding: 18px 0; }
+    details:first-child { padding-top: 0; }
+    summary { list-style: none; display: flex; justify-content: space-between; gap: 20px; font-size: 15px; line-height: 1.5; }
+    summary::-webkit-details-marker { display: none; }
+    summary::after { content: "+"; font-size: 20px; color: var(--muted); }
+    details[open] summary::after { content: "−"; }
+    details p { color: var(--secondary); font-size: 14px; line-height: 1.8; margin: 14px 20px 0 0; }
+    details code { font-size: 12px; }
+    .install { border-top: 1px solid var(--stroke); padding-block: 53px 46px; text-align: center; }
+    .install .section-title { font-size: 36px; }
+    .install .section-copy { margin: 0 auto 23px; font-size: 15px; }
+    .terminal { display: flex; align-items: center; gap: 16px; max-width: 640px; padding: 12px 12px 12px 23px; margin-inline: auto; text-align: left; border: 1px solid #3c3e36; border-radius: 10px; background: var(--surface); }
+    .terminal code { font-family: var(--mono); font-size: 12px; line-height: 1.7; overflow-wrap: anywhere; flex: 1; }
+    .prompt { color: var(--muted); margin-right: 10px; }
+    .copy { color: var(--text); background: var(--raised); border: 1px solid #44463c; border-radius: 6px; font-size: 12px; padding: 9px 15px; min-width: 77px; }
+    .copy:hover { background: #2b2d26; }
+    .copy-status { font-size: 12px; color: var(--secondary); min-height: 20px; margin: 12px 0 0; }
+    .install-note { color: var(--muted); font-size: 11px; line-height: 1.9; margin: 13px auto 0; max-width: 580px; }
+    .install-note a { text-underline-offset: 3px; }
+    .footer { display: flex; align-items: center; justify-content: space-between; gap: 20px; min-height: 90px; border-top: 1px solid var(--stroke); }
+    .footer .brand { font-size: 14px; }
+    .footer .mark { width: 29px; height: 29px; gap: 2px; }
+    .footer .mark i { width: 1.5px; height: 7px; }
+    .footer .mark i:nth-child(2), .footer .mark i:nth-child(4) { height: 12px; }
+    .footer .mark i:nth-child(3) { height: 18px; }
+    .footer-links { display: flex; align-items: center; gap: 22px; font-size: 12px; color: var(--secondary); }
+    .footer-links a { text-decoration: none; }
+    .footer-links a:hover { color: var(--text); }
+    .footer-links span { color: var(--muted); }
+    @media (max-width: 1000px) {
+      .app-body { grid-template-columns: 148px 243px 1fr; }
+      .sidebar { padding-inline: 11px; }
+      .detail { padding-inline: 23px; }
+      .detail h2 { font-size: 24px; }
+      .principles, .origin-inner, .faq { gap: 45px; }
+    }
+    @media (max-width: 760px) {
+      .wrap { padding-inline: 24px; }
+      .nav { min-height: 79px; }
+      .nav-links { gap: 20px; }
+      .nav-links .nav-section { display: none; }
+      .hero { padding-top: 50px; }
+      .hero h1 { font-size: 61px; letter-spacing: -2.8px; }
+      .hero-copy { font-size: 16px; max-width: 480px; }
+      .app-body { grid-template-columns: 225px 1fr; }
+      .sidebar { display: none; }
+      .detail { padding: 26px 23px 103px; }
+      .detail h2 { font-size: 23px; }
+      .note-text { min-height: 203px; font-size: 11px; }
+      .steps { gap: 24px; }
+      .step h3 { font-size: 17px; }
+      .section-title { font-size: 30px; }
+      .principles, .origin-inner, .faq { gap: 36px; }
+      .footer-links span { display: none; }
+    }
+    @media (max-width: 520px) {
+      .wrap { padding-inline: 20px; }
+      .brand { font-size: 17px; gap: 9px; }
+      .mark { width: 30px; height: 30px; gap: 2px; }
+      .mark i { width: 1.5px; }
+      .nav { min-height: 75px; gap: 15px; }
+      .nav-links > a:not(.button) { display: none; }
+      .button.small { font-size: 11px; padding: 10px 12px; }
+      .hero { padding-top: 43px; }
+      .hero h1 { font-size: 47px; letter-spacing: -2px; }
+      .hero-copy { font-size: 15px; line-height: 1.8; }
+      .hero-actions { gap: 10px; }
+      .button { font-size: 12px; padding: 13px 17px; }
+      .requirements { font-size: 11px; margin-bottom: 29px; }
+      .app-body { display: block; }
+      .entries { display: flex; gap: 4px; padding: 10px 8px; border-right: 0; border-bottom: 1px solid var(--stroke); }
+      .entries h2, .list-label, .entry p, .entry-meta { display: none; }
+      .entry { text-align: center; padding: 10px 5px; margin: 0; min-height: 46px; }
+      .entry strong { font-size: 10px; line-height: 1.4; margin: 0; }
+      .detail { padding: 25px 22px 103px; }
+      .detail h2 { font-size: 24px; }
+      .note-text { min-height: 185px; font-size: 11px; }
+      .dock { width: 274px; left: calc(50% - 137px); gap: 10px; padding: 12px; }
+      .dock strong { font-size: 11px; }
+      .dock span { font-size: 9px; }
+      .dock kbd { font-size: 9px; }
+      .record-dot { width: 31px; height: 31px; }
+      .preview-caption { font-size: 10px; margin-top: 14px; }
+      .workflow { padding-block: 52px 40px; }
+      .workflow-heading { text-align: left; margin-bottom: 28px; }
+      .section-title { font-size: 29px; letter-spacing: -.8px; }
+      .section-copy { font-size: 14px; }
+      .steps { grid-template-columns: 1fr; gap: 24px; }
+      .step { padding-top: 19px; }
+      .step h3 { font-size: 18px; }
+      .walkthrough { padding-block: 5px 43px; }
+      .walkthrough-heading .section-title { font-size: 27px; }
+      .media-placeholder { min-height: 190px; gap: 13px; }
+      .media-placeholder strong { font-size: 16px; }
+      .media-placeholder span { font-size: 12px; }
+      .media-placeholder svg { width: 28px; height: 28px; }
+      .principles, .origin-inner, .faq { grid-template-columns: 1fr; gap: 27px; }
+      .principles, .faq { padding-block: 44px; }
+      .principles .section-title, .faq .section-title { max-width: none; }
+      .origin { padding-block: 37px; }
+      .origin .section-title { margin-bottom: 0; font-size: 28px; }
+      .origin p { font-size: 14px; }
+      .faq { gap: 11px; }
+      .faq .section-title { font-size: 28px; }
+      summary { font-size: 14px; }
+      details p { font-size: 13px; }
+      .install { padding-block: 43px 36px; }
+      .install .section-title { font-size: 31px; }
+      .terminal { padding-left: 12px; gap: 10px; }
+      .terminal code { font-size: 10px; }
+      .prompt { display: none; }
+      .copy { font-size: 11px; padding-inline: 11px; min-width: 64px; }
+      .install-note { font-size: 10px; }
+      .footer { min-height: 82px; }
+      .footer .brand { font-size: 12px; }
+      .footer-links { font-size: 11px; gap: 17px; }
+    }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  </style>
+</head>
+<body>
+  <header class="wrap">
+    <nav class="nav" aria-label="Main navigation">
+      <a class="brand" href="#" aria-label="CaptainsLog home"><span class="mark" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>CaptainsLog</a>
+      <div class="nav-links"><a class="nav-section" href="#how-it-works">How it works</a><a class="nav-section" href="#privacy">Privacy</a><a href="https://github.com/vnglst/CaptainsLog">GitHub</a><a class="button small" href="#install">Get the Mac app</a></div>
+    </nav>
+  </header>
+  <main>
+    <section class="hero wrap" aria-labelledby="hero-title">
+      <h1 id="hero-title">Keep a log.<br>In your own words.</h1>
+      <p class="hero-copy">A voice journal for your life, work, and side projects.<br>Speak your thoughts. Keep a readable, searchable record.<br>Everything runs on your Mac.</p>
+      <div class="hero-actions"><a class="button" href="#install">Get CaptainsLog</a><a class="button secondary" href="#how-it-works">How it works</a></div>
+      <p class="requirements">Apple Silicon · macOS 26 or later</p>
+      <div class="app" aria-label="Illustrative Logs workspace with synthetic example entries">
+        <div class="chrome"><div class="traffic" aria-hidden="true"><i></i><i></i><i></i></div><span>CaptainsLog</span></div>
+        <div class="app-body">
+          <aside class="sidebar" aria-hidden="true">
+            <div class="app-brand"><span class="mark"><i></i><i></i><i></i><i></i><i></i></span>CaptainsLog</div>
+            <div class="side-item active"><svg viewBox="0 0 20 20"><path d="M3 4h14v12H3zM3 10h4l2 3h2l2-3h4"/></svg>Logs<b>3</b></div>
+            <div class="side-item"><svg viewBox="0 0 20 20"><circle cx="8" cy="8" r="5"/><path d="m12 12 5 5"/></svg>Search</div>
+            <div class="side-item" style="margin-top:auto"><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="3"/><path d="m8 2 4 0 1 3 3 1 2 3-2 3-1 3-3 1-3-1-3-1-1-3-1-3 2-3 3-1z"/></svg>Settings</div>
+            <div class="sidebar-status"><span class="dot"></span>Models ready</div>
+          </aside>
+          <div class="entries" aria-label="Choose an illustrative log entry">
+            <h2>Logs</h2><p class="list-label">Example entries</p>
+            <button class="entry" data-note="project" aria-pressed="true"><strong>A voice journal of my own</strong><p>A side project to turn short recordings into searchable notes.</p><span class="entry-meta"><span>Side project</span><span>Today</span></span></button>
+            <button class="entry" data-note="work" aria-pressed="false"><strong>Planning the next release</strong><p>Delivery dates, remaining work, and the plan for Friday.</p><span class="entry-meta"><span>Professional</span><span>Yesterday</span></span></button>
+            <button class="entry" data-note="personal" aria-pressed="false"><strong>An unhurried weekend</strong><p>A walk by the river, a board game, and time with family.</p><span class="entry-meta"><span>Personal</span><span>Yesterday</span></span></button>
+          </div>
+          <article class="detail">
+            <div class="note-meta"><span class="dot"></span><span id="note-category">Side project</span><span aria-hidden="true">·</span><span>Example log</span></div>
+            <h2 id="note-title">A voice journal of my own</h2>
+            <div class="note-text" id="note-text"><p>I am building a small voice-journaling app as an independent evening project. I want to record short memos, run speech recognition locally, and turn each recording into a searchable note.</p><p>I am experimenting with the interface and storage format, and I may publish the tool as open source once the prototype is useful.</p></div>
+            <div class="tags" id="note-tags"><span>#voice-journaling</span><span>#local-ai</span><span>#side-project</span></div>
+          </article>
+        </div>
+        <div class="dock" aria-hidden="true"><div class="record-dot"></div><div><strong>Ready to record</strong><span>A moment to say what’s on your mind.</span></div><kbd>⌘ R</kbd></div>
+      </div>
+      <p class="preview-caption">Illustrative workspace · synthetic example entries · select a log to read it</p>
+    </section>
+    <section class="workflow wrap" id="how-it-works" aria-labelledby="workflow-title">
+      <div class="workflow-heading"><h2 class="section-title" id="workflow-title">From a spoken thought to a lasting log.</h2><p class="section-copy">A reflection at the end of the day. A decision at work. Progress on a side project. Capture it while it’s fresh.</p></div>
+      <div class="steps">
+        <div class="step"><h3><span class="step-number">1</span>Record</h3><p>Say what happened and what’s on your mind. Record in the Mac app, or use the CLI to process an existing audio file.</p></div>
+        <div class="step"><h3><span class="step-number">2</span>Make it readable</h3><p>Local models transcribe your recording, clean up the text, and add a title, category, tags, and summary.</p></div>
+        <div class="step"><h3><span class="step-number">3</span>Find it again</h3><p>Browse your logs or search with keywords and meaning. Search returns relevant entries and excerpts from your own notes.</p></div>
+      </div>
+    </section>
+    <section class="walkthrough wrap" id="watch" aria-labelledby="walkthrough-title">
+      <div class="walkthrough-heading"><div><h2 class="section-title" id="walkthrough-title">A look inside CaptainsLog.</h2><p>Recording, processing, and finding your way back to a thought.</p></div></div>
+      <div id="walkthrough-media"><div class="media-placeholder"><svg viewBox="0 0 40 40" aria-hidden="true"><rect x="5" y="8" width="30" height="24" rx="4"/><path d="m17 15 9 5-9 5z"/></svg><strong>From recording to log</strong><span>App walkthrough coming soon.</span></div></div>
+      <p class="media-caption" id="media-caption" hidden></p>
+    </section>
+    <section class="principles wrap" id="privacy" aria-labelledby="privacy-title">
+      <div><h2 class="section-title" id="privacy-title">Your thoughts stay<br>with you.</h2><p class="section-copy">A journal can be personal. CaptainsLog records and processes your voice on your own computer, without sending your audio or notes to an inference service.</p></div>
+      <div>
+        <div class="principle"><h3>Local processing</h3><p>Whisper transcribes your speech. Qwen cleans and organizes the text. Both run on Apple Silicon through native, on-device inference.</p></div>
+        <div class="principle"><h3>Offline after setup</h3><p>Models download once, then recording and processing work offline. Semantic search downloads its own model on first use. Optional update checks use the network, without sending your logs.</p></div>
+        <div class="principle"><h3>Markdown you can keep</h3><p>Completed logs are plain Markdown files in your chosen data folder. Read them in a text editor or use them with a Markdown tool such as Obsidian. The original audio and earlier processing stages are kept separately.</p></div>
+      </div>
+    </section>
+    <section class="origin" aria-labelledby="origin-title"><div class="origin-inner wrap"><h2 class="section-title" id="origin-title">Why a captain’s log?</h2><p>A record of where you are, what happened, and what you’re thinking about. CaptainsLog brings that idea to everyday life: a spoken journal that becomes a collection of readable notes. Recording, transcription, cleanup, and organization happen in one flow, so keeping the log takes less manual work.</p></div></section>
+    <section class="faq wrap" aria-labelledby="faq-title">
+      <h2 class="section-title" id="faq-title">Before your<br>first log.</h2>
+      <div>
+        <details><summary>What Mac do I need?</summary><p>An Apple Silicon Mac running macOS 26 or later. The local models need several gigabytes of storage. First launch needs an internet connection and time to download them.</p></details>
+        <details><summary>Does anything leave my computer?</summary><p>Your audio and notes stay local. Model setup downloads the required models, and optional Homebrew update checks refresh metadata over the network. Those checks do not send your recordings or notes. You can disable automatic checks and installation in Settings.</p></details>
+        <details><summary>What does search do?</summary><p>Search combines keyword matches with semantic matches to retrieve relevant log entries and excerpts. It helps you find your notes; it does not generate answers about your journal.</p></details>
+        <details><summary>Can I use the terminal?</summary><p>Yes. One Homebrew install includes the Mac app and the <code>cl</code> CLI. Use <code>cl pipeline</code> to record and process, <code>cl pipeline --input memo.m4a</code> for a file, and <code>cl search "project architecture"</code> to find logs. Interrupted processing can be resumed with <code>cl resume &lt;stem&gt;</code>. <a href="https://github.com/vnglst/CaptainsLog#use">Read the CLI instructions.</a></p></details>
+        <details><summary>Can I trust the generated text?</summary><p>Transcription and text processing can make mistakes. Review important names, facts, and wording before relying on a log. CaptainsLog keeps the original audio and earlier stage outputs so you can compare them with the completed entry.</p></details>
+        <details><summary>How is the app installed?</summary><p>Through the project’s Homebrew cask. The app is ad-hoc signed and not notarized; the cask removes macOS quarantine from the app bundle. Install only if you trust the project. <a href="https://github.com/vnglst/CaptainsLog#install">Review the installation instructions.</a></p></details>
+      </div>
+    </section>
+    <section class="install wrap" id="install" aria-labelledby="install-title">
+      <h2 class="section-title" id="install-title">Start with your next thought.</h2><p class="section-copy">Install the Mac app and CLI together with Homebrew.</p>
+      <div class="terminal"><code id="install-command"><span class="prompt" aria-hidden="true">$</span>brew install --cask vnglst/captainslog/captainslog</code><button class="copy" id="copy-command" aria-label="Copy Homebrew install command">Copy</button></div>
+      <p class="copy-status" id="copy-status" role="status" aria-live="polite"></p>
+      <p class="install-note">Apple Silicon · macOS 26+ · Several GB for local models<br>Ad-hoc signed, not notarized. The cask removes macOS quarantine.<br>Install only if you trust the project. <a href="https://github.com/vnglst/CaptainsLog#install">Read the install instructions.</a></p>
+    </section>
+  </main>
+  <footer class="footer wrap"><a class="brand" href="#"><span class="mark" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>CaptainsLog</a><div class="footer-links"><span>A log of your own.</span><a href="https://github.com/vnglst/CaptainsLog">Source</a><a href="https://github.com/vnglst/CaptainsLog/issues">Feedback</a></div></footer>
+  <script>
+    // Replace null with your recording's relative URL; no missing files are requested.
+    const walkthrough = {
+      src: null, // e.g. 'assets/app-walkthrough.mp4'
+      poster: null, // e.g. 'assets/app-walkthrough.jpg'
+      captions: null, // e.g. 'assets/app-walkthrough.vtt'
+      description: 'CaptainsLog: recording a voice log, processing it locally, and searching completed entries.'
+    };
+    if (walkthrough.src) {
+      const video = document.createElement('video');
+      video.controls = true;
+      video.playsInline = true;
+      video.preload = 'metadata';
+      video.src = walkthrough.src;
+      video.setAttribute('aria-label', walkthrough.description);
+      if (walkthrough.poster) video.poster = walkthrough.poster;
+      if (walkthrough.captions) {
+        const track = document.createElement('track');
+        Object.assign(track, {kind: 'captions', src: walkthrough.captions, srclang: 'en', label: 'English', default: true});
+        video.append(track);
+      }
+      document.getElementById('walkthrough-media').replaceChildren(video);
+      const caption = document.getElementById('media-caption');
+      caption.textContent = walkthrough.description;
+      caption.hidden = false;
+    }
+    // Text is copied verbatim from eval/categorize/input; titles/tags are illustrative.
+    const notes = {
+      project: {
+        title: 'A voice journal of my own', category: 'Side project',
+        paragraphs: ['I am building a small voice-journaling app as an independent evening project. I want to record short memos, run speech recognition locally, and turn each recording into a searchable note.', 'I am experimenting with the interface and storage format, and I may publish the tool as open source once the prototype is useful.'],
+        tags: ['voice-journaling', 'local-ai', 'side-project']
+      },
+      work: {
+        title: 'Planning the next release', category: 'Professional',
+        paragraphs: ['On Monday I met with the product and engineering teams to plan the next release. We reviewed delivery dates, assigned owners for the remaining work, and agreed to move two lower-priority features into the following sprint.', 'I will coordinate with the design lead and send the updated release plan to the group before Friday.'],
+        tags: ['release-planning', 'engineering', 'design']
+      },
+      personal: {
+        title: 'An unhurried weekend', category: 'Personal',
+        paragraphs: ['I spent Saturday with my sister and her children. We walked along the river, made lunch at home, and played a board game.', 'On Sunday I worked in the garden and called my parents. It was a relaxing weekend and I want to remember how nice it was to spend unhurried time with family.'],
+        tags: ['family', 'weekend', 'reflection']
+      }
+    };
+    document.querySelectorAll('.entry').forEach(button => {
+      button.addEventListener('click', () => {
+        const note = notes[button.dataset.note];
+        document.querySelectorAll('.entry').forEach(entry => entry.setAttribute('aria-pressed', String(entry === button)));
+        document.getElementById('note-title').textContent = note.title;
+        document.getElementById('note-category').textContent = note.category;
+        document.getElementById('note-text').replaceChildren(...note.paragraphs.map(text => {
+          const p = document.createElement('p'); p.textContent = text; return p;
+        }));
+        document.getElementById('note-tags').replaceChildren(...note.tags.map(text => {
+          const span = document.createElement('span'); span.textContent = '#' + text; return span;
+        }));
+      });
+    });
+    document.getElementById('copy-command').addEventListener('click', async () => {
+      const command = 'brew install --cask vnglst/captainslog/captainslog';
+      let copied = false;
+      try { await navigator.clipboard.writeText(command); copied = true; }
+      catch {
+        const field = document.createElement('textarea');
+        field.value = command;
+        field.style.cssText = 'position:fixed;top:0;left:-9999px';
+        document.body.append(field); field.select();
+        try { copied = document.execCommand('copy'); } finally { field.remove(); }
+      }
+      document.getElementById('copy-status').textContent = copied ? 'Copied. Paste the command into Terminal.' : 'Select the command above and copy it into Terminal.';
+      document.getElementById('copy-command').textContent = copied ? 'Copied' : 'Copy';
+      setTimeout(() => { document.getElementById('copy-command').textContent = 'Copy'; }, 2500);
+    });
+  </script>
+</body>
+</html>
