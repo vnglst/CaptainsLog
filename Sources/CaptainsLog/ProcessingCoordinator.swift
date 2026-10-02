@@ -82,18 +82,7 @@ public final class ProcessingCoordinator {
                 processingStem = stem
                 failedEntries.removeValue(forKey: stem)
                 do {
-                    _ = try await resumePipeline(
-                        stem,
-                        dataDir,
-                        .transcribing,
-                        { [weak self] p in
-                            Task { @MainActor in
-                                guard let self, self.processingStem == p.stem else { return }
-                                self.stage = Self.appStage(for: p.stage)
-                                self.statusMessage = "\(p.stage.rawValue.capitalized)..."
-                            }
-                        }
-                    )
+                    _ = try await runPipeline(stem: stem, dataDir: dataDir, fromStage: .transcribing)
                     failedEntries.removeValue(forKey: stem)
                     onProgress()
                 } catch {
@@ -166,18 +155,7 @@ public final class ProcessingCoordinator {
                     guard detected != .done else { continue }
                     stage = Self.appStage(for: detected)
                     statusMessage = "Processing \(entry.displayName)..."
-                    _ = try await resumePipeline(
-                        entry.stem,
-                        dataDir,
-                        detected,
-                        { [weak self] p in
-                            Task { @MainActor in
-                                guard let self, self.processingStem == p.stem else { return }
-                                self.stage = Self.appStage(for: p.stage)
-                                self.statusMessage = "\(p.stage.rawValue.capitalized)..."
-                            }
-                        }
-                    )
+                    _ = try await runPipeline(stem: entry.stem, dataDir: dataDir, fromStage: detected)
                     failedEntries.removeValue(forKey: entry.stem)
                     onProgress()
                 } catch {
@@ -211,19 +189,7 @@ public final class ProcessingCoordinator {
             stage = Self.appStage(for: detected)
             statusMessage = "Resuming \(detected.rawValue)..."
 
-            _ = try await resumePipeline(
-                stem,
-                dataDir,
-                detected,
-                // The Task hop keeps UI updates on the main actor.
-                { [weak self] p in
-                    Task { @MainActor in
-                        guard let self, self.processingStem == p.stem else { return }
-                        self.stage = Self.appStage(for: p.stage)
-                        self.statusMessage = "\(p.stage.rawValue.capitalized)..."
-                    }
-                }
-            )
+            _ = try await runPipeline(stem: stem, dataDir: dataDir, fromStage: detected)
             failedEntries.removeValue(forKey: stem)
             stage = .done
             statusMessage = "Done"
@@ -231,9 +197,40 @@ public final class ProcessingCoordinator {
             processingTask = nil
             onComplete()
         } catch {
+            guard !Task.isCancelled else { return }
             processingTask = nil
             recordFailure(error, for: stem)
             onError(error)
+        }
+    }
+
+    /// Consume progress in order before reporting completion. Unawaited UI-update tasks
+    /// can otherwise outlive the pipeline or a cancelled attempt for the same stem.
+    private func runPipeline(
+        stem: String,
+        dataDir: String,
+        fromStage: Pipeline.Stage?
+    ) async throws -> Pipeline.Result {
+        let (updates, continuation) = AsyncStream<Pipeline.Progress>.makeStream()
+        let resumePipeline = resumePipeline
+        let task = Task {
+            defer { continuation.finish() }
+            return try await resumePipeline(stem, dataDir, fromStage) { progress in
+                continuation.yield(progress)
+            }
+        }
+        return try await withTaskCancellationHandler {
+            for await progress in updates {
+                guard !Task.isCancelled, processingStem == progress.stem else { continue }
+                stage = Self.appStage(for: progress.stage)
+                statusMessage = "\(progress.stage.rawValue.capitalized)..."
+            }
+            let result = try await task.value
+            try Task.checkCancellation()
+            return result
+        } onCancel: {
+            task.cancel()
+            continuation.finish()
         }
     }
 

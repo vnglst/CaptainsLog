@@ -26,6 +26,8 @@ Extract structured metadata from a personal voice-memo log entry.
 - Always quote string values and list items that contain colons. For example, output `"Star Trek: The Next Generation"`, never `Star Trek: The Next Generation`.
 - Named people, real or fictional, always go in persons, never in entities.
 - Do not infer tags from activities.
+- Return exactly one YAML mapping using only the schema keys above, each key exactly once.
+- End the response after the summary. Do not repeat the mapping, reproduce the log entry, or include the examples.
 - Return only valid YAML. Do not add markdown fences, commentary, or extra text.
 </instructions>
 

@@ -35,6 +35,10 @@ entry. Git links provide the complete commit history for each release.
 
 ### Fixed
 
+- Correct generation-exhaustion errors to report the actual allocated context rather than the model’s larger maximum. Tighten enrichment instructions to return one YAML mapping and stop after the summary; retain existing sampling settings after evaluation trials introduced metadata errors. Add deterministic generation-loop tests for the reported 8,115-input/8,269-output exhaustion and normal end-of-generation.
+
+- Deliver app pipeline progress in order and finish consuming it before reporting completion, preventing delayed status updates from outliving a finished or cancelled recording. Preserve a new retry when an earlier cancelled attempt exits; add fixture-backed completion and cancelled-retry regressions and record verification limits in ADR-007.
+
 - Route Homebrew updater Git calls for the public CaptainsLog tap through HTTPS with a temporary wrapper, avoiding SSH authentication failures without changing saved remotes or global Git configuration. Extend the updater fixture and document the transport correction and verification limits (`fed98bd`).
 
 ## [0.1.2] - 2026-10-01

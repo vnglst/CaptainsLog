@@ -16,7 +16,7 @@ public enum LLM {
         case invalidModelContextSize(Int)
         case promptTooLarge(promptTokens: Int, modelContextTokens: Int)
         case requestedOutputTooLarge(promptTokens: Int, requestedTokens: Int, modelContextTokens: Int)
-        case contextExhausted(promptTokens: Int, generatedTokens: Int, modelContextTokens: Int)
+        case contextExhausted(promptTokens: Int, generatedTokens: Int, allocatedContextTokens: Int)
 
         var errorDescription: String? {
             switch self {
@@ -26,8 +26,8 @@ public enum LLM {
                 return "The prompt contains \(promptTokens) tokens, exceeding the model's \(modelContextTokens)-token context window."
             case .requestedOutputTooLarge(let promptTokens, let requestedTokens, let modelContextTokens):
                 return "The \(promptTokens)-token prompt plus \(requestedTokens) requested output tokens exceeds the model's \(modelContextTokens)-token context window."
-            case .contextExhausted(let promptTokens, let generatedTokens, let modelContextTokens):
-                return "Generation exhausted the model's \(modelContextTokens)-token context after a \(promptTokens)-token prompt and \(generatedTokens) output tokens. The partial output was discarded."
+            case .contextExhausted(let promptTokens, let generatedTokens, let allocatedContextTokens):
+                return "Generation exhausted its allocated \(allocatedContextTokens)-token context after a \(promptTokens)-token prompt and \(generatedTokens) output tokens. The partial output was discarded."
             }
         }
     }
@@ -233,7 +233,8 @@ public enum LLM {
         defer { llama_free(context) }
         diagnostic?("Llama context created (allocated=\(contextParams.n_ctx), model maximum=\(modelContextSize), batch=\(contextParams.n_batch), threads=\(contextParams.n_threads)).")
 
-        let availableGenerationTokens = contextSize - promptTokens.count
+        let allocatedContextSize = Int(llama_n_ctx(context))
+        let availableGenerationTokens = allocatedContextSize - promptTokens.count
         let generationLimit = maxTokens > 0
             ? min(maxTokens, availableGenerationTokens)
             : availableGenerationTokens
@@ -245,20 +246,49 @@ public enum LLM {
         let sampler = makeSampler(temperature: temperature)
         defer { llama_sampler_free(sampler) }
 
+        return try generateTokens(
+            generationLimit: generationLimit,
+            maxTokens: maxTokens,
+            promptTokenCount: promptTokens.count,
+            allocatedContextSize: allocatedContextSize,
+            sampleToken: {
+                let token = llama_sampler_sample(sampler, context, -1)
+                llama_sampler_accept(sampler, token)
+                return token
+            },
+            isEndToken: { llama_vocab_is_eog(vocab, $0) },
+            tokenString: { tokenToString($0, vocab: vocab) },
+            decodeToken: { try decode(tokens: [$0], context: context, batchSize: 1) },
+            diagnostic: diagnostic
+        )
+    }
+
+    /// Native sampling and decoding are injected so termination and partial-output
+    /// rejection can be reproduced deterministically without loading a model.
+    static func generateTokens(
+        generationLimit: Int,
+        maxTokens: Int,
+        promptTokenCount: Int,
+        allocatedContextSize: Int,
+        sampleToken: () -> Int32,
+        isEndToken: (Int32) -> Bool,
+        tokenString: (Int32) -> String,
+        decodeToken: (Int32) throws -> Void,
+        diagnostic: (@Sendable (String) -> Void)? = nil
+    ) throws -> String {
         var output = ""
         var reachedEndOfGeneration = false
         for tokenIndex in 0..<generationLimit {
-            let token = llama_sampler_sample(sampler, context, -1)
-            llama_sampler_accept(sampler, token)
+            let token = sampleToken()
 
-            if llama_vocab_is_eog(vocab, token) {
+            if isEndToken(token) {
                 reachedEndOfGeneration = true
                 diagnostic?("Generation reached end-of-output after \(tokenIndex) token(s).")
                 break
             }
 
-            output += tokenToString(token, vocab: vocab)
-            try decode(tokens: [token], context: context, batchSize: 1)
+            output += tokenString(token)
+            try decodeToken(token)
             if (tokenIndex + 1).isMultiple(of: 256) {
                 diagnostic?("Generation still running: \(tokenIndex + 1) token(s) decoded, \(output.utf8.count) output bytes.")
             }
@@ -266,9 +296,9 @@ public enum LLM {
 
         if !reachedEndOfGeneration && maxTokens <= 0 {
             throw LLMError.contextExhausted(
-                promptTokens: promptTokens.count,
+                promptTokens: promptTokenCount,
                 generatedTokens: generationLimit,
-                modelContextTokens: modelContextSize
+                allocatedContextTokens: allocatedContextSize
             )
         }
 
@@ -277,7 +307,7 @@ public enum LLM {
 
     /// Allocates only the context this request needs, bounded by the context length
     /// stored in the model. Unbounded generation reserves enough room to rewrite a
-    /// prompt of the same token length; hitting the model boundary is reported as
+    /// prompt of the same token length; hitting the allocated boundary is reported as
     /// an error instead of returning a truncated result.
     static func plannedContextSize(
         promptTokenCount: Int,

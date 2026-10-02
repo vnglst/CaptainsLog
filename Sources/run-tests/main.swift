@@ -1931,6 +1931,111 @@ func runCoordinatorCoverageTests() async {
         try expect(coordinator.processingStem == nil)
     }
 
+    await testAsync("ProcessingCoordinator: fixture pipeline delivers done before refreshing completed entries") {
+        let fm = FileManager.default
+        let root = fm.temporaryDirectory.appendingPathComponent("CaptainsLogProgress-\(UUID().uuidString)")
+        defer { try? fm.removeItem(at: root) }
+        let repo = URL(fileURLWithPath: fm.currentDirectoryPath)
+        let stem = "2025-01-14 side project"
+        let audio = root.appendingPathComponent("audio/\(stem).m4a")
+        try fm.createDirectory(at: audio.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try fm.copyItem(at: repo.appendingPathComponent("eval/transcribe/audio/\(stem).m4a"), to: audio)
+        let transcript = try String(contentsOf: repo.appendingPathComponent("eval/transcribe/expected/\(stem).md"), encoding: .utf8)
+        let cleaned = try String(contentsOf: repo.appendingPathComponent("eval/cleanup/expected/\(stem).md"), encoding: .utf8)
+        let filename = try String(contentsOf: repo.appendingPathComponent("eval/filename/expected/\(stem).md"), encoding: .utf8)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let enriched = try String(contentsOf: repo.appendingPathComponent("eval/enrich/expected/\(stem).md"), encoding: .utf8) + cleaned
+        let operations = Pipeline.Operations(
+            transcribe: { _, _ in transcript },
+            cleanup: { _, _ in cleaned },
+            categorize: { _, _, _ in .sideProject },
+            filename: { _, _ in filename },
+            enrich: { _, _, _, _ in enriched }
+        )
+        let coordinator = ProcessingCoordinator { stem, dataDir, fromStage, progress in
+            try await Pipeline.resume(stem: stem, dataDir: dataDir, fromStage: fromStage,
+                                      operations: operations, progress: progress)
+        }
+        let config = ConfigManager(loadContextFiles: false)
+        config.dataDir = root.path
+        let appState = AppState(config: config, processing: coordinator)
+        appState.loadEntries()
+        coordinator.queueProcessing(stem: stem)
+        var refreshStage: AppStage?
+        let completed: Bool = await withCheckedContinuation { continuation in
+            coordinator.startProcessing(
+                dataDir: root.path, isRecording: false,
+                onProgress: {
+                    refreshStage = coordinator.stage
+                    appState.loadEntries()
+                },
+                onComplete: {
+                    appState.loadEntries()
+                    continuation.resume(returning: true)
+                },
+                onError: { _ in continuation.resume(returning: false) }
+            )
+        }
+        try expect(completed)
+        try expect(refreshStage == .done, "Completion progress must reach the UI before the finished log refresh")
+        try expect(appState.allEntries.count == 1 && appState.allEntries[0].stage == .done)
+        try expect(EntryRowBehavior(entry: appState.allEntries[0]).status == .processed)
+        try expect(!appState.allEntries[0].isActive && !coordinator.hasScheduledWork)
+        try expect(coordinator.stage == .done && coordinator.statusMessage == "Done")
+        await Task.yield()
+        try expect(coordinator.stage == .done && coordinator.processingStem == nil,
+                   "Deferred progress must not reactivate the completed recording")
+    }
+
+    await testAsync("ProcessingCoordinator: cancelled attempt cannot overwrite a retry of the same recording") {
+        let calls = LockedStringArray()
+        let firstGate = LockedValue<CheckedContinuation<Void, Never>?>(nil)
+        let retryGate = LockedValue<CheckedContinuation<Void, Never>?>(nil)
+        let staleProgress = LockedValue<(@Sendable (Pipeline.Progress) -> Void)?>(nil)
+        let stem = "2025-01-14-0830"
+        let coordinator = ProcessingCoordinator { stem, _, _, progress in
+            calls.append(stem)
+            if calls.snapshot().count == 1 {
+                staleProgress.set(progress)
+                progress?(.init(stem: stem, stage: .transcribing))
+                await withCheckedContinuation { firstGate.set($0) }
+            } else {
+                progress?(.init(stem: stem, stage: .enriching))
+                await withCheckedContinuation { retryGate.set($0) }
+            }
+            return result(for: stem)
+        }
+        let completions = LockedStringArray()
+        coordinator.resumeEntry(stem: stem, dataDir: "/tmp/captainslog-retry",
+                                onComplete: { completions.append("cancelled") },
+                                onError: { _ in completions.append("cancelled-error") })
+        for _ in 0..<100 where firstGate.get() == nil {
+            try await Task.sleep(for: .milliseconds(1))
+        }
+        try expect(firstGate.get() != nil)
+        coordinator.pauseProcessing()
+        coordinator.resumeEntry(stem: stem, dataDir: "/tmp/captainslog-retry",
+                                onComplete: { completions.append("retry") },
+                                onError: { _ in completions.append("retry-error") })
+        for _ in 0..<100 where retryGate.get() == nil || coordinator.stage != .enriching {
+            try await Task.sleep(for: .milliseconds(1))
+        }
+        try expect(retryGate.get() != nil && coordinator.stage == .enriching)
+        firstGate.get()?.resume()
+        // Even an uncooperative producer retaining its callback must not change the retry.
+        staleProgress.get()?(.init(stem: stem, stage: .transcribing))
+        try await Task.sleep(for: .milliseconds(30))
+        let retryPreserved = coordinator.stage == .enriching
+            && coordinator.processingStem == stem && coordinator.hasScheduledWork
+        retryGate.get()?.resume()
+        for _ in 0..<100 where coordinator.hasScheduledWork {
+            try await Task.sleep(for: .milliseconds(1))
+        }
+        try expect(retryPreserved, "Cancelled attempt must not restore Transcribing or clear the active retry")
+        try expect(completions.snapshot() == ["retry"], "Only the active retry should report completion")
+        try expect(coordinator.stage == .done && coordinator.processingStem == nil)
+    }
+
     await testAsync("ProcessingCoordinator: records an injected pipeline failure") {
         let coordinator = ProcessingCoordinator { _, _, _, _ in
             throw NSError(domain: "Coverage", code: 1, userInfo: [NSLocalizedDescriptionKey: "Synthetic failure"])
@@ -3323,6 +3428,44 @@ func runTests() async {
         try expect(corrections.contains("Jon -> Jorian"))
         try expect(transcript.contains("<transcript>"))
         try expect(transcript.contains("Uh, I shipped it."))
+    }
+
+    test("LLM: reproduces runaway output at the allocated context and rejects partial text") {
+        let allocated = try LLM.plannedContextSize(promptTokenCount: 8_115, maxTokens: 0,
+                                                   modelContextSize: 262_144)
+        var sampled = 0
+        var decoded = 0
+        do {
+            _ = try LLM.generateTokens(
+                generationLimit: allocated - 8_115, maxTokens: 0,
+                promptTokenCount: 8_115, allocatedContextSize: allocated,
+                sampleToken: { sampled += 1; return 1 },
+                isEndToken: { _ in false },
+                tokenString: { _ in "repeated " },
+                decodeToken: { _ in decoded += 1 }
+            )
+            try expect(false, "Runaway output must throw rather than return a truncated recording")
+        } catch let error as LLM.LLMError {
+            try expect(allocated == 16_384 && sampled == 8_269 && decoded == 8_269)
+            try expect(error == .contextExhausted(promptTokens: 8_115, generatedTokens: 8_269,
+                                                 allocatedContextTokens: 16_384))
+            try expect(error.localizedDescription.contains("allocated 16384-token context"))
+            try expect(!error.localizedDescription.contains("262144"),
+                       "The model maximum must not be reported as the exhausted allocation")
+        }
+    }
+
+    test("LLM: normal end-of-generation returns only completed output") {
+        var tokens: [Int32] = [1, 2, 0]
+        var decoded: [Int32] = []
+        let output = try LLM.generateTokens(
+            generationLimit: 8, maxTokens: 0, promptTokenCount: 8, allocatedContextSize: 16,
+            sampleToken: { tokens.removeFirst() },
+            isEndToken: { $0 == 0 },
+            tokenString: { $0 == 1 ? "complete " : "entry" },
+            decodeToken: { decoded.append($0) }
+        )
+        try expect(output == "complete entry" && decoded == [1, 2])
     }
 
     test("LLM: context planning grows with an unbounded rewrite request") {

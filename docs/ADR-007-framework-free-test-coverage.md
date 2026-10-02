@@ -56,6 +56,24 @@ The UI harness prints its isolated paths and bundle identifier. Close the app be
 
 These are historical observations, not claims about the current checkout. Model quality requires human review. Auto-update verification and its later environment failures are recorded in [the update ADR](ADR-011-homebrew-auto-updates.md#verification-record-2026-10-01).
 
+### Generation exhaustion and enrichment: 2026-10-02
+
+A user-provided screenshot reported an 8,115-token prompt and 8,269 output tokens as exhausting the model's 262,144-token context. Those counts instead fill the app's 16,384-token allocation. Inference now uses `llama_n_ctx` for available generation capacity and reports the allocated size. The generation loop accepts injected sampling/decoding operations; a deterministic runaway sampler reproduces those counts, verifies partial-output rejection and the actual allocation, and a companion test verifies successful end-of-generation. Run them with `swift run run-tests --unit` (also included in the full runner). After the extraction, `swift build`, the lightweight suite (150/150) and the full suite (204/204) passed.
+
+The enrichment prompt now requests exactly one YAML mapping with each schema key once and instructs the model to stop after the summary. The original model's runaway behavior has not been reproduced: a 20,005-byte temporary input made by repeating `eval/enrich/input/03_mixed_topics.md` completed under both previous and trial settings. An initial long-input check failed with a Metal out-of-memory error during concurrent compilation; retrying with compilation idle succeeded. No personal recording or note was used.
+
+Trials of Qwen's recommended presence penalty, first with its recommended temperature/top-k/top-p and then with existing sampling settings, introduced metadata regressions: the work fixture omitted the side-project category; the Dutch fixture changed the supplied recording time or emitted an unquoted colon as a YAML object in the entities list. Those sampler changes were rejected and are not included in the final implementation.
+
+The isolated full audio pipeline `tmp/evals-2026-10-02_15-01-33_68042-68042` passed stage-artifact, category, completed-resume immutability and search-readback checks. This run predates the generation-loop extraction; the release bundle’s `cl enrich` was subsequently checked using its bundled prompt and `03_mixed_topics.md`, matching all expected metadata and preserving the source body exactly. Ad-hoc signature verification also passed.
+
+The final prompt-only enrichment run `2026-10-02_14-59-01_Qwen3.5-9B-Q4_K_M` generated valid YAML with string-only metadata lists, preserved each supplied recording time, and retained each source body. Per-case reports are under `eval/enrich/reports/`. Work categories, persons, projects, companies and entities matched expected, but the documentation tag was omitted. The personal case omitted beach and food tags; its persons and summary matched. Mixed topics matched all expected lists and summary. The Dutch case kept named entities, iCloud and the proper side-project category; audio became the grounded audio-processing tag. Its summary omitted explicit original-audio retention and cross-computer synchronization, and described rewritten summaries rather than the full narrative. These limits remain subject to human quality judgment.
+
+### Processing status lifecycle: 2026-10-02
+
+The coordinator now consumes ordered pipeline progress before returning success and ignores updates from a cancelled attempt when the same recording is retried. The new retry regression failed against the previous coordinator: the cancelled attempt could clear the active retry or restore an earlier status. With the fix, `swift build` and the full deterministic runner passed (202/202), including an eval-backed pipeline completion/list-status check.
+
+The isolated local-model CLI fixture run `tmp/evals-2026-10-02_13-14-14_52759-52759` completed all stages, detected no pending entries, preserved files on completed resume, and returned the enriched log in search. These structural checks do not establish model-output quality. A temporary eval-backed native UI check on the previous coordinator displayed Transcribing → Enriching → Processed when its state was advanced in order; it did not reproduce the reported recording symptom. Actual microphone capture and the user's recording were not used. The regression establishes the cancelled-retry race; the exact trigger of the original report remains unconfirmed.
+
 ### Deterministic baseline: 2026-09-26
 
 The full runner passed 184/184 and the lightweight runner passed 132/132. Coverage was 31.58% all-source lines (37.86% functions, 41.82% regions) and 82.16% deterministic-production lines against the 80% floor. Build and CLI coverage checks passed with SwiftPM and Command Line Tools.
