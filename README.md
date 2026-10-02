@@ -100,7 +100,7 @@ swift run run-tests
 bash scripts/test-coverage.sh
 ```
 
-GitHub Actions runs the lightweight, model-free unit suite on pushes and pull requests to `main` (`swift run run-tests --unit`), plus changelog coverage and release-tooling checks. Run `swift run run-tests` locally for the full deterministic suite. Coverage instrumentation, CLI coverage, model evaluations, and UI checks remain opt-in so routine CI stays short.
+GitHub Actions runs only when a release tag (`v*`) is pushed; ordinary branch pushes and pull requests do not start workflows. The release workflow runs release-tooling checks and the full deterministic suite (`swift run run-tests`) before packaging. Run the suite locally during development, or use `swift run run-tests --unit` for a lightweight, model-free check. Coverage instrumentation, CLI coverage, model evaluations, and UI checks remain opt-in.
 
 For the sequential model-backed fixture pipeline, run `bash scripts/run-evals.sh --pipeline`. Run every stage evaluation with `bash scripts/run-evals.sh --suites`; validate saved outputs without inference using `bash scripts/run-evals.sh --validate-run <run-stamp>`. Review generated files against `eval/*/expected/` and the matching stage skill; dated results and semantic findings are recorded in [ADR-007](./docs/ADR-007-framework-free-test-coverage.md#dated-verification-evidence). For native macOS UI checks, use `bash scripts/test-ui.sh eval`; it builds a temporary app bundle and isolates config/data under a temporary directory. Prepared-machine model checks use `scripts/test-model-smoke.sh` with the four `CAPTAINSLOG_*_MODEL_*` environment variables set. Actual microphone capture is a separately confirmed, interactive check via `scripts/test-recorder-hardware.sh`. Neither smoke check runs in GitHub Actions. See [ADR-007](./docs/ADR-007-framework-free-test-coverage.md#test-gates-and-isolation) for fixture and hardware constraints.
 
@@ -110,8 +110,8 @@ Update [CHANGELOG.md](./CHANGELOG.md) under `Unreleased` in the same commit as
 any repository change, including documentation, fixtures, and tooling. Use
 `Added`, `Changed`, `Fixed`, `Removed`, or `Security` as appropriate; describe
 what actually changed. Review `git diff` and `git log` against the latest release
-tag. CI checks for a changelog update in each push or pull request; human review
-checks that the entries cover the changes. Generated cask-only release commits
+tag. Use `swift scripts/release.swift check <base-commit> <head-commit>` locally
+to check changelog coverage; human review checks that the entries cover the changes. Generated cask-only release commits
 are covered by the corresponding release's packaging entry.
 
 Use [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)

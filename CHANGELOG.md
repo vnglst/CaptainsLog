@@ -19,6 +19,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
+- Run GitHub Actions only for release tag pushes; remove branch-push and pull-request CI, move release-tooling checks into the release workflow, and document local testing and changelog coverage checks.
+
 - Clarify the existing transcript-copy backlog item as quick buttons for copying the complete cleaned transcription to the clipboard, and remove the general hardware, installed-model, native UI and search-quality acceptance backlog items and Developer ID/Mac App Store exploration.
 - Consolidate open product, Kev evaluation, publication, runtime maintenance and release acceptance work in `docs/PLAN.md`; keep implementation procedures and historical evidence in linked detail files and ADRs, remove duplicate status lists, and update contributor/documentation links. Track landing-page deployment verification after its implementation.
 

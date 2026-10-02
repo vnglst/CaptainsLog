@@ -17,8 +17,8 @@ The tap update uses the repository Actions secret `HOMEBREW_TAP_TOKEN`. It shoul
 
 `CHANGELOG.md` records every repository change under Unreleased and preserves
 versioned release sections. Historical entries were backfilled from Git tags and
-commits; the initial commit is the available baseline. CI requires a changelog
-update for each push or pull request. Only generated cask version/checksum edits
+commits; the initial commit is the available baseline. Changelog coverage can be
+checked locally with `swift scripts/release.swift check <base-commit> <head-commit>`. Only generated cask version/checksum edits
 matching a documented release are exempt from a separate changelog edit.
 
 `swift scripts/release.swift [auto|patch|minor|major|version]` automates local release
@@ -56,6 +56,7 @@ cask version/checksum commit.
 - The release archive, checksum, source cask, and tap cask are generated or updated through one workflow.
 - The secret must be configured before the tap-publishing step can succeed.
 - Release builds and tests run on GitHub-hosted macOS infrastructure.
+- GitHub Actions runs only for release tag pushes, reducing runner usage. Branch pushes and pull requests do not run workflows; release tooling and deterministic tests run in the release workflow before packaging.
 
 ## Verification: 2026-10-01
 
