@@ -43,7 +43,7 @@ brew uninstall --cask --zap captainslog
 
 Empty the Trash to reclaim the model storage. Models in folders you selected yourself are left untouched.
 
-The first launch downloads the on-device models and needs an internet connection. The models use several gigabytes of storage. After download, recording and inference run locally.
+The first launch downloads the on-device models and needs an internet connection. The models use several gigabytes of storage. After download, recording and inference run locally. Settings → Models shows disk usage and lets you delete model files while the app is idle. Deleted models download automatically on the next transcription or smart search. For the CLI, quit the app and use `cl models` or `cl models --delete whisper` (also `qwen` or `embeddings`).
 
 ## Build
 

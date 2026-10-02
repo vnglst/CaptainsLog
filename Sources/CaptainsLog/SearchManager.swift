@@ -80,6 +80,12 @@ public final class SearchManager {
         }
     }
 
+    func releaseModel() {
+        searchTask?.cancel()
+        engine = nil
+        engineDataDir = nil
+    }
+
     public func retry(dataDir: String) {
         engine = nil
         engineDataDir = nil

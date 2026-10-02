@@ -1043,6 +1043,10 @@ private struct FieldNotesRecordDock: View {
 private struct FieldNotesSettingsView: View {
     @Environment(AppState.self) private var appState
     @CLState private var showThirdPartyNotices = false
+    @CLState private var modelUsage: [ModelStorage.Usage] = []
+    @CLState private var modelToDelete: ModelStorage.Model?
+    @CLState private var storageMessage = ""
+    @CLState private var deletingModel = false
 
     var body: some View {
         @Bindable var state = appState
@@ -1124,7 +1128,29 @@ private struct FieldNotesSettingsView: View {
                 }
                 section("Models") {
                     modelStatus
-                    helper("Model paths and identifiers are managed through the CLI.")
+                    ForEach(ModelStorage.Model.allCases) { model in
+                        let usage = modelUsage.first { $0.model == model }
+                        HStack(spacing: 12) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                fieldLabel(model.title)
+                                helper(usage.map { $0.installed
+                                    ? ByteCountFormatter.string(fromByteCount: $0.bytes, countStyle: .file) + " on disk"
+                                    : "Not downloaded" } ?? "Checking disk usage…")
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            FieldNotesButton(title: "Delete model", kind: .secondary,
+                                isDisabled: usage?.installed != true || !canDeleteModels) {
+                                modelToDelete = model
+                            }
+                            .accessibilityLabel("Delete " + model.title)
+                        }
+                        .frame(height: 52)
+                    }
+                    helper("Deleted models download automatically when transcription or smart search needs them. Model paths and identifiers are managed through the CLI.")
+                    helper(storageMessage)
+                        .lineLimit(2)
+                        .frame(height: 36, alignment: .topLeading)
+                        .opacity(storageMessage.isEmpty ? 0 : 1)
                 }
                 HStack(spacing: 12) {
                     Text(appState.versionString)
@@ -1144,6 +1170,52 @@ private struct FieldNotesSettingsView: View {
         }
         .onAppear { appState.config.loadContextFilesIfNeeded() }
         .sheet(isPresented: $showThirdPartyNotices) { ThirdPartyNoticesView() }
+        .task(id: appState.models.modelsReady) { await refreshModelUsage() }
+        .alert("Delete model?", isPresented: Binding(
+            get: { modelToDelete != nil },
+            set: { if !$0 { modelToDelete = nil } }
+        ), presenting: modelToDelete) { model in
+            Button("Delete", role: .destructive) { Task { await deleteModel(model) } }
+            Button("Cancel", role: .cancel) { modelToDelete = nil }
+        } message: { model in
+            Text("Delete \(model.title) from disk? It will download again when needed. An internet connection will be required.")
+        }
+    }
+
+    private var canDeleteModels: Bool {
+        guard !isDemoMode, !deletingModel, !appState.isRecording,
+              !appState.isProcessing, !appState.processing.hasScheduledWork,
+              !appState.search.isActive, !appState.updates.isInstalling else { return false }
+        if case .downloading = appState.modelState { return false }
+        return true
+    }
+
+    private func refreshModelUsage() async {
+        do {
+            modelUsage = try await Task.detached(priority: .utility) { try ModelStorage.usage() }.value
+        } catch { storageMessage = error.localizedDescription }
+    }
+
+    private func deleteModel(_ model: ModelStorage.Model) async {
+        guard canDeleteModels else { return }
+        deletingModel = true
+        defer {
+            deletingModel = false
+            let saved = CaptainsLogConfig.load()
+            appState.config.whisperModelFolder = saved.whisperModelFolder ?? ""
+            appState.config.qwenModelFolder = saved.qwenModelFolder ?? ""
+        }
+        do {
+            if model == .embeddings { appState.search.releaseModel() }
+            // Keep deletion synchronous with the idle check: no recording or
+            // processing can start between that check and removing the files.
+            appState.models.didDeleteModel(model)
+            try ModelStorage.delete(model)
+            storageMessage = "Model deleted. It will download again when needed."
+        } catch {
+            storageMessage = error.localizedDescription
+        }
+        await refreshModelUsage()
     }
 
     private var updatePreferences: some View {
@@ -1237,7 +1309,8 @@ private struct FieldNotesSettingsView: View {
     @ViewBuilder
     private var modelStatus: some View {
         switch appState.modelState {
-        case .ready: FieldNotesStatus(state: .processed, label: "Local models ready")
+        case .ready: FieldNotesStatus(state: .processed,
+                                      label: appState.models.needsDownload ? "Models download on next transcription" : "Local models ready")
         case .downloading: FieldNotesStatus(state: .active, label: "Preparing local models")
         case .error: FieldNotesStatus(state: .failed, label: "Local models need attention")
         }

@@ -127,8 +127,11 @@ public enum LLM {
 
     /// Loads the model and returns a container for inference.
     public static func loadModel(modelId: String? = nil) async throws -> ModelContainer {
+        if resolveModelPath(modelId: modelId) == nil {
+            try await download(modelId: modelId)
+        }
         guard let modelPath = resolveModelPath(modelId: modelId) else {
-            throw NSError(domain: "LLM", code: 1, userInfo: [NSLocalizedDescriptionKey: "Model file not found at configured path. Please set qwenModelFolder in config and place a .gguf file there."])
+            throw NSError(domain: "LLM", code: 1, userInfo: [NSLocalizedDescriptionKey: "Model download did not produce a GGUF file."])
         }
 
         Logger.llm.info("Loading \(URL(fileURLWithPath: modelPath).lastPathComponent)...")

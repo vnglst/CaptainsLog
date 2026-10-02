@@ -1904,6 +1904,29 @@ func runCoordinatorCoverageTests() async {
         )
     }
 
+    await testAsync("AppState: resuming after deletion downloads models before processing") {
+        let events = LockedStringArray()
+        let models = ModelManager(dependencies: .init(
+            clearStaleConfig: {}, cleanCorruptedMetadata: {},
+            whisperIsDownloaded: { false }, qwenIsDownloaded: { false },
+            downloadWhisper: { _ in events.append("whisper") },
+            downloadQwen: { _ in events.append("qwen") }
+        ))
+        let coordinator = ProcessingCoordinator { stem, _, _, _ in
+            events.append("processing")
+            return result(for: stem)
+        }
+        let state = AppState(config: ConfigManager(loadContextFiles: false),
+                             processing: coordinator, models: models)
+        models.didDeleteModel(.qwen)
+        state.resumeProcessing(stem: "2025-01-14-0830")
+        for _ in 0..<1000 where events.snapshot().count < 3 {
+            try await Task.sleep(for: .milliseconds(1))
+        }
+        try expect(events.snapshot() == ["whisper", "qwen", "processing"])
+        try expect(models.modelsReady)
+    }
+
     await testAsync("ProcessingCoordinator: drains queued work through injected pipeline") {
         let processed = LockedStringArray()
         let coordinator = ProcessingCoordinator { stem, _, fromStage, progress in
@@ -4419,6 +4442,70 @@ func runTests() async {
         watcher.scheduleReload()
         try await Task.sleep(for: .milliseconds(500))
         try expect(reloads.snapshot() == ["reload"])
+    }
+
+    test("ModelStorage: disk usage and deletion preserve unrelated files and model IDs") {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let original = CaptainsLogConfig.load()
+        defer { try? original.save() }
+        let whisper = root.appendingPathComponent("whisper")
+        let bundle = whisper.appendingPathComponent("AudioEncoder.mlmodelc/weights")
+        try FileManager.default.createDirectory(at: bundle, withIntermediateDirectories: true)
+        try Data(repeating: 7, count: 8192).write(to: bundle.appendingPathComponent("weight.bin"))
+        let unrelated = whisper.appendingPathComponent("keep.txt")
+        try Data("keep".utf8).write(to: unrelated)
+        let qwen = root.appendingPathComponent(LLM.ggufFilename)
+        let otherModel = root.appendingPathComponent("other.gguf")
+        let embedding = root.appendingPathComponent("embedding.gguf")
+        for file in [qwen, otherModel, embedding] {
+            try Data(repeating: 3, count: 8192).write(to: file)
+        }
+        var config = original
+        config.whisperModel = "selected-whisper"
+        config.whisperModelFolder = whisper.path
+        config.qwenModelId = "selected-qwen"
+        config.qwenModelFolder = root.path
+        try config.save()
+        let usage = try ModelStorage.usage(config: config, embeddingURL: embedding)
+        try expect(usage.count == 3 && usage.allSatisfy { $0.installed && $0.bytes >= 8192 })
+        try ModelStorage.delete(.whisper, config: config, embeddingURL: embedding)
+        try ModelStorage.delete(.qwen, config: config, embeddingURL: embedding)
+        try ModelStorage.delete(.embeddings, config: config, embeddingURL: embedding)
+        let saved = CaptainsLogConfig.load()
+        try expect(saved.whisperModelFolder == nil && saved.qwenModelFolder == nil)
+        try expect(saved.whisperModel == "selected-whisper" && saved.qwenModelId == "selected-qwen")
+        try expect(FileManager.default.fileExists(atPath: unrelated.path))
+        try expect(FileManager.default.fileExists(atPath: otherModel.path))
+        try expect(!FileManager.default.fileExists(atPath: qwen.path))
+        try expect(!FileManager.default.fileExists(atPath: embedding.path))
+        let after = try ModelStorage.usage(config: saved, embeddingURL: embedding)
+        try expect(after.allSatisfy { !$0.installed && $0.bytes == 0 })
+        // A wrongly selected directory must not lose an unrelated config.json.
+        let unrelatedConfig = whisper.appendingPathComponent("config.json")
+        try Data("keep".utf8).write(to: unrelatedConfig)
+        try ModelStorage.delete(.whisper, config: config, embeddingURL: embedding)
+        try expect(FileManager.default.fileExists(atPath: unrelatedConfig.path))
+    }
+
+    await testAsync("ModelManager: deleting a pipeline model defers download until preparation") {
+        let calls = LockedStringArray()
+        let manager = ModelManager(dependencies: .init(
+            clearStaleConfig: {}, cleanCorruptedMetadata: {},
+            whisperIsDownloaded: { false }, qwenIsDownloaded: { false },
+            downloadWhisper: { _ in calls.append("whisper") },
+            downloadQwen: { _ in calls.append("qwen") }
+        ))
+        manager.didDeleteModel(.embeddings)
+        try expect(manager.modelsReady)
+        manager.didDeleteModel(.whisper)
+        try expect(!manager.modelsReady && calls.snapshot().isEmpty)
+        let state = AppState(config: ConfigManager(loadContextFiles: false), models: manager)
+        try expect(state.canInstallUpdate, "Intentionally deleted models should not block an idle update")
+        await manager.downloadModelsIfNeeded()
+        try expect(manager.modelsReady && !manager.needsDownload)
+        try expect(calls.snapshot() == ["whisper", "qwen"])
     }
 
     // MARK: - ModelManager Tests

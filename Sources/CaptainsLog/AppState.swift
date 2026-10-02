@@ -226,6 +226,7 @@ public final class AppState {
 
     private func startQueuedProcessingIfPossible() {
         guard modelsReady else {
+            if models.needsDownload { ensureModelsDownloaded() }
             processing.stage = .idle
             processing.statusMessage = "Waiting for local models"
             return
@@ -269,6 +270,12 @@ public final class AppState {
 
     func resumeProcessing(stem: String, fromStage: Pipeline.Stage? = nil) {
         guard !updates.isInstalling, !updates.needsRestart else { return }
+        if models.needsDownload {
+            models.ensureModelsDownloaded { [weak self] in
+                self?.resumeProcessing(stem: stem, fromStage: fromStage)
+            }
+            return
+        }
         processing.resumeEntry(
             stem: stem,
             fromStage: fromStage,
@@ -293,6 +300,10 @@ public final class AppState {
 
     public func batchResumePending() {
         guard !updates.isInstalling, !updates.needsRestart else { return }
+        if models.needsDownload {
+            models.ensureModelsDownloaded { [weak self] in self?.batchResumePending() }
+            return
+        }
         processing.batchResumePending(
             pendingEntries: pendingEntries,
             dataDir: config.dataDir,
@@ -325,7 +336,7 @@ public final class AppState {
     }
 
     var canInstallUpdate: Bool {
-        !isRecording && !isProcessing && !processing.hasScheduledWork && modelsReady
+        !isRecording && !isProcessing && !processing.hasScheduledWork && models.modelState == .ready
     }
 
     public func installUpdate() async {

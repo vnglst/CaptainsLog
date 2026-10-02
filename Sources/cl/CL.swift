@@ -7,7 +7,7 @@ struct CL: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "cl",
         abstract: "CaptainsLog command-line interface.",
-        subcommands: [Ping.self, Record.self, Warm.self, Transcribe.self, CleanupCommand.self, CategorizeCommand.self, FilenameCommand.self, EnrichCommand.self, PipelineCommand.self, ResumeCommand.self, ListCommand.self, SearchIndexCommand.self, SearchCommand.self, ConfigCommand.self, UpdateCommand.self]
+        subcommands: [Ping.self, Record.self, Warm.self, Transcribe.self, CleanupCommand.self, CategorizeCommand.self, FilenameCommand.self, EnrichCommand.self, PipelineCommand.self, ResumeCommand.self, ListCommand.self, SearchIndexCommand.self, SearchCommand.self, ConfigCommand.self, ModelsCommand.self, UpdateCommand.self]
     )
 }
 
@@ -625,6 +625,27 @@ struct UpdateCommand: AsyncParsableCommand {
             print("Installing update… CaptainsLog must be closed.")
             try await updater.install()
             print("Update installed. Quit and reopen CaptainsLog to use the new version.")
+        }
+    }
+}
+
+struct ModelsCommand: ParsableCommand {
+    static let configuration = CommandConfiguration(
+        commandName: "models", abstract: "Show model disk usage or delete a model (quit the app first)."
+    )
+
+    @Option(name: .long, help: "Delete whisper, qwen, or embeddings. Downloads again on next use.")
+    var delete: String?
+
+    func run() throws {
+        if let delete {
+            guard let model = ModelStorage.Model(rawValue: delete) else {
+                throw ValidationError("Choose whisper, qwen, or embeddings.")
+            }
+            try ModelStorage.delete(model)
+        }
+        for usage in try ModelStorage.usage() {
+            print("\(usage.model.rawValue): \(usage.installed ? ByteCountFormatter.string(fromByteCount: usage.bytes, countStyle: .file) : "Not downloaded")")
         }
     }
 }

@@ -26,8 +26,17 @@ public final class ModelManager {
 
     public var modelState: ModelState = .ready
     private let dependencies: Dependencies
+    private var readyCallbacks: [@MainActor () -> Void] = []
 
-    public var modelsReady: Bool { modelState == .ready }
+    public private(set) var needsDownload = false
+    public var modelsReady: Bool { modelState == .ready && !needsDownload }
+
+    func didDeleteModel(_ model: ModelStorage.Model) {
+        if model != .embeddings {
+            needsDownload = true
+            modelState = .ready
+        }
+    }
 
     public init() {
         self.dependencies = Dependencies(
@@ -45,11 +54,14 @@ public final class ModelManager {
     }
 
     func ensureModelsDownloaded(onReady: (@MainActor () -> Void)? = nil) {
+        if let onReady { readyCallbacks.append(onReady) }
+        if case .downloading = modelState { return }
+        modelState = .downloading(model: "Initializing…", progress: 0)
         Task {
             await downloadModelsIfNeeded()
-            if modelsReady {
-                onReady?()
-            }
+            let callbacks = readyCallbacks
+            readyCallbacks.removeAll()
+            if modelsReady { callbacks.forEach { $0() } }
         }
     }
 
@@ -68,6 +80,7 @@ public final class ModelManager {
         }.value
 
         if availability.whisper && availability.qwen {
+            needsDownload = false
             modelState = .ready
             return
         }
@@ -98,6 +111,7 @@ public final class ModelManager {
                 }
             }
 
+            needsDownload = false
             modelState = .ready
         } catch is CancellationError {
             modelState = .ready
@@ -147,7 +161,6 @@ public final class ModelManager {
         else { return }
         try? CaptainsLogConfig.update {
             $0.whisperModelFolder = nil
-            $0.whisperModel = nil
         }
     }
 
