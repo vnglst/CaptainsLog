@@ -18,6 +18,7 @@ entry. Git links provide the complete commit history for each release.
 
 ### Added
 
+- Document a staged Kev decision-model evaluation and integration plan, including Dutch fixtures, 16 GB M4 memory checks, CLI/config support, and acceptance gates; link it from planned features.
 - Add a static CaptainsLog website with an app-matched dark design, a documentation-based voice-journal description, local processing and Markdown/search details, install instructions, and a placeholder ready for owner-recorded app footage. Include ImageGen design references and synthetic fixture-backed illustrative logs.
 - Add this Git-backed changelog, contributor instructions, and a release checklist; update publication guidance and record the release process in ADR-010. CI requires changelog updates for repository changes; releases validate and publish the matching dated entry as GitHub release notes, including on reruns.
 - Add a release command that infers the highest version bump from Conventional Commits since the latest release (fix/perf → patch, feat → minor, breaking → major or minor on 0.x), skips maintenance-only releases, supports manual overrides, rolls over notes and Git links, runs sequential checks, creates a commit/tag, and optionally publishes through an atomic Git push. Require Conventional Commits for new work and use `chore(release)` for generated release/cask commits. Implement release tooling in one standalone Swift script with Bash/Git fixture tests and document its commands; no additional runtime or package dependencies.

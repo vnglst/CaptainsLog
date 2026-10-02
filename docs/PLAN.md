@@ -20,6 +20,11 @@ See [PLAN-004](PLAN-004-logs-implementation.md) for the current workspace and de
 - [ ] Resolve meaning-changing transcription errors and rerun the transcription/full-pipeline evaluations.
 - [ ] Complete the native, hardware, installed-model and search relevance checks listed in [ADR-007](ADR-007-framework-free-test-coverage.md#remaining-acceptance-work).
 
+## Local decision models
+
+- [ ] Evaluate Kev 4B Q8 on the 16 GB M4 Mac for categorization, with Kev 0.8B as a smaller comparison; see [PLAN-005](PLAN-005-kev-decision-model.md).
+- [ ] If quality, memory and latency gates pass, add opt-in CLI/config support through in-process llama.cpp and evaluate summary grounding checks before app integration.
+
 ## Distribution and maintenance
 
 The app/CLI bundle, public Homebrew tap and tag-driven release workflow are implemented. Keep release checks and unresolved publication reviews in [PUBLISHING-PLAN](PUBLISHING-PLAN.md).
