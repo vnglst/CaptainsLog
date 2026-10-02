@@ -76,6 +76,8 @@ The isolated local-model CLI fixture run `tmp/evals-2026-10-02_13-14-14_52759-52
 
 ### Model storage settings: 2026-10-02
 
+After integrating this feature with the committed pipeline fixes on `main`, `swift build` passed and the combined runner passed 205/207 tests. The two existing updater transport/installation tests failed because the installed CaptainsLog app was running: `AppUpdater.install` checks real `NSRunningApplication` state even when its Homebrew transport is a fixture. All model-storage and pipeline tests passed. The running installed app was left untouched; this run does not establish a clean full-suite pass with that app closed.
+
 `swift build` and the full deterministic runner passed (203/203). New tests cover allocated model bytes, deletion of nested Whisper bundles and the selected GGUF, preservation of unrelated files and model identifiers, protection of an unrelated `config.json` in a wrongly selected folder, deferred downloads before resumed processing, and allowing idle app updates after intentional model deletion. An isolated `cl models` / `--delete whisper` / `--delete qwen` check used copies of `eval/cleanup/input/book-reference.md` as storage fixtures and preserved neighboring files.
 
 The native `eval-settings` harness showed fixed-height model rows, disk usage, disabled deletion for missing models, and a confirmation explaining the next download and internet requirement. Canceling the confirmation preserved the installed search model. Actual installed models were not deleted; network redownload and failure recovery remain covered through injected download operations rather than a destructive native/network check.

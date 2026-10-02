@@ -19,6 +19,7 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
+- Record combined-main model-storage verification and the updater fixture tests’ dependency on whether the installed app is running in ADR-007.
 - Run GitHub Actions only for release tag pushes; remove branch-push and pull-request CI, move release-tooling checks into the release workflow, and document local testing and changelog coverage checks.
 
 - Clarify the existing transcript-copy backlog item as quick buttons for copying the complete cleaned transcription to the clipboard, and remove the general hardware, installed-model, native UI and search-quality acceptance backlog items and Developer ID/Mac App Store exploration.
