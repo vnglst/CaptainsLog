@@ -34,7 +34,7 @@ Use llama.cpp in-process through `libllama` and a small SwiftPM `CLlama` system-
 
 ## Follow-up
 
-Replace Homebrew build-time paths with a vendored or project-built llama.cpp runtime built for the app deployment target.
+Runtime build work is tracked in the [main backlog](PLAN.md#distribution-and-maintenance). The build must use a vendored or project-built llama.cpp runtime for the app deployment target.
 
 ## Extension: local hybrid search
 

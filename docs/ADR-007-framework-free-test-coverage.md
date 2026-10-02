@@ -117,11 +117,4 @@ startup benchmark needs isolated fixture data and an explicit hardware boundary.
 
 ## Remaining acceptance work
 
-- Repair meaning-changing transcription errors and rerun transcription and full-pipeline semantic review.
-- Run real microphone and installed-model smoke checks on a prepared machine.
-- Review all queries in `eval/search/queries.json` for expected hits, ranking, false positives and useful excerpts; see [search fixtures](../eval/search/README.md).
-- Check alternate window sizes, layout stability, keyboard/VoiceOver and reduced-motion behavior.
-- Verify Finder reveal, external notice links, native folder selection/persistence and onboarding folder validation.
-- Check context/correction persistence after native relaunch and the full UI-to-prompt path.
-- Exercise native Trash failure/missing-file behavior and remaining command filesystem failures. Deterministic deletion keeps a failed entry visible; no dedicated native Trash-error alert was verified.
-- Validate live inference-triggering UI actions outside the presentation harness and complete clean-machine packaged-app QA.
+Open acceptance items are tracked only in the [main backlog](PLAN.md#evaluation-fixtures-and-quality), with clean-machine and release checks under [distribution and maintenance](PLAN.md#distribution-and-maintenance). The dated findings above preserve the evidence and limits that inform those items.

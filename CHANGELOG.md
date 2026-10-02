@@ -14,10 +14,18 @@ entry. Git links provide the complete commit history for each release.
 
 ### Removed
 
+- Remove the keyboard, VoiceOver, reduced-motion and layout-stability acceptance item from the Logs plan and its backlog summary; retain clean-machine packaged-app checks.
 - Remove the obsolete startup benchmark and its debug recording hooks; document the retained build and verification scripts in `scripts/README.md`.
+
+### Changed
+
+- Clarify the existing transcript-copy backlog item as quick buttons for copying the complete cleaned transcription to the clipboard, and remove the general hardware, installed-model, native UI and search-quality acceptance backlog items and Developer ID/Mac App Store exploration.
+- Consolidate open product, Kev evaluation, publication, runtime maintenance and release acceptance work in `docs/PLAN.md`; keep implementation procedures and historical evidence in linked detail files and ADRs, remove duplicate status lists, and update contributor/documentation links. Track landing-page deployment verification after its implementation.
 
 ### Added
 
+- Add a Settings backlog item for structured misspelling/correct-spelling fields, entry management and migration of existing corrections.
+- Add a Settings redesign backlog item focused on visual polish, organization, clear controls and user feedback.
 - Document a staged Kev decision-model evaluation and integration plan, including Dutch fixtures, 16 GB M4 memory checks, CLI/config support, and acceptance gates; link it from planned features.
 - Add a static CaptainsLog website with an app-matched dark design, a documentation-based voice-journal description, local processing and Markdown/search details, install instructions, and a placeholder ready for owner-recorded app footage. Include ImageGen design references and synthetic fixture-backed illustrative logs.
 - Add this Git-backed changelog, contributor instructions, and a release checklist; update publication guidance and record the release process in ADR-010. CI requires changelog updates for repository changes; releases validate and publish the matching dated entry as GitHub release notes, including on reruns.

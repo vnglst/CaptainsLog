@@ -5,7 +5,7 @@ This folder contains the complete scripts and ground truth for the Star Trek TNG
 ## How to use
 
 1. **Record audio:** Read each `## Raw Script` section aloud at a comfortable natural pace. Save recordings as `.m4a` to `eval/transcribe/audio/` with the filename slug from this file.
-2. **Copy files into eval:** Once recorded, each entry maps to 6 eval files (see the plan file for exact paths).
+2. **Copy files into eval:** Once recorded, each entry maps to 6 eval files (see [corpus details](../PLAN-002-tng-eval-set.md) for exact paths).
 3. **Ground truth is in this folder:** Each entry file contains the raw spoken text, the polished cleanup version, the expected YAML frontmatter, and the expected filename.
 
 ## The TNG Universe

@@ -27,7 +27,7 @@ Place those files in `assets/`. A poster and captions are optional (`null` omits
 
 The owner will create the recordings. The earlier synthetic sample audio and illustrative walkthrough have been removed. No recordings ship with the page until the owner adds the final files.
 
-The hero is a selectable HTML illustration, explicitly labeled as such. It uses verbatim synthetic fixture text from `eval/categorize/input/{side-project-voice-app,professional-release-planning,personal-weekend}.md`, split into paragraphs. Titles, tags, and relative dates are illustrative. It is not captured native UI or measured model output. No app audio playback is advertised: it is still open work in `docs/PLAN.md` and `docs/PLAN-004-logs-implementation.md`.
+The hero is a selectable HTML illustration, explicitly labeled as such. It uses verbatim synthetic fixture text from `eval/categorize/input/{side-project-voice-app,professional-release-planning,personal-weekend}.md`, split into paragraphs. Titles, tags, and relative dates are illustrative. It is not captured native UI or measured model output. No app audio playback is advertised: it is tracked in the [main backlog](../docs/PLAN.md#logs-interface), with workspace context in [Logs interface details](../docs/PLAN-004-logs-implementation.md).
 
 ## Content sources
 

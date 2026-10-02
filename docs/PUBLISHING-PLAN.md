@@ -1,4 +1,6 @@
-# Publication plan
+# Publication procedures and review record
+
+Open review items and recurring release checks are tracked in the [main backlog](PLAN.md#publication-review). This file preserves procedures, review scope and historical evidence; its lists do not track completion.
 
 ## Goal and release boundary
 
@@ -8,12 +10,12 @@ The initial release includes the macOS app, the `cl` CLI, bundled llama.cpp runt
 
 ## Phase 1 — Remove private material from the publication candidate
 
-- [x] Remove `.claude/settings.local.json` from the working tree. It contained a machine-specific absolute path and a local cleanup permission. `.gitignore` now excludes this exact path so a local copy is not accidentally added again. The file remains in Git history and must be handled by the history review below.
-- [x] Review `eval/transcribe/audio/2025-01-14 side project.m4a` and matching copies in transcription, cleanup, filename, and enrichment inputs/expected outputs. The repository owner reviewed them and approved retaining them in the public candidate. Keep this approval scoped to these reviewed files; review any new recordings or generated copies before publication.
-- [ ] Search all tracked files, including hidden files and Git LFS objects if present, for names and email addresses other than the user's, absolute home paths, machine and account identifiers, credentials, tokens, private URLs, local config, and personal content. The user's name and email may remain.
-- [x] Inspect images and binary files for visible paths, account names, device labels, recordings, screenshots, embedded metadata, and other identifying details. The seven design references remain conceptual (per owner approval); creator metadata, including the Trufo email, was stripped without changing image pixels. The images still contain illustrative paths, counts, microphone labels, version text, and “Field notes” UI labels; they are documented as concepts, not current product screenshots.
-- [ ] Inspect demo and evaluation fixtures. Keep synthetic TNG examples clearly labeled as fictional, and verify no real personal content has entered a generated file or report.
-- [ ] Complete a safeguard review of `.gitignore`, build/test scripts, and CI workflows for config files, model caches, recordings, generated outputs, signing material, and build artifacts. The exact `.claude/settings.local.json` ignore rule is now present; the broader review remains open.
+- **Recorded evidence:** Remove `.claude/settings.local.json` from the working tree. It contained a machine-specific absolute path and a local cleanup permission. `.gitignore` now excludes this exact path so a local copy is not accidentally added again. The file remains in Git history and must be handled by the history review below.
+- **Recorded evidence:** Review `eval/transcribe/audio/2025-01-14 side project.m4a` and matching copies in transcription, cleanup, filename, and enrichment inputs/expected outputs. The repository owner reviewed them and approved retaining them in the public candidate. Keep this approval scoped to these reviewed files; review any new recordings or generated copies before publication.
+- Search all tracked files, including hidden files and Git LFS objects if present, for names and email addresses other than the user's, absolute home paths, machine and account identifiers, credentials, tokens, private URLs, local config, and personal content. The user's name and email may remain.
+- **Recorded evidence:** Inspect images and binary files for visible paths, account names, device labels, recordings, screenshots, embedded metadata, and other identifying details. The seven design references remain conceptual (per owner approval); creator metadata, including the Trufo email, was stripped without changing image pixels. The images still contain illustrative paths, counts, microphone labels, version text, and “Field notes” UI labels; they are documented as concepts, not current product screenshots.
+- Inspect demo and evaluation fixtures. Keep synthetic TNG examples clearly labeled as fictional, and verify no real personal content has entered a generated file or report.
+- Complete a safeguard review of `.gitignore`, build/test scripts, and CI workflows for config files, model caches, recordings, generated outputs, signing material, and build artifacts. The exact `.claude/settings.local.json` ignore rule is now present; the broader review remains open.
 
 ### Git history gate
 
@@ -21,12 +23,12 @@ Removing a file from the latest tree does not remove it from existing commits. T
 
 ## Phase 2 — Review content, rights, and project metadata
 
-- [ ] Review README, docs, plans, design references, examples, and comments for obsolete behavior, machine-specific instructions, unfinished internal notes, and contradictory install claims. The open product backlog is in `PLAN.md`; images in `design/logs/screens/` are design references and must not be presented as current screenshots. Current product terminology is “Logs.”
-- [x] Review TNG demo and evaluation content, names, references, visual branding, and assets for the intended public use. The repository owner approved retaining the fan-themed material and reviewed literary fixtures; attribution and a no-affiliation statement are in `THIRD-PARTY-NOTICES.md`.
-- [ ] Add a project license or state clearly that the source is currently all rights reserved. `THIRD-PARTY-NOTICES.md` inventories the bundled font, software, runtime models, and reviewed fixture attributions; verify its inventory and app-bundle copies on a release build. A model's license may differ from the code license.
-- [ ] Review the app's data handling and privacy claims against implementation: audio and entries remain local, models are downloaded from their documented sources, and no inference service receives user content. Document any update checks, telemetry, or network behavior if present.
-- [ ] Review the ad-hoc signing and quarantine-removal behavior. Explain the trust tradeoff and install only from the project's intended release source. Verify the cask removes quarantine from the intended app path only.
-- [ ] Confirm the app name, bundle identifier, CLI name, version, support/contact route, minimum macOS version, Apple Silicon requirement, storage estimate, and known limitations agree across app, cask, README, and release notes.
+- Review README, docs, plans, design references, examples, and comments for obsolete behavior, machine-specific instructions, unfinished internal notes, and contradictory install claims. The single backlog is in [PLAN.md](PLAN.md); images in `design/logs/screens/` are design references and must not be presented as current screenshots. Current product terminology is “Logs.”
+- **Recorded evidence:** Review TNG demo and evaluation content, names, references, visual branding, and assets for the intended public use. The repository owner approved retaining the fan-themed material and reviewed literary fixtures; attribution and a no-affiliation statement are in `THIRD-PARTY-NOTICES.md`.
+- Add a project license or state clearly that the source is currently all rights reserved. `THIRD-PARTY-NOTICES.md` inventories the bundled font, software, runtime models, and reviewed fixture attributions; verify its inventory and app-bundle copies on a release build. A model's license may differ from the code license.
+- Review the app's data handling and privacy claims against implementation: audio and entries remain local, models are downloaded from their documented sources, and no inference service receives user content. Document any update checks, telemetry, or network behavior if present.
+- Review the ad-hoc signing and quarantine-removal behavior. Explain the trust tradeoff and install only from the project's intended release source. Verify the cask removes quarantine from the intended app path only.
+- Confirm the app name, bundle identifier, CLI name, version, support/contact route, minimum macOS version, Apple Silicon requirement, storage estimate, and known limitations agree across app, cask, README, and release notes.
 
 ### Third-party asset inventory
 
@@ -41,24 +43,24 @@ The seven design screenshots are in-repository reference images. The Trufo strin
 
 ## Phase 3 — Verify the release candidate
 
-- [ ] Start from a clean checkout of the publication candidate and run the documented build, unit tests, coverage gate, and relevant evaluation suites.
-- [ ] Build the `.app` and versioned ZIP using `scripts/build-app.sh`. Inspect the app bundle contents, executable architecture, bundled frameworks/libraries, resources, and absence of developer-only files.
-- [x] Install the cask from the public tap using `brew install --cask vnglst/captainslog/captainslog`. Verified the app lands in Applications, `cl` runs, and the quarantine attribute is removed. Launched the GUI and let first-run downloads complete (about 5.7 GB in Application Support and 2.9 GB in Caches), then ran `brew uninstall --cask --zap captainslog`. The app, CLI, and active model folders were removed; the config checksum stayed unchanged and the default log folder remained. Homebrew moved the model folders to Trash. `brew audit --cask --strict vnglst/captainslog/captainslog` passes.
-- [ ] Test the downloaded release archive and Homebrew flow on a clean macOS user account or another Apple Silicon Mac with no development tools or existing model cache. Confirm first launch, model download, recording, processing, search, and CLI operation.
-- [ ] Test failure and recovery paths that affect release readiness: interrupted model download, unavailable network, insufficient disk space, permission errors, and an existing user data folder.
-- [x] Confirm generated ZIP checksum exactly matches the cask. Verify install/uninstall behavior and that uninstall leaves user data intact. The optional zap cleanup targets only CaptainsLog-managed model folders.
-- [ ] Review screenshots, README commands, release notes, cask metadata, and archive one final time from the perspective of a new user.
+- Start from a clean checkout of the publication candidate and run the documented build, unit tests, coverage gate, and relevant evaluation suites.
+- Build the `.app` and versioned ZIP using `scripts/build-app.sh`. Inspect the app bundle contents, executable architecture, bundled frameworks/libraries, resources, and absence of developer-only files.
+- **Recorded evidence:** Install the cask from the public tap using `brew install --cask vnglst/captainslog/captainslog`. Verified the app lands in Applications, `cl` runs, and the quarantine attribute is removed. Launched the GUI and let first-run downloads complete (about 5.7 GB in Application Support and 2.9 GB in Caches), then ran `brew uninstall --cask --zap captainslog`. The app, CLI, and active model folders were removed; the config checksum stayed unchanged and the default log folder remained. Homebrew moved the model folders to Trash. `brew audit --cask --strict vnglst/captainslog/captainslog` passes.
+- Test the downloaded release archive and Homebrew flow on a clean macOS user account or another Apple Silicon Mac with no development tools or existing model cache. Confirm first launch, model download, recording, processing, search, and CLI operation.
+- Test failure and recovery paths that affect release readiness: interrupted model download, unavailable network, insufficient disk space, permission errors, and an existing user data folder.
+- **Recorded evidence:** Confirm generated ZIP checksum exactly matches the cask. Verify install/uninstall behavior and that uninstall leaves user data intact. The optional zap cleanup targets only CaptainsLog-managed model folders.
+- Review screenshots, README commands, release notes, cask metadata, and archive one final time from the perspective of a new user.
 
 ## Phase 4 — Publish
 
-- [x] Choose the public source layout: the existing `CaptainsLog` repository is public.
-- [x] Verify `.github/workflows/release.yml` for initial release `v0.1.0`: its run passed on an Apple Silicon macOS runner, published the versioned ZIP as a GitHub Release asset, and committed its archive checksum and version to `Casks/captainslog.rb`. This records the initial run, not verification of every later release.
-- [x] Create the public `vnglst/homebrew-captainslog` tap with the initial `captainslog` cask. The supported direct install is `brew install --cask vnglst/captainslog/captainslog`.
-- [ ] For each release, review `CHANGELOG.md` and preview `swift scripts/release.swift [auto|patch|minor|major|version] --dry-run`. From clean `main`, run the command without `--dry-run` to execute sequential release checks, bump `VERSION`, date the changelog, and create a commit/tag. Review evaluation semantics before pushing; use the printed atomic push command, or `--publish` when the findings are already reviewed. See the [README release checklist](../README.md#changelog-and-releases). The workflow rejects tags if the tag, `VERSION`, and default branch disagree or if the tagged commit is not on the default branch.
-- [ ] Review the workflow run and changelog-backed release notes. The workflow publishes the matching dated `CHANGELOG.md` section, including on reruns; include relevant changes to supported macOS/architecture, model storage/download requirements, known limitations, and ad-hoc signing/quarantine behavior.
-- [ ] Test the cask against the published release URL and test upgrading from the prior release before announcing it. The workflow updates the cask automatically, but it does not perform a clean-Mac install test.
-- [x] Publish the repository and initial release. The repository owner made the repository public and approved release `v0.1.0` on 2026-09-25; remaining review and clean-Mac checks above are still open for follow-up.
-- [ ] Verify the documented tap/install commands from a clean machine using the public endpoints. Keep a rollback path by retaining the previous release archive and cask revision.
+- **Recorded evidence:** Choose the public source layout: the existing `CaptainsLog` repository is public.
+- **Recorded evidence:** Verify `.github/workflows/release.yml` for initial release `v0.1.0`: its run passed on an Apple Silicon macOS runner, published the versioned ZIP as a GitHub Release asset, and committed its archive checksum and version to `Casks/captainslog.rb`. This records the initial run, not verification of every later release.
+- **Recorded evidence:** Create the public `vnglst/homebrew-captainslog` tap with the initial `captainslog` cask. The supported direct install is `brew install --cask vnglst/captainslog/captainslog`.
+- For each release, review `CHANGELOG.md` and preview `swift scripts/release.swift [auto|patch|minor|major|version] --dry-run`. From clean `main`, run the command without `--dry-run` to execute sequential release checks, bump `VERSION`, date the changelog, and create a commit/tag. Review evaluation semantics before pushing; use the printed atomic push command, or `--publish` when the findings are already reviewed. See the [README release checklist](../README.md#changelog-and-releases). The workflow rejects tags if the tag, `VERSION`, and default branch disagree or if the tagged commit is not on the default branch.
+- Review the workflow run and changelog-backed release notes. The workflow publishes the matching dated `CHANGELOG.md` section, including on reruns; include relevant changes to supported macOS/architecture, model storage/download requirements, known limitations, and ad-hoc signing/quarantine behavior.
+- Test the cask against the published release URL and test upgrading from the prior release before announcing it. The workflow updates the cask automatically, but it does not perform a clean-Mac install test.
+- **Recorded evidence:** Publish the repository and initial release. The repository owner made the repository public and approved release `v0.1.0` on 2026-09-25; remaining review and clean-Mac checks above are still open for follow-up.
+- Verify the documented tap/install commands from a clean machine using the public endpoints. Keep a rollback path by retaining the previous release archive and cask revision.
 
 The release workflow uses `GITHUB_TOKEN` for source releases and `HOMEBREW_TAP_TOKEN` for updates to the separate tap. The successful initial tap publication demonstrates the secret was configured then; confirm it remains valid if a future release fails at the tap-publishing step. The token needs Contents read/write access to `vnglst/homebrew-captainslog`. This is separate from Developer ID signing, which is not used.
 

@@ -1,4 +1,6 @@
-# PLAN-002: Star Trek TNG Synthetic Evaluation Test Set
+# TNG evaluation corpus details
+
+Open items and completion status are tracked in the [main backlog](PLAN.md#evaluation-fixtures-and-quality). This file describes the corpus and migration procedure.
 
 ## Goal
 

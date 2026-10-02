@@ -84,8 +84,8 @@ Transcription uses Whisper Large-v2. Cleanup, categorization, filenames, and met
 - [Testing gates, evaluation evidence, and remaining checks](./docs/ADR-007-framework-free-test-coverage.md)
 - [Build and verification scripts](./scripts/README.md)
 - [Troubleshooting](./docs/TROUBLESHOOTING.md)
-- [Open product and release work](./docs/PLAN.md)
-- [Publishing plan](./docs/PUBLISHING-PLAN.md)
+- [Main backlog](./docs/PLAN.md)
+- [Publication procedures and review record](./docs/PUBLISHING-PLAN.md)
 - [Third-party notices](./THIRD-PARTY-NOTICES.md)
 - [Evaluation fixtures and scripts](./docs/tng-eval/README.md)
 - [Design references](./design/README.md)
@@ -154,7 +154,8 @@ release-tooling tests, `swift build`, `swift run run-tests`, and the full fixtur
 pipeline and stage suites sequentially with isolated config/data. Failed checks
 stop before version/changelog edits, commits, or tags. Model evaluation scores
 and artifacts still need semantic review under the stage skills; see [the
-publication gates](./docs/PUBLISHING-PLAN.md) for remaining manual checks.
+main backlog](./docs/PLAN.md#next-release-checks) for remaining manual checks and
+[publication procedures](./docs/PUBLISHING-PLAN.md) for review details.
 
 After checks pass, the command bumps `VERSION`, moves Unreleased entries into a
 dated release section, adds the packaging entry, updates comparison links, and
