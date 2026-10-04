@@ -19,6 +19,7 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
+- Move the open plan items into Backlog.md task files, make the CLI the single task workflow for Codex, and point existing guidance at the new backlog while retaining detailed procedures and decisions.
 - Record combined-main model-storage verification and the updater fixture tests’ dependency on whether the installed app is running in ADR-007.
 - Run GitHub Actions only for release tag pushes; remove branch-push and pull-request CI, move release-tooling checks into the release workflow, and document local testing and changelog coverage checks.
 

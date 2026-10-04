@@ -2,6 +2,12 @@
 
 Read `README.md` before working here. Follow its product requirements, build instructions, and design decisions.
 
+## Backlog
+
+- `backlog/tasks/` is the single backlog. Use the Backlog.md CLI (`backlog task list`, `backlog task view`, `backlog task create`, `backlog task edit`) for task changes; the files remain ordinary Markdown in Git. Read `backlog instructions overview` for its CLI workflow. Install the CLI separately with `brew install backlog-md` if needed. Do not add it to the Swift package or use its optional web/MCP integration.
+- At the start of project work, list or search for relevant existing tasks and read the chosen task. Use `backlog task edit TASK-N --status "In Progress"` when starting, `--append-notes` for concise findings or decisions, and `--status "Done" --final-summary "..."` after verification. Keep backlog changes with the related code and changelog in the same commit.
+- Use a draft for an idea that is not yet agreed work and a `To Do` task for agreed work. Add acceptance criteria, dependencies and links only where they clarify scope or handoff. Keep the active task focused; normally create a separate task for newly discovered work rather than expanding it silently. Preserve durable architecture decisions in ADRs and evaluation evidence in their existing documents.
+
 ## Development
 
 - Use Conventional Commits for every new commit: `type(scope): description`, with an optional scope. Use `feat` for features, `fix` for fixes, `perf` for performance improvements, and `!` or a `BREAKING CHANGE:` footer for breaking changes. Documentation, tests, CI, refactors, and maintenance use their matching types. Do not rewrite older history to retrofit the convention.
@@ -31,8 +37,8 @@ Stage-specific evaluation workflows live in `skills/<stage>-eval/SKILL.md` for t
 
 ## Documentation
 
-- Update `CHANGELOG.md` in the same commit as every change, including code, prompts, dependencies, fixtures, tests, documentation, and tooling. Describe concrete changes under `Unreleased`; keep planned work in the plans. Review `git status`, `git diff`, and `git log` so nothing is missed. Backfill using release tags as boundaries; do not invent earlier history.
+- Update `CHANGELOG.md` in the same commit as every change, including code, prompts, dependencies, fixtures, tests, documentation, and tooling. Describe concrete changes under `Unreleased`; keep planned work in the backlog. Review `git status`, `git diff`, and `git log` so nothing is missed. Backfill using release tags as boundaries; do not invent earlier history.
 - Prepare releases with `swift scripts/release.swift [auto|patch|minor|major|version]` (preview with `--dry-run`, push with `--publish`). By default it infers the highest bump from commits after the latest reachable release tag: fix/perf → patch, feat → minor, breaking → major (minor for 0.x); maintenance-only commits do not trigger a release. Manual overrides remain available. It updates `VERSION`, dates and moves Unreleased entries, updates Git comparison links, runs sequential release checks, and creates a commit and tag. Record archive/cask publication in each release; generated cask-only version/checksum commits are covered by that entry. Follow the release checklist in `README.md` and review evaluation semantics before publishing.
 - Keep architecture decisions in `docs/ADR-*.md`. Consolidate dated verification findings and unresolved limits into the relevant ADR; keep ongoing development rules here.
-- Track all unfinished work and completion status in `docs/PLAN.md`, the single backlog. Separate detail files may hold procedures and acceptance criteria, but must link to the backlog rather than maintain independent task lists. Remove completed plans once their durable decisions and remaining acceptance checks are preserved, and update links to their replacement.
+- Track unfinished work and completion status in `backlog/tasks/`. Separate detail files may hold procedures and acceptance criteria, but must link to the backlog rather than maintain independent task lists. Remove completed plans once their durable decisions and remaining acceptance checks are preserved, and update links to their replacement.
 - Testing gates, dated evaluation evidence, native UI limits, and legacy-code review are consolidated in [ADR-007](docs/ADR-007-framework-free-test-coverage.md). Check downstream SwiftPM clients, previews, debug flags and resource dependencies before deleting apparently unused public symbols or vendored headers.

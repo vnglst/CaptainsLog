@@ -147,4 +147,4 @@ startup benchmark needs isolated fixture data and an explicit hardware boundary.
 
 ## Remaining acceptance work
 
-Open acceptance items are tracked only in the [main backlog](PLAN.md#evaluation-fixtures-and-quality), with clean-machine and release checks under [distribution and maintenance](PLAN.md#distribution-and-maintenance). The dated findings above preserve the evidence and limits that inform those items.
+Open acceptance items are tracked only in the [backlog](../backlog/tasks/). The dated findings above preserve the evidence and limits that inform those items.

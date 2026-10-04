@@ -1,6 +1,6 @@
 # Logs interface details
 
-Open items and completion status are tracked in the [main backlog](PLAN.md#logs-interface). This file preserves workspace and design context.
+Open items and completion status are tracked in the [backlog](../backlog/tasks/). This file preserves workspace and design context.
 
 ## Current state
 

@@ -1,6 +1,6 @@
 # Kev decision-model details
 
-Open items and completion status are tracked in the [main backlog](PLAN.md#kev-decision-model). The steps below are implementation guidance and acceptance criteria.
+Open items and completion status are tracked in the [backlog](../backlog/tasks/). The steps below are implementation guidance and acceptance criteria.
 
 ## Goal
 

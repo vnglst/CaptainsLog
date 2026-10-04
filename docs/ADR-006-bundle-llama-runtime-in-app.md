@@ -37,4 +37,4 @@ The script strips extended attributes and ad-hoc signs the bundle after `install
 
 ## Follow-up
 
-Runtime build work is tracked in the [main backlog](PLAN.md#distribution-and-maintenance). Build llama.cpp/ggml/libomp with `MACOSX_DEPLOYMENT_TARGET=26.0` and fail packaging if `/opt/homebrew` llama paths remain in the bundle.
+Runtime build work is tracked in the [backlog](../backlog/tasks/). Build llama.cpp/ggml/libomp with `MACOSX_DEPLOYMENT_TARGET=26.0` and fail packaging if `/opt/homebrew` llama paths remain in the bundle.

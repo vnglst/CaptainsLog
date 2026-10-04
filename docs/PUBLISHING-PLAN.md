@@ -1,6 +1,6 @@
 # Publication procedures and review record
 
-Open review items and recurring release checks are tracked in the [main backlog](PLAN.md#publication-review). This file preserves procedures, review scope and historical evidence; its lists do not track completion.
+Open review items and recurring release checks are tracked in the [backlog](../backlog/tasks/). This file preserves procedures, review scope and historical evidence; its lists do not track completion.
 
 ## Goal and release boundary
 
@@ -23,7 +23,7 @@ Removing a file from the latest tree does not remove it from existing commits. T
 
 ## Phase 2 — Review content, rights, and project metadata
 
-- Review README, docs, plans, design references, examples, and comments for obsolete behavior, machine-specific instructions, unfinished internal notes, and contradictory install claims. The single backlog is in [PLAN.md](PLAN.md); images in `design/logs/screens/` are design references and must not be presented as current screenshots. Current product terminology is “Logs.”
+- Review README, docs, plans, design references, examples, and comments for obsolete behavior, machine-specific instructions, unfinished internal notes, and contradictory install claims. The single backlog is in [`backlog/tasks/`](../backlog/tasks/); images in `design/logs/screens/` are design references and must not be presented as current screenshots. Current product terminology is “Logs.”
 - **Recorded evidence:** Review TNG demo and evaluation content, names, references, visual branding, and assets for the intended public use. The repository owner approved retaining the fan-themed material and reviewed literary fixtures; attribution and a no-affiliation statement are in `THIRD-PARTY-NOTICES.md`.
 - Add a project license or state clearly that the source is currently all rights reserved. `THIRD-PARTY-NOTICES.md` inventories the bundled font, software, runtime models, and reviewed fixture attributions; verify its inventory and app-bundle copies on a release build. A model's license may differ from the code license.
 - Review the app's data handling and privacy claims against implementation: audio and entries remain local, models are downloaded from their documented sources, and no inference service receives user content. Document any update checks, telemetry, or network behavior if present.

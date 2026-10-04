@@ -1,6 +1,6 @@
 # TNG evaluation corpus details
 
-Open items and completion status are tracked in the [main backlog](PLAN.md#evaluation-fixtures-and-quality). This file describes the corpus and migration procedure.
+Open items and completion status are tracked in the [backlog](../backlog/tasks/). This file describes the corpus and migration procedure.
 
 ## Goal
 

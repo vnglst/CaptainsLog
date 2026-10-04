@@ -84,12 +84,30 @@ Transcription uses Whisper Large-v2. Cleanup, categorization, filenames, and met
 - [Testing gates, evaluation evidence, and remaining checks](./docs/ADR-007-framework-free-test-coverage.md)
 - [Build and verification scripts](./scripts/README.md)
 - [Troubleshooting](./docs/TROUBLESHOOTING.md)
-- [Main backlog](./docs/PLAN.md)
+- [Backlog tasks](./backlog/tasks/)
 - [Publication procedures and review record](./docs/PUBLISHING-PLAN.md)
 - [Third-party notices](./THIRD-PARTY-NOTICES.md)
 - [Evaluation fixtures and scripts](./docs/tng-eval/README.md)
 - [Design references](./design/README.md)
 - [Architecture decisions](./docs/)
+
+## Backlog
+
+The [Backlog.md tasks](./backlog/tasks/) are Markdown files committed with the project. Install the separate CLI with `brew install backlog-md`. From the repository root:
+
+```sh
+backlog board                         # Review work by status
+backlog task list                     # List tasks
+backlog task view TASK-1              # Read a task
+backlog draft create "Possible idea"  # Capture an idea
+backlog draft promote DRAFT-1         # Turn an agreed idea into a task
+backlog task create "Task title"      # Or create a task directly
+backlog task edit TASK-1 --status "In Progress"
+backlog task edit TASK-1 --append-notes "Finding or decision"
+backlog task edit TASK-1 --status "Done" --final-summary "What changed and how it was verified"
+```
+
+Use the CLI for task updates, then commit the Markdown changes with the related code and a changelog entry. Procedures and decisions remain in the linked docs and ADRs.
 
 ## Testing
 
@@ -154,7 +172,7 @@ release-tooling tests, `swift build`, `swift run run-tests`, and the full fixtur
 pipeline and stage suites sequentially with isolated config/data. Failed checks
 stop before version/changelog edits, commits, or tags. Model evaluation scores
 and artifacts still need semantic review under the stage skills; see [the
-main backlog](./docs/PLAN.md#next-release-checks) for remaining manual checks and
+backlog tasks](./backlog/tasks/) for remaining manual checks and
 [publication procedures](./docs/PUBLISHING-PLAN.md) for review details.
 
 After checks pass, the command bumps `VERSION`, moves Unreleased entries into a
