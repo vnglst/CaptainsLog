@@ -4,7 +4,7 @@ title: Adopt adrs for architecture decisions
 status: Verify
 assignee: []
 created_date: '2026-10-04 13:54'
-updated_date: '2026-10-04 13:59'
+updated_date: '2026-10-04 14:03'
 labels: []
 dependencies: []
 ordinal: 40000
@@ -36,10 +36,14 @@ The repository has individual ADR files but the agent guidance still holds five 
 Found twelve existing ADR files, including two numbered 011 and a historical gap at 002. The remaining five-item decision list is in AGENTS.md; no matching Backlog task existed.
 
 Verified adrs lists all 17 ADRs and doctor reports no issues. Compared each historical ADR with its prior Git version after normalizing link and duplicate-number changes; all prose is retained. Checked local Markdown links across 62 relevant files.
+
+Owner requested clearer human and agent instructions for the adopted ADR workflow; updating README and AGENTS guidance before returning to Verify.
+
+Clarified the human workflow in README and linked it from AGENTS. Confirmed documented adrs list/search/doctor commands work; doctor is healthy, links resolve, and diff has no whitespace errors. Detailed adrs listing misreads legacy status lines, so the documented workflow uses the standard list and directs readers to the record for status.
 <!-- SECTION:NOTES:END -->
 
 ## Final Summary
 
 <!-- SECTION:FINAL_SUMMARY:BEGIN -->
-Moved five architecture requirements into individual ADRs; configured adrs, repaired historical numbering and links, and replaced the old agent list with brief guidance. Verified adrs list/doctor, historical text preservation, and local Markdown links.
+Migrated architecture rules and configured adrs, then documented how contributors and agents find, create, and supersede ADRs while using Backlog.md for work. Verified adrs list/search/doctor, historical text preservation, and links.
 <!-- SECTION:FINAL_SUMMARY:END -->

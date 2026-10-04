@@ -89,14 +89,33 @@ Transcription uses Whisper Large-v2. Cleanup, categorization, filenames, and met
 - [Third-party notices](./THIRD-PARTY-NOTICES.md)
 - [Evaluation fixtures and scripts](./docs/tng-eval/README.md)
 - [Design references](./design/README.md)
-- [Architecture decisions](./docs/) (use `adrs list` to browse)
+- [Architecture decision workflow](#architecture-decisions)
 
-Architecture decisions are Markdown ADRs in `docs/`. Install the separate
-[`adrs` CLI](https://joshrotenberg.com/adrs/) with `brew install adrs` to list,
-search, or create them. New records use the repository's minimal MADR-style
-template; fill in only context and alternatives actually known. Create ADRs for
-significant, hard-to-reverse decisions, and use a new ADR to supersede an old
-decision. Backlog.md tracks the work.
+## Architecture decisions
+
+ADRs record significant, hard-to-reverse architecture decisions. The records
+are Markdown files in [`docs/`](./docs/); [Backlog.md](#backlog) tracks work to
+make or carry out those decisions. Before changing architecture, read the
+relevant ADRs. From the repository root, install the separate
+[`adrs` CLI](https://joshrotenberg.com/adrs/) with `brew install adrs`, then use:
+
+```sh
+adrs list                       # Browse existing decisions
+adrs search "inference"         # Find decisions by subject
+adrs new --no-edit "Decision title"
+adrs doctor                     # Check numbering and links
+```
+
+Read each file for its status; `adrs list -l` does not parse every legacy
+status line correctly.
+
+`adrs new` creates the next numbered file in `docs/` using a minimal MADR-style
+template. Edit that file to state the decision, its status, and its known context
+or rationale; remove empty template sections. Do not invent missing context or
+alternatives.
+Keep historical ADRs unchanged. If a decision changes, create a new ADR and link
+the earlier record from it, stating that the new decision supersedes it. Commit
+the ADR with its related change, Backlog task, and changelog entry.
 
 ## Backlog
 

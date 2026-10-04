@@ -19,6 +19,7 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
+- Explain the `adrs` workflow for contributors and agents, including how to find and create records, keep templates factual, and supersede historical decisions.
 - Configure `adrs` for Markdown decisions in `docs/`, migrate the five architecture rules from agent instructions into individual minimal ADRs, give existing ADRs unique tool-compatible filenames, and document supersession and the distinction from Backlog.md.
 - Use To Do, Next, Verify, and Complete backlog columns, with owner-selected agent work and a separate owner review step; update the CLI guidance and migrate the completed setup task.
 - Move the open plan items into Backlog.md task files, make the CLI the single task workflow for Codex, and point existing guidance at the new backlog while retaining detailed procedures and decisions.
