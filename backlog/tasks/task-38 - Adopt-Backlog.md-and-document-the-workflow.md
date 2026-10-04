@@ -1,10 +1,10 @@
 ---
 id: TASK-38
 title: Adopt Backlog.md and document the workflow
-status: Done
+status: Complete
 assignee: []
 created_date: '2026-10-04 13:25'
-updated_date: '2026-10-04 13:26'
+updated_date: '2026-10-04 13:31'
 labels: []
 dependencies: []
 ordinal: 38000

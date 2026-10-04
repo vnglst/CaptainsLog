@@ -95,6 +95,11 @@ Transcription uses Whisper Large-v2. Cleanup, categorization, filenames, and met
 
 The [Backlog.md tasks](./backlog/tasks/) are Markdown files committed with the project. Install the separate CLI with `brew install backlog-md`. From the repository root:
 
+- **To Do:** Agreed tasks that have not been selected for agent work.
+- **Next:** Tasks you select for agents to pick up. Agents leave them here while implementing.
+- **Verify:** Implementation and agent checks are finished; you still need to review them.
+- **Complete:** You have verified the work and it is ready for release.
+
 ```sh
 backlog board                         # Review work by status
 backlog task list                     # List tasks
@@ -102,12 +107,13 @@ backlog task view TASK-1              # Read a task
 backlog draft create "Possible idea"  # Capture an idea
 backlog draft promote DRAFT-1         # Turn an agreed idea into a task
 backlog task create "Task title"      # Or create a task directly
-backlog task edit TASK-1 --status "In Progress"
+backlog task edit TASK-1 --status "Next"    # Select it for agent work
 backlog task edit TASK-1 --append-notes "Finding or decision"
-backlog task edit TASK-1 --status "Done" --final-summary "What changed and how it was verified"
+backlog task edit TASK-1 --status "Verify" --final-summary "What changed and how it was checked"
+backlog task edit TASK-1 --status "Complete"  # After your review
 ```
 
-Use the CLI for task updates, then commit the Markdown changes with the related code and a changelog entry. Procedures and decisions remain in the linked docs and ADRs.
+Use the CLI for task updates. If review finds more work, move the task back to `Next` with a note. Commit the Markdown changes with the related code and a changelog entry. Procedures and decisions remain in the linked docs and ADRs.
 
 ## Testing
 
