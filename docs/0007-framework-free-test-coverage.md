@@ -54,7 +54,7 @@ The UI harness prints its isolated paths and bundle identifier. Close the app be
 
 ## Dated verification evidence
 
-These are historical observations, not claims about the current checkout. Model quality requires human review. Auto-update verification and its later environment failures are recorded in [the update ADR](ADR-011-homebrew-auto-updates.md#verification-record-2026-10-01).
+These are historical observations, not claims about the current checkout. Model quality requires human review. Auto-update verification and its later environment failures are recorded in [the update ADR](0012-homebrew-auto-updates.md#verification-record-2026-10-01).
 
 ### Generation exhaustion and enrichment: 2026-10-02
 

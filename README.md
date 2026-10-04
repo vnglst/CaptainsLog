@@ -81,7 +81,7 @@ Transcription uses Whisper Large-v2. Cleanup, categorization, filenames, and met
 ## Documentation
 
 - [Changelog and release history](./CHANGELOG.md)
-- [Testing gates, evaluation evidence, and remaining checks](./docs/ADR-007-framework-free-test-coverage.md)
+- [Testing gates, evaluation evidence, and remaining checks](./docs/0007-framework-free-test-coverage.md)
 - [Build and verification scripts](./scripts/README.md)
 - [Troubleshooting](./docs/TROUBLESHOOTING.md)
 - [Backlog tasks](./backlog/tasks/)
@@ -89,7 +89,14 @@ Transcription uses Whisper Large-v2. Cleanup, categorization, filenames, and met
 - [Third-party notices](./THIRD-PARTY-NOTICES.md)
 - [Evaluation fixtures and scripts](./docs/tng-eval/README.md)
 - [Design references](./design/README.md)
-- [Architecture decisions](./docs/)
+- [Architecture decisions](./docs/) (use `adrs list` to browse)
+
+Architecture decisions are Markdown ADRs in `docs/`. Install the separate
+[`adrs` CLI](https://joshrotenberg.com/adrs/) with `brew install adrs` to list,
+search, or create them. New records use the repository's minimal MADR-style
+template; fill in only context and alternatives actually known. Create ADRs for
+significant, hard-to-reverse decisions, and use a new ADR to supersede an old
+decision. Backlog.md tracks the work.
 
 ## Backlog
 
@@ -126,7 +133,7 @@ bash scripts/test-coverage.sh
 
 GitHub Actions runs only when a release tag (`v*`) is pushed; ordinary branch pushes and pull requests do not start workflows. The release workflow runs release-tooling checks and the full deterministic suite (`swift run run-tests`) before packaging. Run the suite locally during development, or use `swift run run-tests --unit` for a lightweight, model-free check. Coverage instrumentation, CLI coverage, model evaluations, and UI checks remain opt-in.
 
-For the sequential model-backed fixture pipeline, run `bash scripts/run-evals.sh --pipeline`. Run every stage evaluation with `bash scripts/run-evals.sh --suites`; validate saved outputs without inference using `bash scripts/run-evals.sh --validate-run <run-stamp>`. Review generated files against `eval/*/expected/` and the matching stage skill; dated results and semantic findings are recorded in [ADR-007](./docs/ADR-007-framework-free-test-coverage.md#dated-verification-evidence). For native macOS UI checks, use `bash scripts/test-ui.sh eval`; it builds a temporary app bundle and isolates config/data under a temporary directory. Prepared-machine model checks use `scripts/test-model-smoke.sh` with the four `CAPTAINSLOG_*_MODEL_*` environment variables set. Actual microphone capture is a separately confirmed, interactive check via `scripts/test-recorder-hardware.sh`. Neither smoke check runs in GitHub Actions. See [ADR-007](./docs/ADR-007-framework-free-test-coverage.md#test-gates-and-isolation) for fixture and hardware constraints.
+For the sequential model-backed fixture pipeline, run `bash scripts/run-evals.sh --pipeline`. Run every stage evaluation with `bash scripts/run-evals.sh --suites`; validate saved outputs without inference using `bash scripts/run-evals.sh --validate-run <run-stamp>`. Review generated files against `eval/*/expected/` and the matching stage skill; dated results and semantic findings are recorded in [ADR-007](./docs/0007-framework-free-test-coverage.md#dated-verification-evidence). For native macOS UI checks, use `bash scripts/test-ui.sh eval`; it builds a temporary app bundle and isolates config/data under a temporary directory. Prepared-machine model checks use `scripts/test-model-smoke.sh` with the four `CAPTAINSLOG_*_MODEL_*` environment variables set. Actual microphone capture is a separately confirmed, interactive check via `scripts/test-recorder-hardware.sh`. Neither smoke check runs in GitHub Actions. See [ADR-007](./docs/0007-framework-free-test-coverage.md#test-gates-and-isolation) for fixture and hardware constraints.
 
 ## Changelog and releases
 
@@ -194,7 +201,7 @@ entry, build the app/CLI archive, publish those notes and the archive, and updat
 the source cask and Homebrew tap. Reruns also refresh the release notes. Check the
 workflow results and test the published install/upgrade before announcing the
 release. `HOMEBREW_TAP_TOKEN` must be configured as described in
-[ADR-010](./docs/ADR-010-tag-driven-homebrew-releases.md).
+[ADR-010](./docs/0010-tag-driven-homebrew-releases.md).
 
 Release-tooling tests use Swift, Bash, and Git:
 

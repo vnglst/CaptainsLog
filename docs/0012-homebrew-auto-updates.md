@@ -1,4 +1,4 @@
-# ADR-011: Update the installed app through Homebrew
+# ADR-012: Update the installed app through Homebrew
 
 **Status**: Accepted
 

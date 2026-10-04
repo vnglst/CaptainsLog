@@ -1,0 +1,5 @@
+adr_dir = "docs"
+
+[templates]
+format = "madr"
+variant = "bare-minimal"

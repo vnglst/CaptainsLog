@@ -34,11 +34,11 @@ The hero is a selectable HTML illustration, explicitly labeled as such. It uses 
 - `README.md`: supported platform, install command, first-launch downloads, processing stages, CLI, and current models.
 - `design/logs/DESIGN-SYSTEM.md`: charcoal surfaces, off-white type, amber recording controls, understated native styling, and voice-first personal logs.
 - `prompts/cleanup.md` and `prompts/enrich.md`: readable log entries and metadata; the captain’s-log inspiration is described in the repository examples.
-- `docs/ADR-005-use-libllama-c-api-for-text-inference.md`: shared local app/CLI inference and hybrid keyword/semantic search. Search returns entries and excerpts, not generated answers. Markdown logs are canonical; the index is disposable.
-- `docs/ADR-006-bundle-llama-runtime-in-app.md` and `docs/ADR-009-distribute-app-and-cli-through-homebrew.md`: app and CLI installation together; no separate inference service needed.
-- `docs/ADR-008-self-signed-macos-distribution.md`: signing, notarization, and quarantine trust notice alongside install instructions.
-- `docs/ADR-011-homebrew-auto-updates.md`: network behavior and configurable update checks.
-- `docs/ADR-007-framework-free-test-coverage.md`: review limits of generated text; retained source audio/stage outputs support comparison.
-- `docs/ADR-013-isolated-tng-demo-data.md`: the “Logs” journal concept and distinction between demo presentation and actual app captures.
+- `docs/0005-use-libllama-c-api-for-text-inference.md`: shared local app/CLI inference and hybrid keyword/semantic search. Search returns entries and excerpts, not generated answers. Markdown logs are canonical; the index is disposable.
+- `docs/0006-bundle-llama-runtime-in-app.md` and `docs/0009-distribute-app-and-cli-through-homebrew.md`: app and CLI installation together; no separate inference service needed.
+- `docs/0008-self-signed-macos-distribution.md`: signing, notarization, and quarantine trust notice alongside install instructions.
+- `docs/0012-homebrew-auto-updates.md`: network behavior and configurable update checks.
+- `docs/0007-framework-free-test-coverage.md`: review limits of generated text; retained source audio/stage outputs support comparison.
+- `docs/0013-isolated-tng-demo-data.md`: the “Logs” journal concept and distinction between demo presentation and actual app captures.
 
 The website does not promise knowledge graphs, automatic Obsidian synchronization, native saved-audio playback, or collections. Obsidian is mentioned only as an example of a tool that reads Markdown. Review current docs before changing product claims. ImageGen output is a design reference; verified HTML copy is authoritative.

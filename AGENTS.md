@@ -18,14 +18,6 @@ Read `README.md` before working here. Follow its product requirements, build ins
 - After dependency upgrades, new features, or significant refactors, run `swift build`, `swift run run-tests`, and the full pipeline on a fixture. Evaluation suites are the quality gate; run them sequentially. For a quick LLM smoke check, run `filename-eval`.
 - Never run multiple inference tasks in parallel. WhisperKit and llama.cpp share limited on-device GPU memory. Load Qwen once per pipeline run and reuse it across stages.
 
-## Product and architecture requirements
-
-- All inference runs on-device through WhisperKit/CoreML and llama.cpp. Do not introduce cloud APIs, Ollama, or other inference wrappers.
-- Prompts control model behavior. Do not post-process LLM output with regex, replacements, or other transformations. Structure prompts with clear XML-style tags such as `<instructions>`, `<context>`, and `<transcript>`.
-- Pipeline stages write to their own directories and never mutate earlier-stage output.
-- Configuration belongs in `CaptainsLogConfig` and its config file, not UI state. Non-UI features must be usable and testable from the CLI.
-- SwiftUI must not shift surrounding layout when views appear or disappear. For conditional elements that would move siblings, keep their space with `.opacity(condition ? 1 : 0)` and `.allowsHitTesting(condition)`; prefer fixed-size containers.
-
 ## Privacy
 
 - Never read, copy, or use personal recordings or data from `processed/`, Obsidian, or CaptainsLog data folders for tests, evaluations, reproductions, or debugging.
@@ -40,6 +32,6 @@ Stage-specific evaluation workflows live in `skills/<stage>-eval/SKILL.md` for t
 
 - Update `CHANGELOG.md` in the same commit as every change, including code, prompts, dependencies, fixtures, tests, documentation, and tooling. Describe concrete changes under `Unreleased`; keep planned work in the backlog. Review `git status`, `git diff`, and `git log` so nothing is missed. Backfill using release tags as boundaries; do not invent earlier history.
 - Prepare releases with `swift scripts/release.swift [auto|patch|minor|major|version]` (preview with `--dry-run`, push with `--publish`). By default it infers the highest bump from commits after the latest reachable release tag: fix/perf → patch, feat → minor, breaking → major (minor for 0.x); maintenance-only commits do not trigger a release. Manual overrides remain available. It updates `VERSION`, dates and moves Unreleased entries, updates Git comparison links, runs sequential release checks, and creates a commit and tag. Record archive/cask publication in each release; generated cask-only version/checksum commits are covered by that entry. Follow the release checklist in `README.md` and review evaluation semantics before publishing.
-- Keep architecture decisions in `docs/ADR-*.md`. Consolidate dated verification findings and unresolved limits into the relevant ADR; keep ongoing development rules here.
+- Read relevant ADRs in `docs/` before architectural changes. Use `adrs` to create an ADR only for a significant, hard-to-reverse decision; keep work tracking in Backlog.md. Preserve historical decisions and supersede an ADR with a new one when a decision changes.
 - Track unfinished work and completion status in `backlog/tasks/`. Separate detail files may hold procedures and acceptance criteria, but must link to the backlog rather than maintain independent task lists. Remove completed plans once their durable decisions and remaining acceptance checks are preserved, and update links to their replacement.
-- Testing gates, dated evaluation evidence, native UI limits, and legacy-code review are consolidated in [ADR-007](docs/ADR-007-framework-free-test-coverage.md). Check downstream SwiftPM clients, previews, debug flags and resource dependencies before deleting apparently unused public symbols or vendored headers.
+- Testing gates, dated evaluation evidence, native UI limits, and legacy-code review are consolidated in [ADR-007](docs/0007-framework-free-test-coverage.md). Check downstream SwiftPM clients, previews, debug flags and resource dependencies before deleting apparently unused public symbols or vendored headers.

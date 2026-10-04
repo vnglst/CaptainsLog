@@ -33,7 +33,7 @@ Use only fixtures under `eval/`. Set `CAPTAINS_LOG_CONFIG_PATH` to an isolated t
 - Run Kev 4B Q8 and the smaller candidate sequentially on the target Mac. Record model load time, warm decision latency, peak process memory, system memory pressure, swap growth and machine responsiveness for short and long fixtures.
 - Begin with bounded contexts appropriate to the fixtures. Reject oversized requests explicitly rather than silently truncating them; document supported input length and memory behavior.
 - Release Whisper and Qwen before loading Kev. Include unload/reload overhead in an end-to-end pipeline comparison; a faster isolated category decision is not enough to justify another model.
-- Stop the experiment if memory pressure or responsiveness deteriorates. Reject any setup that reproduces the previous 27B failure documented in [ADR-004](ADR-004-qwen3-6-27b-memory-limit.md).
+- Stop the experiment if memory pressure or responsiveness deteriorates. Reject any setup that reproduces the previous 27B failure documented in [ADR-004](0004-qwen3-6-27b-memory-limit.md).
 
 No cloud inference, Ollama, Python inference service or separate model server belongs in the shipped pipeline. Any upstream server examples are compatibility references; CaptainsLog must retain its Swift CLI and in-process llama.cpp architecture.
 
