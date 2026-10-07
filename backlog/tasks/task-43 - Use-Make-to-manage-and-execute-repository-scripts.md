@@ -1,9 +1,10 @@
 ---
 id: TASK-43
 title: Use Make to manage and execute repository scripts
-status: To Do
+status: Next
 assignee: []
 created_date: '2026-10-07 15:17'
+updated_date: '2026-10-07 15:57'
 labels: []
 dependencies: []
 references:
@@ -14,7 +15,7 @@ documentation:
   - docs/0007-framework-free-test-coverage.md
   - docs/0010-tag-driven-homebrew-releases.md
 type: chore
-ordinal: 43000
+ordinal: 21000
 ---
 
 ## Description

@@ -1,9 +1,10 @@
 ---
 id: TASK-42
 title: Reduce agent navigation and evaluation overhead
-status: To Do
+status: Next
 assignee: []
 created_date: '2026-10-07 14:38'
+updated_date: '2026-10-07 15:57'
 labels: []
 dependencies: []
 references:
@@ -13,7 +14,7 @@ documentation:
   - docs/0005-use-libllama-c-api-for-text-inference.md
   - docs/0007-framework-free-test-coverage.md
 type: enhancement
-ordinal: 42000
+ordinal: 14000
 ---
 
 ## Description
