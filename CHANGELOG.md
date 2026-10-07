@@ -32,6 +32,7 @@ entry. Git links provide the complete commit history for each release.
 
 ### Added
 
+- Add a backlog item for Make-based repository script entry points, including an ADR explaining the choice and checks for sequential inference, argument forwarding and fixture isolation.
 - Record a separate investigation draft for the Whisper Metal assertion encountered during the enrichment fix's fixture pipeline check.
 - Add TASK-42 to prioritize reducing agent navigation and evaluation overhead, with acceptance criteria and explicitly unmeasured time/token savings estimates.
 - Add a Settings backlog item for structured misspelling/correct-spelling fields, entry management and migration of existing corrections.
