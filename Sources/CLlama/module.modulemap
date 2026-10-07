@@ -1,5 +1,5 @@
 module CLlama [system] {
-    header "/opt/homebrew/include/llama.h"
+    header "shim.h"
     link "llama"
     export *
 }

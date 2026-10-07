@@ -21,6 +21,7 @@ let package = Package(
             name: "CaptainsLogCore",
             dependencies: [
                 "CLlama",
+                "CGGML",
                 "CSQLiteVec",
                 .product(name: "WhisperKit", package: "argmax-oss-swift"),
                 .product(name: "Hub", package: "swift-transformers"),
@@ -35,6 +36,11 @@ let package = Package(
             name: "CLlama",
             pkgConfig: "llama",
             providers: [.brew(["llama.cpp"])]
+        ),
+        .systemLibrary(
+            name: "CGGML",
+            pkgConfig: "ggml",
+            providers: [.brew(["ggml"])]
         ),
         .target(
             name: "CSQLiteVec",

@@ -20,6 +20,8 @@ entry. Git links provide the complete commit history for each release.
 ### Changed
 
 - Require owner-requested work for agent-created backlog tasks and drafts; report newly discovered work without automatically adding board items, and allow small mechanical edits without a task.
+- Move TASK-28 to Next and define acceptance checks for pinned native dependencies, clean builds independent of Homebrew runtimes, recorded toolchain/options, repeatability and packaged-runtime verification.
+
 - Record the unsuccessful fixture-only reproduction of recurring enrichment exhaustion: six long-input trials, four standard enrichment cases and the installed CLI’s shared-model pipeline completed; document semantic errors and keep TASK-41 open without claiming a fix.
 - Explain the `adrs` workflow for contributors and agents, including how to find and create records, keep templates factual, and supersede historical decisions.
 - Configure `adrs` for Markdown decisions in `docs/`, migrate the five architecture rules from agent instructions into individual minimal ADRs, give existing ADRs unique tool-compatible filenames, and document supersession and the distinction from Backlog.md.
@@ -45,6 +47,8 @@ entry. Git links provide the complete commit history for each release.
 - Add a release command that infers the highest version bump from Conventional Commits since the latest release (fix/perf → patch, feat → minor, breaking → major or minor on 0.x), skips maintenance-only releases, supports manual overrides, rolls over notes and Git links, runs sequential checks, creates a commit/tag, and optionally publishes through an atomic Git push. Require Conventional Commits for new work and use `chore(release)` for generated release/cask commits. Implement release tooling in one standalone Swift script with Bash/Git fixture tests and document its commands; no additional runtime or package dependencies.
 
 ### Fixed
+
+- Resolve llama.cpp and GGML headers through their versioned pkg-config include paths instead of the mutable global Homebrew header alias, preventing release builds from reusing a module compiled against an older header after an upgrade. Declare the existing GGML dependency explicitly because Homebrew's llama package metadata omits its include path.
 
 - Prevent the reproduced enrichment entity-list loop with enrichment-only sequence repetition protection and a 4,096-token metadata budget. Reject unfinished output at explicit token limits, accept end-of-generation immediately after the budget, and remove duplicate sampler acceptance. Clarify work categories and unique metadata names; add budget-boundary regressions and record native reproduction, fixture semantics and verification in ADR-007 (TASK-41).
 
