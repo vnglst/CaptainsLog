@@ -31,6 +31,7 @@ entry. Git links provide the complete commit history for each release.
 
 ### Added
 
+- Add TASK-42 to prioritize reducing agent navigation and evaluation overhead, with acceptance criteria and explicitly unmeasured time/token savings estimates.
 - Add a Settings backlog item for structured misspelling/correct-spelling fields, entry management and migration of existing corrections.
 - Add a Settings redesign backlog item focused on visual polish, organization, clear controls and user feedback.
 - Document a staged Kev decision-model evaluation and integration plan, including Dutch fixtures, 16 GB M4 memory checks, CLI/config support, and acceptance gates; link it from planned features.
