@@ -3453,28 +3453,65 @@ func runTests() async {
         try expect(transcript.contains("Uh, I shipped it."))
     }
 
-    test("LLM: reproduces runaway output at the allocated context and rejects partial text") {
-        let allocated = try LLM.plannedContextSize(promptTokenCount: 8_115, maxTokens: 0,
-                                                   modelContextSize: 262_144)
+    test("LLM: reproduces reported context exhaustion and rejects partial text") {
+        for (prompt, expectedContext, generated) in [(8_115, 16_384, 8_269),
+                                                     (9_376, 18_944, 9_568),
+                                                     (9_254, 18_688, 9_434)] {
+            let allocated = try LLM.plannedContextSize(promptTokenCount: prompt, maxTokens: 0,
+                                                       modelContextSize: 262_144)
+            var sampled = 0
+            var decoded = 0
+            do {
+                _ = try LLM.generateTokens(
+                    generationLimit: allocated - prompt, maxTokens: 0,
+                    promptTokenCount: prompt, allocatedContextSize: allocated,
+                    sampleToken: { sampled += 1; return 1 },
+                    isEndToken: { _ in false },
+                    tokenString: { _ in "repeated " },
+                    decodeToken: { _ in decoded += 1 }
+                )
+                try expect(false, "Runaway output must throw rather than return partial text")
+            } catch let error as LLM.LLMError {
+                try expect(allocated == expectedContext && decoded == generated)
+                try expect(sampled == generated + 1, "Check for EOG without decoding past capacity")
+                try expect(error == .contextExhausted(promptTokens: prompt, generatedTokens: generated,
+                                                     allocatedContextTokens: allocated))
+                try expect(error.localizedDescription.contains("allocated \(allocated)-token context"))
+                try expect(!error.localizedDescription.contains("262144"))
+            }
+        }
+    }
+
+    test("LLM: an explicit output budget rejects unfinished text without decoding past the limit") {
         var sampled = 0
         var decoded = 0
         do {
             _ = try LLM.generateTokens(
-                generationLimit: allocated - 8_115, maxTokens: 0,
-                promptTokenCount: 8_115, allocatedContextSize: allocated,
+                generationLimit: 16, maxTokens: 16, promptTokenCount: 10, allocatedContextSize: 128,
                 sampleToken: { sampled += 1; return 1 },
                 isEndToken: { _ in false },
-                tokenString: { _ in "repeated " },
+                tokenString: { _ in "unfinished " },
                 decodeToken: { _ in decoded += 1 }
             )
-            try expect(false, "Runaway output must throw rather than return a truncated recording")
+            try expect(false, "A token cap must not turn a truncated response into success")
         } catch let error as LLM.LLMError {
-            try expect(allocated == 16_384 && sampled == 8_269 && decoded == 8_269)
-            try expect(error == .contextExhausted(promptTokens: 8_115, generatedTokens: 8_269,
-                                                 allocatedContextTokens: 16_384))
-            try expect(error.localizedDescription.contains("allocated 16384-token context"))
-            try expect(!error.localizedDescription.contains("262144"),
-                       "The model maximum must not be reported as the exhausted allocation")
+            try expect(error == .outputLimitReached(16))
+            try expect(decoded == 16 && sampled == 17)
+        }
+    }
+
+    test("LLM: EOG immediately after the output or context budget completes the response") {
+        for maxTokens in [0, 2] {
+            var tokens: [Int32] = [1, 2, 0]
+            var decoded: [Int32] = []
+            let output = try LLM.generateTokens(
+                generationLimit: 2, maxTokens: maxTokens, promptTokenCount: 2, allocatedContextSize: 4,
+                sampleToken: { tokens.removeFirst() },
+                isEndToken: { $0 == 0 },
+                tokenString: { $0 == 1 ? "complete " : "entry" },
+                decodeToken: { decoded.append($0) }
+            )
+            try expect(output == "complete entry" && decoded == [1, 2] && tokens.isEmpty)
         }
     }
 

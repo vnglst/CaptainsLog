@@ -17,6 +17,7 @@ public enum LLM {
         case promptTooLarge(promptTokens: Int, modelContextTokens: Int)
         case requestedOutputTooLarge(promptTokens: Int, requestedTokens: Int, modelContextTokens: Int)
         case contextExhausted(promptTokens: Int, generatedTokens: Int, allocatedContextTokens: Int)
+        case outputLimitReached(Int)
 
         var errorDescription: String? {
             switch self {
@@ -26,6 +27,8 @@ public enum LLM {
                 return "The prompt contains \(promptTokens) tokens, exceeding the model's \(modelContextTokens)-token context window."
             case .requestedOutputTooLarge(let promptTokens, let requestedTokens, let modelContextTokens):
                 return "The \(promptTokens)-token prompt plus \(requestedTokens) requested output tokens exceeds the model's \(modelContextTokens)-token context window."
+            case .outputLimitReached(let tokens):
+                return "Generation reached its \(tokens)-token output limit before finishing. The partial output was discarded."
             case .contextExhausted(let promptTokens, let generatedTokens, let allocatedContextTokens):
                 return "Generation exhausted its allocated \(allocatedContextTokens)-token context after a \(promptTokens)-token prompt and \(generatedTokens) output tokens. The partial output was discarded."
             }
@@ -161,6 +164,7 @@ public enum LLM {
         userMessage: String,
         maxTokens: Int = 0,
         temperature: Float = 0.6,
+        preventRepetition: Bool = false,
         diagnostic: (@Sendable (String) -> Void)? = nil
     ) async throws -> String {
         Logger.llm.info("Running inference...")
@@ -174,6 +178,7 @@ public enum LLM {
                 userPrompt: userMessage,
                 maxTokens: maxTokens,
                 temperature: temperature,
+                preventRepetition: preventRepetition,
                 diagnostic: diagnostic
             )
         }
@@ -210,6 +215,7 @@ public enum LLM {
         userPrompt: String,
         maxTokens: Int,
         temperature: Float,
+        preventRepetition: Bool = false,
         diagnostic: (@Sendable (String) -> Void)? = nil
     ) throws -> String {
         let prompt = makePrompt(systemPrompt: systemPrompt, userPrompt: userPrompt)
@@ -246,7 +252,8 @@ public enum LLM {
         try decode(tokens: promptTokens, context: context, batchSize: Int(contextParams.n_batch))
         diagnostic?("Prompt decoded; token generation started.")
 
-        let sampler = makeSampler(temperature: temperature)
+        let sampler = makeSampler(temperature: temperature, vocab: vocab,
+                                  preventRepetition: preventRepetition)
         defer { llama_sampler_free(sampler) }
 
         return try generateTokens(
@@ -255,9 +262,9 @@ public enum LLM {
             promptTokenCount: promptTokens.count,
             allocatedContextSize: allocatedContextSize,
             sampleToken: {
-                let token = llama_sampler_sample(sampler, context, -1)
-                llama_sampler_accept(sampler, token)
-                return token
+                // llama_sampler_sample already accepts the token into the chain.
+                // Stateful repetition samplers must see each token exactly once.
+                llama_sampler_sample(sampler, context, -1)
             },
             isEndToken: { llama_vocab_is_eog(vocab, $0) },
             tokenString: { tokenToString($0, vocab: vocab) },
@@ -297,7 +304,16 @@ public enum LLM {
             }
         }
 
-        if !reachedEndOfGeneration && maxTokens <= 0 {
+        // The final decoded token still has logits, even at the context boundary.
+        // Accept an end token immediately after the budget, but never decode an
+        // additional content token or return an unfinished response as success.
+        if !reachedEndOfGeneration {
+            reachedEndOfGeneration = isEndToken(sampleToken())
+        }
+        if !reachedEndOfGeneration {
+            if maxTokens > 0 && generationLimit == maxTokens {
+                throw LLMError.outputLimitReached(maxTokens)
+            }
             throw LLMError.contextExhausted(
                 promptTokens: promptTokenCount,
                 generatedTokens: generationLimit,
@@ -390,8 +406,19 @@ public enum LLM {
         }
     }
 
-    private static func makeSampler(temperature: Float) -> UnsafeMutablePointer<llama_sampler> {
+    private static func makeSampler(
+        temperature: Float,
+        vocab: OpaquePointer?,
+        preventRepetition: Bool
+    ) -> UnsafeMutablePointer<llama_sampler> {
         let chain = llama_sampler_chain_init(llama_sampler_chain_default_params())!
+        if preventRepetition {
+            // DRY penalizes repeated sequences rather than every reused token.
+            // Allow short YAML syntax to recur; keep newlines in the history so
+            // a repeated list item is still detected across line boundaries.
+            llama_sampler_chain_add(chain,
+                llama_sampler_init_dry(vocab, 0.8, 1.75, 4, 512, nil, 0))
+        }
         if temperature <= 0 {
             llama_sampler_chain_add(chain, llama_sampler_init_greedy())
         } else {

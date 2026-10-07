@@ -19,6 +19,7 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
+- Record the unsuccessful fixture-only reproduction of recurring enrichment exhaustion: six long-input trials, four standard enrichment cases and the installed CLI’s shared-model pipeline completed; document semantic errors and keep TASK-41 open without claiming a fix.
 - Explain the `adrs` workflow for contributors and agents, including how to find and create records, keep templates factual, and supersede historical decisions.
 - Configure `adrs` for Markdown decisions in `docs/`, migrate the five architecture rules from agent instructions into individual minimal ADRs, give existing ADRs unique tool-compatible filenames, and document supersession and the distinction from Backlog.md.
 - Use To Do, Next, Verify, and Complete backlog columns, with owner-selected agent work and a separate owner review step; update the CLI guidance and migrate the completed setup task.
@@ -31,6 +32,7 @@ entry. Git links provide the complete commit history for each release.
 
 ### Added
 
+- Record a separate investigation draft for the Whisper Metal assertion encountered during the enrichment fix's fixture pipeline check.
 - Add TASK-42 to prioritize reducing agent navigation and evaluation overhead, with acceptance criteria and explicitly unmeasured time/token savings estimates.
 - Add a Settings backlog item for structured misspelling/correct-spelling fields, entry management and migration of existing corrections.
 - Add a Settings redesign backlog item focused on visual polish, organization, clear controls and user feedback.
@@ -41,6 +43,8 @@ entry. Git links provide the complete commit history for each release.
 - Add a release command that infers the highest version bump from Conventional Commits since the latest release (fix/perf → patch, feat → minor, breaking → major or minor on 0.x), skips maintenance-only releases, supports manual overrides, rolls over notes and Git links, runs sequential checks, creates a commit/tag, and optionally publishes through an atomic Git push. Require Conventional Commits for new work and use `chore(release)` for generated release/cask commits. Implement release tooling in one standalone Swift script with Bash/Git fixture tests and document its commands; no additional runtime or package dependencies.
 
 ### Fixed
+
+- Prevent the reproduced enrichment entity-list loop with enrichment-only sequence repetition protection and a 4,096-token metadata budget. Reject unfinished output at explicit token limits, accept end-of-generation immediately after the budget, and remove duplicate sampler acceptance. Clarify work categories and unique metadata names; add budget-boundary regressions and record native reproduction, fixture semantics and verification in ADR-007 (TASK-41).
 
 - Correct generation-exhaustion errors to report the actual allocated context rather than the model’s larger maximum. Tighten enrichment instructions to return one YAML mapping and stop after the summary; retain existing sampling settings after evaluation trials introduced metadata errors. Add deterministic generation-loop tests for the reported 8,115-input/8,269-output exhaustion and normal end-of-generation.
 

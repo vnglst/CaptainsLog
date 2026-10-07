@@ -3,7 +3,7 @@ import Foundation
 public enum Enrich {
 
     public static let defaultPromptPath = "prompts/enrich.md"
-    public static let defaultMaxTokens = 0
+    public static let defaultMaxTokens = 4_096
     public static let defaultTemperature: Float = 0.3
 
     public typealias CommandOperation = @Sendable (
@@ -38,7 +38,8 @@ public enum Enrich {
             systemPrompt: renderedPrompt.systemPrompt,
             userMessage: renderedPrompt.userMessage,
             maxTokens: defaultMaxTokens,
-            temperature: defaultTemperature
+            temperature: defaultTemperature,
+            preventRepetition: true
         )
 
         let elapsed = Date().timeIntervalSince(start)

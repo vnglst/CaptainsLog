@@ -18,11 +18,13 @@ Extract structured metadata from a personal voice-memo log entry.
 <instructions>
 - All output must be in English, regardless of the language of the input log entry.
 - Use only facts explicitly present in the log entry.
+- Use side-project only for a personal project outside employment. Professional presentations and work projects belong in work.
 - Speaker context is for disambiguation only. Never add a person, company, project, or entity unless it is also mentioned in the log entry itself.
 - If someone is referenced without a proper name, omit them from persons.
 - If a company, project, or entity is only implied but not named in the log entry, omit it.
 - Summary should capture the main themes and narrative arc, not exhaustively list everything.
 - Never list the same person, project, company, or entity more than once.
+- A name listed in persons, projects, or companies must not also appear in entities. After listing the unique names, move on to the summary.
 - Always quote string values and list items that contain colons. For example, output `"Star Trek: The Next Generation"`, never `Star Trek: The Next Generation`.
 - Named people, real or fictional, always go in persons, never in entities.
 - Do not infer tags from activities.
