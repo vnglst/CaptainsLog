@@ -19,6 +19,7 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
+- Require owner-requested work for agent-created backlog tasks and drafts; report newly discovered work without automatically adding board items, and allow small mechanical edits without a task.
 - Record the unsuccessful fixture-only reproduction of recurring enrichment exhaustion: six long-input trials, four standard enrichment cases and the installed CLI’s shared-model pipeline completed; document semantic errors and keep TASK-41 open without claiming a fix.
 - Explain the `adrs` workflow for contributors and agents, including how to find and create records, keep templates factual, and supersede historical decisions.
 - Configure `adrs` for Markdown decisions in `docs/`, migrate the five architecture rules from agent instructions into individual minimal ADRs, give existing ADRs unique tool-compatible filenames, and document supersession and the distinction from Backlog.md.

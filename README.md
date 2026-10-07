@@ -121,6 +121,12 @@ the ADR with its related change, Backlog task, and changelog entry.
 
 The [Backlog.md tasks](./backlog/tasks/) are Markdown files committed with the project. Install the separate CLI with `brew install backlog-md`. From the repository root:
 
+You control task creation. Agents may add tasks or drafts only at your request or
+to track work you directly requested. Discovered bugs, follow-up ideas, cleanup,
+and suggested improvements should be reported to you without automatically
+adding backlog items. This rule takes precedence over generic Backlog.md CLI
+guidance about creating tasks. Small, mechanical changes do not need a task.
+
 - **To Do:** Agreed tasks that have not been selected for agent work.
 - **Next:** Tasks you select for agents to pick up. Agents leave them here while implementing.
 - **Verify:** Implementation and agent checks are finished; you still need to review them.
