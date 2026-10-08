@@ -1,28 +1,55 @@
-# Repository scripts
+# Development commands
 
-These scripts support source builds, release packaging, and checks that need more
-than the framework-free `swift run run-tests` runner. They use command-line tools;
-the Xcode IDE is not required. Run commands from the repository root.
+Run Make from the repository root. It drives the development workflows; the
+scripts in this directory are necessary implementation helpers. Apple Command
+Line Tools include Make, Swift and the other macOS build tools; Xcode IDE is not
+required. `make help` lists available targets.
 
-| Script | Purpose / when to use |
+| Command | Purpose / options |
 |---|---|
-| `release.swift` | Infer a version bump from Conventional Commits (or use an explicit override), prepare a dated changelog, release checks, commit and tag; also validate Git change coverage, extract notes, and update cask metadata; `--dry-run` previews and `--publish` pushes main/tag atomically. See the [release checklist](../README.md#changelog-and-releases). |
-| `test-release-tooling.sh` | Model-free release/changelog tests using synthetic notes and temporary local Git repositories. |
-| `build-app.sh` | Build the release app and CLI, bundle runtime libraries and notices, sign ad hoc, and create the versioned ZIP. Used by release CI. |
-| `make-iconset.sh` | Regenerate the committed `Resources/AppIcon.icns` after changing the icon design. Requires macOS `sips` and `iconutil`. |
-| `make-icon.swift` | AppKit icon renderer called by `make-iconset.sh`; also accepts a PNG output path for previews. |
-| `test-coverage.sh` | Run deterministic tests and fixture CLI checks with LLVM instrumentation; enforce the production coverage floor. |
-| `test-updates.sh` | Exercise update checks, simulated installation, failures, and config preferences against the fake Homebrew fixture. Keeps logs under `tmp/`; does not update the installed app. |
-| `run-evals.sh` | Run the fixture pipeline (`--pipeline`), stage suites (`--suites`), categorization (`--categorize`), enrichment (`--enrich`), or both pipeline and suites (default `--all`), sequentially with local models. Enrichment uses per-case date/time/seeds from `eval/enrich/cases.json`, retains generation diagnostics, and enforces the shared output gate. |
-| `validate-eval-run.sh` | Check saved stage output structure and produce comparison diagnostics without inference. Called by `run-evals.sh`; use `run-evals.sh --validate-run <run-stamp>`, `--validate-categorize <run-stamp>` or `--validate-enrich <run-stamp>`. Counts follow the expected fixtures rather than a hard-coded suite size. |
-| `test-enrich-eval.sh` | Model-free enrichment-validator and CLI seed-boundary checks. Requires a built `cl`; automatically runs before enrichment generation in the suite. |
-| `test-ui.sh` | Launch a temporary macOS app with isolated eval-backed presentation state. Defaults to `eval`; accepts the state selectors listed in the script. Close the app before deleting its printed temporary root. |
-| `test-model-smoke.sh` | Opt-in loading/warmup of installed Qwen and transcription of an eval fixture. Requires all four `CAPTAINSLOG_*_MODEL_*` environment variables listed in the script. |
-| `test-recorder-hardware.sh` | Interactive microphone smoke check with explicit confirmation; records three seconds into temporary storage. |
+| `make` / `make run` | Start the app in debug development mode, with its persistent isolated demo copy. |
+| `make build` | Build Swift package products; `CONFIGURATION=release` selects release (default: debug). |
+| `make cli ARGS='search "project architecture"'` | Run a CLI command. Normal CLI usage uses your configured data; checks must supply isolated config/data and eval fixtures. |
+| `make tests` | Run the deterministic framework-free suite with temporary config/data. `ARGS=--unit` or `make tests-unit` selects model-free unit checks. |
+| `make evals` | Run the full audio pipeline then all stage suites, sequentially. `MODE=pipeline` / `MODE=suites` selects one; `STAGE=filename CASE="fixture stem"` selects focused cases. |
+| `make packaging` | Build the release app and CLI, bundle native libraries and notices, sign ad hoc, and create `dist/CaptainsLog-VERSION.zip`. |
+| `make release` | Infer version from Conventional Commits and prepare a local release on clean main. `BUMP=patch`, `minor`, `major` or an explicit version overrides `auto`; `ARGS=--dry-run` previews and `ARGS=--publish` publishes. See the [release checklist](../README.md#changelog-and-releases). |
 
-Model evaluations and model smoke checks must run sequentially. Use repository
-`eval/` fixtures and isolated config/data for checks. The UI harness is for
-presentation inspection; processing and recording controls invoke real models or
-hardware. See [the testing workflow](../README.md#testing) for test
-gates, limitations, and semantic review requirements, and the stage workflows in
-[`skills/`](../skills/) for output review.
+Additional flags use `ARGS="..."`, passed to the underlying command. Quote paths
+and stems with spaces inside ARGS as shell arguments. Existing `CAPTAINS_LOG_EVAL_*`
+model/run-directory environment overrides continue to work. Packaging always
+builds release and development launch always uses debug, regardless of
+`CONFIGURATION`; release checks use debug defaults.
+
+| Supporting command | Purpose / options |
+|---|---|
+| `make evals-list` | List synthetic fixtures without loading models; accepts `STAGE` / `CASE`. |
+| `make evals-pipeline` / `make evals-suites` | Run the audio pipeline or all stage suites. |
+| `make evals ARGS="--validate-run RUN_DIR"` | Validate saved outputs without inference; `--baseline RUN_DIR` assembles comparison evidence. |
+| `make tests-coverage` | LLVM-instrumented deterministic and fixture CLI coverage; enforce production coverage floor. |
+| `make tests-updates` | Exercise simulated Homebrew updates using fake Homebrew fixtures. |
+| `make tests-release` | Model-free release/changelog fixtures and temporary local Git publication. |
+| `make tests-evals` | Model-free evaluation orchestration fixtures. |
+| `make tests-enrich` | Build, then check enrichment validation and CLI seed boundaries without inference. |
+| `make tests-model` | Opt-in installed-model smoke test; requires the four `CAPTAINSLOG_*_MODEL_*` variables in its helper. |
+| `make tests-recorder` | Interactive microphone smoke check with explicit confirmation. |
+| `make ui` | Launch temporary eval-backed native UI; optional state selector via `ARGS`. |
+| `make release-notes VERSION=0.1.2` | Extract release notes. |
+| `make release-check BASE=<commit> HEAD=<commit>` | Validate changelog coverage (HEAD defaults to HEAD). |
+| `make release-cask VERSION=0.1.2 SHA256=<hash>` | Update Homebrew cask metadata. |
+| `make icons` | Regenerate the committed icon using the Swift renderer, `sips` and `iconutil`. |
+| `make clean` | Clean Swift package build products. |
+
+Make keeps targets sequential even with `-j`; separate invocations still must not
+run model jobs concurrently. Evaluations use only repository `eval/` fixtures and
+isolated config/data. The UI harness is for presentation inspection; its processing
+and recording controls invoke real models or hardware. Checks bypass default demo
+seeding. See the [testing workflow](../README.md#testing) and stage skills in
+[`skills/`](../skills/) for quality gates and semantic review requirements.
+
+Helpers stay in `scripts/`: packaging (`build-app.sh`), release (`release.swift`),
+evaluation orchestration and validation (`run-evals.sh`, `evals.rb`,
+`eval-pipeline.sh`), icons (`make-iconset.sh`,
+`make-icon.swift`), and the `test-*` checks. `isolated-check.sh` gives checks
+throwaway configuration/data and removes it afterward. Call Make for these
+workflows instead of treating the helpers as a separate command interface.

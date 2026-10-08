@@ -94,6 +94,7 @@ CHECK
 chmod +x "$release_test_root/bin/check"
 ln -s check "$release_test_root/bin/swift"
 ln -s check "$release_test_root/bin/bash"
+ln -s check "$release_test_root/bin/make"
 export PATH="$release_test_root/bin:$PATH"
 export RELEASE_FIXTURE_CHECK_LOG="$release_test_root/checks.log"
 release_before="$(git rev-parse HEAD)"
@@ -115,10 +116,10 @@ test "$(git log -1 --format=%s)" = 'chore(release): CaptainsLog 0.2.0'
 "$release_tool" --dry-run > "$release_test_root/post-release.log"
 [[ "$(cat "$release_test_root/post-release.log")" == *"no releasable changes"* ]]
 cat > "$release_test_root/expected-checks.log" <<'CHECKS'
-bash scripts/test-release-tooling.sh
-swift build
-swift run run-tests
-bash scripts/run-evals.sh --all
+make tests-release
+make build
+make tests
+make evals
 CHECKS
 diff -u "$release_test_root/expected-checks.log" "$RELEASE_FIXTURE_CHECK_LOG"
 
