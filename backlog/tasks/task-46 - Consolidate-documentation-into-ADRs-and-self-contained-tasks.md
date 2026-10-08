@@ -1,14 +1,14 @@
 ---
 id: TASK-46
 title: Consolidate documentation into ADRs and self-contained tasks
-status: Verify
+status: Complete
 assignee:
   - '@codex'
 created_date: '2026-10-08 17:07'
-updated_date: '2026-10-08 17:13'
+updated_date: '2026-10-08 17:45'
 labels: []
 dependencies: []
-ordinal: 39000
+ordinal: 296.875
 ---
 
 ## Description

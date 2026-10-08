@@ -7,7 +7,7 @@ created_date: '2026-10-04 13:10'
 labels:
   - settings
 dependencies: []
-ordinal: 7000
+ordinal: 500
 ---
 
 ## Description

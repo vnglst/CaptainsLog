@@ -1,14 +1,14 @@
 ---
 id: TASK-29
 title: Review legacy UI symbols before removal
-status: To Do
+status: Next
 assignee: []
 created_date: '2026-10-04 13:10'
-updated_date: '2026-10-08 17:09'
+updated_date: '2026-10-08 17:43'
 labels:
   - distribution
 dependencies: []
-ordinal: 29000
+ordinal: 30000
 ---
 
 ## Description

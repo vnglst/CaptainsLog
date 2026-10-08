@@ -1,14 +1,14 @@
 ---
 id: TASK-23
 title: Decide and document the project source license
-status: To Do
+status: Next
 assignee: []
 created_date: '2026-10-04 13:10'
-updated_date: '2026-10-08 17:09'
+updated_date: '2026-10-08 17:42'
 labels:
   - publication
 dependencies: []
-ordinal: 23000
+ordinal: 29000
 ---
 
 ## Description

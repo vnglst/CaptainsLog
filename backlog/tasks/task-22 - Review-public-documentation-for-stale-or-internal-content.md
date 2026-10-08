@@ -1,14 +1,14 @@
 ---
 id: TASK-22
 title: Review public documentation for stale or internal content
-status: To Do
+status: Next
 assignee: []
 created_date: '2026-10-04 13:10'
-updated_date: '2026-10-08 17:10'
+updated_date: '2026-10-08 17:44'
 labels:
   - publication
 dependencies: []
-ordinal: 22000
+ordinal: 31000
 ---
 
 ## Description
