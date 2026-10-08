@@ -4,16 +4,9 @@ title: Use Make to manage and execute repository scripts
 status: Next
 assignee: []
 created_date: '2026-10-07 15:17'
-updated_date: '2026-10-08 17:03'
+updated_date: '2026-10-08 17:04'
 labels: []
 dependencies: []
-references:
-  - scripts/README.md
-  - backlog/tasks/task-42 - Reduce-agent-navigation-and-evaluation-overhead.md
-documentation:
-  - README.md
-  - docs/0007-framework-free-test-coverage.md
-  - docs/0010-tag-driven-homebrew-releases.md
 type: chore
 ordinal: 21000
 ---

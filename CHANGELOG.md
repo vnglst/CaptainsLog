@@ -21,6 +21,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
+- Remove file-reference fields from the revised backlog tasks and require task explanations without links to repository files.
+
 - Restore self-contained explanations and readable acceptance criteria in the nine shortened backlog tasks. Remove the task word cap and require essential scope, context and review limits to be readable in the Backlog app without opening repository links.
 
 - Update TASK-42’s handoff with its main-branch integration and final validation evidence; retain Verify for owner review.

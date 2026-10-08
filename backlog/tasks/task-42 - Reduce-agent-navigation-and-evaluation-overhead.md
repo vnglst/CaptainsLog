@@ -5,15 +5,9 @@ status: Complete
 assignee:
   - '@codex'
 created_date: '2026-10-07 14:38'
-updated_date: '2026-10-08 17:03'
+updated_date: '2026-10-08 17:04'
 labels: []
 dependencies: []
-references:
-  - scripts/run-evals.sh
-  - scripts/validate-eval-run.sh
-documentation:
-  - docs/0005-use-libllama-c-api-for-text-inference.md
-  - docs/0007-framework-free-test-coverage.md
 type: enhancement
 ordinal: 19000
 ---

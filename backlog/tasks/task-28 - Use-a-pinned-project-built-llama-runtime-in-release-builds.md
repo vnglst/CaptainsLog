@@ -4,13 +4,10 @@ title: Use a pinned project-built llama runtime in release builds
 status: Next
 assignee: []
 created_date: '2026-10-04 13:10'
-updated_date: '2026-10-08 17:03'
+updated_date: '2026-10-08 17:04'
 labels:
   - distribution
 dependencies: []
-documentation:
-  - docs/0005-use-libllama-c-api-for-text-inference.md
-  - docs/0006-bundle-llama-runtime-in-app.md
 ordinal: 28000
 ---
 

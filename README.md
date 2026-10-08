@@ -152,8 +152,9 @@ backlog task edit TASK-1 --status "Complete"  # After your review
 Each task should explain the problem, why it matters, what should change, and
 how completion will be checked in clear, complete sentences. It must make sense
 on its own in the Backlog app, where linked repository files may not be visible.
-Include essential scope, context, current findings and review limits in the task;
-links can provide optional supporting detail. There is no fixed word limit.
+Include essential scope, context, current findings and review limits in the task.
+Do not link to other repository files or add file paths to task reference or
+documentation fields. There is no fixed word limit.
 Condense outdated session notes while preserving the explanation, dependencies,
 status and checked acceptance criteria.
 
