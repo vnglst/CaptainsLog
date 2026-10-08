@@ -4,7 +4,7 @@ title: Review public documentation for stale or internal content
 status: Next
 assignee: []
 created_date: '2026-10-04 13:10'
-updated_date: '2026-10-08 17:44'
+updated_date: '2026-10-08 17:53'
 labels:
   - publication
 dependencies: []
@@ -33,4 +33,6 @@ The current documentation cleanup changes organization only. Wider rights, netwo
 The current transcriber selects CPU/GPU for encoder and decoder. Older ANE advice may describe a different installed bundle; identify its revision and transcription settings first. Whisper Metal assertion failures must be recorded as failures, even when a transcript-seeded continuation succeeds. Text processing uses in-process libllama and requests all available GPU layers, rather than llama-cli or a fixed 41-layer setting. Source header/library problems should be checked against versioned llama/GGML pkg-config paths and the actual bundled library links.
 
 Reproduce with repository fixtures and isolated config/data, compile before inference, and never run models concurrently. Verify the actual model/runtime before diagnosing memory or speed. A URL-cache warning alone does not prove a download failed. Keep original failing synthetic cases and distinguish context exhaustion from an explicit output-budget failure; unfinished responses must not be treated as completed metadata.
+
+Owner requested archiving during backlog refinement on 2026-10-08 because the purpose of this task was unclear. Archiving does not claim the review was implemented or completed.
 <!-- SECTION:NOTES:END -->

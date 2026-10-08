@@ -21,6 +21,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
+- Record owner backlog refinement: archive the unclear public-documentation review, choose MIT with third-party notices, require the same reproducible pinned native runtime for development and releases, and authorize unused UI component removal without external compatibility constraints. Replace agent-generated Make requirements with the owner's build, run, tests, evals, packaging and release commands, default development launch, standard options and verification by running the commands; retain scripts only as needed helpers.
+
 - Require owner-provided backlog scope, requirements and acceptance criteria; allow agents to clarify and rewrite supplied content, and require missing input to come from the owner rather than agent invention.
 
 - Explain the collections navigation task with a concrete browsing example, define its unresolved grouping decisions and empty-state behavior, and add acceptance criteria without choosing a new data model.
