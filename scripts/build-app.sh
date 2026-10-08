@@ -27,9 +27,8 @@ swift build -c release --product cl
 
 APP_BIN="$PRODUCTS/${APP_NAME}App"
 CLI_BIN="$PRODUCTS/cl"
-RESOURCE_BUNDLE="$PRODUCTS/CaptainsLog_CaptainsLog.bundle"
 
-for required in "$APP_BIN" "$CLI_BIN" "$RESOURCE_BUNDLE"; do
+for required in "$APP_BIN" "$CLI_BIN"; do
     if [ ! -e "$required" ]; then
         echo "Error: expected build output at $required" >&2
         exit 1
@@ -41,7 +40,6 @@ rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources" "$APP/Contents/Frameworks"
 cp "$APP_BIN" "$APP/Contents/MacOS/$APP_NAME"
 cp "$CLI_BIN" "$APP/Contents/MacOS/cl"
-ditto "$RESOURCE_BUNDLE" "$APP/Contents/Resources/CaptainsLog_CaptainsLog.bundle"
 
 echo "==> Bundling llama.cpp runtime libraries..."
 LLAMA_PREFIX="$(brew --prefix llama.cpp)"
@@ -96,12 +94,11 @@ if [ -d "prompts" ]; then
 fi
 
 THIRD_PARTY_DIR="$APP/Contents/Resources/ThirdPartyLicenses"
-mkdir -p "$THIRD_PARTY_DIR/sqlite-vec" "$THIRD_PARTY_DIR/Antonio" \
+mkdir -p "$THIRD_PARTY_DIR/sqlite-vec" \
     "$THIRD_PARTY_DIR/llama.cpp" "$THIRD_PARTY_DIR/LLVM-OpenMP"
 cp LICENSE THIRD-PARTY-NOTICES.md "$APP/Contents/Resources/"
 cp Sources/CSQLiteVec/LICENSE-MIT "$THIRD_PARTY_DIR/sqlite-vec/"
 cp Sources/CSQLiteVec/LICENSE-APACHE "$THIRD_PARTY_DIR/sqlite-vec/"
-cp Sources/CaptainsLog/Resources/ThirdPartyLicenses/Antonio-OFL-1.1.txt "$THIRD_PARTY_DIR/Antonio/"
 
 for checkout in .build/checkouts/*; do
     [ -d "$checkout" ] || continue

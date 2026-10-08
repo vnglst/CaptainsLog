@@ -1,10 +1,6 @@
 # Third-party notices
 
-CaptainsLog includes or downloads third-party software, fonts, and model weights. CaptainsLog’s original source code is licensed under the [MIT license](LICENSE). Third-party components and content retain their own licenses and rights; the project license does not replace the terms below. Copies of the licenses for components bundled with the macOS app are placed in `Contents/Resources/ThirdPartyLicenses`.
-
-## Bundled font
-
-**Antonio variable font** — Copyright 2013 The Antonio Project Authors. Licensed under the SIL Open Font License 1.1. The license text is in `Sources/CaptainsLog/Resources/ThirdPartyLicenses/Antonio-OFL-1.1.txt` and is bundled with the app. [Upstream font project](https://github.com/googlefonts/antonioFont).
+CaptainsLog includes or downloads third-party software and model weights. CaptainsLog’s original source code is licensed under the [MIT license](LICENSE). Third-party components and content retain their own licenses and rights; the project license does not replace the terms below. Copies of the licenses for components bundled with the macOS app are placed in `Contents/Resources/ThirdPartyLicenses`.
 
 ## Bundled software
 

@@ -96,7 +96,7 @@ Transcription uses Whisper Large-v2. Cleanup, categorization, filenames, and met
 ## License
 
 CaptainsLog’s original source code is licensed under the [MIT license](LICENSE).
-Third-party software, fonts, model weights and example content retain their own
+Third-party software, model weights and example content retain their own
 licenses and rights; see [Third-party notices](THIRD-PARTY-NOTICES.md). The release
 app includes the project license, third-party notices and bundled component license
 texts in its Resources folder.
@@ -243,8 +243,7 @@ before investigating memory issues; preserve the original failing synthetic case
 The active UI and Settings are embedded in FieldNotesContentView; the launcher is
 AppMain. Core stage implementations and the sequential inference gate live in
 CaptainsLogCore, while command types live in cl. Framework-free tests are in the
-run-tests executable. Older ContentView/LCARS types require downstream and resource
-checks before deletion. For isolated native UI inspection use the existing UI harness;
+run-tests executable. For isolated native UI inspection use the existing UI harness;
 packaged development executables must be launched directly to inherit their isolated
 configuration. Record the bundle revision, dirty state, signatures and binary checksums
 when comparing builds. A rollback restores binaries/resources, not data migrations.
