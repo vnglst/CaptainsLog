@@ -4,14 +4,14 @@ title: Verify published assets and installation
 status: To Do
 assignee: []
 created_date: '2026-10-04 13:10'
-updated_date: '2026-10-04 13:12'
+updated_date: '2026-10-07 15:19'
 labels:
   - release
 dependencies:
   - TASK-36
 documentation:
   - docs/PUBLISHING-PLAN.md
-ordinal: 37000
+ordinal: 500
 ---
 
 ## Description
