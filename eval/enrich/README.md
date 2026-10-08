@@ -1,48 +1,71 @@
 # Enrichment evaluations
 
-Run `bash scripts/run-evals.sh --enrich` from the repository root. This runs every
-input sequentially with isolated config/data and the date, time and sampling seed
-in `cases.json`. It requires the local Qwen model, but not Whisper. Validate a
-saved run with `bash scripts/run-evals.sh --validate-enrich <run-stamp>`.
+Run `bash scripts/run-evals.sh --enrich` from the repository root. Every input
+runs sequentially with isolated config/data and the date, time and seed in
+`cases.json`. It requires Qwen, not Whisper. Check saved output with
+`bash scripts/run-evals.sh --validate-enrich <run-stamp>`.
 
-The structural gate rejects unfinished inference, malformed or repeated YAML,
-changed transcript bodies, incorrect supplied date/time, wrong list types,
-duplicate names and excessive metadata. Expected files are semantic references;
-review additions, omissions and summaries with
-[`enrich-eval`](../../skills/enrich-eval/SKILL.md), even when the gate passes.
+The structural gate rejects unfinished inference, malformed/repeated YAML,
+changed source bodies, incorrect supplied date/time, wrong types, duplicate names
+and excessive metadata. Expected files remain semantic references: review
+additions, omissions and summaries with [`enrich-eval`](../../skills/enrich-eval/SKILL.md).
 
-## Fictional festival fixture
+## Fully fictional name-extraction regression
 
-`04_moonmoth_festival.md` is a newly authored diary about an imaginary lantern
-festival, populated entirely by invented characters, places and creatures. It
-contains no presentation material, real organizations/products, or borrowed
-outline. No private-source token positions or request lengths were used.
-`cases.json` pins its bytes, date/time and seed.
+`04_fictional_name_loop.md` is a newly written **66-word, 965-byte bedtime story**
+about a tiny caterpillar in an imaginary village. Its name consists of 144
+concatenations of the invented syllable `Vevu`. Nera Pindle and Pofflemere are
+invented. The story does not instruct the model to repeat anything. It contains
+no presentation names, subject matter or outline; its arbitrary date/time,
+syllable counts and length were not calibrated against private content.
 
-The previous attempted regression was rejected by the owner because it retained
-presentation-related names and subject matter. It, its semantic reference and
-its generated artifacts were removed. The previous native failure does not prove
-that this unrelated replacement triggers the same bug. Historical and fixed
-results for this exact source must establish its coverage independently.
+Source SHA256: `65e941e63d2ad73a1782556382f4905d1872cf8634c154f2abeae76c517a9a85`.
+`cases.json` pins these exact source bytes and seed 42.
 
-## Replacement verification
+The pre-fix native sampler exhausted **4,864 context tokens after a 2,372-token
+prompt and 2,492 output tokens** in the sequential discovery runner. It exited 1
+and wrote no completed output. The trace contained 808 repetitions of `Vevu`
+inside one `persons` item and never reached the summary. A fresh ordinary CLI
+invocation independently returned the identical native error and trace. Another
+fresh run with seed 0 returned the same counts and error. Both tested seeds fail;
+no claim is made for all seeds or platforms. This is repetition
+within an extracted name, rather than repetition of complete list rows; it
+reaches the same native `contextExhausted` error. Fresh ordinary CLI confirmation
+and fixed-code checks are recorded in [ADR-007](../../docs/0007-framework-free-test-coverage.md).
 
-The historical code completed this 871-word source normally under seeds 42 and 0
-(211 and 227 output tokens respectively; 2,885 prompt tokens, 5,888 allocated
-context). Both were fresh uncapped runs against llama.cpp 0.5.0/GGML 0.25.3.
-**This fixture has not reproduced native context exhaustion.** It is an additional
-semantic/structural evaluation case, not evidence that the original native
-failure is covered. TASK-44 remains open for an acceptable independent reproducer.
+Recorded baseline:
 
-The fixed CLI completed the replacement in 208 tokens (2,938 prompt tokens,
-7,168 allocated context, 4,096-token output budget). All five enrichment cases
-passed sequential generation and saved-output checks in run
-`2026-10-08_10-53-26_63479_Qwen3.5-9B-Q4_K_M`; build, 25 validator checks and
-six CLI seed boundaries passed. Field-by-field reports are under
-`eval/enrich/reports/`. The replacement's generated metadata incorrectly adds
-Whisper, which is absent from the source. It also omits three reference tags and
-some summary details. Expected metadata is unchanged; structural success does
-not imply semantic accuracy.
+| Setting | Value |
+|---|---|
+| Code before fix | `556ef708fd6f9f4ac07408cc9689a5cbc2ac00db` |
+| Model | `Qwen_Qwen3.5-9B-Q4_K_M.gguf` |
+| Model SHA256 | `d784ce9eda1a5a7b51e8f705a9e6310844bf4f173654d115823c775fdea56d43` |
+| Native runtime | llama.cpp 0.5.0 / GGML 0.25.3, Metal, M4 |
+| Sampling | seed 42, temperature 0.3, top-k 40, top-p 0.9 |
+| Repetition protection | none; original duplicate sampler acceptance retained |
+| Output budget | 0 (historical unbounded mode) |
+| Supplied date/time | 2025-02-18 / 20:30 |
+| Speaker context | none |
+
+Thirteen earlier unrelated narratives completed normally. A known fictional
+control matched the ordinary historical CLI exactly at 211 tokens before the
+long-name case failed. Discovery reused one loaded model but created a fresh
+context and sampler per case. No cutoff, context reduction or injected error was
+used for the observed failure. Unexecuted shortening candidates are not evidence
+of a global minimum; this compact confirmed candidate was retained.
+
+## Fixed-code behavior
+
+With the matching historical runtime, fixed code completed in **177 tokens**
+(2,425 prompt tokens, 6,656 context, 4,096 output budget). Structural validation
+and exact source preservation passed. The artificial repeated name is shortened
+to four syllable units in persons and three in the summary; the semantic reference
+retains all 144 units. This test demonstrates bounded completion, not perfect
+extraction of unusually repetitive names. The current 0.6.0/0.26.0 runtime also
+completed in 177 tokens, with byte-identical output. All five cases passed sequential generation and saved validation in run
+`2026-10-08_18-31-07_71234_Qwen3.5-9B-Q4_K_M`. Build, 25 validator checks and
+six CLI seed boundaries passed. Native and semantic evidence is recorded in
+ADR-007 and the per-case reports under `eval/enrich/reports/`.
 
 ## Historical comparison procedure
 
@@ -73,7 +96,7 @@ export CAPTAINS_LOG_CONFIG_PATH="$REPRO_DIR/config.json"
 ruby -rjson -e 'File.write(ARGV[0], JSON.generate(schemaVersion: 1, dataDir: ARGV[1], qwenModelFolder: ARGV[2]))' "$CAPTAINS_LOG_CONFIG_PATH" "$REPRO_DIR/data" "$CAPTAINS_LOG_BASELINE_QWEN_DIR"
 swift build --package-path "$REPRO_DIR" --scratch-path "$REPRO_DIR/.build" --product cl
 export CAPTAINS_LOG_EVAL_TRACE="$REPRO_DIR/synthetic-prefix.txt"
-"$REPRO_DIR/.build/debug/cl" enrich --input "$REPO_DIR/eval/enrich/input/04_moonmoth_festival.md" --output "$REPRO_DIR/synthetic-output.md" --prompt "$REPRO_DIR/prompts/enrich.md" --date 2025-02-18 --recording-time 20:30 --seed 42 --diagnostics
+"$REPRO_DIR/.build/debug/cl" enrich --input "$REPO_DIR/eval/enrich/input/04_fictional_name_loop.md" --output "$REPRO_DIR/synthetic-output.md" --prompt "$REPRO_DIR/prompts/enrich.md" --date 2025-02-18 --recording-time 20:30 --seed 42 --diagnostics
 ```
 
 Run this only while other native inference is idle. The historical failure is a
@@ -82,10 +105,12 @@ duplicate entity list without a summary in the trace. A prefix cutoff, malformed
 YAML, or long but completed response is not equivalent evidence. The normal eval
 suite uses the fixed CLI; it does not run this historical comparison.
 
-A completed historical response is a negative reproduction result. Do not count
-a malformed response or diagnostic cutoff as native context exhaustion, and do
-not call this fixture a native reproducer without observing that error.
+A completed historical response is negative reproduction evidence. A diagnostic
+cutoff, malformed but completed response or seeded discovery prefix alone does
+not establish native context exhaustion. A fixed seed supports repeatability on
+the recorded model/runtime, not identical behavior on every platform or upgrade.
 
+The previously rejected presentation-related fixture and its generated artifacts
+were removed. Its proof does not transfer to this independently written source.
 See [TASK-44](../../backlog/tasks/task-44%20-%20Add-a-synthetic-enrichment-loop-regression-evaluation.md)
-for implementation status and [ADR-007](../../docs/0007-framework-free-test-coverage.md)
-for dated evaluation evidence.
+for implementation status.

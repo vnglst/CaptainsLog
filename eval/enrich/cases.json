@@ -19,10 +19,10 @@
     "recording_time": "12:00",
     "seed": 42
   },
-  "04_moonmoth_festival": {
+  "04_fictional_name_loop": {
     "date": "2025-02-18",
     "recording_time": "20:30",
     "seed": 42,
-    "sha256": "561ddccae089cc23968249314fcb311df9559dba3e983be0362b7f0206bc8bfc"
+    "sha256": "65e941e63d2ad73a1782556382f4905d1872cf8634c154f2abeae76c517a9a85"
   }
 }

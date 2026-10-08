@@ -37,6 +37,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Added
 
+- Add a compact, wholly fictional bedtime-story fixture that triggers native pre-fix context exhaustion while copying an invented name; record independent provenance, source fingerprint, runtime settings and verification limits.
+
 - Add repeatable enrichment evaluation controls (`cl enrich --seed` and `--diagnostics`), per-case settings, an enrichment-only sequential suite, and saved-output checks for schema, duplicate names, metadata bounds, supplied date/time and exact transcript preservation. Include model-free validator and seed-boundary checks.
 - Preserve historical native reproduction setup and strict enrichment output gates. The first attempted fixture was rejected for presentation-related content and removed; replacement coverage and limitations are recorded in ADR-007.
 - Add a backlog item for Make-based repository script entry points, including an ADR explaining the choice and checks for sequential inference, argument forwarding and fixture isolation.
