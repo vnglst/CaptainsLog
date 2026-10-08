@@ -1,0 +1,28 @@
+{
+  "01_work_week": {
+    "date": "2025-01-15",
+    "recording_time": "12:00",
+    "seed": 42
+  },
+  "02_personal_only": {
+    "date": "2025-01-15",
+    "recording_time": "12:00",
+    "seed": 42
+  },
+  "03_mixed_topics": {
+    "date": "2025-01-15",
+    "recording_time": "12:00",
+    "seed": 42
+  },
+  "2025-01-14 side project": {
+    "date": "2025-01-14",
+    "recording_time": "12:00",
+    "seed": 42
+  },
+  "04_entity_list_loop": {
+    "date": "2026-10-05",
+    "recording_time": "16:44",
+    "seed": 42,
+    "sha256": "ec8193ed72a53aaf919cef027b4cc445a96ebd4f7a5da9842fe4b2f1f4d0e658"
+  }
+}

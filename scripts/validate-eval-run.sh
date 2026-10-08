@@ -5,13 +5,18 @@ set -uo pipefail
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT_DIR"
 categorize_only=false
+enrich_only=false
 if [[ "${1:-}" == "--categorize-only" ]]; then
     categorize_only=true
     shift
 fi
+if [[ "${1:-}" == "--enrich-only" ]]; then
+    enrich_only=true
+    shift
+fi
 STAMP="${1:-}"
 if [[ -z "$STAMP" ]]; then
-    printf 'Usage: %s [--categorize-only] <run-stamp>\n' "$0" >&2
+    printf 'Usage: %s [--categorize-only|--enrich-only] <run-stamp>\n' "$0" >&2
     exit 2
 fi
 
@@ -41,6 +46,12 @@ check_nonempty() {
 : > "$REPORT_DIR/validation.txt"
 
 if [[ "$categorize_only" != true ]]; then
+    if ! ruby skills/enrich-eval/scripts/validate.rb --cases eval/enrich/cases.json eval/enrich/input; then
+        fail "enrichment case manifest or regression fixture fingerprint differs"
+    fi
+fi
+
+if [[ "$categorize_only" != true && "$enrich_only" != true ]]; then
 for expected in eval/transcribe/expected/*.md; do
     name="$(basename "$expected" .md)"
     generated="eval/transcribe/generated/${STAMP}_${WHISPER_MODEL}_${name}.md"
@@ -50,6 +61,7 @@ for expected in eval/transcribe/expected/*.md; do
 done
 fi
 
+if [[ "$enrich_only" != true ]]; then
 for expected in eval/categorize/expected/*.category; do
     name="$(basename "$expected" .category)"
     generated="eval/categorize/generated/${STAMP}_${QWEN_LABEL}_${name}.json"
@@ -61,8 +73,9 @@ for expected in eval/categorize/expected/*.category; do
         fail "invalid category manifest: $generated"
     fi
 done
+fi
 
-if [[ "$categorize_only" != true ]]; then
+if [[ "$categorize_only" != true && "$enrich_only" != true ]]; then
 for expected in eval/cleanup/expected/*.md; do
     name="$(basename "$expected" .md)"
     generated="eval/cleanup/generated/${STAMP}_${QWEN_LABEL}_${name}.md"
@@ -70,7 +83,7 @@ for expected in eval/cleanup/expected/*.md; do
 done
 fi
 
-if [[ "$categorize_only" != true ]]; then
+if [[ "$categorize_only" != true && "$enrich_only" != true ]]; then
 for expected in eval/filename/expected/*.md; do
     name="$(basename "$expected" .md)"
     generated="eval/filename/generated/${STAMP}_${QWEN_LABEL}_${name}.md"
@@ -81,12 +94,14 @@ for expected in eval/filename/expected/*.md; do
     fi
     swift skills/filename-eval/scripts/compare.swift --expected "$expected" --generated "$generated" > "$REPORT_DIR/filename-$name.txt"
 done
+fi
 
+if [[ "$categorize_only" != true ]]; then
 for expected in eval/enrich/expected/*.md; do
     name="$(basename "$expected" .md)"
     generated="eval/enrich/generated/${STAMP}_${QWEN_LABEL}_${name}.md"
     check_nonempty "$generated" || continue
-    if ! ruby -ryaml -e 'text = File.read(ARGV.fetch(0)); parts = text.split("---", 3); abort("missing YAML frontmatter") unless parts.length >= 3; data = YAML.safe_load(parts[1]); abort("frontmatter is not a mapping") unless data.is_a?(Hash); %w[date recording_time language categories tags persons projects companies entities summary].each { |key| abort("missing #{key}") unless data.key?(key) }; %w[categories tags persons projects companies entities].each { |key| abort("#{key} is not a list") unless data[key].is_a?(Array) }; abort("summary is not text") unless data["summary"].is_a?(String)' "$generated"; then
+    if ! ruby skills/enrich-eval/scripts/validate.rb "eval/enrich/input/$name.md" "$generated" "$expected"; then
         fail "invalid enrichment frontmatter: $generated"
         continue
     fi
@@ -99,8 +114,10 @@ if (( failures > 0 )); then exit 1; fi
 expected_outputs=0
 if [[ "$categorize_only" == true ]]; then
     expected_outputs=$(find eval/categorize/expected -maxdepth 1 -type f -name '*.category' | wc -l | tr -d ' ')
+elif [[ "$enrich_only" == true ]]; then
+    expected_outputs=$(find eval/enrich/expected -maxdepth 1 -type f -name '*.md' | wc -l | tr -d ' ')
 else
-    expected_outputs=19
+    expected_outputs=$(find eval/transcribe/expected eval/cleanup/expected eval/filename/expected eval/enrich/expected -maxdepth 1 -type f -name '*.md' | wc -l | tr -d ' ')
     expected_outputs=$((expected_outputs + $(find eval/categorize/expected -maxdepth 1 -type f -name '*.category' | wc -l | tr -d ' ')))
 fi
 if (( outputs != expected_outputs )); then

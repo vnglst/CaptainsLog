@@ -35,6 +35,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Added
 
+- Add repeatable enrichment evaluation controls (`cl enrich --seed` and `--diagnostics`), per-case settings, an enrichment-only sequential suite, and saved-output checks for schema, duplicate names, metadata bounds, supplied date/time and exact transcript preservation. Include model-free validator and seed-boundary checks.
+- Add an independently authored Dutch enrichment fixture that reproduces the native pre-fix entity-list loop and context-exhaustion error; preserve historical reproduction diagnostics, model/runtime and source provenance, expected metadata and formatting sensitivity without including private transcript content. Pin its source fingerprint so accidental edits cannot silently erase the regression.
 - Add a backlog item for Make-based repository script entry points, including an ADR explaining the choice and checks for sequential inference, argument forwarding and fixture isolation.
 - Record a separate investigation draft for the Whisper Metal assertion encountered during the enrichment fix's fixture pipeline check.
 - Add TASK-42 to prioritize reducing agent navigation and evaluation overhead, with acceptance criteria and explicitly unmeasured time/token savings estimates.

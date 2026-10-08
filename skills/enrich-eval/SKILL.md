@@ -23,6 +23,18 @@ Before generating, research what cleanup model is actually used by the codebase 
 
 ### 2. Generate Enrich Output
 
+Prefer `bash scripts/run-evals.sh --enrich`: it builds the CLI, uses isolated
+config/data, checks the evaluation tooling without loading a model, and runs all
+enrichment inputs sequentially with the date, time and seed recorded in
+`eval/enrich/cases.json`. Token-count and completion diagnostics are retained in
+the printed run directory. It does not require a Whisper model. The same cases
+also run in `--suites` and `--all`.
+
+The manifest must cover every input. Regression cases also record a source SHA256;
+generation and saved-run validation reject changed fixture bytes. Reformatting the
+entity-list regression can remove its historical failure, so update its fingerprint
+only after repeating the native baseline and fixed-output checks.
+
 Generate a new enrichment for each iteration. Use a timestamp in the filename so old versions are preserved:
 
 ```bash
@@ -31,8 +43,15 @@ TIMESTAMP=$(date +%Y-%m-%d_%H-%M-%S)
 swift run cl enrich eval/enrich/input/<test-case>.md \
   --output eval/enrich/generated/${TIMESTAMP}_${MODEL}_<test-case>.md \
   --date 2025-01-15 \
-  --recording-time 12:00
+  --recording-time 12:00 \
+  --seed 42 --diagnostics
 ```
+
+For individual commands, use the case's recorded date, time and seed rather than
+blindly copying these example values. The Dutch side-project fixture uses
+2025-01-14 to match its expected metadata. A fixed seed supports repeatability on
+the recorded model/runtime; it does not promise identical results across model,
+runtime or hardware changes. App sampling remains random by default.
 
 ### 3. Read Both Files
 
@@ -51,6 +70,23 @@ cat eval/enrich/input/<test-case>.md
 ```
 
 ### 4. Validate YAML Syntax
+
+Run the shared structural gate before semantic comparison:
+
+```bash
+ruby skills/enrich-eval/scripts/validate.rb \
+  eval/enrich/input/<test-case>.md \
+  eval/enrich/generated/<run-stamp>_<model-name>_<test-case>.md \
+  eval/enrich/expected/<test-case>.md
+```
+
+It checks exactly one mapping with unique schema keys, nonempty string fields,
+string-only unique lists, no entity duplicating a person/project/company, a
+12,000-byte metadata ceiling, 64 items per list, a 3,000-character summary ceiling,
+supplied date/time, legal categories, expected language and the unchanged source body. Category selection remains part of semantic review against expected metadata. These generous bounds detect
+runaway output; they do not establish semantic accuracy. A nonzero inference exit
+also fails the suite, so an unfinished generation cannot pass via saved partial
+text. Saved-run validation is `bash scripts/run-evals.sh --validate-enrich <run-stamp>`.
 
 Before comparing content, verify the generated output is valid YAML:
 

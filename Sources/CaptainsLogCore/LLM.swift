@@ -165,6 +165,7 @@ public enum LLM {
         maxTokens: Int = 0,
         temperature: Float = 0.6,
         preventRepetition: Bool = false,
+        seed: UInt32? = nil,
         diagnostic: (@Sendable (String) -> Void)? = nil
     ) async throws -> String {
         Logger.llm.info("Running inference...")
@@ -179,6 +180,7 @@ public enum LLM {
                 maxTokens: maxTokens,
                 temperature: temperature,
                 preventRepetition: preventRepetition,
+                seed: seed,
                 diagnostic: diagnostic
             )
         }
@@ -216,6 +218,7 @@ public enum LLM {
         maxTokens: Int,
         temperature: Float,
         preventRepetition: Bool = false,
+        seed: UInt32? = nil,
         diagnostic: (@Sendable (String) -> Void)? = nil
     ) throws -> String {
         let prompt = makePrompt(systemPrompt: systemPrompt, userPrompt: userPrompt)
@@ -253,7 +256,7 @@ public enum LLM {
         diagnostic?("Prompt decoded; token generation started.")
 
         let sampler = makeSampler(temperature: temperature, vocab: vocab,
-                                  preventRepetition: preventRepetition)
+                                  preventRepetition: preventRepetition, seed: seed)
         defer { llama_sampler_free(sampler) }
 
         return try generateTokens(
@@ -409,7 +412,8 @@ public enum LLM {
     private static func makeSampler(
         temperature: Float,
         vocab: OpaquePointer?,
-        preventRepetition: Bool
+        preventRepetition: Bool,
+        seed: UInt32?
     ) -> UnsafeMutablePointer<llama_sampler> {
         let chain = llama_sampler_chain_init(llama_sampler_chain_default_params())!
         if preventRepetition {
@@ -425,7 +429,7 @@ public enum LLM {
             llama_sampler_chain_add(chain, llama_sampler_init_top_k(40))
             llama_sampler_chain_add(chain, llama_sampler_init_top_p(0.9, 1))
             llama_sampler_chain_add(chain, llama_sampler_init_temp(temperature))
-            llama_sampler_chain_add(chain, llama_sampler_init_dist(LLAMA_DEFAULT_SEED))
+            llama_sampler_chain_add(chain, llama_sampler_init_dist(seed ?? LLAMA_DEFAULT_SEED))
         }
         return chain
     }

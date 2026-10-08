@@ -21,8 +21,15 @@ if [[ "$MODE" == "--validate-categorize" ]]; then
     fi
     exec "$ROOT_DIR/scripts/validate-eval-run.sh" --categorize-only "$2"
 fi
-if [[ "$MODE" != "--pipeline" && "$MODE" != "--suites" && "$MODE" != "--categorize" && "$MODE" != "--all" ]]; then
-    printf 'Usage: %s [--pipeline|--suites|--categorize|--all|--validate-run <run-stamp>|--validate-categorize <run-stamp>]\n' "$0" >&2
+if [[ "$MODE" == "--validate-enrich" ]]; then
+    if [[ "$#" != 2 ]]; then
+        printf 'Usage: %s --validate-enrich <run-stamp>\n' "$0" >&2
+        exit 2
+    fi
+    exec "$ROOT_DIR/scripts/validate-eval-run.sh" --enrich-only "$2"
+fi
+if [[ "$MODE" != "--pipeline" && "$MODE" != "--suites" && "$MODE" != "--categorize" && "$MODE" != "--enrich" && "$MODE" != "--all" ]]; then
+    printf 'Usage: %s [--pipeline|--suites|--categorize|--enrich|--all|--validate-run <run-stamp>|--validate-categorize <run-stamp>|--validate-enrich <run-stamp>]\n' "$0" >&2
     exit 2
 fi
 
@@ -34,7 +41,7 @@ QWEN_FOLDER="${CAPTAINS_LOG_EVAL_QWEN_FOLDER:-$HOME/Library/Application Support/
 QWEN_FILE="${CAPTAINS_LOG_EVAL_QWEN_FILE:-Qwen_Qwen3.5-9B-Q4_K_M.gguf}"
 QWEN_LABEL="${CAPTAINS_LOG_EVAL_QWEN_LABEL:-Qwen3.5-9B-Q4_K_M}"
 
-if [[ ! -d "$WHISPER_FOLDER" ]]; then
+if [[ "$MODE" != "--enrich" && ! -d "$WHISPER_FOLDER" ]]; then
     printf 'Whisper model folder not found: %s\n' "$WHISPER_FOLDER" >&2
     exit 1
 fi
@@ -67,6 +74,9 @@ printf 'Config: %s\n' "$CAPTAINS_LOG_CONFIG_PATH"
 swift build --product cl
 BIN_DIR="$(swift build --show-bin-path)"
 CL="$BIN_DIR/cl"
+if [[ "$MODE" == "--enrich" || "$MODE" == "--suites" || "$MODE" == "--all" ]]; then
+    CAPTAINS_LOG_EVAL_CL="$CL" bash scripts/test-enrich-eval.sh
+fi
 
 if [[ "$MODE" == "--pipeline" || "$MODE" == "--all" ]]; then
     PIPE_DATA="$RUN_DIR/data"
@@ -135,14 +145,6 @@ if [[ "$MODE" == "--suites" || "$MODE" == "--categorize" || "$MODE" == "--all" ]
         fi
     done
 
-    for input in eval/enrich/input/*.md; do
-        case_name="$(basename "$input" .md)"
-        output="eval/enrich/generated/${STAMP}_${QWEN_LABEL}_${case_name}.md"
-        mkdir -p eval/enrich/generated
-        "$CL" enrich --input "$input" --output "$output" --date 2025-01-15 --recording-time 12:00
-        [[ -s "$output" ]]
-        ruby -ryaml -e 'text = File.read(ARGV.fetch(0)); parts = text.split("---", 3); abort("missing YAML frontmatter") unless parts.length >= 3; YAML.safe_load(parts[1])' "$output"
-    done
     fi
 
     for input in eval/categorize/input/*.md; do
@@ -152,9 +154,29 @@ if [[ "$MODE" == "--suites" || "$MODE" == "--categorize" || "$MODE" == "--all" ]
         "$CL" categorize --input "$input" --output "$output"
         [[ -s "$output" ]]
     done
+fi
+
+if [[ "$MODE" == "--suites" || "$MODE" == "--enrich" || "$MODE" == "--all" ]]; then
+    cp eval/enrich/cases.json "$RUN_DIR/enrich-cases.json"
+    for input in eval/enrich/input/*.md; do
+        case_name="$(basename "$input" .md)"
+        output="eval/enrich/generated/${STAMP}_${QWEN_LABEL}_${case_name}.md"
+        mkdir -p eval/enrich/generated
+        settings="$(ruby -rjson -e 'c = JSON.parse(File.read(ARGV.fetch(0))).fetch(ARGV.fetch(1)); puts c.values_at("date", "recording_time", "seed").join(" ")' eval/enrich/cases.json "$case_name")"
+        read -r case_date case_time case_seed <<< "$settings"
+        printf 'Enrichment case: %s; date=%s time=%s seed=%s\n' "$case_name" "$case_date" "$case_time" "$case_seed"
+        "$CL" enrich --input "$input" --output "$output" --date "$case_date" --recording-time "$case_time" --seed "$case_seed" --diagnostics 2> "$RUN_DIR/enrich-$case_name.log"
+        [[ -s "$output" ]]
+        ruby skills/enrich-eval/scripts/validate.rb "$input" "$output" "eval/enrich/expected/$case_name.md"
+    done
+fi
+
+if [[ "$MODE" == "--suites" || "$MODE" == "--enrich" || "$MODE" == "--categorize" || "$MODE" == "--all" ]]; then
     printf 'All evaluation cases generated sequentially. Compare and review each output against eval/*/expected and the matching skill.\n'
     if [[ "$MODE" == "--categorize" ]]; then
         "$ROOT_DIR/scripts/validate-eval-run.sh" --categorize-only "$STAMP"
+    elif [[ "$MODE" == "--enrich" ]]; then
+        "$ROOT_DIR/scripts/validate-eval-run.sh" --enrich-only "$STAMP"
     else
         "$ROOT_DIR/scripts/validate-eval-run.sh" "$STAMP"
     fi

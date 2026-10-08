@@ -20,7 +20,9 @@ public enum Enrich {
         recordingTime: String? = nil,
         container: ModelContainer,
         config: CaptainsLogConfig = CaptainsLogConfig.load(),
-        promptPath: String = defaultPromptPath
+        promptPath: String = defaultPromptPath,
+        seed: UInt32? = nil,
+        diagnostic: (@Sendable (String) -> Void)? = nil
     ) async throws -> String {
         let renderedPrompt = try renderedPrompt(
             logText: logText,
@@ -39,7 +41,9 @@ public enum Enrich {
             userMessage: renderedPrompt.userMessage,
             maxTokens: defaultMaxTokens,
             temperature: defaultTemperature,
-            preventRepetition: true
+            preventRepetition: true,
+            seed: seed,
+            diagnostic: diagnostic
         )
 
         let elapsed = Date().timeIntervalSince(start)

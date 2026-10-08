@@ -1,0 +1,155 @@
+--- a/Sources/CaptainsLogCore/LLM.swift
++++ b/Sources/CaptainsLogCore/LLM.swift
+@@ -161,6 +161,7 @@
+         userMessage: String,
+         maxTokens: Int = 0,
+         temperature: Float = 0.6,
++        seed: UInt32? = nil,
+         diagnostic: (@Sendable (String) -> Void)? = nil
+     ) async throws -> String {
+         Logger.llm.info("Running inference...")
+@@ -174,6 +175,7 @@
+                 userPrompt: userMessage,
+                 maxTokens: maxTokens,
+                 temperature: temperature,
++                seed: seed,
+                 diagnostic: diagnostic
+             )
+         }
+@@ -210,6 +212,7 @@
+         userPrompt: String,
+         maxTokens: Int,
+         temperature: Float,
++        seed: UInt32? = nil,
+         diagnostic: (@Sendable (String) -> Void)? = nil
+     ) throws -> String {
+         let prompt = makePrompt(systemPrompt: systemPrompt, userPrompt: userPrompt)
+@@ -246,7 +249,7 @@
+         try decode(tokens: promptTokens, context: context, batchSize: Int(contextParams.n_batch))
+         diagnostic?("Prompt decoded; token generation started.")
+
+-        let sampler = makeSampler(temperature: temperature)
++        let sampler = makeSampler(temperature: temperature, seed: seed)
+         defer { llama_sampler_free(sampler) }
+
+         return try generateTokens(
+@@ -280,6 +283,10 @@
+         diagnostic: (@Sendable (String) -> Void)? = nil
+     ) throws -> String {
+         var output = ""
++        let trace = ProcessInfo.processInfo.environment["CAPTAINS_LOG_EVAL_TRACE"]
++        defer {
++            if let trace { try? output.write(toFile: trace, atomically: true, encoding: .utf8) }
++        }
+         var reachedEndOfGeneration = false
+         for tokenIndex in 0..<generationLimit {
+             let token = sampleToken()
+@@ -390,7 +397,7 @@
+         }
+     }
+
+-    private static func makeSampler(temperature: Float) -> UnsafeMutablePointer<llama_sampler> {
++    private static func makeSampler(temperature: Float, seed: UInt32?) -> UnsafeMutablePointer<llama_sampler> {
+         let chain = llama_sampler_chain_init(llama_sampler_chain_default_params())!
+         if temperature <= 0 {
+             llama_sampler_chain_add(chain, llama_sampler_init_greedy())
+@@ -398,7 +405,7 @@
+             llama_sampler_chain_add(chain, llama_sampler_init_top_k(40))
+             llama_sampler_chain_add(chain, llama_sampler_init_top_p(0.9, 1))
+             llama_sampler_chain_add(chain, llama_sampler_init_temp(temperature))
+-            llama_sampler_chain_add(chain, llama_sampler_init_dist(LLAMA_DEFAULT_SEED))
++            llama_sampler_chain_add(chain, llama_sampler_init_dist(seed ?? LLAMA_DEFAULT_SEED))
+         }
+         return chain
+     }
+--- a/Sources/CaptainsLogCore/Enrich.swift
++++ b/Sources/CaptainsLogCore/Enrich.swift
+@@ -20,7 +20,9 @@
+         recordingTime: String? = nil,
+         container: ModelContainer,
+         config: CaptainsLogConfig = CaptainsLogConfig.load(),
+-        promptPath: String = defaultPromptPath
++        promptPath: String = defaultPromptPath,
++        seed: UInt32? = nil,
++        diagnostic: (@Sendable (String) -> Void)? = nil
+     ) async throws -> String {
+         let renderedPrompt = try renderedPrompt(
+             logText: logText,
+@@ -38,7 +40,9 @@
+             systemPrompt: renderedPrompt.systemPrompt,
+             userMessage: renderedPrompt.userMessage,
+             maxTokens: defaultMaxTokens,
+-            temperature: defaultTemperature
++            temperature: defaultTemperature,
++            seed: seed,
++            diagnostic: diagnostic
+         )
+
+         let elapsed = Date().timeIntervalSince(start)
+--- a/Sources/cl/CL.swift
++++ b/Sources/cl/CL.swift
+@@ -226,6 +226,18 @@
+     @Flag(help: "Print the fully rendered prompt and exit.")
+     var printPrompt = false
+
++    @Option(help: "Sampling seed for repeatable evaluations (0...4294967294; default: random).")
++    var seed: UInt32?
++
++    @Flag(help: "Print token counts and generation progress to stderr.")
++    var diagnostics = false
++
++    func validate() throws {
++        if seed == UInt32.max {
++            throw ValidationError("Seed 4294967295 is reserved for random sampling. Choose 0...4294967294.")
++        }
++    }
++
+     func run() async throws {
+         let dateStr = date ?? defaultDate()
+         _ = try await Enrich.runCommand(
+@@ -237,13 +249,23 @@
+             printPrompt: printPrompt
+         ) { logText, date, recordingTime, config, promptPath in
+             let container = try await LLM.loadModel(modelId: model)
++            let diagnostic: (@Sendable (String) -> Void)?
++            if diagnostics {
++                diagnostic = { message in
++                    FileHandle.standardError.write(Data("\(message)\n".utf8))
++                }
++            } else {
++                diagnostic = nil
++            }
+             return try await Enrich.enrich(
+                 logText: logText,
+                 date: date,
+                 recordingTime: recordingTime,
+                 container: container,
+                 config: config,
+-                promptPath: promptPath
++                promptPath: promptPath,
++                seed: seed,
++                diagnostic: diagnostic
+             )
+         }
+     }
+--- a/Sources/CaptainsLogCore/Embeddings.swift
++++ b/Sources/CaptainsLogCore/Embeddings.swift
+@@ -13,6 +13,9 @@
+ enum LlamaRuntime {
+     private static let initialized: Void = {
+         llama_log_set(llamaLogCallback, nil)
++        if let path = ProcessInfo.processInfo.environment["GGML_BACKEND_PATH"] {
++            ggml_backend_load_all_from_path(path)
++        }
+         llama_backend_init()
+     }()
+
+--- a/Sources/CLlama/module.modulemap
++++ b/Sources/CLlama/module.modulemap
+@@ -1,5 +1,5 @@
+ module CLlama [system] {
+-    header "/opt/homebrew/include/llama.h"
++    header "legacy-include/llama.h"
+     link "llama"
+     export *
+ }
