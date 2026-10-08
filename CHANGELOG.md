@@ -21,6 +21,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
+- Restore self-contained explanations and readable acceptance criteria in the nine shortened backlog tasks. Remove the task word cap and require essential scope, context and review limits to be readable in the Backlog app without opening repository links.
+
 - Update TASK-42’s handoff with its main-branch integration and final validation evidence; retain Verify for owner review.
 
 - Shorten nine backlog tasks to under 150 words of prose while preserving scope, dependencies, statuses and checked acceptance criteria; retain detailed runner rationale and packaging evidence in linked history. Set a 150-word task limit and restore concurrent runner verification entries in the supporting testing history.
