@@ -21,6 +21,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
+- Require owner-provided backlog scope, requirements and acceptance criteria; allow agents to clarify and rewrite supplied content, and require missing input to come from the owner rather than agent invention.
+
 - Explain the collections navigation task with a concrete browsing example, define its unresolved grouping decisions and empty-state behavior, and add acceptance criteria without choosing a new data model.
 
 - Consolidate seven Kev tasks into one phased evaluation and conditional integration task, four publication privacy reviews into one audit, and seven release tasks into one verification and publication checklist. Preserve scope and historical findings, archive 15 superseded tasks, and document consolidation guidance.
