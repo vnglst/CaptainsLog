@@ -4,7 +4,7 @@ title: Review evaluation and demo fixtures for personal content
 status: To Do
 assignee: []
 created_date: '2026-10-04 13:10'
-updated_date: '2026-10-08 17:09'
+updated_date: '2026-10-08 17:16'
 labels:
   - publication
 dependencies: []
@@ -20,3 +20,9 @@ The owner previously approved the specific side-project evaluation recording and
 
 Check any newly created content independently, retain applicable attribution and no-affiliation notices, and record the exact reviewed scope and date. Any new personal-content discovery resets the affected publication/privacy review.
 <!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+October 8, 2026: Consolidated into TASK-18 at the owner’s request. Its scope and any historical findings are preserved in that task. Archived as a superseded planning item, not completed implementation.
+<!-- SECTION:NOTES:END -->

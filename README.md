@@ -156,6 +156,10 @@ on its own in the Backlog app, where linked repository files may not be visible.
 Include essential scope, context, current findings and review limits in the task.
 Do not link to other repository files or add file paths to task reference or
 documentation fields. There is no fixed word limit.
+Keep one task per coherent outcome, with research, implementation and verification
+as phases or acceptance checks inside it. Split work only when it delivers
+independently useful outcomes. Archive superseded tasks after preserving their
+scope and findings in the consolidated task.
 Condense outdated session notes while preserving the explanation, dependencies,
 status and checked acceptance criteria.
 

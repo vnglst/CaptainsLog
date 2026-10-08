@@ -4,7 +4,7 @@ title: Review privacy safeguards in ignore rules and tooling
 status: To Do
 assignee: []
 created_date: '2026-10-04 13:10'
-updated_date: '2026-10-08 17:09'
+updated_date: '2026-10-08 17:16'
 labels:
   - publication
 dependencies: []
@@ -18,3 +18,9 @@ Review ignore rules, build/test scripts and release workflows to prevent acciden
 
 A machine-specific local Claude configuration was removed from the current tree and given an exact ignore rule, but it remains in older history. Verify that broader safeguards cover future files rather than relying on that one exception. Tests and evaluation commands must use isolated data and synthetic fixtures; microphone checks require explicit confirmation. Record gaps without automatically adding unrelated cleanup tasks.
 <!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+October 8, 2026: Consolidated into TASK-18 at the owner’s request. Its scope and any historical findings are preserved in that task. Archived as a superseded planning item, not completed implementation.
+<!-- SECTION:NOTES:END -->

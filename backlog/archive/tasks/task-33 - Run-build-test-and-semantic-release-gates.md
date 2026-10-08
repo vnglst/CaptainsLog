@@ -4,7 +4,7 @@ title: 'Run build, test, and semantic release gates'
 status: To Do
 assignee: []
 created_date: '2026-10-04 13:10'
-updated_date: '2026-10-08 17:13'
+updated_date: '2026-10-08 17:16'
 labels:
   - release
 dependencies: []
@@ -31,4 +31,6 @@ October 2 pipeline and resume/search checks passed with synthetic audio, but kno
 Native UI review on September 26 used isolated fixtures and accessibility, not screenshot geometry or microphone/model operation. Safe logs/detail/search/queue/Settings states and deletion flows were exercised; real recording, downloads, folder persistence and processing retries still require their own checks. Earlier source-only legacy UI review removed no symbols. Keep these limits visible when deciding what fresh release evidence is still needed.
 
 Historical search implementation checks used fake embeddings and a multilingual synthetic query corpus. Real-model relevance, offline packaged-app behavior, corrupt model/index recovery, interrupted setup and edit/rename/Trash convergence still require explicit integration evidence. The search index is derived and disposable; canonical Markdown must not be changed by recovery.
+
+October 8, 2026: Consolidated into TASK-36 at the owner’s request. Its scope and any historical findings are preserved in that task. Archived as a superseded planning item, not completed implementation.
 <!-- SECTION:NOTES:END -->

@@ -4,11 +4,10 @@ title: Record the Kev adoption decision
 status: To Do
 assignee: []
 created_date: '2026-10-04 13:10'
-updated_date: '2026-10-08 17:09'
+updated_date: '2026-10-08 17:16'
 labels:
   - kev
-dependencies:
-  - TASK-13
+dependencies: []
 ordinal: 14000
 ---
 
@@ -21,3 +20,9 @@ Require no regressions on existing categorization cases, acceptable held-out Dut
 
 Record the adopted or rejected option in an architecture decision record, including exact model/runtime pins, fixture scope, concrete semantic findings, costs and remaining limits. Keep Qwen as the default if a gate fails or the integration cost outweighs the benefit. This task records the decision; it does not authorize implementation before the gates pass.
 <!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+October 8, 2026: Consolidated into TASK-11 at the owner’s request. Its scope and any historical findings are preserved in that task. Archived as a superseded planning item, not completed implementation.
+<!-- SECTION:NOTES:END -->

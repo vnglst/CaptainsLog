@@ -4,7 +4,7 @@ title: Inspect the release archive and cask checksum
 status: To Do
 assignee: []
 created_date: '2026-10-04 13:10'
-updated_date: '2026-10-08 17:09'
+updated_date: '2026-10-08 17:16'
 labels:
   - release
 dependencies: []
@@ -18,3 +18,9 @@ Build and inspect the release app and ZIP before publication. Verify executable 
 
 Check app/CLI signatures and that their library paths resolve to bundled resources rather than a developer’s Homebrew installation. Calculate the final archive checksum and match it exactly to the source cask and public tap. If the archived bits or cask change, repeat the affected checks. Record the inspected version, commit, archive identity and findings.
 <!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+October 8, 2026: Consolidated into TASK-36 at the owner’s request. Its scope and any historical findings are preserved in that task. Archived as a superseded planning item, not completed implementation.
+<!-- SECTION:NOTES:END -->

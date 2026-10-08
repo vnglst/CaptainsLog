@@ -4,12 +4,11 @@ title: Compare Kev candidates on the 16 GB M4 Mac
 status: To Do
 assignee: []
 created_date: '2026-10-04 13:10'
-updated_date: '2026-10-08 17:09'
+updated_date: '2026-10-08 17:16'
 labels:
   - kev
 dependencies:
   - TASK-11
-  - TASK-12
 ordinal: 13000
 ---
 
@@ -22,3 +21,9 @@ Run candidates sequentially on short and long synthetic English/Dutch cases. Rec
 
 Bound supported input length explicitly and reject oversized requests rather than silently truncating them. Stop trials if responsiveness or memory pressure deteriorates. Exclude 27B and keep 9B outside the initial experiment. Measure decision accuracy, repeat-run variation, choice-order sensitivity and calibration against predeclared acceptance limits.
 <!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+October 8, 2026: Consolidated into TASK-11 at the owner’s request. Its scope and any historical findings are preserved in that task. Archived as a superseded planning item, not completed implementation.
+<!-- SECTION:NOTES:END -->

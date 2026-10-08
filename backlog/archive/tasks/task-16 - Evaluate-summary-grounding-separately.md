@@ -4,7 +4,7 @@ title: Evaluate summary grounding separately
 status: To Do
 assignee: []
 created_date: '2026-10-04 13:10'
-updated_date: '2026-10-08 17:09'
+updated_date: '2026-10-08 17:16'
 labels:
   - kev
 dependencies: []
@@ -20,3 +20,9 @@ Include invented entities, changed numbers, reversed negation, missing uncertain
 
 Expose results as a CLI evaluation report first. Preserve the generated summary and earlier-stage files; do not silently rewrite content or retry generation based on an unvalidated score. Decide whether the benefit justifies an optional pipeline stage, define default-off configuration and review behavior, and reserve stable UI space before adding app controls.
 <!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+October 8, 2026: Consolidated into TASK-11 at the owner’s request. Its scope and any historical findings are preserved in that task. Archived as a superseded planning item, not completed implementation.
+<!-- SECTION:NOTES:END -->

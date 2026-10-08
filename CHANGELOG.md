@@ -21,6 +21,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
+- Consolidate seven Kev tasks into one phased evaluation and conditional integration task, four publication privacy reviews into one audit, and seven release tasks into one verification and publication checklist. Preserve scope and historical findings, archive 15 superseded tasks, and document consolidation guidance.
+
 - Restrict docs to numbered ADRs; migrate plan scope and important verification findings into self-contained backlog tasks, preserve search decisions in ADR-019, and record the documentation policy in ADR-020. Remove superseded guides/reports and update inbound guidance. Move all 13 unused TNG reference scripts and their ground truth to eval/tng-reference without changing active fixtures or demo assets.
 
 - Remove file-reference fields from the revised backlog tasks and require task explanations without links to repository files.

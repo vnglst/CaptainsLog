@@ -4,7 +4,7 @@ title: Prove Kev checkpoint and runtime compatibility
 status: To Do
 assignee: []
 created_date: '2026-10-04 13:10'
-updated_date: '2026-10-08 17:09'
+updated_date: '2026-10-08 17:16'
 labels:
   - kev
 dependencies: []
@@ -20,3 +20,9 @@ Start with a compatible Kev 4B Q8 conversion and verify the checkpoint, conversi
 
 Build a small Swift CLI experiment using in-process libllama, then compare fixed requests with the model’s reference implementation or published reference outputs. Validate finite probabilities and allowed choices; loading only a Qwen backbone is insufficient. Keep Qwen as the production default and do not add a cloud, Python inference service, daemon or separate model server.
 <!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+October 8, 2026: Consolidated into TASK-11 at the owner’s request. Its scope and any historical findings are preserved in that task. Archived as a superseded planning item, not completed implementation.
+<!-- SECTION:NOTES:END -->
