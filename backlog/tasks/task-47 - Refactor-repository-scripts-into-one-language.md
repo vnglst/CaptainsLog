@@ -1,10 +1,10 @@
 ---
 id: TASK-47
 title: Refactor repository scripts into one language
-status: To Do
+status: Next
 assignee: []
 created_date: '2026-10-08 19:14'
-updated_date: '2026-10-08 19:15'
+updated_date: '2026-10-08 19:16'
 labels: []
 dependencies: []
 ordinal: 39000
