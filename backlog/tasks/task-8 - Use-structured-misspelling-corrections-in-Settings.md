@@ -1,13 +1,14 @@
 ---
 id: TASK-8
 title: Use structured misspelling corrections in Settings
-status: To Do
+status: Next
 assignee: []
 created_date: '2026-10-04 13:10'
+updated_date: '2026-10-08 19:18'
 labels:
   - settings
 dependencies: []
-ordinal: 750
+ordinal: 29000
 ---
 
 ## Description

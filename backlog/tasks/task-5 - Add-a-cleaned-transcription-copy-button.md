@@ -1,14 +1,14 @@
 ---
 id: TASK-5
 title: Add a cleaned-transcription copy button
-status: To Do
+status: Next
 assignee: []
 created_date: '2026-10-04 13:10'
-updated_date: '2026-10-08 17:09'
+updated_date: '2026-10-08 19:17'
 labels:
   - logs
 dependencies: []
-ordinal: 5000
+ordinal: 40000
 ---
 
 ## Description
