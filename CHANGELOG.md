@@ -23,6 +23,8 @@ entry. Git links provide the complete commit history for each release.
 
 - Make now drives building, development launch, tests, fixture evaluations, packaging and releases, with standard variable options and supporting iteration targets. Plain `make` launches the development app; release checks and CI use the same commands, and test commands isolate configuration and data. Remove the unused legacy evaluation-validation wrapper.
 
+- Require minimal PR text, a quick review tip and concise verification, with short UI videos or suitable examples; keep detailed evidence optional or in task notes.
+
 - Record owner backlog refinement: archive the unclear public-documentation review, choose MIT with third-party notices, require the same reproducible pinned native runtime for development and releases, and authorize unused UI component removal without external compatibility constraints. Replace agent-generated Make requirements with the owner's build, run, tests, evals, packaging and release commands, default development launch, standard options and verification by running the commands; retain scripts only as needed helpers.
 
 - Require owner-provided backlog scope, requirements and acceptance criteria; allow agents to clarify and rewrite supplied content, and require missing input to come from the owner rather than agent invention.
