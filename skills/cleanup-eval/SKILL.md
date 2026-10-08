@@ -5,7 +5,7 @@ description: Assess cleanup quality for CaptainsLog by comparing LLM-cleaned out
 
 # Cleanup review
 
-Run fixtures through [scripts/run-evals.sh](../../scripts/run-evals.sh); see [the shared workflow](../../README.md#fixture-evaluations) for stage/case selection, saved runs, metadata and baselines. The runner owns isolation and output names. Review the selected cases from its printed `review.md`; required release runs still include all suites and the full pipeline.
+Run fixtures through `make evals STAGE=cleanup`; see [the shared workflow](../../README.md#fixture-evaluations) for stage/case selection, saved runs, metadata and baselines. The runner owns isolation and output names. Review the selected cases from its printed `review.md`; required release runs still include all suites and the full pipeline.
 
 ## Stage review
 

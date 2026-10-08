@@ -5,7 +5,7 @@ description: Assess enrich (YAML frontmatter generation) quality for CaptainsLog
 
 # Enrichment review
 
-Run fixtures through [scripts/run-evals.sh](../../scripts/run-evals.sh); see [the shared workflow](../../README.md#fixture-evaluations) for stage/case selection, saved runs, metadata and baselines. The runner owns isolation and output names. Review the selected cases from its printed `review.md`; required release runs still include all suites and the full pipeline.
+Run fixtures through `make evals STAGE=enrich`; see [the shared workflow](../../README.md#fixture-evaluations) for stage/case selection, saved runs, metadata and baselines. The runner owns isolation and output names. Review the selected cases from its printed `review.md`; required release runs still include all suites and the full pipeline.
 
 ## Stage review
 
@@ -24,6 +24,6 @@ Use each case's generated `report.md` and the [shared concise report format](../
 
 ## Reproducible regression checks
 
-Enrichment suites use the supplied date, recording time and seed from `eval/enrich/cases.json`, snapshot that manifest, and retain per-case diagnostics. `--enrich` selects this suite; `--validate-enrich STAMP` validates older outputs. Fixed seeds support repeatability only with the recorded runtime; application defaults remain random. Model-free checks enforce fixture fingerprints, bounded metadata, unique names, 3–8 tags and exact source bodies before generation.
+Enrichment suites use the supplied date, recording time and seed from `eval/enrich/cases.json`, snapshot that manifest, and retain per-case diagnostics. `make evals STAGE=enrich` selects this suite; `make evals ARGS="--validate-enrich STAMP"` validates older outputs. Fixed seeds support repeatability only with the recorded runtime; application defaults remain random. Model-free checks enforce fixture fingerprints, bounded metadata, unique names, 3–8 tags and exact source bodies before generation.
 
 Synthetic fixtures must be written from scratch in an unrelated domain with invented names, events and scenarios. Do not retain names, terminology, outlines, spelling variants, token positions or length targets from private material. Replacing names alone is insufficient. Changing a regression fixture invalidates its earlier native evidence: rerun baseline and fixed checks before claiming a result. See [fixture provenance and native reproduction](../../eval/enrich/README.md).

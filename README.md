@@ -47,34 +47,34 @@ The first launch downloads the on-device models and needs an internet connection
 
 ## Build
 
-Requirements: Apple Silicon, macOS 26 or later, Swift 6.2+, and `brew install llama.cpp` for source builds. Xcode IDE is not required.
+Requirements: Apple Silicon, macOS 26 or later, Swift 6.2+, Make (included with Apple Command Line Tools), and `brew install llama.cpp` for source builds. Xcode IDE is not required.
 
 ```sh
-swift build
-./scripts/build-app.sh
+make build
+make packaging
 ```
 
-The build script creates `dist/CaptainsLog.app` and a versioned ZIP archive. Open the app with:
+The packaging command creates `dist/CaptainsLog.app` and a versioned ZIP archive. Open the app with:
 
 ```sh
 open dist/CaptainsLog.app
 ```
 
-For a safe development demo, run `swift run CaptainsLogApp`. It creates an isolated TNG-themed data copy under `tmp/demo-runtime/` from synthetic notes and locally synthesized audio in [`demo/`](./demo/). The demo copy persists between launches; move it aside to restore the original demo.
+For a safe development demo, run `make` (or `make run`). It creates an isolated TNG-themed data copy under `tmp/demo-runtime/` from synthetic notes and locally synthesized audio in [`demo/`](./demo/). The demo copy persists between launches; move it aside to restore the original demo.
 
 ## Use
 
 The CLI can record a memo and process it, or process an existing audio file:
 
 ```sh
-swift run cl pipeline
-swift run cl pipeline --input <audio.m4a>
-swift run cl resume <stem>
-swift run cl list
-swift run cl search "project architecture"
+make cli ARGS="pipeline"
+make cli ARGS="pipeline --input <audio.m4a>"
+make cli ARGS="resume <stem>"
+make cli ARGS="list"
+make cli ARGS='search "project architecture"'
 ```
 
-The resumable pipeline records audio, transcribes it with WhisperKit/CoreML, cleans and categorizes the text, generates a filename, and adds searchable metadata. Intermediate files live under `.pipeline/`; completed entries are saved to `logs/`. Use `swift run cl --help` for other commands, including configuration and individual pipeline stages.
+The resumable pipeline records audio, transcribes it with WhisperKit/CoreML, cleans and categorizes the text, generates a filename, and adds searchable metadata. Intermediate files live under `.pipeline/`; completed entries are saved to `logs/`. Use `make cli ARGS=--help` for other commands, including configuration and individual pipeline stages.
 
 Transcription uses Whisper Large-v2. Cleanup, categorization, filenames, and metadata use Qwen 3.5 9B 4-bit through llama.cpp. Semantic search downloads the multilingual-e5-small embedding model on first use.
 
@@ -83,7 +83,7 @@ Transcription uses Whisper Large-v2. Cleanup, categorization, filenames, and met
 - [Changelog and release history](./CHANGELOG.md)
 - [Testing decision](./docs/0007-framework-free-test-coverage.md)
 - [Work and verification findings](./backlog/tasks/)
-- [Build and verification scripts](./scripts/README.md)
+- [Development commands](./scripts/README.md)
 - [Troubleshooting](#troubleshooting)
 - [Backlog tasks](./backlog/tasks/)
 - [Release procedure](#changelog-and-releases)
@@ -181,26 +181,31 @@ Use the CLI for task updates. If review finds more work, move the task back to `
 The test runner and CLI coverage script use Swift Package Manager and do not require the Xcode IDE:
 
 ```sh
-swift run run-tests
-bash scripts/test-coverage.sh
+make tests
+make tests-coverage
 ```
 
-GitHub Actions runs only when a release tag (`v*`) is pushed; ordinary branch pushes and pull requests do not start workflows. The release workflow runs release-tooling checks and the full deterministic suite (`swift run run-tests`) before packaging. Run the suite locally during development, or use `swift run run-tests --unit` for a lightweight, model-free check. Coverage instrumentation, CLI coverage, model evaluations, and UI checks remain opt-in.
+GitHub Actions runs only when a release tag (`v*`) is pushed; ordinary branch pushes and pull requests do not start workflows. The release workflow runs release-tooling checks and the full deterministic suite (`make tests`) before packaging. Run the suite locally during development, or use `make tests-unit` for a lightweight, model-free check. Coverage instrumentation, CLI coverage, model evaluations, and UI checks remain opt-in.
 
-For the sequential model-backed fixture pipeline, run `bash scripts/run-evals.sh --pipeline`. Run every stage evaluation with `bash scripts/run-evals.sh --suites`; validate saved outputs without inference using `bash scripts/run-evals.sh --validate-run <run-stamp>`. Review generated files against `eval/*/expected/` and the matching stage skill; record dated results, semantic findings and limitations directly in the related task. For native macOS UI checks, use `bash scripts/test-ui.sh eval`; it builds a temporary app bundle and isolates config/data under a temporary directory. Prepared-machine model checks use `scripts/test-model-smoke.sh` with the four `CAPTAINSLOG_*_MODEL_*` environment variables set. Actual microphone capture is a separately confirmed, interactive check via `scripts/test-recorder-hardware.sh`. Neither smoke check runs in GitHub Actions. Use isolated configuration/data, only repository eval fixtures, and no personal data. Demo material is for presentation. A transcript-seeded continuation cannot establish a successful full audio run.
+Use `make help` to discover commands and `NAME=value` for options; for example,
+`make build CONFIGURATION=release` or `make tests ARGS=--unit`. Make is the
+development entry point; scripts in `scripts/` are its implementation helpers.
+
+For the sequential model-backed fixture pipeline, run `make evals-pipeline`. Run every stage evaluation with `make evals-suites`; validate saved outputs without inference using `make evals ARGS="--validate-run <run-stamp>"`. Review generated files against `eval/*/expected/` and the matching stage skill; record dated results, semantic findings and limitations directly in the related task. For native macOS UI checks, use `make ui`; it builds a temporary app bundle and isolates config/data under a temporary directory. Prepared-machine model checks use `make tests-model` with the four `CAPTAINSLOG_*_MODEL_*` environment variables set. Actual microphone capture is a separately confirmed, interactive check via `make tests-recorder`. Neither smoke check runs in GitHub Actions. Use isolated configuration/data, only repository eval fixtures, and no personal data. Demo material is for presentation. A transcript-seeded continuation cannot establish a successful full audio run.
 
 ## Fixture evaluations
 
-Run `bash scripts/run-evals.sh --list` to discover cases without loading models.
-Use `--stage STAGE --case STEM` for focused work, `--pipeline` for the full audio
-fixture pipeline and `--suites` for all stage suites. The default `--all` runs
-pipeline then suites. Quote stems containing spaces. `--categorize` and `--enrich`
-select their respective stages.
+Run `make evals-list` to discover cases without loading models.
+Use `make evals STAGE=filename CASE="fixture stem"` for focused work,
+`make evals-pipeline` for the full audio fixture pipeline and `make evals-suites`
+for all stage suites. Plain `make evals` runs pipeline then suites. Quote stems
+containing spaces; categorization and enrichment also use `STAGE`. Additional
+evaluator flags are passed with `ARGS="..."`.
 
-Revalidate a saved bundle with `--validate-run RUN_DIR`; legacy timestamped
-outputs support `--validate-categorize STAMP` and `--validate-enrich STAMP`.
-Use `--baseline RUN_DIR` to assemble comparison evidence. Missing models, malformed
-outputs and existing run directories fail explicitly. `ruby scripts/test-evals.rb`
+Revalidate a saved bundle with `make evals ARGS="--validate-run RUN_DIR"`; legacy
+timestamped outputs support `ARGS="--validate-categorize STAMP"` and
+`ARGS="--validate-enrich STAMP"`. Use `ARGS="--baseline RUN_DIR"` for comparison evidence. Missing models, malformed
+outputs and existing run directories fail explicitly. `make tests-evals`
 checks orchestration without inference.
 
 Each run isolates config/data under a new temporary run directory, pins the selected
@@ -250,7 +255,7 @@ Update [CHANGELOG.md](./CHANGELOG.md) under `Unreleased` in the same commit as
 any repository change, including documentation, fixtures, and tooling. Use
 `Added`, `Changed`, `Fixed`, `Removed`, or `Security` as appropriate; describe
 what actually changed. Review `git diff` and `git log` against the latest release
-tag. Use `swift scripts/release.swift check <base-commit> <head-commit>` locally
+tag. Use `make release-check BASE=<base-commit> HEAD=<head-commit>` locally
 to check changelog coverage; human review checks that the entries cover the changes. Generated cask-only release commits
 are covered by the corresponding release's packaging entry.
 
@@ -276,21 +281,21 @@ preparation fetches tags first. Changelog entries still require human review.
 From a clean `main` checkout with the local models installed, preview a release:
 
 ```sh
-swift scripts/release.swift --dry-run
+make release ARGS=--dry-run
 ```
 
 Create the release locally, or create and publish it in one command:
 
 ```sh
-swift scripts/release.swift
+make release
 # Or, after reviewing the changes and evaluation findings:
-swift scripts/release.swift --publish
+make release ARGS=--publish
 ```
 
-Use `auto` explicitly if desired, or override with `patch`, `minor`, `major`, or
-an explicit version (for example, a maintenance-only release).
+Use `BUMP=auto` explicitly if desired, or override with `BUMP=patch`, `BUMP=minor`,
+`BUMP=major`, or an explicit `BUMP=1.2.3` version (for example, a maintenance-only release).
 The command checks Git state and existing tags, fetches `origin/main`, runs the
-release-tooling tests, `swift build`, `swift run run-tests`, and the full fixture
+release-tooling tests, `make build`, `make tests`, and the full fixture
 pipeline and stage suites sequentially with isolated config/data. Failed checks
 stop before version/changelog edits, commits, or tags. Model evaluation scores
 and artifacts still need semantic review under the stage skills; see [the
@@ -315,7 +320,7 @@ release. `HOMEBREW_TAP_TOKEN` must be configured as described in
 Release-tooling tests use Swift, Bash, and Git:
 
 ```sh
-bash scripts/test-release-tooling.sh
-swift scripts/release.swift notes 0.1.2
-swift scripts/release.swift check <base-commit> <head-commit>
+make tests-release
+make release-notes VERSION=0.1.2
+make release-check BASE=<base-commit> HEAD=<head-commit>
 ```

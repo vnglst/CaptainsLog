@@ -203,8 +203,8 @@ func prepareRelease(_ arguments: [String]) throws {
     let environment = ["CAPTAINS_LOG_CONFIG_PATH": temporary.appendingPathComponent("config.json").path,
                        "CAPTAINS_LOG_DATA_DIR": temporary.appendingPathComponent("data").path]
     // Inference checks run sequentially and use only isolated repository fixtures.
-    for command in [["bash", "scripts/test-release-tooling.sh"], ["swift", "build"],
-                    ["swift", "run", "run-tests"], ["bash", "scripts/run-evals.sh", "--all"]] {
+    for command in [["make", "tests-release"], ["make", "build"],
+                    ["make", "tests"], ["make", "evals"]] {
         try run(command, environment: environment)
     }
     let status = try git("status", "--porcelain")
@@ -265,11 +265,11 @@ func selfTest() throws {
     print("Release note/version checks passed.")
 }
 let usage = """
-Usage: swift scripts/release.swift [auto|patch|minor|major|version] [--dry-run|--publish]
-       swift scripts/release.swift notes <version>
-       swift scripts/release.swift check <base> <head>
-       swift scripts/release.swift cask <version> <sha256>
-       swift scripts/release.swift test
+Usage: make release [BUMP=auto|patch|minor|major|version] [ARGS=--dry-run|--publish]
+       make release-notes VERSION=<version>
+       make release-check BASE=<base> HEAD=<head>
+       make release-cask VERSION=<version> SHA256=<sha256>
+       make tests-release
 """
 do {
     let arguments = Array(CommandLine.arguments.dropFirst())
@@ -287,7 +287,9 @@ do {
     case "test":
         try require(arguments.count == 1, usage)
         try selfTest()
-    default: try prepareRelease(arguments)
+    default:
+        if arguments.contains("--help") { print(usage) }
+        else { try prepareRelease(arguments) }
     }
 } catch {
     FileHandle.standardError.write(Data("Release error: \(error.localizedDescription)\n".utf8))

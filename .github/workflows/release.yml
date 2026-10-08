@@ -23,7 +23,7 @@ jobs:
           fetch-depth: 0
 
       - name: Test release tooling
-        run: bash scripts/test-release-tooling.sh
+        run: make tests-release
 
       - name: Validate release tag and source branch
         id: release
@@ -66,16 +66,16 @@ jobs:
       - name: Validate and prepare changelog release notes
         env:
           VERSION: ${{ steps.release.outputs.version }}
-        run: swift scripts/release.swift notes "$VERSION" > "$RUNNER_TEMP/release-notes.md"
+        run: make --silent release-notes VERSION="$VERSION" > "$RUNNER_TEMP/release-notes.md"
 
       - name: Install build dependencies
         run: brew install llama.cpp
 
       - name: Run tests
-        run: swift run run-tests
+        run: make tests
 
       - name: Build app, CLI, and release archive
-        run: ./scripts/build-app.sh
+        run: make packaging
 
       - name: Verify archive and calculate checksum
         id: archive
@@ -117,7 +117,7 @@ jobs:
           git fetch origin "$DEFAULT_BRANCH"
           git switch --force-create "$DEFAULT_BRANCH" "origin/$DEFAULT_BRANCH"
 
-          swift scripts/release.swift cask "$VERSION" "$SHA256"
+          make release-cask VERSION="$VERSION" SHA256="$SHA256"
 
           git diff --check
           if git diff --quiet -- Casks/captainslog.rb; then
