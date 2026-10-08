@@ -8,7 +8,7 @@ CaptainsLog includes or downloads third-party software and model weights. Captai
 | --- | --- | --- |
 | sqlite-vec v0.1.9 | MIT or Apache-2.0 | [sqlite-vec](https://github.com/asg017/sqlite-vec) |
 | llama.cpp / ggml runtime | MIT | [llama.cpp](https://github.com/ggml-org/llama.cpp) |
-| LLVM OpenMP (`libomp`) runtime | Apache-2.0 with LLVM exception | [LLVM](https://github.com/llvm/llvm-project/tree/main/openmp) |
+| XCFramework mtmd helpers: stb_image, miniaudio, xxHash, SHA-1/SHA-256, subprocess.h | MIT / MIT No Attribution / BSD-2-Clause / public domain; exact notices bundled with the runtime | [Pinned upstream native helpers](https://github.com/ggml-org/llama.cpp/tree/a11f57ba93797579a5d1855ee216a31f10242676/vendor) |
 | Swift Argument Parser | Apache-2.0 | [swift-argument-parser](https://github.com/apple/swift-argument-parser) |
 | WhisperKit / argmax-oss-swift | MIT | [argmax-oss-swift](https://github.com/argmaxinc/argmax-oss-swift) |
 | Swift Transformers | Apache-2.0 | [swift-transformers](https://github.com/huggingface/swift-transformers) |
@@ -18,7 +18,7 @@ CaptainsLog includes or downloads third-party software and model weights. Captai
 | EventSource | MIT | [EventSource](https://github.com/mattt/EventSource) |
 | yyjson | MIT | [yyjson](https://github.com/ibireme/yyjson) |
 
-The app bundle includes the upstream `LICENSE` and `NOTICE` files available for resolved Swift packages and the bundled llama.cpp and OpenMP runtimes. `sqlite-vec` license texts are included in this repository under `Sources/CSQLiteVec/`.
+The app bundle includes the upstream `LICENSE` and `NOTICE` files available for resolved Swift packages and the bundled llama.cpp/GGML runtime. `sqlite-vec` license texts are included in this repository under `Sources/CSQLiteVec/`.
 
 ## Models downloaded by the app
 

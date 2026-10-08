@@ -1,6 +1,6 @@
 import Foundation
 import HuggingFace
-import CLlama
+import llama
 
 private actor LLMInferenceGate {
     static let shared = LLMInferenceGate()

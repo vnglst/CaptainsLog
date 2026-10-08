@@ -1,7 +1,7 @@
 #!/bin/bash
 # Build a self-signed app bundle containing both the GUI and `cl` CLI.
 #
-# Requires an Apple Silicon build Mac, Swift 6.2+, and Homebrew llama.cpp.
+# Requires an Apple Silicon build Mac, Swift 6.2+, and network access for the pinned SwiftPM runtime.
 # Produces dist/CaptainsLog.app and a versioned ZIP suitable for a Homebrew cask.
 
 set -euo pipefail
@@ -41,47 +41,11 @@ mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources" "$APP/Contents/Framewor
 cp "$APP_BIN" "$APP/Contents/MacOS/$APP_NAME"
 cp "$CLI_BIN" "$APP/Contents/MacOS/cl"
 
-echo "==> Bundling llama.cpp runtime libraries..."
-LLAMA_PREFIX="$(brew --prefix llama.cpp)"
-GGML_PREFIX="$(brew --prefix ggml)"
-OMP_PREFIX="$(brew --prefix libomp)"
-LLAMA_LIB="$LLAMA_PREFIX/lib/libllama.0.dylib"
-GGML_LIB="$GGML_PREFIX/lib/libggml.0.dylib"
-GGML_BASE_LIB="$GGML_PREFIX/lib/libggml-base.0.dylib"
-OMP_LIB="$OMP_PREFIX/lib/libomp.dylib"
-
-for lib in "$LLAMA_LIB" "$GGML_LIB" "$GGML_BASE_LIB" "$OMP_LIB"; do
-    if [ ! -f "$lib" ]; then
-        echo "Error: required runtime library not found: $lib" >&2
-        echo "Install build dependencies with: brew install llama.cpp libomp" >&2
-        exit 1
-    fi
-    cp "$lib" "$APP/Contents/Frameworks/"
-done
-chmod u+w "$APP/Contents/Frameworks/"*.dylib
-
+echo "==> Bundling pinned llama.cpp framework..."
 APP_EXECUTABLE="$APP/Contents/MacOS/$APP_NAME"
 CLI_EXECUTABLE="$APP/Contents/MacOS/cl"
-LLAMA_DST="$APP/Contents/Frameworks/libllama.0.dylib"
-GGML_DST="$APP/Contents/Frameworks/libggml.0.dylib"
-GGML_BASE_DST="$APP/Contents/Frameworks/libggml-base.0.dylib"
-OMP_DST="$APP/Contents/Frameworks/libomp.dylib"
-
-for executable in "$APP_EXECUTABLE" "$CLI_EXECUTABLE"; do
-    install_name_tool -add_rpath "@executable_path/../Frameworks" "$executable" 2>/dev/null || true
-    install_name_tool -change "$LLAMA_LIB" "@rpath/libllama.0.dylib" "$executable"
-    install_name_tool -change "$GGML_LIB" "@rpath/libggml.0.dylib" "$executable"
-    install_name_tool -change "$GGML_BASE_LIB" "@rpath/libggml-base.0.dylib" "$executable"
-done
-
-install_name_tool -id "@rpath/libllama.0.dylib" "$LLAMA_DST"
-install_name_tool -id "@rpath/libggml.0.dylib" "$GGML_DST"
-install_name_tool -id "@rpath/libggml-base.0.dylib" "$GGML_BASE_DST"
-install_name_tool -id "@rpath/libomp.dylib" "$OMP_DST"
-install_name_tool -change "$GGML_LIB" "@rpath/libggml.0.dylib" "$LLAMA_DST"
-install_name_tool -change "$GGML_BASE_LIB" "@rpath/libggml-base.0.dylib" "$LLAMA_DST"
-install_name_tool -change "$GGML_BASE_LIB" "@rpath/libggml-base.0.dylib" "$GGML_DST" 2>/dev/null || true
-install_name_tool -change "$OMP_LIB" "@rpath/libomp.dylib" "$GGML_BASE_DST"
+bash scripts/bundle-runtime.sh "$PRODUCTS" "$APP" "$APP_EXECUTABLE" "$CLI_EXECUTABLE"
+bash scripts/check-runtime.sh "$APP"
 
 if [ -f "Resources/AppIcon.icns" ]; then
     cp "Resources/AppIcon.icns" "$APP/Contents/Resources/AppIcon.icns"
@@ -95,7 +59,7 @@ fi
 
 THIRD_PARTY_DIR="$APP/Contents/Resources/ThirdPartyLicenses"
 mkdir -p "$THIRD_PARTY_DIR/sqlite-vec" \
-    "$THIRD_PARTY_DIR/llama.cpp" "$THIRD_PARTY_DIR/LLVM-OpenMP"
+    "$THIRD_PARTY_DIR/llama.cpp"
 cp LICENSE THIRD-PARTY-NOTICES.md "$APP/Contents/Resources/"
 cp Sources/CSQLiteVec/LICENSE-MIT "$THIRD_PARTY_DIR/sqlite-vec/"
 cp Sources/CSQLiteVec/LICENSE-APACHE "$THIRD_PARTY_DIR/sqlite-vec/"
@@ -114,8 +78,7 @@ for checkout in .build/checkouts/*; do
         -o -iname 'NOTICE.*' -o -iname 'NOTICES' -o -iname 'COPYING*' \) -print0)
 done
 
-cp "$LLAMA_PREFIX/LICENSE" "$THIRD_PARTY_DIR/llama.cpp/"
-cp "$OMP_PREFIX/LICENSE.TXT" "$THIRD_PARTY_DIR/LLVM-OpenMP/"
+cp Sources/NativeRuntime/LICENSE Sources/NativeRuntime/THIRD-PARTY-LICENSES.txt "$THIRD_PARTY_DIR/llama.cpp/"
 
 GIT_COMMIT="$(git rev-parse --short HEAD 2>/dev/null || echo unknown)"
 cat > "$APP/Contents/Info.plist" <<PLIST
@@ -162,7 +125,7 @@ PLIST
 echo "==> Applying ad-hoc signatures..."
 chmod -R u+w "$APP/Contents/Resources/ThirdPartyLicenses"
 xattr -cr "$APP"
-codesign --force --sign - "$APP/Contents/Frameworks/"*.dylib
+codesign --force --sign - "$APP/Contents/Frameworks/llama.framework"
 codesign --force --deep --sign - "$APP"
 codesign --verify --deep --strict "$APP"
 codesign --verify --strict "$CLI_EXECUTABLE"

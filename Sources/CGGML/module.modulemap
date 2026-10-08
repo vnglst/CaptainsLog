@@ -1,5 +1,0 @@
-module CGGML [system] {
-    header "shim.h"
-    link "ggml"
-    export *
-}

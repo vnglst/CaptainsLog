@@ -20,27 +20,20 @@ let package = Package(
         .target(
             name: "CaptainsLogCore",
             dependencies: [
-                "CLlama",
-                "CGGML",
+                "llama",
                 "CSQLiteVec",
                 .product(name: "WhisperKit", package: "argmax-oss-swift"),
                 .product(name: "Hub", package: "swift-transformers"),
                 .product(name: "Tokenizers", package: "swift-transformers"),
                 .product(name: "HuggingFace", package: "swift-huggingface"),
-            ],
-            linkerSettings: [
-                .unsafeFlags(["-L/opt/homebrew/lib"])
             ]
         ),
-        .systemLibrary(
-            name: "CLlama",
-            pkgConfig: "llama",
-            providers: [.brew(["llama.cpp"])]
-        ),
-        .systemLibrary(
-            name: "CGGML",
-            pkgConfig: "ggml",
-            providers: [.brew(["ggml"])]
+        // Upstream b11512, source a11f57ba93797579a5d1855ee216a31f10242676.
+        // SwiftPM verifies this digest before using matching llama/GGML headers and code.
+        .binaryTarget(
+            name: "llama",
+            url: "https://github.com/ggml-org/llama.cpp/releases/download/b11512/llama-b11512-xcframework.zip",
+            checksum: "3f6a7d0fecbf49781445bba900dc0a4a7e76303482765f5912a4a959d5fa2c38"
         ),
         .target(
             name: "CSQLiteVec",

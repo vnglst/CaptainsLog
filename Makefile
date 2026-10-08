@@ -14,7 +14,7 @@ BASE ?=
 HEAD ?= HEAD
 SHA256 ?=
 
-.PHONY: help build run cli tests tests-unit tests-coverage tests-updates tests-release tests-evals tests-enrich tests-model tests-recorder ui evals evals-list evals-pipeline evals-suites packaging release release-notes release-check release-cask icons clean
+.PHONY: help build run cli tests tests-unit tests-coverage tests-updates tests-release tests-evals tests-runtime tests-enrich tests-model tests-recorder ui evals evals-list evals-pipeline evals-suites packaging release release-notes release-check release-cask icons clean
 
 help:
 	@printf '%s\n' \
@@ -30,7 +30,7 @@ help:
 	  'Release: BUMP=auto|patch|minor|major|version, ARGS=--dry-run|--publish' \
 	  '' \
 	  'Iteration: cli, tests-unit, tests-coverage, tests-updates, tests-release,' \
-	  'tests-evals, tests-enrich, tests-model, tests-recorder, ui, evals-list,' \
+	  'tests-evals, tests-runtime, tests-enrich, tests-model, tests-recorder, ui, evals-list,' \
 	  'evals-pipeline, evals-suites, release-notes, release-check, release-cask,' \
 	  'icons, clean. See scripts/README.md for options and safety limits.'
 
@@ -60,6 +60,9 @@ tests-release:
 
 tests-evals:
 	ruby scripts/test-evals.rb $(ARGS)
+
+tests-runtime:
+	bash scripts/test-runtime.sh
 
 tests-enrich:
 	$(MAKE) build CONFIGURATION=debug
