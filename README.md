@@ -149,6 +149,12 @@ backlog task edit TASK-1 --status "Verify" --final-summary "What changed and how
 backlog task edit TASK-1 --status "Complete"  # After your review
 ```
 
+Keep task prose within 150 words, excluding metadata and headings; prefer 100.
+Use a short scope statement, testable acceptance checks, and only the current
+plan/findings plus a brief final summary. Link detailed procedures and evidence
+rather than copying them into tasks; condense outdated notes. Preserve scope,
+dependencies, status, and checked criteria when shortening.
+
 Use the CLI for task updates. If review finds more work, move the task back to `Next` with a note. Commit the Markdown changes with the related code and a changelog entry. Procedures and decisions remain in the linked docs and ADRs.
 
 ## Testing
