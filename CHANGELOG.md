@@ -21,6 +21,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
+- Update TASK-42’s handoff with its main-branch integration and final validation evidence; retain Verify for owner review.
+
 - Shorten nine backlog tasks to under 150 words of prose while preserving scope, dependencies, statuses and checked acceptance criteria; retain detailed runner rationale and packaging evidence in linked history. Set a 150-word task limit and restore concurrent runner verification entries in the supporting testing history.
 
 - Shorten seven oversized ADRs to under 300 words, preserve detailed evaluations and verification history in linked supporting documents, and set a 300-word ADR limit with a 500-word exception for essential rationale. Redirect testing guidance and evidence links so new reports do not expand ADR-007.
