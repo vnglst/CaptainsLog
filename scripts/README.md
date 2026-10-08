@@ -13,9 +13,10 @@ the Xcode IDE is not required. Run commands from the repository root.
 | `make-icon.swift` | AppKit icon renderer called by `make-iconset.sh`; also accepts a PNG output path for previews. |
 | `test-coverage.sh` | Run deterministic tests and fixture CLI checks with LLVM instrumentation; enforce the production coverage floor. |
 | `test-updates.sh` | Exercise update checks, simulated installation, failures, and config preferences against the fake Homebrew fixture. Keeps logs under `tmp/`; does not update the installed app. |
+| `test-enrich-eval.sh` | Model-free enrichment schema, fixture fingerprint and CLI seed checks, also run before enrichment generation. |
 | `test-evals.rb` | Model-free regression checks for evaluation selection, malformed output rejection, evidence and failure propagation. Run with `ruby scripts/test-evals.rb`. |
 | `run-evals.sh` | Single evaluation entry point: pipeline (`--pipeline`), all suites (`--suites`), or focused `--stage STAGE [--case STEM]`; `--list`, saved validation and optional baselines. See [workflow](../docs/EVALUATIONS.md). `evals.rb` and `eval-pipeline.sh` implement it internally. |
-| `validate-eval-run.sh` | Compatibility wrapper for saved stage-output validation without inference. Use `run-evals.sh --validate-run <run-stamp>` or `--validate-categorize <run-stamp>`. |
+| `validate-eval-run.sh` | Compatibility wrapper for saved stage-output validation without inference. Use `run-evals.sh --validate-run <run-stamp>` or stage-only `--validate-categorize <run-stamp>` / `--validate-enrich <run-stamp>`. |
 | `test-ui.sh` | Launch a temporary macOS app with isolated eval-backed presentation state. Defaults to `eval`; accepts the state selectors listed in the script. Close the app before deleting its printed temporary root. |
 | `test-model-smoke.sh` | Opt-in loading/warmup of installed Qwen and transcription of an eval fixture. Requires all four `CAPTAINSLOG_*_MODEL_*` environment variables listed in the script. |
 | `test-recorder-hardware.sh` | Interactive microphone smoke check with explicit confirmation; records three seconds into temporary storage. |

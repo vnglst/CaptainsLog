@@ -15,6 +15,10 @@ struct EvalBatch: AsyncParsableCommand {
         let stage: String
         let input: String
         let output: String
+        let date: String?
+        let recording_time: String?
+        let seed: UInt32?
+        let diagnostics: String?
     }
 
     @Option var manifest: String
@@ -22,7 +26,7 @@ struct EvalBatch: AsyncParsableCommand {
     func run() async throws {
         let cases = try JSONDecoder().decode([Case].self, from: Data(contentsOf: URL(fileURLWithPath: manifest)))
         let stages: Set<String> = ["cleanup", "categorize", "filename", "enrich"]
-        guard !cases.isEmpty, cases.allSatisfy({ stages.contains($0.stage) }) else {
+        guard !cases.isEmpty, cases.allSatisfy({ stages.contains($0.stage) && $0.seed != UInt32.max }) else {
             throw ValidationError("Batch requires supported text stages.")
         }
         let start = Date()
@@ -44,10 +48,27 @@ struct EvalBatch: AsyncParsableCommand {
                 )
                 output = String(decoding: try JSONEncoder().encode(value), as: UTF8.self)
             case "filename":
-                output = try await Filename.generateFilename(logText: text, date: "2025-01-15", container: container)
+                output = try await Filename.generateFilename(logText: text, date: item.date ?? "2025-01-15", container: container)
             case "enrich":
+                let log: FileHandle?
+                if let path = item.diagnostics {
+                    FileManager.default.createFile(atPath: path, contents: nil)
+                    log = try FileHandle(forWritingTo: URL(fileURLWithPath: path))
+                } else {
+                    log = nil
+                }
+                defer { try? log?.close() }
+                let diagnostic: (@Sendable (String) -> Void)?
+                if let handle = log {
+                    diagnostic = { @Sendable message in
+                        handle.write(Data((message + "\n").utf8))
+                    }
+                } else {
+                    diagnostic = nil
+                }
                 output = try await Enrich.enrich(
-                    logText: text, date: "2025-01-15", recordingTime: "12:00", container: container, config: config
+                    logText: text, date: item.date ?? "2025-01-15", recordingTime: item.recording_time ?? "12:00",
+                    container: container, config: config, seed: item.seed, diagnostic: diagnostic
                 )
             default:
                 throw ValidationError("Unsupported stage: \(item.stage)")

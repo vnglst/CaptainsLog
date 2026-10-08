@@ -6,4 +6,8 @@ if [[ "${1:-}" == "--categorize-only" ]]; then
     shift
     exec "$ROOT_DIR/scripts/run-evals.sh" --validate-categorize "$@"
 fi
+if [[ "${1:-}" == "--enrich-only" ]]; then
+    shift
+    exec "$ROOT_DIR/scripts/run-evals.sh" --validate-enrich "$@"
+fi
 exec "$ROOT_DIR/scripts/run-evals.sh" --validate-run "$@"

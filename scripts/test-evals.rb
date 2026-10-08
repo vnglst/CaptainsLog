@@ -14,8 +14,8 @@ Dir.mktmpdir('captainslog-eval-tests-') do |run|
   input['recording_time'] = '12:00'
   body = File.read(input['input'])
   data = {
-    'date' => '2025-01-15', 'recording_time' => '12:00', 'language' => 'en',
-    'categories' => ['work'], 'tags' => [], 'persons' => [], 'projects' => [],
+    'date' => '2025-01-15', 'recording_time' => '12:00', 'language' => 'English',
+    'categories' => ['work'], 'tags' => %w[work planning meetings], 'persons' => [], 'projects' => [],
     'companies' => [], 'entities' => [], 'summary' => 'A work week.'
   }
   write = lambda { |value, text = body| File.write(input['output'], "#{YAML.dump(value)}---\n\n#{text}") }
@@ -31,7 +31,7 @@ Dir.mktmpdir('captainslog-eval-tests-') do |run|
   write.call(data, body + 'Added fact.')
   assert.call(Evals.validate(input).include?('source body changed'), 'body mutation accepted')
   write.call(data)
-  File.write(input['output'], File.read(input['output']).sub('language: en', "language: en\nlanguage: nl"))
+  File.write(input['output'], File.read(input['output']).sub('language: English', "language: English\nlanguage: Dutch"))
   assert.call(Evals.validate(input).include?('duplicate'), 'duplicate YAML key accepted')
   File.write(input['output'], "---\ntags: [broken\n---\n\n#{body}")
   assert.call(Evals.validate(input).start_with?('FAIL:'), 'broken YAML accepted')
@@ -64,7 +64,7 @@ Dir.mktmpdir('captainslog-eval-tests-') do |run|
   end
   File.write(cleanup['output'], File.read(cleanup['expected']))
   assert.call(Evals.validate(cleanup) == 'PASS', 'valid cleanup rejected')
-  assert.call(Evals.cases(Evals::STAGES).length == 23, 'suite selection changed unexpectedly')
+  assert.call(Evals.cases(Evals::STAGES).length == 24, 'suite selection changed unexpectedly')
   assert.call(Evals.cases(['filename'], '04_short_entry').length == 1, 'case selection mismatch')
   begin
     Evals.cases(['cleanup'], 'missing')
@@ -110,15 +110,19 @@ Dir.mktmpdir('captainslog-eval-tests-') do |run|
     require 'yaml'
     root = ENV.fetch('EVAL_FIXTURE_ROOT')
     File.open(ENV.fetch('EVAL_FIXTURE_CALLS'), 'a') { |f| f.puts(ARGV.first) }
-    if ARGV.first == 'eval-batch'
+    if ARGV.first == 'enrich' && ARGV.include?('--print-prompt')
+      seed = Integer(ARGV.fetch(ARGV.index('--seed') + 1))
+      abort 'Error: invalid seed' unless (0...4294967295).cover?(seed)
+      puts 'FinanceHub'
+    elsif ARGV.first == 'eval-batch'
       JSON.parse(File.read(ARGV.fetch(2))).each do |item|
         expected = File.read(item.fetch('expected'))
         if item['stage'] == 'enrich'
           yaml = expected.split('---', 3)[1]
           data = YAML.safe_load(yaml)
           %w[categories tags persons projects companies entities].each { |key| data[key] ||= [] }
-          data['date'] = '2025-01-15'
-          data['recording_time'] = '12:00'
+          data['date'] = item.fetch('date')
+          data['recording_time'] = item.fetch('recording_time')
           expected = "#{YAML.dump(data)}---\n\n#{File.read(item.fetch('input'))}"
         elsif item['stage'] == 'categorize'
           expected = JSON.generate('sourceStem' => item['name'], 'category' => expected.strip)
@@ -181,18 +185,27 @@ Dir.mktmpdir('captainslog-eval-tests-') do |run|
     output, status = Open3.capture2e(env.merge('CAPTAINS_LOG_EVAL_RUN_DIR' => saved), 'bash', "#{Evals::ROOT}/scripts/run-evals.sh", '--suites')
     assert.call(status.success?, "suite fixture failed: #{output}")
     manifest = JSON.parse(File.read("#{saved}/manifest.json"))
-    assert.call(manifest.length == 23, 'full suite dropped cases')
+    assert.call(manifest.length == 24, 'full suite dropped cases')
     calls = File.readlines("#{run}/calls", chomp: true)
-    assert.call(calls == %w[transcribe transcribe transcribe transcribe eval-batch], 'suite did not batch text after sequential audio')
+    assert.call(calls.reject { |call| call == 'enrich' } == %w[transcribe transcribe transcribe transcribe eval-batch], 'suite did not batch text after sequential audio')
     metadata = JSON.parse(File.read("#{saved}/metadata.json"))
     assert.call(metadata.dig('models', 'qwen', 'sha256') == Digest::SHA256.file(input['input']).hexdigest, 'actual model identity missing')
-    assert.call(metadata['status'] == 'passed-mechanical-checks' && metadata['fixture_hashes'].size == 46, 'suite metadata incomplete')
+    assert.call(metadata['status'] == 'passed-mechanical-checks' && metadata['fixture_hashes'].size == 48, 'suite metadata incomplete')
+    regression = manifest.find { |item| item['name'] == '04_fictional_name_loop' }
+    assert.call(regression.values_at('date', 'recording_time', 'seed') == ['2025-02-18', '20:30', 42], 'enrichment case settings lost')
+    assert.call(File.read("#{saved}/enrich-cases.json") == File.read("#{Evals::ROOT}/eval/enrich/cases.json"), 'enrichment manifest not snapshotted')
+    File.write(regression['input'], File.read(regression['input']) + 'Changed fixture.')
+    assert.call(Evals.validate(regression).start_with?('FAIL:'), 'changed saved regression source accepted')
+    FileUtils.cp("#{Evals::ROOT}/eval/enrich/input/04_fictional_name_loop.md", regression['input'])
     focused = "#{run}/focused"
     output, status = Open3.capture2e(env.merge('CAPTAINS_LOG_EVAL_RUN_DIR' => focused, 'CAPTAINS_LOG_EVAL_WHISPER_FOLDER' => '/missing-whisper'), 'bash', "#{Evals::ROOT}/scripts/run-evals.sh", '--stage', 'filename', '--case', '04_short_entry', '--baseline', saved)
     assert.call(status.success?, "focused fixture required unrelated model: #{output}")
     assert.call(JSON.parse(File.read("#{focused}/manifest.json")).size == 1, 'focused run included other cases')
     output, status = Open3.capture2e(env.merge('CAPTAINS_LOG_EVAL_RUN_DIR' => focused), 'bash', "#{Evals::ROOT}/scripts/run-evals.sh", '--stage', 'filename')
     assert.call(status.exitstatus == 2 && output.include?('already exists'), 'run overwrite accepted')
+    enrichment_run = "#{run}/enrich-only"
+    output, status = Open3.capture2e(env.merge('CAPTAINS_LOG_EVAL_RUN_DIR' => enrichment_run, 'CAPTAINS_LOG_EVAL_WHISPER_FOLDER' => '/missing-whisper'), 'bash', "#{Evals::ROOT}/scripts/run-evals.sh", '--enrich')
+    assert.call(status.success? && JSON.parse(File.read("#{enrichment_run}/manifest.json")).length == 5, "enrichment alias failed: #{output}")
     failed = "#{run}/missing-model"
     output, status = Open3.capture2e(env.merge('CAPTAINS_LOG_EVAL_RUN_DIR' => failed, 'CAPTAINS_LOG_EVAL_QWEN_FOLDER' => '/missing-qwen'), 'bash', "#{Evals::ROOT}/scripts/run-evals.sh", '--stage', 'filename', '--case', '04_short_entry')
     assert.call(status.exitstatus == 1 && JSON.parse(File.read("#{failed}/metadata.json"))['status'] == 'failed', 'missing model failure was not retained')
@@ -208,9 +221,9 @@ Dir.mktmpdir('captainslog-eval-tests-') do |run|
     combined = "#{run}/all"
     output, status = Open3.capture2e(env.merge('CAPTAINS_LOG_EVAL_RUN_DIR' => combined), 'bash', "#{Evals::ROOT}/scripts/run-evals.sh", '--all')
     assert.call(status.success?, "combined release gate fixture failed: #{output}")
-    assert.call(JSON.parse(File.read("#{combined}/manifest.json")).length == 28, 'combined gate dropped pipeline or suite cases')
+    assert.call(JSON.parse(File.read("#{combined}/manifest.json")).length == 29, 'combined gate dropped pipeline or suite cases')
   ensure
-    [saved, focused, combined].compact.each do |saved_run|
+    [saved, focused, combined, enrichment_run].compact.each do |saved_run|
       next unless File.file?("#{saved_run}/manifest.json")
       JSON.parse(File.read("#{saved_run}/manifest.json")).each { |item| FileUtils.rm_f(item['output']) }
     end

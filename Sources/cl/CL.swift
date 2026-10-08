@@ -226,6 +226,18 @@ struct EnrichCommand: AsyncParsableCommand {
     @Flag(help: "Print the fully rendered prompt and exit.")
     var printPrompt = false
 
+    @Option(help: "Sampling seed for repeatable evaluations (0...4294967294; default: random).")
+    var seed: UInt32?
+
+    @Flag(help: "Print token counts and generation progress to stderr.")
+    var diagnostics = false
+
+    func validate() throws {
+        if seed == UInt32.max {
+            throw ValidationError("Seed 4294967295 is reserved for random sampling. Choose 0...4294967294.")
+        }
+    }
+
     func run() async throws {
         let dateStr = date ?? defaultDate()
         _ = try await Enrich.runCommand(
@@ -237,13 +249,23 @@ struct EnrichCommand: AsyncParsableCommand {
             printPrompt: printPrompt
         ) { logText, date, recordingTime, config, promptPath in
             let container = try await LLM.loadModel(modelId: model)
+            let diagnostic: (@Sendable (String) -> Void)?
+            if diagnostics {
+                diagnostic = { message in
+                    FileHandle.standardError.write(Data("\(message)\n".utf8))
+                }
+            } else {
+                diagnostic = nil
+            }
             return try await Enrich.enrich(
                 logText: logText,
                 date: date,
                 recordingTime: recordingTime,
                 container: container,
                 config: config,
-                promptPath: promptPath
+                promptPath: promptPath,
+                seed: seed,
+                diagnostic: diagnostic
             )
         }
     }

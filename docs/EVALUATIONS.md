@@ -26,7 +26,7 @@ bash scripts/run-evals.sh --stage filename --baseline tmp/evals-<baseline-stamp>
 ruby scripts/test-evals.rb
 ```
 
-`--categorize` remains a compatibility alias for `--stage categorize`. Legacy complete timestamped suites can still be checked with `--validate-run <stamp>` or `--validate-categorize <stamp>`. Their model labels must match the environment overrides used to generate them. New runs use an explicit manifest, so later validation does not guess labels, cases or output paths. Legacy runs lack captured configuration and fixture snapshots; they cannot establish full reproducibility.
+`--categorize` and `--enrich` remain compatibility aliases for their respective `--stage` selections. Legacy complete timestamped suites can still be checked with `--validate-run <stamp>` or stage-only `--validate-categorize <stamp>` / `--validate-enrich <stamp>`. Their model labels must match the environment overrides used to generate them. New runs use an explicit manifest, so later validation does not guess labels, cases or output paths. Legacy runs lack captured configuration and fixture snapshots; they cannot establish full reproducibility.
 
 ## Isolation and models
 
@@ -41,13 +41,13 @@ Text suite cases share one loaded Qwen model, including across stages. The batch
 The printed run directory contains:
 
 - `manifest.json`: selected stages/cases and exact fixture/output paths, including pipeline artifacts.
-- `metadata.json`: actual model paths, sizes and SHA-256 (Whisper file hashes), prompt/fixture/source hashes, Git revision and dirty status, compiled CLI hash, Swift version, linked runtime identities/hashes, generation defaults and elapsed time/status. Dates/times live in per-case manifests; pipeline times derive from the isolated audio’s creation time. Pipeline search readback also records the embedding model identity. Random sampling remains enabled; the seed policy is recorded, not a fixed seed. Runs support semantic comparisons, not guaranteed byte-for-byte model reproduction.
+- `metadata.json`: actual model paths, sizes and SHA-256 (Whisper file hashes), prompt/fixture/source hashes, Git revision and dirty status, compiled CLI hash, Swift version, linked runtime identities/hashes, generation defaults and elapsed time/status. Dates/times live in per-case manifests; pipeline times derive from the isolated audio’s creation time. Pipeline search readback also records the embedding model identity. Enrichment suites use and snapshot the date/time/seed settings in `eval/enrich/cases.json`; other stages and the pipeline retain their random sampling defaults. Runs support semantic comparisons, not guaranteed byte-for-byte model reproduction.
 - `fixtures/`: suite input/expected snapshots; pipeline intermediates remain in its isolated `data/`.
 - `review.md`: per-case index linking input, expected and generated content, validation and optional baseline diff. Audio fixtures are linked and copied, rather than rendered as text.
 - Per-case `report.md`: semantic review template, preserved on revalidation. Revalidation refreshes evidence and diagnostics, not authored reports.
-- Build, batch, transcription and pipeline logs; `validation.json` reports case/failure counts and validator hash. It reflects the latest revalidation; `metadata.json` retains the original execution status.
+- Build, batch, transcription, per-case enrichment diagnostics and pipeline logs; `validation.json` reports case/failure counts and validator hash. It reflects the latest revalidation; `metadata.json` retains the original execution status.
 
-Canonical suite outputs retain the timestamp/model/case naming under ignored `eval/<stage>/generated/`. The bundle copies them for inspection. Baseline diffs help locate changes; they are not cleanup scores. Missing matching baseline cases are stated explicitly. Invalid/missing output fails the command and remains available for diagnosis. The validator checks plain-text leakage/control bytes, full filename structure, category manifests against their expected labels, strict enrichment YAML keys/list item types/nonempty values, supplied date/time, category values and exact source-body preservation. It does not prove factual grounding or completeness.
+Canonical suite outputs retain the timestamp/model/case naming under ignored `eval/<stage>/generated/`. The bundle copies them for inspection. Baseline diffs help locate changes; they are not cleanup scores. Missing matching baseline cases are stated explicitly. Invalid/missing output fails the command and remains available for diagnosis. The validator checks plain-text leakage/control bytes, full filename structure, category manifests against their expected labels, strict enrichment YAML keys/list item types/nonempty values, supplied date/time, category values, bounded metadata, unique names, 3–8 tags, expected language, fixture fingerprints and exact source-body preservation. It does not prove factual grounding or completeness.
 
 ## Semantic report
 

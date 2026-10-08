@@ -21,3 +21,9 @@ Optional `scripts/compare.swift` in this skill lists field differences. It canno
 ## Reporting
 
 Use each case's generated `report.md` and the [shared concise report format](../../docs/EVALUATIONS.md#semantic-report). Read every selected case, record concrete differences and semantic impact, and identify regressions or improvements when a baseline is available. Avoid generic judgments such as “mostly good.” Mechanical checks and heuristic scores never replace semantic review or the owner's final judgment.
+
+## Reproducible regression checks
+
+Enrichment suites use the supplied date, recording time and seed from `eval/enrich/cases.json`, snapshot that manifest, and retain per-case diagnostics. `--enrich` selects this suite; `--validate-enrich STAMP` validates older outputs. Fixed seeds support repeatability only with the recorded runtime; application defaults remain random. Model-free checks enforce fixture fingerprints, bounded metadata, unique names, 3–8 tags and exact source bodies before generation.
+
+Synthetic fixtures must be written from scratch in an unrelated domain with invented names, events and scenarios. Do not retain names, terminology, outlines, spelling variants, token positions or length targets from private material. Replacing names alone is insufficient. Changing a regression fixture invalidates its earlier native evidence: rerun baseline and fixed checks before claiming a result. See [fixture provenance and native reproduction](../../eval/enrich/README.md).

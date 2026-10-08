@@ -14,6 +14,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Removed
 
+- Remove the rejected enrichment fixture and its presentation-related references; replace it with an unrelated, wholly fictional lantern-festival diary and reassess native behavior without transferring the old reproduction claim.
+
 - Remove the keyboard, VoiceOver, reduced-motion and layout-stability acceptance item from the Logs plan and its backlog summary; retain clean-machine packaged-app checks.
 - Remove the obsolete startup benchmark and its debug recording hooks; document the retained build and verification scripts in `scripts/README.md`.
 
@@ -38,6 +40,10 @@ entry. Git links provide the complete commit history for each release.
 - Add focused stage/case fixture evaluations, sequential shared-model text batches, run metadata and per-case review bundles with optional baseline diffs. Preserve full pipeline/suite entry points and legacy saved-run validation; ignore generated JSON/log artifacts alongside Markdown.
 - Add a linked source map and isolated local development installation, build-identification and rollback instructions.
 
+- Add a compact, wholly fictional bedtime-story fixture that triggers native pre-fix context exhaustion while copying an invented name; record independent provenance, source fingerprint, runtime settings and verification limits.
+
+- Add repeatable enrichment evaluation controls (`cl enrich --seed` and `--diagnostics`), per-case settings, an enrichment-only sequential suite, and saved-output checks for schema, duplicate names, metadata bounds, supplied date/time and exact transcript preservation. Include model-free validator and seed-boundary checks.
+- Preserve historical native reproduction setup and strict enrichment output gates. The first attempted fixture was rejected for presentation-related content and removed; replacement coverage and limitations are recorded in ADR-007.
 - Add a backlog item for Make-based repository script entry points, including an ADR explaining the choice and checks for sequential inference, argument forwarding and fixture isolation.
 - Record a separate investigation draft for the Whisper Metal assertion encountered during the enrichment fix's fixture pipeline check.
 - Add TASK-42 to prioritize reducing agent navigation and evaluation overhead, with acceptance criteria and explicitly unmeasured time/token savings estimates.
@@ -50,6 +56,8 @@ entry. Git links provide the complete commit history for each release.
 - Add a release command that infers the highest version bump from Conventional Commits since the latest release (fix/perf → patch, feat → minor, breaking → major or minor on 0.x), skips maintenance-only releases, supports manual overrides, rolls over notes and Git links, runs sequential checks, creates a commit/tag, and optionally publishes through an atomic Git push. Require Conventional Commits for new work and use `chore(release)` for generated release/cask commits. Implement release tooling in one standalone Swift script with Bash/Git fixture tests and document its commands; no additional runtime or package dependencies.
 
 ### Fixed
+
+- Preserve per-case enrichment seeds, dates, diagnostic logs, fixture fingerprints and strict output gates when integrating the consolidated evaluator with newer enrichment regression work.
 
 - Consolidate stage skills around one evaluation runner and shared semantic reports; reject malformed output, invalid enrichment fields and source-body changes with failing command status. Resolve pipeline slug stems to Markdown paths and make artifact assertions fail explicitly on macOS Bash 3.2. Correct stale UI paths, inactive-corpus links and ANE/llama-cli/GPU-layer troubleshooting advice.
 

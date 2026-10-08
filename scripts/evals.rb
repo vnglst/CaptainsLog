@@ -8,6 +8,7 @@ require 'optparse'
 require 'open3'
 require 'time'
 require 'uri'
+require_relative '../skills/enrich-eval/scripts/validate'
 
 module Evals
   ROOT = File.expand_path('..', __dir__)
@@ -26,6 +27,11 @@ module Evals
 
   def self.cases(stages, selected = nil)
     stages.flat_map do |stage|
+      enrichment = nil
+      if stage == 'enrich'
+        EnrichEvaluation.validate_cases!("#{ROOT}/eval/enrich/cases.json", "#{ROOT}/eval/enrich/input")
+        enrichment = JSON.parse(File.read("#{ROOT}/eval/enrich/cases.json"))
+      end
       folder, extension = stage == 'transcribe' ? ['audio', 'm4a'] : ['input', 'md']
       inputs = Dir["#{ROOT}/eval/#{stage}/#{folder}/*.#{extension}"].sort
       inputs.select! { |path| File.basename(path, ".#{extension}") == selected } if selected
@@ -34,7 +40,12 @@ module Evals
         name = File.basename(input, ".#{extension}")
         expected = "#{ROOT}/eval/#{stage}/expected/#{name}.#{stage == 'categorize' ? 'category' : 'md'}"
         raise "Missing expected fixture: #{expected}" unless File.file?(expected)
-        { 'stage' => stage, 'name' => name, 'input' => input, 'expected' => expected }
+        item = { 'stage' => stage, 'name' => name, 'input' => input, 'expected' => expected }
+        if enrichment
+          item.merge!(enrichment.fetch(name).reject { |key, _| key == 'sha256' })
+          item['input_sha256'] = enrichment.fetch(name)['sha256'] if enrichment.fetch(name)['sha256']
+        end
+        item
       end
     end
   end
@@ -85,7 +96,12 @@ module Evals
       raise 'recording_time differs from supplied time' if supplied_time && data['recording_time'] != supplied_time
       raise 'invalid recording_time' unless data['recording_time'].match?(/\A(?:[01]\d|2[0-3]):[0-5]\d\z/)
       raise 'categories must use personal, work or side-project' if data['categories'].empty? || (data['categories'] - %w[personal work side-project]).any?
-      raise 'source body changed' unless match[2] == File.read(item.fetch('input'), encoding: 'UTF-8')
+      source = File.read(item.fetch('input'), encoding: 'UTF-8')
+      raise 'source body changed' unless match[2] == source
+      EnrichEvaluation.validate_case_input!(item['input'], { 'sha256' => item['input_sha256'] }) if item['input_sha256']
+      expected = YAML.safe_load(File.read(item.fetch('expected')).split('---', 3)[1])
+      expected.merge!('date' => item.fetch('date', DATE), 'recording_time' => item.fetch('recording_time', TIME))
+      EnrichEvaluation.validate!(source, text, expected)
     when 'cleanup', 'transcribe'
       raise 'model wrapper or special token leaked into text' if text.match?(/<\|(?:im_start|im_end|endoftext)\|>|<\/?think>|\A```/)
     else
@@ -143,7 +159,7 @@ module Evals
       index << "- [#{item['stage']}/#{item['name']}](#{link("#{relative}/review.md")}): #{status}"
     end
     File.write("#{run}/review.md", index.join("\n") + "\n")
-    json("#{run}/validation.json", { 'cases' => items.length, 'failures' => failures, 'validator_sha256' => Digest::SHA256.file(__FILE__).hexdigest })
+    json("#{run}/validation.json", { 'cases' => items.length, 'failures' => failures, 'validator_sha256' => Digest::SHA256.file(__FILE__).hexdigest, 'enrichment_validator_sha256' => Digest::SHA256.file("#{ROOT}/skills/enrich-eval/scripts/validate.rb").hexdigest })
     puts "Validated #{items.length} cases; failures: #{failures}. Review: #{run}/review.md"
     failures.zero?
   end
@@ -172,7 +188,7 @@ module Evals
                 'top_k' => Integer(llm[/llama_sampler_init_top_k\((\d+)\)/, 1]),
                 'top_p' => Float(llm[/llama_sampler_init_top_p\(([\d.]+),/, 1]),
                 'dry' => stage == 'enrich' ? llm[/llama_sampler_init_dry\(vocab, ([^)]+)\)/, 1] : nil,
-                'seed_policy' => 'LLAMA_DEFAULT_SEED (random per fresh sampler)',
+                'seed_policy' => stage == 'enrich' ? 'per-case manifest seed; pipeline uses random default' : 'LLAMA_DEFAULT_SEED (random per fresh sampler)',
                 'context_policy' => 'LLM.plannedContextSize; fresh context per call',
                 'parameter_scope' => 'stage defaults; date/time are per-case manifest values' }]
     end.merge('transcribe' => { 'language' => 'auto-detect', 'skip_special_tokens' => true,
@@ -182,12 +198,13 @@ module Evals
   def self.main(argv)
     options = { mode: '--all' }
     parser = OptionParser.new do |o|
-      o.banner = 'Usage: scripts/run-evals.sh [--all|--pipeline|--suites|--categorize|--stage STAGE [--case STEM]] [--baseline RUN_DIR]'
-      %w[all pipeline suites categorize].each { |mode| o.on("--#{mode}") { raise 'Choose one execution mode' if options[:explicit]; options[:mode] = "--#{mode}"; options[:explicit] = true } }
+      o.banner = 'Usage: scripts/run-evals.sh [--all|--pipeline|--suites|--categorize|--enrich|--stage STAGE [--case STEM]] [--baseline RUN_DIR]'
+      %w[all pipeline suites categorize enrich].each { |mode| o.on("--#{mode}") { raise 'Choose one execution mode' if options[:explicit]; options[:mode] = "--#{mode}"; options[:explicit] = true } }
       o.on('--stage STAGE', STAGES) { |value| raise 'Choose one execution mode' if options[:explicit]; options[:mode] = '--stage'; options[:stage] = value; options[:explicit] = true }
       o.on('--case STEM') { |value| options[:case] = value }
       o.on('--baseline RUN_DIR') { |value| options[:baseline] = File.expand_path(value) }
       o.on('--validate-run RUN_DIR_OR_STAMP') { |value| options[:validate] = value }
+      o.on('--validate-enrich STAMP') { |value| options[:validate] = value; options[:legacy_enrich] = true }
       o.on('--validate-categorize STAMP') { |value| options[:validate] = value; options[:legacy_category] = true }
       o.on('--list') { options[:list] = true }
       o.on('-h', '--help') { puts o; return 0 }
@@ -195,7 +212,7 @@ module Evals
     parser.parse!(argv)
     raise "Unexpected arguments: #{argv.join(' ')}" unless argv.empty?
     raise '--case requires --stage' if options[:case] && !options[:stage]
-    stages = options[:stage] ? [options[:stage]] : options[:mode] == '--categorize' ? ['categorize'] : STAGES
+    stages = options[:stage] ? [options[:stage]] : %w[--categorize --enrich].include?(options[:mode]) ? [options[:mode].delete_prefix('--')] : STAGES
     if options[:validate]
       raise 'Validation cannot be combined with execution options' if options[:explicit] || options[:case] || options[:list]
       value = options[:validate]
@@ -205,7 +222,7 @@ module Evals
       else
         raise 'Expected saved run directory or timestamp' unless value.match?(/\A[\w.-]+\z/)
         run = "#{ROOT}/tmp/eval-validation-#{value}"
-        items = cases(options[:legacy_category] ? ['categorize'] : STAGES)
+        items = cases(options[:legacy_category] ? ['categorize'] : options[:legacy_enrich] ? ['enrich'] : STAGES)
         name_outputs(items, value)
       end
       raise 'Saved manifest has no cases' unless items.is_a?(Array) && !items.empty?
@@ -232,6 +249,11 @@ module Evals
                  'dirty_status' => capture('git', 'status', '--porcelain'), 'generation' => settings,
                  'baseline' => options[:baseline], 'status' => 'preparing' }
     begin
+      if items.any? { |item| item['stage'] == 'enrich' }
+        FileUtils.cp("#{ROOT}/eval/enrich/cases.json", "#{run}/enrich-cases.json")
+        metadata['enrich_cases_sha256'] = Digest::SHA256.file("#{run}/enrich-cases.json").hexdigest
+        items.select { |item| item['stage'] == 'enrich' }.each { |item| item['diagnostics'] = "#{run}/enrich-#{item['name']}.log" }
+      end
       configure(run, stages, options[:mode], metadata)
       # Snapshot fixtures so saved-run review remains meaningful after fixture edits.
       items.each do |item|
@@ -261,7 +283,7 @@ module Evals
       end
       json("#{run}/manifest.json", items)
       metadata['fixture_hashes'] = hashes(items.flat_map { |item| item.values_at('input', 'expected') }.select { |p| File.file?(p) })
-      metadata['source_hashes'] = hashes(Dir["#{ROOT}/Sources/{CaptainsLogCore,cl}/*.swift"] + Dir["#{ROOT}/scripts/*eval*"] + ["#{ROOT}/Package.resolved"])
+      metadata['source_hashes'] = hashes(Dir["#{ROOT}/Sources/{CaptainsLogCore,cl}/*.swift"] + Dir["#{ROOT}/scripts/*eval*"] + ["#{ROOT}/Package.resolved", "#{ROOT}/skills/enrich-eval/scripts/validate.rb"])
       metadata['prompt_hashes'] = hashes(Dir["#{ROOT}/prompts/*.md"])
       metadata['status'] = 'running'
       json("#{run}/metadata.json", metadata)
@@ -274,6 +296,9 @@ module Evals
       libs = metadata['runtime'].lines.drop(1).map { |line| line.strip.split(' (').first }.select { |p| p.include?('/opt/homebrew/') && File.file?(p) }
       metadata['runtime_hashes'] = hashes(libs)
       json("#{run}/metadata.json", metadata)
+      if items.any? { |item| item['stage'] == 'enrich' }
+        command('env', "CAPTAINS_LOG_EVAL_CL=#{cl}", 'bash', "#{ROOT}/scripts/test-enrich-eval.sh", log: "#{run}/enrich-checks.log")
+      end
       if %w[--all --pipeline].include?(options[:mode])
         command('bash', "#{ROOT}/scripts/eval-pipeline.sh", run, cl, log: "#{run}/pipeline-checks.log")
       end
@@ -364,8 +389,8 @@ module Evals
       raise 'Model label must be a filename component' unless label.match?(/\A[\w.-]+\z/)
       extension = item['stage'] == 'categorize' ? 'json' : 'md'
       item['output'] = "#{ROOT}/eval/#{item['stage']}/generated/#{stamp}_#{label}_#{item['name']}.#{extension}"
-      item['date'] = DATE
-      item['recording_time'] = TIME
+      item['date'] ||= DATE
+      item['recording_time'] ||= TIME
     end
   end
 

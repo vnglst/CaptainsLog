@@ -5,7 +5,7 @@ status: Verify
 assignee:
   - '@codex'
 created_date: '2026-10-07 14:38'
-updated_date: '2026-10-07 20:07'
+updated_date: '2026-10-08 16:46'
 labels: []
 dependencies: []
 references:
@@ -64,6 +64,8 @@ ADR assessment: no new ADR now. These reversible improvements implement ADR-005 
 3. Add deterministic runner/validator regression checks and compare representative fixture timings; run build, deterministic tests and sequential model fixture checks.
 4. Replace stage execution recipes with shared review guidance; add source navigation and scoped troubleshooting/local deployment corrections coordinated with TASK-22.
 5. Record semantic findings, measured limits and supported acceptance criteria; hand off in Verify when checks finish.
+
+6. Integrate the newer main enrichment regression controls, validate merged execution, and fast-forward the default main checkout while preserving its unrelated task-37 edit.
 <!-- SECTION:PLAN:END -->
 
 ## Implementation Notes
@@ -77,6 +79,10 @@ Native evidence: eight standalone filename calls took 95.98 s. New runner took 1
 Full native fixture pipeline completed in tmp/task42-pipeline; native artifact generation, completed resume and search ran. Initial adapter validation failed because markers store stems without .md; corrected artifact resolution and explicit Bash 3.2 assertion failures are covered by regression checks. Corrected saved validation passes 5/5; resolved native artifacts, unchanged resume hashes and actual enriched-path search readback pass. Audio inference was not repeated for the adapter-only correction. Full 23-case native suites were not repeated; their orchestration/combined release gate is covered with subprocess fixtures.
 Semantic limits: transcription retains vollendje, liefdelokaal and science/site-project errors; cleanup repairs the first two but retains science project, uses three long paragraphs and several spoken connectors. Enrichment omits large language model from entities and explicit original-audio/cross-computer details from its summary. No production quality fix or new bug task was added. Detailed evidence and measured effort limits are recorded in ADR-007; per-case reports remain in ignored run bundles.
 Source map, shared evaluation guidance and isolated local install/rollback/build-identification docs added. Corrected active UI paths, TNG reference-versus-suite navigation and stale runtime troubleshooting; TASK-22 contains the public-doc coordination boundary. No architectural decision changed, so no new ADR was needed.
+
+Integration requested by owner on 2026-10-08: merged newer main enrichment controls into the consolidated runner, preserving per-case dates/times/seeds, diagnostics, synthetic fixture fingerprints, bounded metadata and unique-name gates. Retained --enrich and legacy enrichment-only validation. Merged build and full deterministic suite pass (209/209); 66 evaluator checks pass on Ruby 4.0.7 and system Ruby 2.6.10; all 25 enrichment validator checks and six CLI seed boundaries pass. Native focused integration check pending before default main checkout update.
+
+Native merged-run check completed: tmp/task42-merge-enrich passes the fictional long-name case with supplied 2025-02-18 / 20:30 / seed 42, per-case diagnostics and EOG after 177 tokens. Strict structure, source fingerprint and exact body pass. Manual review retains main’s shortened-name and omitted-tag/summary-detail limits; recorded in ADR-007 and the run report. Full native suites/audio pipeline were not repeated for transport integration. Task remains Verify for owner review.
 <!-- SECTION:NOTES:END -->
 
 ## Final Summary
