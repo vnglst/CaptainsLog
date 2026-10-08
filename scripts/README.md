@@ -13,10 +13,9 @@ the Xcode IDE is not required. Run commands from the repository root.
 | `make-icon.swift` | AppKit icon renderer called by `make-iconset.sh`; also accepts a PNG output path for previews. |
 | `test-coverage.sh` | Run deterministic tests and fixture CLI checks with LLVM instrumentation; enforce the production coverage floor. |
 | `test-updates.sh` | Exercise update checks, simulated installation, failures, and config preferences against the fake Homebrew fixture. Keeps logs under `tmp/`; does not update the installed app. |
-| `test-enrich-eval.sh` | Model-free enrichment schema, fixture fingerprint and CLI seed checks, also run before enrichment generation. |
-| `test-evals.rb` | Model-free regression checks for evaluation selection, malformed output rejection, evidence and failure propagation. Run with `ruby scripts/test-evals.rb`. |
-| `run-evals.sh` | Single evaluation entry point: pipeline (`--pipeline`), all suites (`--suites`), or focused `--stage STAGE [--case STEM]`; `--list`, saved validation and optional baselines. See [workflow](../docs/EVALUATIONS.md). `evals.rb` and `eval-pipeline.sh` implement it internally. |
-| `validate-eval-run.sh` | Compatibility wrapper for saved stage-output validation without inference. Use `run-evals.sh --validate-run <run-stamp>` or stage-only `--validate-categorize <run-stamp>` / `--validate-enrich <run-stamp>`. |
+| `run-evals.sh` | Run the fixture pipeline (`--pipeline`), stage suites (`--suites`), categorization (`--categorize`), enrichment (`--enrich`), or both pipeline and suites (default `--all`), sequentially with local models. Enrichment uses per-case date/time/seeds from `eval/enrich/cases.json`, retains generation diagnostics, and enforces the shared output gate. |
+| `validate-eval-run.sh` | Check saved stage output structure and produce comparison diagnostics without inference. Called by `run-evals.sh`; use `run-evals.sh --validate-run <run-stamp>`, `--validate-categorize <run-stamp>` or `--validate-enrich <run-stamp>`. Counts follow the expected fixtures rather than a hard-coded suite size. |
+| `test-enrich-eval.sh` | Model-free enrichment-validator and CLI seed-boundary checks. Requires a built `cl`; automatically runs before enrichment generation in the suite. |
 | `test-ui.sh` | Launch a temporary macOS app with isolated eval-backed presentation state. Defaults to `eval`; accepts the state selectors listed in the script. Close the app before deleting its printed temporary root. |
 | `test-model-smoke.sh` | Opt-in loading/warmup of installed Qwen and transcription of an eval fixture. Requires all four `CAPTAINSLOG_*_MODEL_*` environment variables listed in the script. |
 | `test-recorder-hardware.sh` | Interactive microphone smoke check with explicit confirmation; records three seconds into temporary storage. |
@@ -24,6 +23,6 @@ the Xcode IDE is not required. Run commands from the repository root.
 Model evaluations and model smoke checks must run sequentially. Use repository
 `eval/` fixtures and isolated config/data for checks. The UI harness is for
 presentation inspection; processing and recording controls invoke real models or
-hardware. See [ADR-007](../docs/0007-framework-free-test-coverage.md) for test
+hardware. See [the testing workflow](../docs/testing.md) for test
 gates, limitations, and semantic review requirements, and the stage workflows in
 [`skills/`](../skills/) for output review.

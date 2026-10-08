@@ -31,7 +31,7 @@ fresh run with seed 0 returned the same counts and error. Both tested seeds fail
 no claim is made for all seeds or platforms. This is repetition
 within an extracted name, rather than repetition of complete list rows; it
 reaches the same native `contextExhausted` error. Fresh ordinary CLI confirmation
-and fixed-code checks are recorded in [ADR-007](../../docs/0007-framework-free-test-coverage.md).
+and fixed-code checks are recorded in [testing verification history](../../docs/testing-verification.md).
 
 Recorded baseline:
 

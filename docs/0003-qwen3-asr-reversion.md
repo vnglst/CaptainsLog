@@ -1,57 +1,33 @@
 # ADR-003: Qwen3-ASR Evaluation and Reversion
 
-**Status**: Superseded (reverted to Whisper Large-v2)  
+**Status**: Superseded (reverted to Whisper Large-v2)
 **Date**: 2025-04-21
 
 ## Context
 
-We evaluated Qwen3-ASR 1.7B 8-bit (via `speech-swift`'s `StreamingASR` with VAD segmentation) as a replacement for WhisperKit Large-v2. The hypothesis was that a newer multilingual ASR model would improve transcription quality for Dutch and mixed-language content. An earlier migration proposal is no longer present in the repository.
-
-## Evaluation Method
-
-We ran both models against the same 4 audio test cases with known ground truth transcriptions:
-
-| Test case | Language | Duration |
-|-----------|----------|----------|
-| 2025-01-14 side project | Dutch (conversational) | ~4 min |
-| alle-mensen-zijn-sterfelijk | Dutch (literature) | ~3 min |
-| durins-volk | Dutch (fantasy names) | ~90 sec |
-| world-war-z | English (narration) | ~3 min |
-
-## Results
-
-### Critical Errors (Qwen3-ASR)
-
-- **Dropped sentences**: Missing "Het doek ging op", "Ze boog opnieuw", "Florence glimlachte", entire bracketed narrative paragraph (world-war-z)
-- **Wrong names**: "Captain Jean-Luc Picard" → "John Duke Picard"; "Pff, Florence" → "Vloog Hans"; "Kwang Jing-shu" → "Kwang Ying Chu"
-- **Nonsense words**: "bijgeluiden" → "pijgeliuider"; "draad kwijtraak" → "draadkuit raak"; "Kheled-zâram" → "Kilat saram"; "Khazad-dûm" → "Casadem"
-- **Sentence jumbling**: In the long Dutch recording, sentences appeared out of order with duplicated/missing content
-- **Missing speaker attributions**: "zei hij", "zei Régine", "zei Annie" all dropped
-
-### Whisper Large-v2 Errors (for comparison)
-
-- **Spelling/grammar**: "provincieszaal" (→ provinciezaal), "wijt en zeit" (→ wijd en zijd), "vlammertje" (→ vlammetje), "kammeren" (→ kammen)
-- **False starts preserved**: "Je bent nog nog nooit zo goed gespeeld" (duplicate "nog")
-- **Proper noun errors**: "Kuang Ying-choo" (→ Kwang Jing-shu), "Dürin" (→ Durin)
-- **But**: No dropped sentences, no sentence jumbling, speaker attributions preserved, no nonsense words
+We evaluated Qwen3-ASR 1.7B 8-bit through `speech-swift` StreamingASR with VAD
+segmentation against WhisperKit Large-v2 on four Dutch/English fixtures. The
+goal was better multilingual transcription; an earlier migration proposal is
+no longer present in the repository.
 
 ## Decision
 
-**Revert to Whisper Large-v2.**
+Revert to Whisper Large-v2 and remove `speech-swift`.
 
-Qwen3-ASR 1.7B 8-bit, despite being a newer model, produced measurably more critical errors on our test corpus. The errors were structural (dropped sentences, jumbled order) rather than cosmetic (spelling), making them harder to recover in downstream cleanup stages.
+Qwen dropped sentences and speaker attributions, jumbled order, and corrupted
+names and words. Whisper had spelling and proper-noun errors but preserved
+sentence order and content in this comparison. Structural losses were harder
+to repair downstream than spelling errors.
 
-The 8-bit quantization may be a contributing factor — bf16 weights might reduce some nonsense-word errors. However, `speech-swift` hardcodes `QuantizedTextModel`, making bf16 usage non-trivial (requires upstream changes or a fork). Given the current performance gap, this investment is not justified.
+Quantization might contribute, but that was not established. Native bf16 support
+would require upstream changes or a fork because `speech-swift` hardcoded a
+quantized text model; the observed quality gap did not justify that investment.
 
 ## Consequences
 
-- WhisperKit Large-v2 remains the transcription backend
-- `speech-swift` dependency removed
-- `eval/transcribe/reports/` contains detailed per-case comparison data for future model evaluations
-- Future ASR evaluations must include all 4 test cases and compare against these ground truths
+WhisperKit Large-v2 remains the transcription backend. Future replacements must
+be compared against all four fixture ground truths, including omissions, order,
+names, and speaker attributions. These observations establish the choice for the
+tested versions and corpus, not a general ranking of model families.
 
-## Future Watch
-
-- **bf16 Qwen3-ASR**: If `speech-swift` adds native bf16 support, re-evaluate with the same test suite
-- **Voxtral Mini 4B**: Impressive streaming model, but no Swift/MLX port exists (only vLLM/Transformers/ExecuTorch-untested). Not viable for CaptainsLog
-- **WhisperKit v3 / Distil-Whisper**: Track upstream for accuracy improvements without dependency changes
+[Historical comparison, examples, and alternatives](asr-evaluation-2025-04-21.md).

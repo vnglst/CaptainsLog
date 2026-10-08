@@ -21,6 +21,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
+- Shorten seven oversized ADRs to under 300 words, preserve detailed evaluations and verification history in linked supporting documents, and set a 300-word ADR limit with a 500-word exception for essential rationale. Redirect testing guidance and evidence links so new reports do not expand ADR-007.
+
 - Require owner-requested work for agent-created backlog tasks and drafts; report newly discovered work without automatically adding board items, and allow small mechanical edits without a task.
 - Move TASK-28 to Next and define acceptance checks for pinned native dependencies, clean builds independent of Homebrew runtimes, recorded toolchain/options, repeatability and packaged-runtime verification.
 
@@ -36,9 +38,6 @@ entry. Git links provide the complete commit history for each release.
 - Consolidate open product, Kev evaluation, publication, runtime maintenance and release acceptance work in `docs/PLAN.md`; keep implementation procedures and historical evidence in linked detail files and ADRs, remove duplicate status lists, and update contributor/documentation links. Track landing-page deployment verification after its implementation.
 
 ### Added
-
-- Add focused stage/case fixture evaluations, sequential shared-model text batches, run metadata and per-case review bundles with optional baseline diffs. Preserve full pipeline/suite entry points and legacy saved-run validation; ignore generated JSON/log artifacts alongside Markdown.
-- Add a linked source map and isolated local development installation, build-identification and rollback instructions.
 
 - Add a compact, wholly fictional bedtime-story fixture that triggers native pre-fix context exhaustion while copying an invented name; record independent provenance, source fingerprint, runtime settings and verification limits.
 
@@ -56,10 +55,6 @@ entry. Git links provide the complete commit history for each release.
 - Add a release command that infers the highest version bump from Conventional Commits since the latest release (fix/perf → patch, feat → minor, breaking → major or minor on 0.x), skips maintenance-only releases, supports manual overrides, rolls over notes and Git links, runs sequential checks, creates a commit/tag, and optionally publishes through an atomic Git push. Require Conventional Commits for new work and use `chore(release)` for generated release/cask commits. Implement release tooling in one standalone Swift script with Bash/Git fixture tests and document its commands; no additional runtime or package dependencies.
 
 ### Fixed
-
-- Preserve per-case enrichment seeds, dates, diagnostic logs, fixture fingerprints and strict output gates when integrating the consolidated evaluator with newer enrichment regression work.
-
-- Consolidate stage skills around one evaluation runner and shared semantic reports; reject malformed output, invalid enrichment fields and source-body changes with failing command status. Resolve pipeline slug stems to Markdown paths and make artifact assertions fail explicitly on macOS Bash 3.2. Correct stale UI paths, inactive-corpus links and ANE/llama-cli/GPU-layer troubleshooting advice.
 
 - Resolve llama.cpp and GGML headers through their versioned pkg-config include paths instead of the mutable global Homebrew header alias, preventing release builds from reusing a module compiled against an older header after an upgrade. Declare the existing GGML dependency explicitly because Homebrew's llama package metadata omits its include path.
 

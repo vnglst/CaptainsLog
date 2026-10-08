@@ -1,6 +1,6 @@
 # ADR-005: Use libllama C API for Text Inference
 
-**Status**: Accepted  
+**Status**: Accepted
 **Date**: 2026-06-12
 
 ## Context
@@ -24,30 +24,13 @@ Use llama.cpp in-process through `libllama` and a small SwiftPM `CLlama` system-
 - Runtime packaging must bundle llama.cpp dylibs separately.
 - Inference is serialized because llama.cpp model/context usage should not be treated as generally thread-safe.
 
-## Verification
+## Local hybrid search
 
-- `swift build`
-- `swift run cl warm`
-- `swift run run-tests`
-- Full pipeline fixture: `eval/transcribe/audio/2025-01-14 side project.m4a`
-- cleanup, filename, enrich evals
+Reuse the in-process libllama runtime for multilingual-e5-small embeddings.
+Keep Markdown logs canonical and the SQLite FTS5/sqlite-vec index disposable.
+Return keyword and semantic matches as notes and excerpts; do not generate
+answers through Qwen. Pin model/runtime artifacts and serialize native state.
 
-## Follow-up
-
-Runtime build work is tracked in the [backlog](../backlog/tasks/). The build must use a vendored or project-built llama.cpp runtime for the app deployment target.
-
-## Extension: local hybrid search
-
-The completed search implementation uses the same in-process libllama boundary for `intfloat/multilingual-e5-small` embeddings. This avoids a second runtime, service, daemon or IPC. CLI and SwiftUI share `CaptainsLogCore` search code; queries retrieve notes and excerpts rather than generating answers through Qwen.
-
-- Use the Q8_0 GGUF from `TwinSunsLLC/multilingual-e5-small-gguf`, revision `b6cac9615d4ecce28d7f22539b7322d695fc2886`, SHA-256 `e011debc1208e31bf7b6aebee2d9fc8bd2ca11694a77ed66ac9d0c9d0a877c93` (132,439,008 bytes). The upstream model is MIT-licensed, supports multilingual retrieval and returns 384-dimensional vectors. Pin and verify the converted artifact; download lazily on first search/index build.
-- Mean-pool and L2-normalize embeddings, using E5 `query: ` and `passage: ` prefixes. Chunk with the model tokenizer at 384 tokens and 48-token overlap; bound title/metadata so the full embedding input fits its context. Version the chunking policy.
-- Vendor and statically register sqlite-vec v0.1.9 (MIT/Apache-2.0) with SQLite. The amalgamation archive SHA-256 is `b87cdda12112657ba5ab8842f0088a4090982eaf41f22b2bd6d495b81765a8c9`. No user-installed SQLite extension is required.
-- Keep canonical completed Markdown under `logs/`; `<dataDir>/.search/search.sqlite` is a disposable derived index. Store document fingerprints, chunks, FTS5 text and `vec0` cosine vectors. Rebuild when schema, model identity/dimension or chunker version changes.
-- Reconcile added/changed/deleted notes incrementally. Update each document atomically and delete vector/FTS rows explicitly alongside chunk rows; virtual tables cannot rely on foreign-key cascading.
-- Return BM25 keyword matches first, then cosine-ranked semantic matches, deduplicated to one best passage per entry. Highlight exact query terms; use relative top-k ranking without a user-facing similarity cutoff.
-- Expose `cl search-index [--rebuild] [--data-dir <path>]` and `cl search <query> [--limit 10] [--data-dir <path>]`. The app debounces/cancels superseded queries, restores the timeline for an empty query, and reserves layout space for progress/errors.
-
-SQLite/libllama state stays within serial execution boundaries. Search operates offline after model download; indexing must not block the main actor or mutate canonical notes. The converted GGUF and pre-1.0 sqlite-vec require pinned artifacts and explicit migration/recovery checks.
-
-Verification uses deterministic fake embeddings plus the English/Dutch/German corpus in [eval/search](../eval/search/README.md). Review each query's expected top entries, false positives and excerpts; aggregate scores alone are insufficient. Real-model relevance, offline packaged-app search, interrupted download/indexing, corrupt model/index recovery, data-folder switching and edit/rename/Trash convergence remain integration checks. See [ADR-007](0007-framework-free-test-coverage.md) for dated evidence and acceptance gaps.
+[Search implementation details and integration limits](search-architecture.md).
+[Testing workflow](testing.md) and [verification history](testing-verification.md)
+cover checks; runtime packaging work is tracked in the [backlog](../backlog/tasks/).

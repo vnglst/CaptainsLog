@@ -81,10 +81,8 @@ Transcription uses Whisper Large-v2. Cleanup, categorization, filenames, and met
 ## Documentation
 
 - [Changelog and release history](./CHANGELOG.md)
-- [Testing gates, evaluation evidence, and remaining checks](./docs/0007-framework-free-test-coverage.md)
-- [Source map](./docs/SOURCE-MAP.md)
-- [Fixture evaluation workflow](./docs/EVALUATIONS.md)
-- [Local development installation and rollback](./docs/LOCAL-DEVELOPMENT.md)
+- [Testing gates and isolation](./docs/testing.md)
+- [Dated testing and evaluation evidence](./docs/testing-verification.md)
 - [Build and verification scripts](./scripts/README.md)
 - [Troubleshooting](./docs/TROUBLESHOOTING.md)
 - [Backlog tasks](./backlog/tasks/)
@@ -116,8 +114,11 @@ status line correctly.
 template. Edit that file to state the decision, its status, and its known context
 or rationale; remove empty template sections. Do not invent missing context or
 alternatives.
-Keep historical ADRs unchanged. If a decision changes, create a new ADR and link
-the earlier record from it, stating that the new decision supersedes it. Commit
+Keep ADRs to 300 words or fewer; allow up to 500 only when essential rationale
+needs more room. Include the decision, relevant context, and consequences. Link
+to procedures, implementation details, and dated evaluation evidence rather than
+embedding them. Editorial shortening must preserve existing decisions, dates, and statuses. If a decision changes, create a new ADR and link the earlier record
+from it, stating that the new decision supersedes it. Commit
 the ADR with its related change, Backlog task, and changelog entry.
 
 ## Backlog
@@ -161,7 +162,7 @@ bash scripts/test-coverage.sh
 
 GitHub Actions runs only when a release tag (`v*`) is pushed; ordinary branch pushes and pull requests do not start workflows. The release workflow runs release-tooling checks and the full deterministic suite (`swift run run-tests`) before packaging. Run the suite locally during development, or use `swift run run-tests --unit` for a lightweight, model-free check. Coverage instrumentation, CLI coverage, model evaluations, and UI checks remain opt-in.
 
-For the sequential model-backed fixture pipeline, run `bash scripts/run-evals.sh --pipeline`. Run every stage evaluation with `bash scripts/run-evals.sh --suites`, or focus on `--stage filename --case 04_short_entry`. Use `--list` to discover cases and `--validate-run <run-directory>` to recheck saved artifacts without inference. The [evaluation workflow](./docs/EVALUATIONS.md) explains isolated configuration, metadata, baseline comparisons and per-case review bundles. Read the matching stage skill for semantic review; dated findings are recorded in [ADR-007](./docs/0007-framework-free-test-coverage.md#dated-verification-evidence). For native macOS UI checks, use `bash scripts/test-ui.sh eval`; it builds a temporary app bundle and isolates config/data under a temporary directory. Prepared-machine model checks use `scripts/test-model-smoke.sh` with the four `CAPTAINSLOG_*_MODEL_*` environment variables set. Actual microphone capture is a separately confirmed, interactive check via `scripts/test-recorder-hardware.sh`. Neither smoke check runs in GitHub Actions. See [ADR-007](./docs/0007-framework-free-test-coverage.md#test-gates-and-isolation) for fixture and hardware constraints.
+For the sequential model-backed fixture pipeline, run `bash scripts/run-evals.sh --pipeline`. Run every stage evaluation with `bash scripts/run-evals.sh --suites`; validate saved outputs without inference using `bash scripts/run-evals.sh --validate-run <run-stamp>`. Review generated files against `eval/*/expected/` and the matching stage skill; dated results and semantic findings are recorded in [testing verification history](./docs/testing-verification.md#dated-verification-evidence). For native macOS UI checks, use `bash scripts/test-ui.sh eval`; it builds a temporary app bundle and isolates config/data under a temporary directory. Prepared-machine model checks use `scripts/test-model-smoke.sh` with the four `CAPTAINSLOG_*_MODEL_*` environment variables set. Actual microphone capture is a separately confirmed, interactive check via `scripts/test-recorder-hardware.sh`. Neither smoke check runs in GitHub Actions. See [testing gates and isolation](./docs/testing.md) for fixture and hardware constraints.
 
 ## Changelog and releases
 
