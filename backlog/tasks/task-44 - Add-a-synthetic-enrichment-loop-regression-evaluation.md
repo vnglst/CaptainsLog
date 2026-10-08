@@ -1,13 +1,13 @@
 ---
 id: TASK-44
 title: Add a synthetic enrichment loop regression evaluation
-status: Verify
+status: Complete
 assignee: []
 created_date: '2026-10-07 15:19'
-updated_date: '2026-10-08 16:49'
+updated_date: '2026-10-08 16:59'
 labels: []
 dependencies: []
-ordinal: 44000
+ordinal: 1187.5
 ---
 
 ## Description

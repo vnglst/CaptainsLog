@@ -1,13 +1,13 @@
 ---
 id: TASK-39
 title: 'Use To Do, Next, Verify, Complete backlog columns'
-status: Verify
+status: Complete
 assignee: []
 created_date: '2026-10-04 13:30'
-updated_date: '2026-10-08 16:49'
+updated_date: '2026-10-08 16:59'
 labels: []
 dependencies: []
-ordinal: 39000
+ordinal: 9500
 ---
 
 ## Description

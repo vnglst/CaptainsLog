@@ -1,13 +1,13 @@
 ---
 id: TASK-41
 title: Reproduce and fix enrichment generation exhaustion
-status: Verify
+status: Complete
 assignee: []
 created_date: '2026-10-05 17:53'
-updated_date: '2026-10-08 16:49'
+updated_date: '2026-10-08 16:59'
 labels: []
 dependencies: []
-ordinal: 41000
+ordinal: 2375
 ---
 
 ## Description

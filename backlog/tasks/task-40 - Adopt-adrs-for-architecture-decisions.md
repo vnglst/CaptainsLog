@@ -1,13 +1,13 @@
 ---
 id: TASK-40
 title: Adopt adrs for architecture decisions
-status: Verify
+status: Complete
 assignee: []
 created_date: '2026-10-04 13:54'
-updated_date: '2026-10-08 16:49'
+updated_date: '2026-10-08 16:59'
 labels: []
 dependencies: []
-ordinal: 40000
+ordinal: 4750
 ---
 
 ## Description

@@ -1,13 +1,13 @@
 ---
 id: TASK-45
 title: Fix stale llama header modules after Homebrew upgrades
-status: Verify
+status: Complete
 assignee: []
 created_date: '2026-10-07 15:25'
-updated_date: '2026-10-08 16:49'
+updated_date: '2026-10-08 17:00'
 labels: []
 dependencies: []
-ordinal: 45000
+ordinal: 593.75
 ---
 
 ## Description
