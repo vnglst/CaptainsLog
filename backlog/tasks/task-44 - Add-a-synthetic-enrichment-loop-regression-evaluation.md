@@ -1,10 +1,10 @@
 ---
 id: TASK-44
 title: Add a synthetic enrichment loop regression evaluation
-status: Verify
+status: Next
 assignee: []
 created_date: '2026-10-07 15:19'
-updated_date: '2026-10-08 06:35'
+updated_date: '2026-10-08 08:56'
 labels: []
 dependencies: []
 ordinal: 44000
@@ -18,26 +18,31 @@ The enrichment loop fix currently relies on a privately supplied reproduction in
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [x] #1 A synthetic transcript in the enrichment eval inputs demonstrably reproduces the native entity-list loop under recorded pre-fix settings without using personal content
+- [ ] #1 A synthetic transcript in the enrichment eval inputs demonstrably reproduces the native entity-list loop under recorded pre-fix settings without using personal content
 - [x] #2 The fixed implementation completes the same seeded input with valid bounded metadata and unchanged transcript, with semantic findings recorded against expected metadata
-- [x] #3 Sequential eval generation and saved-output validation include the regression, with repeatable seed control and checks for completion, types, date/time, body preservation and runaway or duplicate metadata
+- [ ] #3 Sequential eval generation and saved-output validation include the regression, with repeatable seed control and checks for completion, types, date/time, body preservation and runaway or duplicate metadata
 - [x] #4 Deterministic checks validate the evaluation gate and relevant existing enrichment fixtures are reviewed
+- [x] #5 The replacement uses an unrelated fictional scenario, invented names and arbitrary settings, with no presentation-derived terms, outline, token positions or length matching
 <!-- AC:END -->
 
 ## Implementation Plan
 
 <!-- SECTION:PLAN:BEGIN -->
-Retain the confirmed 5,084-word synthetic native reproducer selected by the owner. Seed and fingerprint the fixture; run the sequential five-case enrichment suite and saved-output gates; record native and semantic evidence, remove private reproduction material, and commit related changes.
+Remove the rejected presentation-related fixture and its generated artifacts. Write a wholly fictional transcript in an unrelated domain with invented names and events, then test it against historical and fixed native code before making any reproduction claim.
 <!-- SECTION:PLAN:END -->
 
 ## Implementation Notes
 
 <!-- SECTION:NOTES:BEGIN -->
-Confirmed independent synthetic fixture: SHA256 ec8193ed72a53aaf919cef027b4cc445a96ebd4f7a5da9842fe4b2f1f4d0e658, 5084 words. Fresh unbounded pre-fix CLI with seed 42, date/time 2026-10-05/16:44, Qwen3.5-9B-Q4_K_M and llama.cpp 0.5.0/GGML 0.25.3 exhausted 18688 context tokens after 9254 prompt and 9434 output tokens; exit 1, no completed output, 1846 repeated Lili entries. One full historical failure observed; shorter variants terminated and the owner selected the confirmed source. Fixed code completes in 288 tokens on both historical and current runtimes; two current runs produce identical metadata. All five sequential enrichment cases and separate saved validation pass (2026-10-08_07-54-18_57974_Qwen3.5-9B-Q4_K_M). Manual semantic findings remain against unchanged expectations, including the added side-project category, omitted benchmarks/business-KPI tag and unsupported summary project designation. Build, 209/209 deterministic tests, 25 validator checks, six CLI seed boundaries and full audio pipeline through resume/search pass. Historical observational patch applies and compiles without changing sampling, budgets or error behavior. Original workspace transcript, all private controls/traces and both experiment roots deleted; only whitelisted synthetic evidence retained in ignored tmp/enrich-synthetic-evidence-2026-10-08. See eval/enrich/README.md and ADR-007 for reproduction procedure, fingerprints, minimization limits and semantic evidence.
+Owner rejected the previous fixture because real names and subject matter connected it to the private presentation. Removed that input/expected pair and its generated candidates, outputs, reports and native traces. The replacement is an independently written imaginary lantern-festival diary with invented characters, places and creatures, arbitrary date/time, and no reused outline or calibration from private content. Previous native reproduction does not establish coverage for this source; testing historical and fixed behavior separately.
+
+The unrelated 871-word replacement completed normally on historical code with seeds 42 and 0 (211/227 output tokens; 2885 prompt, 5888 context). It does not currently reproduce native context exhaustion. Original failure coverage is withdrawn rather than transferred. The fixed sequential suite is running; native reproduction acceptance remains unchecked and task stays Next.
+
+Fixed replacement completes in 208 tokens, with bounded valid metadata and unchanged body. All five enrichment generation/saved-output checks pass (2026-10-08_10-53-26_63479_Qwen3.5-9B-Q4_K_M); build, 25 validator checks and six seed boundaries pass. Semantic review records a hallucinated Whisper entity, overinclusive creature/object entities and omitted tags/summary details; expected metadata remains correct. Privacy correction is complete, but native failure reproduction and its regression coverage remain unverified, so task stays Next.
 <!-- SECTION:NOTES:END -->
 
 ## Final Summary
 
 <!-- SECTION:FINAL_SUMMARY:BEGIN -->
-Added the confirmed synthetic native context-exhaustion reproducer, byte-pinned seeded case settings, expected metadata, historical reproduction patch/procedure and strict sequential generation/saved-output gates. Pre-fix: 9254+9434=18688 tokens, native error/no output. Fixed: 288 tokens on both historical and current runtimes. All five enrichment fixtures, build, 209 deterministic tests, 25 gate checks, six seed boundaries and full audio pipeline pass. Semantic limitations documented; original/private copies deleted. Ready for owner review.
+Removed the rejected presentation-related fixture and local generated artifacts, replaced it with an unrelated imaginary festival diary, and added strict synthetic-fixture provenance guidance. The replacement and existing four cases pass fixed structural evals; manual findings are recorded. Historical seeds 42 and 0 both complete normally, so this replacement is not a native reproducer. TASK-44 remains Next with native reproduction/coverage acceptance unchecked. Earlier Git history is unchanged.
 <!-- SECTION:FINAL_SUMMARY:END -->

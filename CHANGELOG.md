@@ -14,6 +14,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Removed
 
+- Remove the rejected enrichment fixture and its presentation-related references; replace it with an unrelated, wholly fictional lantern-festival diary and reassess native behavior without transferring the old reproduction claim.
+
 - Remove the keyboard, VoiceOver, reduced-motion and layout-stability acceptance item from the Logs plan and its backlog summary; retain clean-machine packaged-app checks.
 - Remove the obsolete startup benchmark and its debug recording hooks; document the retained build and verification scripts in `scripts/README.md`.
 
@@ -36,7 +38,7 @@ entry. Git links provide the complete commit history for each release.
 ### Added
 
 - Add repeatable enrichment evaluation controls (`cl enrich --seed` and `--diagnostics`), per-case settings, an enrichment-only sequential suite, and saved-output checks for schema, duplicate names, metadata bounds, supplied date/time and exact transcript preservation. Include model-free validator and seed-boundary checks.
-- Add an independently authored Dutch enrichment fixture that reproduces the native pre-fix entity-list loop and context-exhaustion error; preserve historical reproduction diagnostics, model/runtime and source provenance, expected metadata and formatting sensitivity without including private transcript content. Pin its source fingerprint so accidental edits cannot silently erase the regression.
+- Preserve historical native reproduction setup and strict enrichment output gates. The first attempted fixture was rejected for presentation-related content and removed; replacement coverage and limitations are recorded in ADR-007.
 - Add a backlog item for Make-based repository script entry points, including an ADR explaining the choice and checks for sequential inference, argument forwarding and fixture isolation.
 - Record a separate investigation draft for the Whisper Metal assertion encountered during the enrichment fix's fixture pipeline check.
 - Add TASK-42 to prioritize reducing agent navigation and evaluation overhead, with acceptance criteria and explicitly unmeasured time/token savings estimates.

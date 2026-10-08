@@ -31,9 +31,14 @@ the printed run directory. It does not require a Whisper model. The same cases
 also run in `--suites` and `--all`.
 
 The manifest must cover every input. Regression cases also record a source SHA256;
-generation and saved-run validation reject changed fixture bytes. Reformatting the
-entity-list regression can remove its historical failure, so update its fingerprint
-only after repeating the native baseline and fixed-output checks.
+generation and saved-run validation reject changed fixture bytes. A source change
+invalidates earlier native reproduction evidence; rerun baseline and fixed-output
+checks before claiming that the changed input covers the same failure.
+
+Synthetic fixtures must be written from scratch in an unrelated domain, using
+invented names, events and scenarios. Do not retain names, terminology, outlines,
+spelling variants, token positions or length targets from private material.
+Replacing names alone does not make a private-derived scenario synthetic.
 
 Generate a new enrichment for each iteration. Use a timestamp in the filename so old versions are preserved:
 
