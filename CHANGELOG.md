@@ -35,6 +35,9 @@ entry. Git links provide the complete commit history for each release.
 
 ### Added
 
+- Add focused stage/case fixture evaluations, sequential shared-model text batches, run metadata and per-case review bundles with optional baseline diffs. Preserve full pipeline/suite entry points and legacy saved-run validation; ignore generated JSON/log artifacts alongside Markdown.
+- Add a linked source map and isolated local development installation, build-identification and rollback instructions.
+
 - Add a backlog item for Make-based repository script entry points, including an ADR explaining the choice and checks for sequential inference, argument forwarding and fixture isolation.
 - Record a separate investigation draft for the Whisper Metal assertion encountered during the enrichment fix's fixture pipeline check.
 - Add TASK-42 to prioritize reducing agent navigation and evaluation overhead, with acceptance criteria and explicitly unmeasured time/token savings estimates.
@@ -47,6 +50,8 @@ entry. Git links provide the complete commit history for each release.
 - Add a release command that infers the highest version bump from Conventional Commits since the latest release (fix/perf → patch, feat → minor, breaking → major or minor on 0.x), skips maintenance-only releases, supports manual overrides, rolls over notes and Git links, runs sequential checks, creates a commit/tag, and optionally publishes through an atomic Git push. Require Conventional Commits for new work and use `chore(release)` for generated release/cask commits. Implement release tooling in one standalone Swift script with Bash/Git fixture tests and document its commands; no additional runtime or package dependencies.
 
 ### Fixed
+
+- Consolidate stage skills around one evaluation runner and shared semantic reports; reject malformed output, invalid enrichment fields and source-body changes with failing command status. Resolve pipeline slug stems to Markdown paths and make artifact assertions fail explicitly on macOS Bash 3.2. Correct stale UI paths, inactive-corpus links and ANE/llama-cli/GPU-layer troubleshooting advice.
 
 - Resolve llama.cpp and GGML headers through their versioned pkg-config include paths instead of the mutable global Homebrew header alias, preventing release builds from reusing a module compiled against an older header after an upgrade. Declare the existing GGML dependency explicitly because Homebrew's llama package metadata omits its include path.
 

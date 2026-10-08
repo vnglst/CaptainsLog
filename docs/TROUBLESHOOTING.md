@@ -1,107 +1,23 @@
 # Troubleshooting
 
-## ANE compilation error (MILCompilerForANE error)
+Find active files in the [source map](SOURCE-MAP.md). Reproduce processing problems with [repository fixture evaluations](EVALUATIONS.md) and isolated config/data before using the UI. Never use personal notes or recordings for debugging.
 
-If you encounter this error during transcription:
-```
-MILCompilerForANE error: failed to compile ANE model using ANEF
-```
+## Whisper / CoreML errors
 
-The Apple Neural Engine (ANE) failed to compile the Whisper model. This can happen with certain model versions or macOS configurations. **ANE is ~2-3x faster than CPU+GPU**, so the default keeps it enabled. If you need to disable ANE:
+The current [Transcriber.swift](../Sources/CaptainsLogCore/Transcriber.swift) explicitly uses `.cpuAndGPU` for both the audio encoder and text decoder. Advice to disable ANE in a default `WhisperKitConfig` describes older code. If `MILCompilerForANE` appears, identify the running bundle/revision with [local build identification](LOCAL-DEVELOPMENT.md#identify-and-roll-back) and compare its transcription configuration before changing compute settings.
 
-```swift
-// In Sources/CaptainsLogCore/Transcriber.swift, replace:
-let whisperConfig = WhisperKitConfig(modelFolder: folder)
+A Metal assertion was recorded on the Dutch fixture in [ADR-007](0007-framework-free-test-coverage.md#dated-verification-evidence). A failed transcription is not a successful pipeline run, even if transcript-seeded downstream stages pass. Capture the failing fixture run's logs and model identity; do not substitute personal audio. Run compilation and inference separately, and never run model tasks concurrently.
 
-// With:
-let computeOptions = ModelComputeOptions(
-    audioEncoderCompute: .cpuAndGPU,
-    textDecoderCompute: .cpuAndGPU
-)
-let whisperConfig = WhisperKitConfig(
-    modelFolder: folder,
-    computeOptions: computeOptions
-)
-```
+## llama.cpp setup and runtime
 
-## URL cache warning (failed to write cached response)
+Text inference uses the in-process libllama C API, not `llama-cli` or terminal-output parsing. Source builds require `brew install llama.cpp` and resolve llama/GGML headers through pkg-config; packaged builds bundle their runtime libraries. `Sources/CaptainsLogCore/LLM.swift` requests `n_gpu_layers = -1` (all available layers), not a fixed 41-layer setting.
 
-If you see this warning when running the SwiftUI app:
-```
-ERROR: failed to write cached response to ~/Library/Caches/CaptainsLogApp. Falling back to old persistent store mechanism.
-```
+The app downloads its Qwen model during setup. For source-build fixture checks, point the [evaluation runner](EVALUATIONS.md#isolation-and-models) at installed model files; it records the actual GGUF hash rather than assuming the label identifies the file. `cl warm` is a standalone inference smoke check; set an isolated `CAPTAINS_LOG_CONFIG_PATH` first. Do not run it concurrently with evaluations.
 
-**This is harmless.** It can occur when launching the app as a bare Swift executable with `swift run`, rather than from the packaged `.app`. The `swift-transformers` library tries to persist URL cache to disk and falls back to its older persistent-store mechanism. Downloads still complete.
+For a missing library/header, inspect `pkg-config --cflags --libs llama ggml` and `otool -L <path-to-cl>`. A missing `llama-cli` executable does not diagnose this app's C API integration. Check the bundled binary and `Contents/Frameworks` when a packaged app differs from a source build.
 
-No fix is currently required. The packaged Homebrew app is installed as a proper `.app` bundle.
+For slow inference or out-of-memory errors, first stop other inference/compilation and verify the actual model and runtime. The supported model is Qwen 3.5 9B Q4_K_M; arbitrary smaller models/quantizations are not established quality substitutes. Context allocation follows `LLM.plannedContextSize` and the request's token count, bounded by the model maximum. Generation exhaustion reports the allocated context; output-limit failures discard unfinished responses. Shorten a synthetic fixture only to isolate a size-related failure, preserving the original failing case and findings.
 
-## llama.cpp model setup
+## URL cache warnings
 
-The project uses **llama.cpp** for LLM inference with Metal GPU acceleration. The packaged app bundles the llama.cpp runtime and downloads the Qwen GGUF model when needed. The manual setup below is for source builds or a custom model folder.
-
-### Setup Instructions
-
-1. **Install llama.cpp** when building from source (if not already installed):
-```bash
-brew install llama.cpp
-```
-
-2. **Download the Qwen 3.5 9B 4-bit GGUF model:**
-
-   Option A: Use Hugging Face CLI (recommended):
-   ```bash
-   pip install huggingface-hub
-   huggingface-cli download bartowski/Qwen_Qwen3.5-9B-GGUF Qwen_Qwen3.5-9B-Q4_K_M.gguf --local-dir ./models/qwen
-   ```
-
-   Option B: Manual download from [Hugging Face model page](https://huggingface.co/bartowski/Qwen_Qwen3.5-9B-GGUF)
-
-3. **Configure CaptainsLog to use the model:**
-```bash
-cl config set qwenModelFolder /absolute/path/to/models/qwen
-```
-
-4. **Test the setup:**
-```bash
-swift run cl warm
-```
-
-You should see output like:
-```
-Loading Qwen_Qwen3.5-9B-Q4_K_M.gguf...
-Output: Hello! I'm happy to help with any questions or tasks you might have.
-```
-
-### Metal Acceleration
-
-llama.cpp with Metal support is built-in via Homebrew. The `llama-cli` command automatically uses GPU acceleration when available on Apple Silicon. To verify:
-
-```bash
-llama-cli -h | grep -i metal
-```
-
-You should see Metal options available.
-
-### Model Size Recommendations
-
-- **Qwen 3.5 9B (Q4_K_M)**: ~5-6 GB, required model for this project
-
-### Troubleshooting llama.cpp
-
-**Issue: "llama-cli not found"**
-```bash
-# Verify installation
-which llama-cli
-
-# If not found, reinstall
-brew reinstall llama.cpp
-```
-
-**Issue: Model inference is slow**
-- Ensure Metal acceleration is available: `llama-cli -h | grep metal`
-- Check GPU offload layers setting in LLM.swift (currently set to 41 layers)
-- Try a more aggressive quantization (Q4_K_M instead of Q5_K_M)
-
-**Issue: Out of memory**
-- Use a quantized (smaller) model: Q4_K_M or Q3_K_M
-- Shorten or split exceptionally long input. CaptainsLog sizes each llama.cpp context from the tokenized request, up to the model's native context length.
+A bare Swift executable can emit a URL-cache persistence warning. Check whether the requested download actually completed before treating the warning as a processing failure. Use the packaged development bundle for bundle-specific behavior; see [local installation and rollback](LOCAL-DEVELOPMENT.md).

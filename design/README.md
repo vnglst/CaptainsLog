@@ -1,6 +1,6 @@
 # Design references
 
-The shipped interface is the Logs workspace implemented in `Sources/CaptainsLogApp`. It supports entry browsing, search and detail, recording, processing, onboarding, and Settings. See [`logs/DESIGN-SYSTEM.md`](logs/DESIGN-SYSTEM.md) for visual direction and reference images.
+The shipped interface is the Logs workspace implemented in [`FieldNotesContentView.swift`](../Sources/CaptainsLog/FieldNotesContentView.swift); `Sources/CaptainsLogApp` contains the launcher. It supports entry browsing, search and detail, recording, processing, onboarding, and Settings. See [`logs/DESIGN-SYSTEM.md`](logs/DESIGN-SYSTEM.md) for visual direction and reference images.
 
 The images in `design/logs/screens/` are conceptual design references. They are not captures of the current app and include illustrative values such as folder paths, entry counts, microphone names, and version numbers. Review or replace them before presenting them as product screenshots.
 

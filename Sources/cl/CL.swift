@@ -7,7 +7,7 @@ struct CL: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "cl",
         abstract: "CaptainsLog command-line interface.",
-        subcommands: [Ping.self, Record.self, Warm.self, Transcribe.self, CleanupCommand.self, CategorizeCommand.self, FilenameCommand.self, EnrichCommand.self, PipelineCommand.self, ResumeCommand.self, ListCommand.self, SearchIndexCommand.self, SearchCommand.self, ConfigCommand.self, ModelsCommand.self, UpdateCommand.self]
+        subcommands: [EvalBatch.self, Ping.self, Record.self, Warm.self, Transcribe.self, CleanupCommand.self, CategorizeCommand.self, FilenameCommand.self, EnrichCommand.self, PipelineCommand.self, ResumeCommand.self, ListCommand.self, SearchIndexCommand.self, SearchCommand.self, ConfigCommand.self, ModelsCommand.self, UpdateCommand.self]
     )
 }
 

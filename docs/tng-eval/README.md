@@ -2,11 +2,11 @@
 
 This folder contains the complete scripts and ground truth for the Star Trek TNG synthetic evaluation corpus. There are 13 entries: 11 in English, 1 in Dutch, 1 in German.
 
-## How to use
+## Active suite versus reference corpus
 
-1. **Record audio:** Read each `## Raw Script` section aloud at a comfortable natural pace. Save recordings as `.m4a` to `eval/transcribe/audio/` with the filename slug from this file.
-2. **Copy files into eval:** Once recorded, each entry maps to 6 eval files (see [corpus details](../PLAN-002-tng-eval-set.md) for exact paths).
-3. **Ground truth is in this folder:** Each entry file contains the raw spoken text, the polished cleanup version, the expected YAML frontmatter, and the expected filename.
+This is a reference corpus, not the current runner's case list. The active suites are the committed audio/input/expected files under `eval/{transcribe,cleanup,categorize,filename,enrich}`. Use `bash scripts/run-evals.sh --list` and [the evaluation workflow](../EVALUATIONS.md) to discover and run them. These reference scripts do not automatically participate in release gates.
+
+Corpus expansion is owner-selected backlog work. When selected, derive synthetic fixtures from these scripts and ground truth; do not use personal recordings. Keep narration and expected stage outputs paired and review their semantics before adding them to the active directories.
 
 ## The TNG Universe
 
