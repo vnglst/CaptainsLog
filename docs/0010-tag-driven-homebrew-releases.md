@@ -37,4 +37,3 @@ bumping again. Maintenance-only history produces no automatic release.
 ## Supporting documents
 
 - [Release commands, versioning rules, and checklist](../README.md#changelog-and-releases)
-- [Historical implementation and verification](release-verification.md)

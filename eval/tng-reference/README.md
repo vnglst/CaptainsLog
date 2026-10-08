@@ -4,7 +4,7 @@ This folder contains the complete scripts and ground truth for the Star Trek TNG
 
 ## Active suite versus reference corpus
 
-This is a reference corpus, not the current runner's case list. The active suites are the committed audio/input/expected files under `eval/{transcribe,cleanup,categorize,filename,enrich}`. Use `bash scripts/run-evals.sh --list` and [the evaluation workflow](../EVALUATIONS.md) to discover and run them. These reference scripts do not automatically participate in release gates.
+This is a reference corpus, not the current runner's case list. The active suites are the committed audio/input/expected files under `eval/{transcribe,cleanup,categorize,filename,enrich}`. Use `bash scripts/run-evals.sh --list` and [the evaluation workflow](../../README.md#fixture-evaluations) to discover and run them. These reference scripts do not automatically participate in release gates.
 
 Corpus expansion is owner-selected backlog work. When selected, derive synthetic fixtures from these scripts and ground truth; do not use personal recordings. Keep narration and expected stage outputs paired and review their semantics before adding them to the active directories.
 

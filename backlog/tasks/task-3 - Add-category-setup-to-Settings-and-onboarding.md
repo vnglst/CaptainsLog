@@ -4,11 +4,10 @@ title: Add category setup to Settings and onboarding
 status: To Do
 assignee: []
 created_date: '2026-10-04 13:10'
+updated_date: '2026-10-08 17:09'
 labels:
   - logs
 dependencies: []
-documentation:
-  - docs/PLAN-004-logs-implementation.md
 ordinal: 3000
 ---
 

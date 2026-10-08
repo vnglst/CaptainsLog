@@ -81,14 +81,15 @@ Transcription uses Whisper Large-v2. Cleanup, categorization, filenames, and met
 ## Documentation
 
 - [Changelog and release history](./CHANGELOG.md)
-- [Testing gates and isolation](./docs/testing.md)
-- [Dated testing and evaluation evidence](./docs/testing-verification.md)
+- [Testing decision](./docs/0007-framework-free-test-coverage.md)
+- [Work and verification findings](./backlog/tasks/)
 - [Build and verification scripts](./scripts/README.md)
-- [Troubleshooting](./docs/TROUBLESHOOTING.md)
+- [Troubleshooting](#troubleshooting)
 - [Backlog tasks](./backlog/tasks/)
-- [Publication procedures and review record](./docs/PUBLISHING-PLAN.md)
+- [Release procedure](#changelog-and-releases)
 - [Third-party notices](./THIRD-PARTY-NOTICES.md)
-- [Evaluation fixtures and scripts](./docs/tng-eval/README.md)
+- [Active evaluation fixtures](./eval/)
+- [Inactive TNG reference corpus](./eval/tng-reference/README.md)
 - [Design references](./design/README.md)
 - [Architecture decision workflow](#architecture-decisions)
 
@@ -115,9 +116,9 @@ template. Edit that file to state the decision, its status, and its known contex
 or rationale; remove empty template sections. Do not invent missing context or
 alternatives.
 Keep ADRs to 300 words or fewer; allow up to 500 only when essential rationale
-needs more room. Include the decision, relevant context, and consequences. Link
-to procedures, implementation details, and dated evaluation evidence rather than
-embedding them. Editorial shortening must preserve existing decisions, dates, and statuses. If a decision changes, create a new ADR and link the earlier record
+needs more room. Include the decision, relevant context, and consequences.
+Keep `docs/` limited to numbered ADRs; put implementation scope and dated
+verification findings directly in self-contained Backlog tasks, without file links. Editorial shortening must preserve existing decisions, dates, and statuses. If a decision changes, create a new ADR and link the earlier record
 from it, stating that the new decision supersedes it. Commit
 the ADR with its related change, Backlog task, and changelog entry.
 
@@ -158,7 +159,7 @@ documentation fields. There is no fixed word limit.
 Condense outdated session notes while preserving the explanation, dependencies,
 status and checked acceptance criteria.
 
-Use the CLI for task updates. If review finds more work, move the task back to `Next` with a note. Commit the Markdown changes with the related code and a changelog entry. Procedures and decisions remain in the linked docs and ADRs.
+Use the CLI for task updates. If review finds more work, move the task back to `Next` with a note. Commit the Markdown changes with the related code and a changelog entry. Keep essential procedures and findings in the task, and durable decisions in ADRs.
 
 ## Testing
 
@@ -171,7 +172,62 @@ bash scripts/test-coverage.sh
 
 GitHub Actions runs only when a release tag (`v*`) is pushed; ordinary branch pushes and pull requests do not start workflows. The release workflow runs release-tooling checks and the full deterministic suite (`swift run run-tests`) before packaging. Run the suite locally during development, or use `swift run run-tests --unit` for a lightweight, model-free check. Coverage instrumentation, CLI coverage, model evaluations, and UI checks remain opt-in.
 
-For the sequential model-backed fixture pipeline, run `bash scripts/run-evals.sh --pipeline`. Run every stage evaluation with `bash scripts/run-evals.sh --suites`; validate saved outputs without inference using `bash scripts/run-evals.sh --validate-run <run-stamp>`. Review generated files against `eval/*/expected/` and the matching stage skill; dated results and semantic findings are recorded in [testing verification history](./docs/testing-verification.md#dated-verification-evidence). For native macOS UI checks, use `bash scripts/test-ui.sh eval`; it builds a temporary app bundle and isolates config/data under a temporary directory. Prepared-machine model checks use `scripts/test-model-smoke.sh` with the four `CAPTAINSLOG_*_MODEL_*` environment variables set. Actual microphone capture is a separately confirmed, interactive check via `scripts/test-recorder-hardware.sh`. Neither smoke check runs in GitHub Actions. See [testing gates and isolation](./docs/testing.md) for fixture and hardware constraints.
+For the sequential model-backed fixture pipeline, run `bash scripts/run-evals.sh --pipeline`. Run every stage evaluation with `bash scripts/run-evals.sh --suites`; validate saved outputs without inference using `bash scripts/run-evals.sh --validate-run <run-stamp>`. Review generated files against `eval/*/expected/` and the matching stage skill; record dated results, semantic findings and limitations directly in the related task. For native macOS UI checks, use `bash scripts/test-ui.sh eval`; it builds a temporary app bundle and isolates config/data under a temporary directory. Prepared-machine model checks use `scripts/test-model-smoke.sh` with the four `CAPTAINSLOG_*_MODEL_*` environment variables set. Actual microphone capture is a separately confirmed, interactive check via `scripts/test-recorder-hardware.sh`. Neither smoke check runs in GitHub Actions. Use isolated configuration/data, only repository eval fixtures, and no personal data. Demo material is for presentation. A transcript-seeded continuation cannot establish a successful full audio run.
+
+## Fixture evaluations
+
+Run `bash scripts/run-evals.sh --list` to discover cases without loading models.
+Use `--stage STAGE --case STEM` for focused work, `--pipeline` for the full audio
+fixture pipeline and `--suites` for all stage suites. The default `--all` runs
+pipeline then suites. Quote stems containing spaces. `--categorize` and `--enrich`
+select their respective stages.
+
+Revalidate a saved bundle with `--validate-run RUN_DIR`; legacy timestamped
+outputs support `--validate-categorize STAMP` and `--validate-enrich STAMP`.
+Use `--baseline RUN_DIR` to assemble comparison evidence. Missing models, malformed
+outputs and existing run directories fail explicitly. `ruby scripts/test-evals.rb`
+checks orchestration without inference.
+
+Each run isolates config/data under a new temporary run directory, pins the selected
+model files and snapshots fixtures. Model overrides use the `CAPTAINS_LOG_EVAL_`
+QWEN_FOLDER, QWEN_FILE, QWEN_LABEL, WHISPER_FOLDER and WHISPER_MODEL variables;
+`CAPTAINS_LOG_EVAL_RUN_DIR` selects a new run directory. Enrichment dates, times and
+seeds come from its case manifest; the pipeline and other stages retain their
+sampling defaults. Text cases reuse weights sequentially with fresh contexts and
+samplers. Compile before inference; never edit a running evaluator or start another
+model job concurrently. The retained TNG reference corpus is not an active suite.
+
+### Semantic review
+
+Read each selected case’s input, expected output, generated output and validation
+in the printed review bundle. Fill its preserved report with concrete omissions,
+changed meaning, added or hallucinated content, baseline improvements/regressions,
+stage observations and remaining limits. Explain why each difference matters.
+Metadata records model/runtime identity, source/prompt/fixture hashes, settings,
+revision and timings; validation success cannot prove grounding or completeness.
+Expected wording is a reference rather than the only valid wording. Baseline diffs
+and heuristic scores help navigation but do not replace human review. Record durable
+dated findings in the corresponding task; do not claim speed or token savings without
+measurements and comparable timing scopes.
+
+## Troubleshooting
+
+Reproduce processing issues through the CLI using synthetic fixtures and isolated
+config/data before debugging the UI. The transcriber currently selects CPU/GPU
+compute; ANE advice may describe an older bundle. Text inference uses in-process
+libllama and all available GPU layers. Check versioned llama/GGML package includes
+and actual bundled library paths for header or library failures. A missing llama-cli
+executable does not diagnose this integration. Stop concurrent compilation/inference
+before investigating memory issues; preserve the original failing synthetic case.
+
+The active UI and Settings are embedded in FieldNotesContentView; the launcher is
+AppMain. Core stage implementations and the sequential inference gate live in
+CaptainsLogCore, while command types live in cl. Framework-free tests are in the
+run-tests executable. Older ContentView/LCARS types require downstream and resource
+checks before deletion. For isolated native UI inspection use the existing UI harness;
+packaged development executables must be launched directly to inherit their isolated
+configuration. Record the bundle revision, dirty state, signatures and binary checksums
+when comparing builds. A rollback restores binaries/resources, not data migrations.
 
 ## Changelog and releases
 
@@ -224,7 +280,7 @@ pipeline and stage suites sequentially with isolated config/data. Failed checks
 stop before version/changelog edits, commits, or tags. Model evaluation scores
 and artifacts still need semantic review under the stage skills; see [the
 backlog tasks](./backlog/tasks/) for remaining manual checks and
-[publication procedures](./docs/PUBLISHING-PLAN.md) for review details.
+task records for outstanding acceptance checks.
 
 After checks pass, the command bumps `VERSION`, moves Unreleased entries into a
 dated release section, adds the packaging entry, updates comparison links, and

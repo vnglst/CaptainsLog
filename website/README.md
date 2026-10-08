@@ -27,7 +27,7 @@ Place those files in `assets/`. A poster and captions are optional (`null` omits
 
 The owner will create the recordings. The earlier synthetic sample audio and illustrative walkthrough have been removed. No recordings ship with the page until the owner adds the final files.
 
-The hero is a selectable HTML illustration, explicitly labeled as such. It uses verbatim synthetic fixture text from `eval/categorize/input/{side-project-voice-app,professional-release-planning,personal-weekend}.md`, split into paragraphs. Titles, tags, and relative dates are illustrative. It is not captured native UI or measured model output. No app audio playback is advertised: it is tracked in the [backlog](../backlog/tasks/), with workspace context in [Logs interface details](../docs/PLAN-004-logs-implementation.md).
+The hero is a selectable HTML illustration, explicitly labeled as such. It uses verbatim synthetic fixture text from `eval/categorize/input/{side-project-voice-app,professional-release-planning,personal-weekend}.md`, split into paragraphs. Titles, tags, and relative dates are illustrative. It is not captured native UI or measured model output. No app audio playback is advertised: it is tracked in the [backlog](../backlog/tasks/), with workspace context in [Logs interface details](../backlog/tasks).
 
 ## Content sources
 
@@ -38,7 +38,7 @@ The hero is a selectable HTML illustration, explicitly labeled as such. It uses 
 - `docs/0006-bundle-llama-runtime-in-app.md` and `docs/0009-distribute-app-and-cli-through-homebrew.md`: app and CLI installation together; no separate inference service needed.
 - `docs/0008-self-signed-macos-distribution.md`: signing, notarization, and quarantine trust notice alongside install instructions.
 - `docs/0012-homebrew-auto-updates.md`: network behavior and configurable update checks.
-- `docs/testing-verification.md`: review limits of generated text; retained source audio/stage outputs support comparison.
+- Backlog verification findings: review limits of generated text; retained source audio/stage outputs support comparison.
 - `docs/0013-isolated-tng-demo-data.md`: the “Logs” journal concept and distinction between demo presentation and actual app captures.
 
 The website does not promise knowledge graphs, automatic Obsidian synchronization, native saved-audio playback, or collections. Obsidian is mentioned only as an example of a tool that reads Markdown. Review current docs before changing product claims. ImageGen output is a design reference; verified HTML copy is authoritative.

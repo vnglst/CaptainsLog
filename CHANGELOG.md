@@ -21,6 +21,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
+- Restrict docs to numbered ADRs; migrate plan scope and important verification findings into self-contained backlog tasks, preserve search decisions in ADR-019, and record the documentation policy in ADR-020. Remove superseded guides/reports and update inbound guidance. Move all 13 unused TNG reference scripts and their ground truth to eval/tng-reference without changing active fixtures or demo assets.
+
 - Remove file-reference fields from the revised backlog tasks and require task explanations without links to repository files.
 
 - Restore self-contained explanations and readable acceptance criteria in the nine shortened backlog tasks. Remove the task word cap and require essential scope, context and review limits to be readable in the Backlog app without opening repository links.

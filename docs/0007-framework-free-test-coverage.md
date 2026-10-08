@@ -34,8 +34,6 @@ to improve the percentage.
 - Model evaluations require semantic human review; structural checks and
   coverage percentages cannot establish output quality.
 
-## Supporting documents
+## Verification boundary
 
-- [Testing commands, gates, and isolation](testing.md)
-- [Dated verification evidence and review limits](testing-verification.md)
-- [Open acceptance work](../backlog/tasks/)
+Use `swift run run-tests` for deterministic behavior and `bash scripts/test-coverage.sh` for coverage. Fixture pipelines and stage evaluations run sequentially with isolated configuration and repository inputs. Demo data is presentation material. Record dated results and unresolved acceptance checks directly in the related backlog tasks; a structural pass does not replace semantic review.

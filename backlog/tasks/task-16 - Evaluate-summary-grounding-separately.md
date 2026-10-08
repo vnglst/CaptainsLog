@@ -4,16 +4,19 @@ title: Evaluate summary grounding separately
 status: To Do
 assignee: []
 created_date: '2026-10-04 13:10'
+updated_date: '2026-10-08 17:09'
 labels:
   - kev
 dependencies: []
-documentation:
-  - docs/PLAN-005-kev-decision-model.md
 ordinal: 16000
 ---
 
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-Separately evaluate summary grounding on Dutch/English source-summary pairs, including false alarms and missed unsupported claims; expose an evaluation report before deciding on an optional pipeline stage or app controls.
+Evaluate whether Kev can identify unsupported summary claims independently of its categorization accuracy. Use synthetic source/summary pairs with human-reviewed labels, including Dutch sources with English summaries.
+
+Include invented entities, changed numbers, reversed negation, missing uncertainty and fluent but unsupported statements, as well as correct claims. Report missed unsupported claims and false alarms separately. Omission detection is a different rubric from factual grounding and should not be folded into one unexplained score.
+
+Expose results as a CLI evaluation report first. Preserve the generated summary and earlier-stage files; do not silently rewrite content or retry generation based on an unvalidated score. Decide whether the benefit justifies an optional pipeline stage, define default-off configuration and review behavior, and reserve stable UI space before adding app controls.
 <!-- SECTION:DESCRIPTION:END -->

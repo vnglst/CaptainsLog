@@ -30,4 +30,6 @@ choice and migration commands are historical. The subsequent
 [in-process libllama decision](0005-use-libllama-c-api-for-text-inference.md)
 describes the shared app/CLI inference boundary.
 
-[Detailed comparison and historical migration instructions](model-evaluation-2026-04-21.md).
+## Recorded comparison limits
+
+In the April 2026 MLX trial, OptiQ produced four cleanup paragraphs where the baseline produced none, omitted one rather than two personal tags, and matched five rather than four of eight expected filenames. Both models produced valid filenames in all eight cases. These are small-corpus historical observations, not current GGUF benchmarks; the old MLX migration commands no longer apply.

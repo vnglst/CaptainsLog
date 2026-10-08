@@ -31,6 +31,4 @@ Keep Markdown logs canonical and the SQLite FTS5/sqlite-vec index disposable.
 Return keyword and semantic matches as notes and excerpts; do not generate
 answers through Qwen. Pin model/runtime artifacts and serialize native state.
 
-[Search implementation details and integration limits](search-architecture.md).
-[Testing workflow](testing.md) and [verification history](testing-verification.md)
-cover checks; runtime packaging work is tracked in the [backlog](../backlog/tasks/).
+The detailed index decision is recorded in [ADR-019](0019-use-a-disposable-local-hybrid-search-index.md). Runtime packaging and verification work remains in the backlog.

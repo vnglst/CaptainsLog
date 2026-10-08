@@ -30,4 +30,6 @@ be compared against all four fixture ground truths, including omissions, order,
 names, and speaker attributions. These observations establish the choice for the
 tested versions and corpus, not a general ranking of model families.
 
-[Historical comparison, examples, and alternatives](asr-evaluation-2025-04-21.md).
+## Recorded examples
+
+The tested Qwen path dropped “Het doek ging op” and speaker attributions, changed Captain Jean-Luc Picard to John Duke Picard, and corrupted Khazad-dûm. Whisper still misspelled names and words. The comparison concerned the tested streaming/VAD and quantized implementation; it did not establish bf16 behavior or evaluate future backends.

@@ -23,6 +23,6 @@ the Xcode IDE is not required. Run commands from the repository root.
 Model evaluations and model smoke checks must run sequentially. Use repository
 `eval/` fixtures and isolated config/data for checks. The UI harness is for
 presentation inspection; processing and recording controls invoke real models or
-hardware. See [the testing workflow](../docs/testing.md) for test
+hardware. See [the testing workflow](../README.md#testing) for test
 gates, limitations, and semantic review requirements, and the stage workflows in
 [`skills/`](../skills/) for output review.

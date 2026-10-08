@@ -41,5 +41,4 @@ relaunch behavior.
 ## Supporting documents
 
 - [Fixture procedures](../eval/update/README.md)
-- [Dated verification history](update-verification.md)
 - [Open acceptance work](../backlog/tasks/)

@@ -4,7 +4,7 @@ title: Add a synthetic enrichment loop regression evaluation
 status: Complete
 assignee: []
 created_date: '2026-10-07 15:19'
-updated_date: '2026-10-08 17:03'
+updated_date: '2026-10-08 17:13'
 labels: []
 dependencies: []
 ordinal: 1187.5
@@ -41,6 +41,8 @@ The committed example is a 66-word invented bedtime story about a caterpillar wh
 Two fresh ordinary historical CLI runs, with seeds 42 and 0, both exhausted a 4,864-token context after 2,372 prompt tokens and 2,492 output tokens, writing no completed file. Repetition occurs within one extracted name. Fixed code finishes in 177 tokens on both the matching historical runtime and the current runtime, with valid bounded metadata and the exact original body.
 
 All five sequential enrichment cases and saved-output checks pass, along with the build, 25 validator checks and six CLI seed boundaries. The generated artificial name is shortened to four syllable units in persons and three in the summary; some tags and story details are omitted. The expected reference retains the full correct name. Further search/minimization stopped at the owner’s request.
+
+Historical provenance correction: the earlier presentation-related candidate and its artifacts were rejected and removed. Its failure/success evidence does not transfer to a replacement. An intermediate fictional festival story completed normally on historical code and was not a demonstrated exhaustion reproducer; only the independently authored long-name bedtime story established the recorded native failure. This migration retains that distinction without rerunning inference.
 <!-- SECTION:NOTES:END -->
 
 ## Final Summary
