@@ -98,7 +98,7 @@ fi
 THIRD_PARTY_DIR="$APP/Contents/Resources/ThirdPartyLicenses"
 mkdir -p "$THIRD_PARTY_DIR/sqlite-vec" "$THIRD_PARTY_DIR/Antonio" \
     "$THIRD_PARTY_DIR/llama.cpp" "$THIRD_PARTY_DIR/LLVM-OpenMP"
-cp THIRD-PARTY-NOTICES.md "$APP/Contents/Resources/"
+cp LICENSE THIRD-PARTY-NOTICES.md "$APP/Contents/Resources/"
 cp Sources/CSQLiteVec/LICENSE-MIT "$THIRD_PARTY_DIR/sqlite-vec/"
 cp Sources/CSQLiteVec/LICENSE-APACHE "$THIRD_PARTY_DIR/sqlite-vec/"
 cp Sources/CaptainsLog/Resources/ThirdPartyLicenses/Antonio-OFL-1.1.txt "$THIRD_PARTY_DIR/Antonio/"
@@ -114,7 +114,7 @@ for checkout in .build/checkouts/*; do
         cp "$license_file" "$destination"
     done < <(find "$checkout" -type f \
         \( -iname 'LICENSE' -o -iname 'LICENSE.*' -o -iname 'NOTICE' \
-        -o -iname 'NOTICE.*' -o -iname 'COPYING*' \) -print0)
+        -o -iname 'NOTICE.*' -o -iname 'NOTICES' -o -iname 'COPYING*' \) -print0)
 done
 
 cp "$LLAMA_PREFIX/LICENSE" "$THIRD_PARTY_DIR/llama.cpp/"

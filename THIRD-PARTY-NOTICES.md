@@ -1,6 +1,6 @@
 # Third-party notices
 
-CaptainsLog includes or downloads third-party software, fonts, and model weights. The application’s source license, if any, is separate from these component licenses. Copies of the licenses for components bundled with the macOS app are placed in `Contents/Resources/ThirdPartyLicenses`.
+CaptainsLog includes or downloads third-party software, fonts, and model weights. CaptainsLog’s original source code is licensed under the [MIT license](LICENSE). Third-party components and content retain their own licenses and rights; the project license does not replace the terms below. Copies of the licenses for components bundled with the macOS app are placed in `Contents/Resources/ThirdPartyLicenses`.
 
 ## Bundled font
 

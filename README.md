@@ -93,6 +93,14 @@ Transcription uses Whisper Large-v2. Cleanup, categorization, filenames, and met
 - [Design references](./design/README.md)
 - [Architecture decision workflow](#architecture-decisions)
 
+## License
+
+CaptainsLog’s original source code is licensed under the [MIT license](LICENSE).
+Third-party software, fonts, model weights and example content retain their own
+licenses and rights; see [Third-party notices](THIRD-PARTY-NOTICES.md). The release
+app includes the project license, third-party notices and bundled component license
+texts in its Resources folder.
+
 ## Architecture decisions
 
 ADRs record significant, hard-to-reverse architecture decisions. The records
