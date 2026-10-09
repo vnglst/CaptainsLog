@@ -12,6 +12,10 @@ entry. Git links provide the complete commit history for each release.
 
 ## [Unreleased]
 
+### Changed
+
+- Add source and tooling implementation maps to the repository entry points, align README task and ADR instructions with owner-only content rules, correct the Settings preview command and evaluation skills' release guidance, and document updater test prerequisites and current-versus-historical runtime guidance.
+
 ## [0.3.0] - 2026-10-09
 
 ### Added
