@@ -12,6 +12,8 @@ entry. Git links provide the complete commit history for each release.
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-10-09
+
 ### Added
 
 - Add a short synthetic `.qta` memo and its spoken text to the demo audio, and include QuickTime audio when seeding the debug demo.
@@ -25,6 +27,10 @@ entry. Git links provide the complete commit history for each release.
 - Make release preparation use only Git, version and changelog checks. Streamline the GitHub release workflow to validate, build the release app and CLI, verify packaging and publish; keep tooling, runtime reproducibility and deterministic test suites as explicit development commands.
 
 - Add source and tooling implementation maps to the repository entry points, align README task and ADR instructions with owner-only content rules, correct the Settings preview command and evaluation skills' release guidance, and document updater test prerequisites and current-versus-historical runtime guidance.
+
+### Release
+
+- Publish the 0.3.1 app/CLI archive and matching Homebrew cask version and checksum.
 
 ## [0.3.0] - 2026-10-09
 
@@ -227,7 +233,8 @@ entry. Git links provide the complete commit history for each release.
 
 - Make release tests work on clean runners without preinstalled inference models.
 
-[Unreleased]: https://github.com/vnglst/CaptainsLog/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/vnglst/CaptainsLog/compare/v0.3.1...HEAD
+[0.3.1]: https://github.com/vnglst/CaptainsLog/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/vnglst/CaptainsLog/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/vnglst/CaptainsLog/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/vnglst/CaptainsLog/compare/v0.1.2...v0.2.0
