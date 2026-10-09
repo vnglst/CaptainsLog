@@ -28,6 +28,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
+- Refine the Settings redesign PBI with the owner's requirement for four image-generated design previews and owner review and selection before implementation.
+
 - Refine the menu bar PBI with the owner's requirements for minimizing the app, quick recording controls, processing status, quitting and a minimal interface, plus approved recording indication, elapsed time, reopening the main window and brief error feedback.
 
 - Refine the category-filter PBI with the owner's requirements for a control near search, multiple selected categories, all categories selected by default and a recognizable UI pattern.
