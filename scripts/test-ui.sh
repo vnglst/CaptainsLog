@@ -87,8 +87,6 @@ copy("cleanup/input/book-reference.md", ".pipeline/01-transcribed/2025-01-16-090
 PY
 
 cp "$bin_dir/CaptainsLogApp" "$app_bundle/Contents/MacOS/CaptainsLogUITest"
-cp -R "$bin_dir/CaptainsLog_CaptainsLog.bundle" \
-    "$app_bundle/Contents/Resources/CaptainsLog_CaptainsLog.bundle"
 cat > "$app_bundle/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">

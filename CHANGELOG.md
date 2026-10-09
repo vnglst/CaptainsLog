@@ -14,6 +14,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Removed
 
+- Remove the unused legacy LCARS interface, onboarding and common controls, along with their Antonio font and resource bundle; retain active Field Notes UI, shared state/color helpers and debug fixtures. Update packaging, native UI harness and coverage inputs for the removed resources. Keep the task's owner-provided text and verified checkboxes, removing agent-authored plans, notes and summaries.
+
 - Remove the rejected enrichment fixture and its presentation-related references; replace it with an unrelated, wholly fictional lantern-festival diary and reassess native behavior without transferring the old reproduction claim.
 
 - Remove the keyboard, VoiceOver, reduced-motion and layout-stability acceptance item from the Logs plan and its backlog summary; retain clean-machine packaged-app checks.

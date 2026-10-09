@@ -64,8 +64,7 @@ let package = Package(
         ),
         .target(
             name: "CaptainsLog",
-            dependencies: ["CaptainsLogCore"],
-            resources: [.process("Resources")]
+            dependencies: ["CaptainsLogCore"]
         ),
         .executableTarget(
             name: "CaptainsLogApp",

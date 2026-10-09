@@ -1,10 +1,10 @@
 ---
 id: TASK-29
 title: Remove unused legacy UI components
-status: Next
+status: Verify
 assignee: []
 created_date: '2026-10-04 13:10'
-updated_date: '2026-10-08 17:53'
+updated_date: '2026-10-09 13:36'
 labels:
   - distribution
 dependencies: []
@@ -23,7 +23,7 @@ This task delivers cleanup rather than only a list of removal candidates.
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Unused legacy UI and common components are removed rather than only identified; external package compatibility does not block removal.
+- [x] #1 Unused legacy UI and common components are removed rather than only identified; external package compatibility does not block removal.
 <!-- AC:END -->
 
 ## Implementation Notes

@@ -285,10 +285,7 @@ xcrun llvm-cov export "$bin_dir/run-tests" -object "$bin_dir/cl" -instr-profile=
 # applies to the remaining production logic, including app state, model orchestration,
 # CLI workflows, filesystem handling, search, and pipeline processing.
 coverage_excluded_sources=(
-    Sources/CaptainsLog/ContentView.swift
     Sources/CaptainsLog/FieldNotesContentView.swift
-    Sources/CaptainsLog/FirstRunView.swift
-    Sources/CaptainsLog/LCARSKit.swift
     Sources/CaptainsLog/Theme.swift
     Sources/CaptainsLog/FieldNotesTheme.swift
     Sources/CaptainsLog/DesignFixtures.swift

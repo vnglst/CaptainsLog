@@ -1341,7 +1341,6 @@ private struct ThirdPartyNoticesView: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: FieldNotes.Spacing.l) {
-                    notice("Antonio font", "Copyright 2013 The Antonio Project Authors. SIL Open Font License 1.1.", url: "https://github.com/googlefonts/antonioFont")
                     notice("Open-source software", "CaptainsLog includes Swift packages, sqlite-vec, llama.cpp, and LLVM OpenMP. Their license texts are bundled with the app.", url: "https://github.com/ggml-org/llama.cpp")
                     notice("Whisper Large-v2 · Apache-2.0", "Downloaded separately; model weights are not included in the app archive.", url: "https://huggingface.co/openai/whisper-large-v2")
                     notice("Qwen 3.5 9B GGUF · Apache-2.0", "Downloaded separately; this GGUF is a community conversion of the Qwen model.", url: "https://huggingface.co/bartowski/Qwen_Qwen3.5-9B-GGUF")
