@@ -12,6 +12,10 @@ entry. Git links provide the complete commit history for each release.
 
 ## [Unreleased]
 
+### Added
+
+- Add a short synthetic `.qta` memo and its spoken text to the demo audio, and include QuickTime audio when seeding the debug demo.
+
 ### Fixed
 
 - Recognize Voice Memos `.qta` exports, including uppercase extensions, in audio discovery, import, reprocessing, deletion and QuickTime conversion.

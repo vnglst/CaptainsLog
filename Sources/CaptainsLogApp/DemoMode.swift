@@ -72,7 +72,7 @@ enum DemoMode {
         let audioDestination = dataURL.appendingPathComponent("audio")
         try fm.createDirectory(at: audioDestination, withIntermediateDirectories: true)
         for file in try fm.contentsOfDirectory(at: audioSource, includingPropertiesForKeys: nil)
-            where file.pathExtension == "m4a" {
+            where ["m4a", "mov", "qt", "qta"].contains(file.pathExtension.lowercased()) {
             let destination = audioDestination.appendingPathComponent(file.lastPathComponent)
             if !fm.fileExists(atPath: destination.path) {
                 try fm.copyItem(at: file, to: destination)
