@@ -77,7 +77,7 @@ Reproducibility here means identical prebuilt native code and headers across cle
 resolutions, local builds and releases. It does not promise identical app signatures,
 ZIP timestamps or a byte-identical rebuild of upstream's compiler output. Run
 `make tests-runtime` to independently download, verify and compare two
-clean unsigned framework extractions. Packaging runs `scripts/check-runtime.sh`
+clean unsigned framework extractions. Packaging runs `scripts/check-runtime.swift`
 to reject external runtime paths and verify the app/CLI deployment target.
 
 To upgrade the runtime, select an immutable upstream release and source commit,
@@ -345,7 +345,7 @@ workflow results and test the published install/upgrade before announcing the
 release. `HOMEBREW_TAP_TOKEN` must be configured as described in
 [ADR-010](./docs/0010-tag-driven-homebrew-releases.md).
 
-Release-tooling tests use Swift, Bash, and Git:
+Release-tooling tests use Swift and Git:
 
 ```sh
 make tests-release

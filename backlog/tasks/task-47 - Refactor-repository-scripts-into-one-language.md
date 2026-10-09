@@ -1,10 +1,10 @@
 ---
 id: TASK-47
 title: Refactor repository scripts into one language
-status: Next
+status: Verify
 assignee: []
 created_date: '2026-10-08 19:14'
-updated_date: '2026-10-08 19:16'
+updated_date: '2026-10-09 15:21'
 labels: []
 dependencies: []
 ordinal: 39000
@@ -18,10 +18,10 @@ The repository scripts under `scripts/` are currently implemented in more than o
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Every script under `scripts/` is implemented in Swift, with no remaining scripts in another implementation language in that directory.
-- [ ] #2 All existing Make targets and documented script entry points continue to work without behavioral regressions.
-- [ ] #3 Relevant script documentation identifies Swift as the implementation language and documents any changed usage details.
-- [ ] #4 The refactored scripts pass `make build`, `make tests`, and `make evals-pipeline`.
+- [x] #1 Every script under `scripts/` is implemented in Swift, with no remaining scripts in another implementation language in that directory.
+- [x] #2 All existing Make targets and documented script entry points continue to work without behavioral regressions.
+- [x] #3 Relevant script documentation identifies Swift as the implementation language and documents any changed usage details.
+- [x] #4 The refactored scripts pass `make build`, `make tests`, and `make evals-pipeline`.
 <!-- AC:END -->
 
 ## Implementation Notes
