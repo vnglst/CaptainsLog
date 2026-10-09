@@ -3022,6 +3022,34 @@ func runTests() async {
 
     // MARK: - ConfigManager Tests
 
+    test("Corrections: migrate spelling pairs without losing legacy notes") {
+        let fixture = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+            .appendingPathComponent("eval/settings/context/corrections.md")
+        let source = try String(contentsOf: fixture, encoding: .utf8)
+        var document = CorrectionDocument(source + "Keep this legacy instruction.\nRik → Rick\n")
+        try expect(document.text == source + "Keep this legacy instruction.\nRik → Rick\n")
+        try expect(document.entries.count == 2)
+        try expect(document.entries[0].misspelling == "Koenh")
+        try expect(document.entries[0].spelling == "Koen")
+        document.entries[0].spelling = "Koen van Gilst"
+        document.remove(document.entries[1].id)
+        try expect(document.text.contains("Koenh → Koen van Gilst"))
+        try expect(document.text.contains("Keep this legacy instruction."))
+        try expect(!document.text.contains("Rik"))
+        document.add()
+        document.entries[1].misspelling = "Whisper kit"
+        document.entries[1].spelling = "WhisperKit"
+        let reloaded = CorrectionDocument(document.text)
+        try expect(reloaded.entries.count == 2)
+        try expect(reloaded.entries[1].spelling == "WhisperKit")
+        let dir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let config = CaptainsLogConfig().withDataDir(dir.path)
+        try config.writeCorrections(document.text)
+        try expect(config.readCorrections() == document.text)
+        try expect(Cleanup.nameCorrectionsSection(config.readCorrections()).contains("Whisper kit → WhisperKit"))
+    }
+
     test("ConfigManager: initial dataDir uses configured path or the documented default") {
         let priorConfig = CaptainsLogConfig.load()
         defer { try? priorConfig.save() }

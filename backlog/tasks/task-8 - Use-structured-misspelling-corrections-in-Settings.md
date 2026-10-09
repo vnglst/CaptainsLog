@@ -1,10 +1,10 @@
 ---
 id: TASK-8
 title: Use structured misspelling corrections in Settings
-status: Next
+status: Verify
 assignee: []
 created_date: '2026-10-04 13:10'
-updated_date: '2026-10-08 19:18'
+updated_date: '2026-10-09 13:21'
 labels:
   - settings
 dependencies: []

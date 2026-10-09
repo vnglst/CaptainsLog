@@ -27,6 +27,8 @@ entry. Git links provide the complete commit history for each release.
 
 - Pin development and release inference to one checksum-verified llama.cpp/GGML XCFramework, remove Homebrew/OpenMP runtime resolution, verify packaged linkage and repeatable native artifact extraction, preserve the isolated UI launcher, and record framework identity in evaluation evidence. Keep the task's owner-provided text and verified checkboxes, removing agent-authored plans, notes, summaries and the runtime ADR.
 
+- Settings now edits name and term corrections as spelling pairs with add and remove controls. Preserve existing corrections and legacy notes in the same CLI-readable Markdown file.
+
 - Make now drives building, development launch, tests, fixture evaluations, packaging and releases, with standard variable options and supporting iteration targets. Plain `make` launches the development app; release checks and CI use the same commands, and test commands isolate configuration and data. Remove the unused legacy evaluation-validation wrapper.
 
 - Require minimal PR text, a quick review tip and concise verification, with short UI videos or suitable examples; keep detailed evidence optional or in task notes.
