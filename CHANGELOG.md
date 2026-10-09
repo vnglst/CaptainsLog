@@ -12,6 +12,8 @@ entry. Git links provide the complete commit history for each release.
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-10-09
+
 ### Fixed
 
 - Clear inherited Make arguments for release builds so `make release ARGS=--publish` does not pass `--publish` to Swift.
@@ -21,6 +23,10 @@ entry. Git links provide the complete commit history for each release.
 ### Changed
 
 - Restore local release builds and deterministic tests: build all debug products once, then run the built tests directly with isolated config/data, avoiding repeated SwiftPM and tooling-package compilation. Print check timings and disable model-backed search integration; keep evaluations separate.
+
+### Release
+
+- Publish the 0.2.1 app/CLI archive and matching Homebrew cask version and checksum.
 
 ## [0.2.0] - 2026-10-09
 
@@ -173,7 +179,8 @@ entry. Git links provide the complete commit history for each release.
 
 - Make release tests work on clean runners without preinstalled inference models.
 
-[Unreleased]: https://github.com/vnglst/CaptainsLog/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/vnglst/CaptainsLog/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/vnglst/CaptainsLog/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/vnglst/CaptainsLog/compare/v0.1.2...v0.2.0
 [0.1.2]: https://github.com/vnglst/CaptainsLog/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/vnglst/CaptainsLog/compare/v0.1.0...v0.1.1
