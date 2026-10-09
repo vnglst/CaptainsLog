@@ -14,6 +14,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Added
 
+- Record the owner-defined PBI for deliberately reprocessing all audio files with updated settings in a run that can continue overnight.
+
 - Record the owner-defined PBI for local behavior review with mandatory demo videos, brief check steps, easy worktree access, changed files, approval and feedback returned to the working agent. Keep agent-generated review material local to avoid sensitive-data leaks through automated GitHub publishing.
 
 ### Removed
@@ -23,6 +25,8 @@ entry. Git links provide the complete commit history for each release.
 ### Changed
 
 - Clarify the playback backlog item with the owner's requirement for a sticky audio player at the bottom of a saved entry, with play, pause and seek controls.
+
+- Refine the category backlog item with owner-defined Settings controls, non-destructive removal and folder placement on subsequent processing; keep bulk reprocessing outside its scope.
 
 ## [0.2.1] - 2026-10-09
 
