@@ -23,7 +23,7 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
-- Implement repository automation helpers in Swift, preserving Make workflows, fixture validation, packaging and release checks with executable compatibility aliases; update the documented helper commands.
+- Implement repository automation helpers in Swift, preserving Make workflows, fixture validation, packaging and release checks with executable compatibility aliases; update the documented helper commands. Verify the full audio fixture pipeline, completed-artifact resume and search readback through the Swift helpers.
 
 - Require all task and ADR content to come from the owner, including plans, notes and summaries. Permit agents to edit supplied wording, update workflow status and check off verified existing items; report agent findings in chat or PRs.
 
