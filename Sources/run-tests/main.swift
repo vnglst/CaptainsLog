@@ -1741,6 +1741,26 @@ func runCoreCoverageTests() {
         try expect(invalidCalendarDate.recordingDate == nil, "Impossible stem dates should not normalize into a different day")
     }
 
+    test("AppState: complete cleaned fixture body excludes enrichment metadata") {
+        let repository = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+        let cleaned = try String(contentsOf: repository.appendingPathComponent(
+            "eval/cleanup/expected/2025-01-14 side project.md"
+        ), encoding: .utf8)
+        let metadata = try String(contentsOf: repository.appendingPathComponent(
+            "eval/enrich/expected/2025-01-14 side project.md"
+        ), encoding: .utf8)
+        let root = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let note = root.appendingPathComponent("complete.md")
+        try (metadata + cleaned).write(to: note, atomically: true, encoding: .utf8)
+        let entry = LogEntry.from(Pipeline.EntryListing(
+            displayName: "Complete fixture", stem: "2025-01-14-0730",
+            slug: "complete", nextStage: .done, latestPath: note.path
+        ))
+        try expect(entry.readableBody() == cleaned.trimmingCharacters(in: .whitespacesAndNewlines),
+                   "The copy source must include every cleaned paragraph without the summary or YAML")
+    }
+
     test("AppState: LogEntry preserves Markdown without frontmatter") {
         let root = try makeTemporaryDirectory()
         defer { try? FileManager.default.removeItem(at: root) }

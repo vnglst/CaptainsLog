@@ -67,6 +67,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Added
 
+- Add a copy button in entry detail for the complete cleaned transcription, preserving paragraphs and Markdown while excluding summary and metadata; show copied confirmation.
+
 - License CaptainsLog’s original source code under MIT, reference separate third-party terms in the license and README, include the project license in release app bundles, and preserve the resolved WhisperKit package’s plural NOTICES file.
 
 - Add a compact, wholly fictional bedtime-story fixture that triggers native pre-fix context exhaustion while copying an invented name; record independent provenance, source fingerprint, runtime settings and verification limits.

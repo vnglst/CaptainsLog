@@ -698,6 +698,8 @@ private struct FieldNotesEntryDetailView: View {
     let onBack: () -> Void
     @CLState private var markdown = AttributedString()
     @CLState private var loadError: String?
+    @CLState private var transcription = ""
+    @CLState private var copied = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -756,6 +758,18 @@ private struct FieldNotesEntryDetailView: View {
 
                 Spacer()
 
+                Button {
+                    NSPasteboard.general.clearContents()
+                    copied = NSPasteboard.general.setString(transcription, forType: .string)
+                } label: {
+                    Label(copied ? "Copied" : "Copy transcription", systemImage: copied ? "checkmark" : "doc.on.doc")
+                }
+                .buttonStyle(.plain)
+                .font(FieldNotes.Typography.body(12, weight: .medium))
+                .foregroundStyle(FieldNotes.ColorToken.secondaryText)
+                .disabled(transcription.isEmpty)
+                .accessibilityHint("Copies the complete cleaned transcription without summary or metadata")
+
                 if !entry.path.isEmpty {
                     Button("Reveal in Finder") {
                         NSWorkspace.shared.selectFile(entry.path, inFileViewerRootedAtPath: "")
@@ -795,8 +809,16 @@ private struct FieldNotesEntryDetailView: View {
     }
 
     private func loadEntry() {
+        transcription = ""
+        copied = false
         do {
             let body = try entry.readableBody()
+            switch entry.stage {
+            case .categorizing, .naming, .enriching, .done:
+                transcription = body
+            case .recording, .transcribing, .cleaning:
+                break
+            }
             guard !body.isEmpty else {
                 markdown = AttributedString("This entry has no readable content.")
                 loadError = nil
@@ -808,6 +830,7 @@ private struct FieldNotesEntryDetailView: View {
             )
             loadError = nil
         } catch {
+            transcription = ""
             markdown = AttributedString()
             loadError = error.localizedDescription
         }
