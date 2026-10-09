@@ -38,6 +38,31 @@ public enum Pipeline {
         public var path: String { rawValue }
     }
 
+    private static let audioExtensions = ["m4a", "mov", "qt", "wav", "mp3"]
+
+    private static func sourceAudioURLs(stem: String, dataDirURL: URL) -> [URL] {
+        let directory = dataDirURL.appendingPathComponent(Directory.audio.path)
+        let files = (try? FileManager.default.contentsOfDirectory(
+            at: directory, includingPropertiesForKeys: [.isRegularFileKey]
+        )) ?? []
+        // Keep paths rooted at the caller's directory (for example /var rather than
+        // FileManager's resolved /private/var alias).
+        return files.map { directory.appendingPathComponent($0.lastPathComponent) }.filter {
+            $0.deletingPathExtension().lastPathComponent == stem
+                && audioExtensions.contains($0.pathExtension.lowercased())
+                && isRegularFile(atPath: $0.path)
+        }.sorted {
+            let left = audioExtensions.firstIndex(of: $0.pathExtension.lowercased())!
+            let right = audioExtensions.firstIndex(of: $1.pathExtension.lowercased())!
+            return left == right ? $0.lastPathComponent < $1.lastPathComponent : left < right
+        }
+    }
+
+    private static func sourceAudioPath(stem: String, dataDirURL: URL) -> String {
+        sourceAudioURLs(stem: stem, dataDirURL: dataDirURL).first?.path
+            ?? dataDirURL.appendingPathComponent(Directory.audio.path).appendingPathComponent("\(stem).m4a").path
+    }
+
     public enum PipelineError: LocalizedError {
         case promptNotFound(stage: String, path: String)
         case missingSlugMarker(path: String)
@@ -206,10 +231,9 @@ public enum Pipeline {
 
     private static func copyAudioInput(_ audioInput: String, dataDirURL: URL) throws -> String {
         let inputURL = URL(fileURLWithPath: audioInput)
-        let inputStem = inputURL.deletingPathExtension().lastPathComponent
         let destination = dataDirURL
             .appendingPathComponent(Directory.audio.path)
-            .appendingPathComponent("\(inputStem).m4a")
+            .appendingPathComponent(inputURL.lastPathComponent)
         if inputURL.standardizedFileURL == destination.standardizedFileURL {
             return destination.path
         }
@@ -384,21 +408,23 @@ public enum Pipeline {
                         ? cleanedPath
                         : fm.fileExists(atPath: transcriptPath)
                             ? transcriptPath
-                            : dataDirURL.appendingPathComponent(Directory.audio.path).appendingPathComponent("\(stem).m4a").path
+                            : sourceAudioPath(stem: stem, dataDirURL: dataDirURL)
             out.append(EntryListing(
                 displayName: slug, stem: stem, slug: slug,
                 nextStage: nextStage, latestPath: latestPath))
         }
 
         // Pass 2: un-named stems — discover from stage dirs, delegate stage to detectNextStage.
-        let discoverDirs: [(URL, String)] = [
-            (dataDirURL.appendingPathComponent(Directory.logs.path),       FileExt.md.path),
-            (dataDirURL.appendingPathComponent(Directory.transcribed.path), FileExt.md.path),
-            (dataDirURL.appendingPathComponent(Directory.audio.path),      FileExt.m4a.path),
+        let discoverDirs: [(URL, [String])] = [
+            (dataDirURL.appendingPathComponent(Directory.logs.path),       [FileExt.md.path]),
+            (dataDirURL.appendingPathComponent(Directory.transcribed.path), [FileExt.md.path]),
+            (dataDirURL.appendingPathComponent(Directory.audio.path),      audioExtensions.map { "." + $0 }),
         ]
-        for (dirURL, ext) in discoverDirs {
+        for (dirURL, extensions) in discoverDirs {
             let files = (try? fm.contentsOfDirectory(atPath: dirURL.path)) ?? []
-            for f in files where f.hasSuffix(ext) {
+            for f in files {
+                guard let ext = extensions.first(where: { f.lowercased().hasSuffix($0) }),
+                      isRegularFile(atPath: dirURL.appendingPathComponent(f).path) else { continue }
                 let stem = String(f.dropLast(ext.count))
                 if claimedStems.contains(stem) { continue }
                 claimedStems.insert(stem)
@@ -412,7 +438,7 @@ public enum Pipeline {
                 } else if fm.fileExists(atPath: transcriptPath) {
                     latestPath = transcriptPath
                 } else {
-                    latestPath = dataDirURL.appendingPathComponent(Directory.audio.path).appendingPathComponent("\(stem).m4a").path
+                    latestPath = sourceAudioPath(stem: stem, dataDirURL: dataDirURL)
                 }
                 out.append(EntryListing(
                     displayName: stem, stem: stem, slug: nil,
@@ -435,10 +461,7 @@ public enum Pipeline {
 
     public static func resetForReprocessing(stem: String, slug: String?, dataDir: String) throws {
         let fm = FileManager.default
-        let audioPath = URL(fileURLWithPath: dataDir)
-            .appendingPathComponent(Directory.audio.path)
-            .appendingPathComponent("\(stem).m4a")
-            .path
+        let audioPath = sourceAudioPath(stem: stem, dataDirURL: URL(fileURLWithPath: dataDir))
         guard fm.fileExists(atPath: audioPath) else {
             throw PipelineError.missingSourceAudio(path: audioPath)
         }
@@ -468,9 +491,8 @@ public enum Pipeline {
         ]
 
         if includeAudio {
-            candidates.append(
-                dataDirURL.appendingPathComponent(Directory.audio.path).appendingPathComponent("\(stem).m4a").path
-            )
+            candidates.append(sourceAudioPath(stem: stem, dataDirURL: dataDirURL))
+            candidates.append(contentsOf: sourceAudioURLs(stem: stem, dataDirURL: dataDirURL).map(\.path))
         }
 
         if let storedSlug {
@@ -616,7 +638,7 @@ public enum Pipeline {
             operation: textOperations.enrich,
             progress: progress)
 
-        let audioPath = dataDirURL.appendingPathComponent(Directory.audio.path).appendingPathComponent("\(stem).m4a").path
+        let audioPath = sourceAudioPath(stem: stem, dataDirURL: dataDirURL)
         let transcriptPath = dataDirURL.appendingPathComponent(Directory.transcribed.path).appendingPathComponent("\(stem).md").path
         let cleanedPath = dataDirURL.appendingPathComponent(Directory.logs.path).appendingPathComponent("\(stem).md").path
         let renamedPath = dataDirURL.appendingPathComponent(Directory.rename.path).appendingPathComponent("\(slugStem).md").path
@@ -649,7 +671,7 @@ public enum Pipeline {
         }
         progress?(Progress(stem: stem, stage: .transcribing))
         print("[2/6] Transcribing...")
-        let audioPath = dataDirURL.appendingPathComponent(Directory.audio.path).appendingPathComponent("\(stem).m4a").path
+        let audioPath = sourceAudioPath(stem: stem, dataDirURL: dataDirURL)
         try FileSystemGuard.requireFreeSpaceForTranscription(paths: [
             transcriptPath,
             CaptainsLogConfig.configURL.path,
@@ -861,7 +883,7 @@ public enum Pipeline {
     /// Reads the audio file's creation date for the canonical recording time.
     /// Falls back to parsing `HHmm` from the stem if the audio file is missing.
     static func extractRecordingTime(stem: String, dataDirURL: URL) -> String {
-        let audioPath = dataDirURL.appendingPathComponent(Directory.audio.path).appendingPathComponent("\(stem).m4a").path
+        let audioPath = sourceAudioPath(stem: stem, dataDirURL: dataDirURL)
         if let attrs = try? FileManager.default.attributesOfItem(atPath: audioPath),
            let creationDate = attrs[.creationDate] as? Date {
             let f = DateFormatter()

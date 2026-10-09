@@ -1,3 +1,4 @@
+import AVFoundation
 import Foundation
 import WhisperKit
 
@@ -65,6 +66,11 @@ public enum Transcriber {
         model: String? = nil,
         language: String? = nil
     ) async throws -> String {
+        let inputURL = URL(fileURLWithPath: audioPath)
+        let readableURL = try await prepareAudio(inputURL)
+        defer {
+            if readableURL != inputURL { try? FileManager.default.removeItem(at: readableURL) }
+        }
         var cfg = CaptainsLogConfig.load()
         let requestedModel = resolveModel(model, config: cfg)
         var cachedFolder = Self.cachedFolder(for: requestedModel, config: cfg)
@@ -112,7 +118,7 @@ public enum Transcriber {
         let transcribeStart = Date()
 
         let result = try await pipe.transcribe(
-            audioPath: audioPath,
+            audioPath: readableURL.path,
             decodeOptions: DecodingOptions(
                 language: language,
                 detectLanguage: language == nil ? true : nil,
@@ -130,6 +136,25 @@ public enum Transcriber {
         }
 
         return result.map { $0.text }.joined(separator: " ").trimmingCharacters(in: CharacterSet.whitespaces)
+    }
+
+    /// WhisperKit reads through AVAudioFile, which cannot open QuickTime containers.
+    /// Keep the original recording and export only the temporary transcription input.
+    static func prepareAudio(_ input: URL) async throws -> URL {
+        guard ["mov", "qt"].contains(input.pathExtension.lowercased()) else { return input }
+        let output = FileManager.default.temporaryDirectory
+            .appendingPathComponent("CaptainsLog-\(UUID().uuidString).m4a")
+        let asset = AVURLAsset(url: input)
+        guard let exporter = AVAssetExportSession(asset: asset, presetName: AVAssetExportPresetAppleM4A) else {
+            throw CocoaError(.fileReadCorruptFile, userInfo: [NSFilePathErrorKey: input.path])
+        }
+        do {
+            try await exporter.export(to: output, as: .m4a)
+            return output
+        } catch {
+            try? FileManager.default.removeItem(at: output)
+            throw error
+        }
     }
 
     /// Runs the input validation, transcription, and output part of the transcribe CLI command with injectable inference.

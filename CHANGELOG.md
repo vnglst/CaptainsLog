@@ -18,6 +18,8 @@ entry. Git links provide the complete commit history for each release.
 
 - Record the owner-defined PBI for local behavior review with mandatory demo videos, brief check steps, easy worktree access, changed files, approval and feedback returned to the working agent. Keep agent-generated review material local to avoid sensitive-data leaks through automated GitHub publishing.
 
+- Pick up QuickTime audio exports (`.mov` and `.qt`) alongside M4A recordings in the app, preserving source extensions through CLI import, processing, reprocessing and deletion. Convert QuickTime audio to a temporary M4A for transcription while keeping the original recording.
+
 ### Removed
 
 - Remove the legacy correction notes section from Settings and discard free-text notes from saved corrections when the app loads them. Keep structured spelling pairs and their CLI-readable format.

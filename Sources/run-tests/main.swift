@@ -1,3 +1,4 @@
+import AVFoundation
 import Foundation
 @testable import CaptainsLog
 @testable import CaptainsLogCore
@@ -2320,6 +2321,56 @@ func runPipelineOrchestrationCoverageTests() async {
         return root
     }
 
+    await testAsync("Pipeline: M4A and QuickTime discovery, import, resume, reprocess and deletion") {
+        let fm = FileManager.default
+        let repository = URL(fileURLWithPath: fm.currentDirectoryPath)
+        for ext in ["m4a", "mov", "MOV", "qt"] {
+            let root = fm.temporaryDirectory.appendingPathComponent("AudioFormats-\(UUID().uuidString)")
+            defer { try? fm.removeItem(at: root) }
+            let data = root.appendingPathComponent("data")
+            let audio = data.appendingPathComponent("audio")
+            try fm.createDirectory(at: audio, withIntermediateDirectories: true)
+            let stem = "2025-01-14-0900"
+            let filename = "\(stem).\(ext)"
+            let fixture = repository.appendingPathComponent(ext == "m4a"
+                ? "eval/transcribe/audio/durins-volk.m4a" : "eval/audio-formats/quicktime.mov")
+            let source = root.appendingPathComponent(filename)
+            try fm.copyItem(at: fixture, to: source)
+            let stored = audio.appendingPathComponent(filename)
+            try fm.copyItem(at: source, to: stored)
+            try fm.createDirectory(at: audio.appendingPathComponent("ignore.mov"), withIntermediateDirectories: true)
+            try "not audio".write(to: audio.appendingPathComponent("ignore.txt"), atomically: true, encoding: .utf8)
+            let entries = Pipeline.listEntries(dataDir: data.path)
+            try expect(entries.count == 1, "Discovery for \(ext): \(entries)")
+            try expect(entries[0].stem == stem && entries[0].latestPath == stored.path, "Source for \(ext): \(entries[0].latestPath), expected \(stored.path)")
+            try expect(entries[0].nextStage == .transcribing)
+            let calls = LockedStringArray()
+            let operations = Pipeline.Operations(
+                transcribe: { path, _ in
+                    calls.append(path)
+                    try expect(try Data(contentsOf: URL(fileURLWithPath: path)) == Data(contentsOf: fixture))
+                    return "synthetic transcript"
+                },
+                cleanup: { text, _ in text },
+                categorize: { _, _, _ in .personal },
+                filename: { _, _ in "2025-01-14-audio-format.md" },
+                enrich: { _, _, _, _ in "synthetic entry" }
+            )
+            let imported = try await Pipeline.runCommand(audioInput: source.path, dataDir: data.path, operations: operations)
+            try expect(imported.audioPath == stored.path)
+            try Pipeline.resetForReprocessing(stem: stem, slug: nil, dataDir: data.path)
+            try expect(fm.fileExists(atPath: stored.path))
+            let resumed = try await Pipeline.resumePendingCommand(dataDir: data.path, operations: operations)
+            try expect(resumed.count == 1 && resumed[0].audioPath == stored.path)
+            try expect(calls.snapshot() == [stored.path, stored.path])
+            try expect(Pipeline.detectNextStage(stem: stem, dataDir: data.path) == .done)
+            let candidates = Pipeline.deletionCandidatePaths(stem: stem, slug: nil, dataDir: data.path)
+            try expect(candidates.contains(stored.path))
+            for path in candidates where fm.fileExists(atPath: path) { try fm.removeItem(atPath: path) }
+            try expect(Pipeline.listEntries(dataDir: data.path).isEmpty)
+        }
+    }
+
     await testAsync("Resume CLI: batch resumes each pending fixture from its detected stage") {
         let fm = FileManager.default
         let root = fm.temporaryDirectory
@@ -3039,6 +3090,32 @@ func runPipelineOrchestrationCoverageTests() async {
 func runTests() async {
     let suiteName = lightweightUnitOnly ? "Lightweight CaptainsLog Unit Tests" : "Full CaptainsLog Tests"
     print("\nRunning \(suiteName)...\n")
+
+    await testAsync("Transcriber: genuine QuickTime audio converts to readable audio without changing the source") {
+        let fm = FileManager.default
+        let fixture = URL(fileURLWithPath: fm.currentDirectoryPath)
+            .appendingPathComponent("eval/audio-formats/quicktime.mov")
+        let original = try Data(contentsOf: fixture)
+        for ext in ["mov", "MOV", "qt"] {
+            let input = fm.temporaryDirectory.appendingPathComponent("QuickTime-\(UUID().uuidString).\(ext)")
+            try fm.copyItem(at: fixture, to: input)
+            defer { try? fm.removeItem(at: input) }
+            let output = try await Transcriber.prepareAudio(input)
+            defer { try? fm.removeItem(at: output) }
+            try expect(output != input && output.pathExtension == "m4a")
+            let audio = try AVAudioFile(forReading: output)
+            let duration = Double(audio.length) / audio.fileFormat.sampleRate
+            try expect(duration > 2.9 && duration < 3.2, "Conversion must preserve the fixture's three seconds of audio")
+            let buffer = AVAudioPCMBuffer(pcmFormat: audio.processingFormat, frameCapacity: 1024)!
+            try audio.read(into: buffer)
+            try expect(buffer.frameLength > 0)
+            try expect(try Data(contentsOf: input) == original)
+        }
+        let m4a = URL(fileURLWithPath: fm.currentDirectoryPath)
+            .appendingPathComponent("eval/transcribe/audio/durins-volk.m4a")
+        let unchanged = try await Transcriber.prepareAudio(m4a)
+        try expect(unchanged == m4a)
+    }
 
     // MARK: - ConfigManager Tests
 

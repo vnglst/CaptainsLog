@@ -103,6 +103,8 @@ make cli ARGS="list"
 make cli ARGS='search "project architecture"'
 ```
 
+M4A and QuickTime audio (`.mov` and `.qt`) files in the configured `audio/` folder are picked up by the app. Imported files keep their original extension. The CLI also accepts WAV and MP3 audio.
+
 The resumable pipeline records audio, transcribes it with WhisperKit/CoreML, cleans and categorizes the text, generates a filename, and adds searchable metadata. Intermediate files live under `.pipeline/`; completed entries are saved to `logs/`. Use `make cli ARGS=--help` for other commands, including configuration and individual pipeline stages.
 
 Transcription uses Whisper Large-v2. Cleanup, categorization, filenames, and metadata use Qwen 3.5 9B 4-bit through llama.cpp. Semantic search downloads the multilingual-e5-small embedding model on first use.
