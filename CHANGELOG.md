@@ -12,6 +12,14 @@ entry. Git links provide the complete commit history for each release.
 
 ## [Unreleased]
 
+### Fixed
+
+- Put the framework binary before `lipo -verify_arch` in runtime tests and packaging checks so Xcode's lipo does not parse its path as an architecture.
+
+### Changed
+
+- Restore local release builds and deterministic tests: build all debug products once, then run the built tests directly with isolated config/data, avoiding repeated SwiftPM and tooling-package compilation. Print check timings and disable model-backed search integration; keep evaluations separate.
+
 ## [0.2.0] - 2026-10-09
 
 ### Added

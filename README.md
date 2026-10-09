@@ -323,9 +323,13 @@ make release ARGS=--publish
 Use `BUMP=auto` explicitly if desired, or override with `BUMP=patch`, `BUMP=minor`,
 `BUMP=major`, or an explicit `BUMP=1.2.3` version (for example, a maintenance-only release).
 The command checks Git state and existing tags, fetches `origin/main`, and runs
-lightweight version/changelog self-checks. Local preparation does not build the
-app or run test suites; the tag workflow runs release-tooling tests, runtime
-verification, deterministic tests and packaging before publishing the archive.
+lightweight version/changelog self-checks. Local preparation runs `make build`
+in debug configuration once, then executes that build's deterministic test runner
+directly with isolated config/data, avoiding a second SwiftPM invocation and
+tooling-package compilation. It prints elapsed time for each check and disables
+model-backed search integration. No evaluations run. The tag workflow runs
+release-tooling tests, runtime verification, deterministic tests and packaging
+before publishing the archive.
 Failed local checks stop before version/changelog edits, commits, or tags;
 failed workflow checks prevent archive publication but leave the prepared commit
 and tag in place. Releases do not require local models. Run `make evals`
