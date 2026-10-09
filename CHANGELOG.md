@@ -14,6 +14,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
+- Make release preparation use only Git, version and changelog checks. Streamline the GitHub release workflow to validate, build the release app and CLI, verify packaging and publish; keep tooling, runtime reproducibility and deterministic test suites as explicit development commands.
+
 - Add source and tooling implementation maps to the repository entry points, align README task and ADR instructions with owner-only content rules, correct the Settings preview command and evaluation skills' release guidance, and document updater test prerequisites and current-versus-historical runtime guidance.
 
 ## [0.3.0] - 2026-10-09

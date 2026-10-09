@@ -22,9 +22,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Test release tooling
-        run: make tests-release
-
       - name: Validate release tag and source branch
         id: release
         env:
@@ -67,12 +64,6 @@ jobs:
         env:
           VERSION: ${{ steps.release.outputs.version }}
         run: make --silent release-notes VERSION="$VERSION" > "$RUNNER_TEMP/release-notes.md"
-
-      - name: Verify pinned runtime integration
-        run: make tests-runtime
-
-      - name: Run tests
-        run: make tests
 
       - name: Build app, CLI, and release archive
         run: make packaging

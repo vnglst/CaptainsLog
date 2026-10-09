@@ -19,13 +19,11 @@ Additional flags use `ARGS="..."`, passed to the underlying command. Quote paths
 and stems with spaces inside ARGS as shell arguments. Existing `CAPTAINS_LOG_EVAL_*`
 model/run-directory environment overrides continue to work. Packaging always
 builds release and development launch always uses debug, regardless of
-`CONFIGURATION`. Release preparation runs Git/version/changelog checks, one debug
-`make build`, then the built deterministic test runner directly with isolated
-config/data. It avoids a second SwiftPM invocation and tooling-package build,
-prints check timings and disables model-backed search integration. The tag workflow
-runs release-tooling tests, runtime verification, deterministic tests and
-packaging before publishing the archive. Model evaluations remain a separate
-`make evals` command.
+`CONFIGURATION`. Release preparation runs only Git/version/changelog checks and
+creates the release commit and tag. It does not build or run tests. The tag
+workflow builds the release app and CLI, verifies packaging, and publishes the
+archive and casks. Run development tests explicitly before releasing; model
+evaluations remain a separate `make evals` command.
 
 | Supporting command | Purpose / options |
 |---|---|

@@ -36,7 +36,7 @@ extension Tools {
         _ = try release(["check", base, "HEAD"]); _ = try release(["check", String(repeating: "0", count: 40), "HEAD"]); _ = try release(["check", "HEAD", "HEAD"])
         _ = try git("switch", "-qc", "fixture-branch"); try fail(["patch"]); _ = try git("switch", "-q", "main")
         _ = try git("tag", "v0.1.3"); try fail(["patch"]); _ = try git("tag", "-d", "v0.1.3")
-        // Mock build/tests while keeping Git publication real against a local bare fixture.
+        // Tripwires ensure release preparation never builds or runs tests; Git publication stays real.
         let executable = URL(fileURLWithPath: CommandLine.arguments[0]).resolvingSymlinksInPath()
         try fm.createSymbolicLink(at: bin.appendingPathComponent("make"), withDestinationURL: executable)
         try fixture.mkdir(source.appendingPathComponent(".build/debug"))
@@ -45,13 +45,6 @@ extension Tools {
         fixture.environment["CAPTAINS_LOG_TOOL_FIXTURE_KIND"] = "release"
         fixture.environment["RELEASE_FIXTURE_CHECK_LOG"] = dir.appendingPathComponent("checks.log").path
         let before = try git("rev-parse", "HEAD")
-        for check in ["build", "tests"] {
-            fixture.environment["RELEASE_FIXTURE_FAIL"] = check
-            try write(dir.appendingPathComponent("checks.log"), "")
-            try fail(["patch"])
-            try require(try git("rev-parse", "HEAD") == before && git("tag", "--list") == "v0.1.2" && git("status", "--porcelain").isEmpty, "Failed \(check) mutated repository")
-        }
-        fixture.environment.removeValue(forKey: "RELEASE_FIXTURE_FAIL")
         try write(dir.appendingPathComponent("checks.log"), "")
         _ = try release(["--publish"], "publish")
         try require(try fixture.read(source.appendingPathComponent("VERSION")).trimmingCharacters(in: .whitespacesAndNewlines) == "0.2.0", "Publication version wrong")
@@ -60,22 +53,20 @@ extension Tools {
         _ = try release(["check", before, "HEAD"])
         try require(try git("log", "-1", "--format=%s") == "chore(release): CaptainsLog 0.2.0", "Release commit subject wrong")
         try require(try release(["--dry-run"], "post-release").contains("no releasable changes"), "Release commit triggered next release")
-        try require(try read(dir.appendingPathComponent("checks.log")) == "make build CONFIGURATION=debug ARGS=\nrun-tests\n", "Release must build once and run the built tests without recompiling or invoking evals")
+        try require(try read(dir.appendingPathComponent("checks.log")).isEmpty, "Release preparation must not invoke builds or tests")
         let caskBase = try git("rev-parse", "HEAD")
         _ = try release(["cask", "0.2.0", String(repeating: "0", count: 63) + "1"]); try commit(); _ = try release(["check", caskBase, "HEAD"])
         try require(try release(["--dry-run"], "maintenance-preview").contains("no releasable changes"), "Generated cask commit triggered release")
         let manualBase = try git("rev-parse", "HEAD")
         let cask = source.appendingPathComponent("Casks/captainslog.rb")
         try fixture.write(cask, fixture.read(cask) + "# Manual cask change\n"); try commit(); try fail(["check", manualBase, "HEAD"])
-        print("Release Git/CLI fixtures passed (build/tests mocked; failure handling and local atomic publication verified).")
+        print("Release Git/CLI fixtures passed (no builds/tests invoked; Git safeguards and local atomic publication verified).")
     }
     func releaseFixture(_ args: [String]) throws {
-        try require(!(environment["CAPTAINS_LOG_CONFIG_PATH"] ?? "").isEmpty && !(environment["CAPTAINS_LOG_DATA_DIR"] ?? "").isEmpty, "Missing isolated release config/data")
-        try require(environment["CAPTAINS_LOG_SEARCH_INTEGRATION"] == "0", "Release must disable model-backed search integration")
         let isTests = URL(fileURLWithPath: CommandLine.arguments[0]).lastPathComponent == "run-tests"
         let command = isTests ? "run-tests" : "make " + args.joined(separator: " ")
         let log = path(environment["RELEASE_FIXTURE_CHECK_LOG"]!)
         let handle = try FileHandle(forWritingTo: log); defer { try? handle.close() }; try handle.seekToEnd(); try handle.write(contentsOf: Data((command + "\n").utf8))
-        try require(environment["RELEASE_FIXTURE_FAIL"] != (isTests ? "tests" : "build"), "Synthetic check failure")
+        try require(false, "Release preparation unexpectedly invoked \(command)")
     }
 }

@@ -253,7 +253,7 @@ use fake Homebrew commands but still check for the real running app, so isolated
 config/data alone does not prevent those failures. Run checks from the repository
 root: tests resolve synthetic fixtures under `eval/` relative to that directory.
 
-GitHub Actions runs only when a release tag (`v*`) is pushed; ordinary branch pushes and pull requests do not start workflows. The release workflow runs release-tooling checks and the full deterministic suite (`make tests`) before packaging. Run the suite locally during development, or use `make tests-unit` for a lightweight, model-free check. Coverage instrumentation, CLI coverage, model evaluations, and UI checks remain opt-in.
+GitHub Actions runs only when a release tag (`v*`) is pushed; ordinary branch pushes and pull requests do not start workflows. The release workflow validates the tag and changelog, builds the release app and CLI, verifies packaging, and publishes the archive and casks. It does not run test suites or build debug products. Run the suite locally during development, or use `make tests-unit` for a lightweight, model-free check. Coverage instrumentation, CLI coverage, model evaluations, and UI checks remain opt-in.
 
 Use `make help` to discover commands and `NAME=value` for options; for example,
 `make build CONFIGURATION=release` or `make tests ARGS=--unit`. Make is the
@@ -362,16 +362,12 @@ make release ARGS=--publish
 Use `BUMP=auto` explicitly if desired, or override with `BUMP=patch`, `BUMP=minor`,
 `BUMP=major`, or an explicit `BUMP=1.2.3` version (for example, a maintenance-only release).
 The command checks Git state and existing tags, fetches `origin/main`, and runs
-lightweight version/changelog self-checks. Local preparation runs `make build`
-in debug configuration once, then executes that build's deterministic test runner
-directly with isolated config/data, avoiding a second SwiftPM invocation and
-tooling-package compilation. It prints elapsed time for each check and disables
-model-backed search integration. No evaluations run. The tag workflow runs
-release-tooling tests, runtime verification, deterministic tests and packaging
-before publishing the archive.
-Failed local checks stop before version/changelog edits, commits, or tags;
-failed workflow checks prevent archive publication but leave the prepared commit
-and tag in place. Releases do not require local models. Run `make evals`
+lightweight version/changelog self-checks, then prepares the release commit and tag.
+It does not compile the app, run tests, or load models; the app can remain open.
+The tag workflow builds only the release app and CLI, checks bundled runtime
+compatibility and signatures, and verifies the archive before publishing.
+Run relevant development checks explicitly before releasing: `make tests`,
+`make tests-release`, and `make tests-runtime` remain available. Run `make evals`
 separately when evaluating model quality, and review its artifacts under the
 stage skills. See [the backlog
 tasks](./backlog/tasks/) for outstanding acceptance checks.
