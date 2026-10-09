@@ -21,6 +21,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
+- Require all task and ADR content to come from the owner, including plans, notes and summaries. Permit agents to edit supplied wording, update workflow status and check off verified existing items; report agent findings in chat or PRs.
+
 - Make now drives building, development launch, tests, fixture evaluations, packaging and releases, with standard variable options and supporting iteration targets. Plain `make` launches the development app; release checks and CI use the same commands, and test commands isolate configuration and data. Remove the unused legacy evaluation-validation wrapper.
 
 - Require minimal PR text, a quick review tip and concise verification, with short UI videos or suitable examples; keep detailed evidence optional or in task notes.
