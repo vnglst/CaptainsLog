@@ -20,6 +20,10 @@ entry. Git links provide the complete commit history for each release.
 
 - Remove the legacy correction notes section from Settings and discard free-text notes from saved corrections when the app loads them. Keep structured spelling pairs and their CLI-readable format.
 
+### Changed
+
+- Clarify the playback backlog item with the owner's requirement for a sticky audio player at the bottom of a saved entry, with play, pause and seek controls.
+
 ## [0.2.1] - 2026-10-09
 
 ### Fixed
