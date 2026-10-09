@@ -12,7 +12,7 @@ a filtered environment. It verifies HTTPS routing for the public tap's SSH and
 HTTPS URLs despite a broad HTTPS-to-SSH rewrite, without fetching repositories,
 changing stored remotes, or changing transport for unrelated taps.
 
-Run the reproducible CLI verification suite with `bash scripts/test-updates.sh`.
+Run the reproducible CLI verification suite with `make tests-updates`.
 It creates its own isolated config/data and preserves logs under `tmp/`.
 Run controller tests with `swift run run-tests --unit`.
 

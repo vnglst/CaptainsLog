@@ -1,9 +1,9 @@
 # Enrichment evaluations
 
-Run `bash scripts/run-evals.sh --enrich` from the repository root. Every input
+Run `make evals STAGE=enrich` from the repository root. Every input
 runs sequentially with isolated config/data and the date, time and seed in
 `cases.json`. It requires Qwen, not Whisper. Check saved output with
-`bash scripts/run-evals.sh --validate-enrich <run-stamp>`.
+`make evals ARGS="--validate-enrich <run-stamp>"`.
 
 The structural gate rejects unfinished inference, malformed/repeated YAML,
 changed source bodies, incorrect supplied date/time, wrong types, duplicate names

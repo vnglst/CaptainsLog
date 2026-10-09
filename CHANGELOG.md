@@ -23,6 +23,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
+- Implement repository automation helpers in Swift, preserving Make workflows, fixture validation, packaging and release checks with executable compatibility aliases; update the documented helper commands.
+
 - Require all task and ADR content to come from the owner, including plans, notes and summaries. Permit agents to edit supplied wording, update workflow status and check off verified existing items; report agent findings in chat or PRs.
 
 - Pin development and release inference to one checksum-verified llama.cpp/GGML XCFramework, remove Homebrew/OpenMP runtime resolution, verify packaged linkage and repeatable native artifact extraction, preserve the isolated UI launcher, and record framework identity in evaluation evidence. Keep the task's owner-provided text and verified checkboxes, removing agent-authored plans, notes, summaries and the runtime ADR.

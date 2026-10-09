@@ -20,6 +20,13 @@ CaptainsLog includes or downloads third-party software and model weights. Captai
 
 The app bundle includes the upstream `LICENSE` and `NOTICE` files available for resolved Swift packages and the bundled llama.cpp/GGML runtime. `sqlite-vec` license texts are included in this repository under `Sources/CSQLiteVec/`.
 
+## Development tooling
+
+The separate Swift automation package under `scripts/` uses **Yams 6.2.2**,
+licensed under MIT, with its bundled **LibYAML** parser, also MIT. These are
+development dependencies and are not bundled with the app. The Yams license is retained in its pinned package checkout. [Yams source and license](https://github.com/jpsim/Yams/tree/6.2.2),
+[LibYAML license](https://github.com/yaml/libyaml/blob/master/License).
+
 ## Models downloaded by the app
 
 Model weights are downloaded to the user's Mac when needed; they are not included in the app archive.

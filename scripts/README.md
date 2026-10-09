@@ -48,9 +48,21 @@ and recording controls invoke real models or hardware. Checks bypass default dem
 seeding. See the [testing workflow](../README.md#testing) and stage skills in
 [`skills/`](../skills/) for quality gates and semantic review requirements.
 
-Helpers stay in `scripts/`: packaging (`build-app.sh`), release (`release.swift`),
-evaluation orchestration and validation (`run-evals.sh`, `evals.rb`,
-`eval-pipeline.sh`), icons (`make-iconset.sh`,
-`make-icon.swift`), and the `test-*` checks. `isolated-check.sh` gives checks
+All helper implementations are Swift. A separate pinned Swift package in this
+directory compiles shared tooling; it is not a dependency of the app package.
+The package uses Yams for YAML validation. The first helper invocation resolves
+its pinned dependency and builds the tool; subsequent invocations reuse its cache.
+
+Helpers stay in `scripts/`: packaging (`build-app.swift`), release (`release.swift`),
+evaluation orchestration and validation (`run-evals.swift`, `evals.swift`,
+`eval-pipeline.swift`), icons (`make-iconset.swift`,
+`make-icon.swift`), and the `test-*` checks. `isolated-check.swift` gives checks
 throwaway configuration/data and removes it afterward. Call Make for these
 workflows instead of treating the helpers as a separate command interface.
+
+Direct helper usage is `swift scripts/NAME.swift [arguments]` or the executable
+`./scripts/NAME.swift`. Former `.sh` and `.rb` filenames remain executable
+symlinks to Swift entrypoints for path compatibility; invoke them directly,
+not through Bash or Ruby. Existing Make targets and arguments are unchanged.
+For example, `swift scripts/run-evals.swift --stage filename --list` lists
+fixtures without loading a model.

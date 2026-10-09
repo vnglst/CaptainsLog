@@ -44,44 +44,44 @@ cli:
 	$(SWIFT) run -c "$(CONFIGURATION)" cl $(ARGS)
 
 tests:
-	bash scripts/isolated-check.sh $(SWIFT) run -c "$(CONFIGURATION)" run-tests $(ARGS)
+	$(SWIFT) scripts/isolated-check.swift $(SWIFT) run -c "$(CONFIGURATION)" run-tests $(ARGS)
 
 tests-unit:
-	bash scripts/isolated-check.sh $(SWIFT) run -c "$(CONFIGURATION)" run-tests --unit $(ARGS)
+	$(SWIFT) scripts/isolated-check.swift $(SWIFT) run -c "$(CONFIGURATION)" run-tests --unit $(ARGS)
 
 tests-coverage:
-	bash scripts/isolated-check.sh bash scripts/test-coverage.sh $(ARGS)
+	$(SWIFT) scripts/isolated-check.swift $(SWIFT) scripts/test-coverage.swift $(ARGS)
 
 tests-updates:
-	bash scripts/isolated-check.sh bash scripts/test-updates.sh $(ARGS)
+	$(SWIFT) scripts/isolated-check.swift $(SWIFT) scripts/test-updates.swift $(ARGS)
 
 tests-release:
-	bash scripts/test-release-tooling.sh $(ARGS)
+	$(SWIFT) scripts/test-release-tooling.swift $(ARGS)
 
 tests-evals:
-	ruby scripts/test-evals.rb $(ARGS)
+	$(SWIFT) scripts/test-evals.swift $(ARGS)
 
 tests-runtime:
-	bash scripts/test-runtime.sh
+	$(SWIFT) scripts/test-runtime.swift
 
 tests-enrich:
 	$(MAKE) build CONFIGURATION=debug
-	bash scripts/isolated-check.sh bash scripts/test-enrich-eval.sh $(ARGS)
+	$(SWIFT) scripts/isolated-check.swift $(SWIFT) scripts/test-enrich-eval.swift $(ARGS)
 
 tests-model:
-	bash scripts/isolated-check.sh bash scripts/test-model-smoke.sh $(ARGS)
+	$(SWIFT) scripts/isolated-check.swift $(SWIFT) scripts/test-model-smoke.swift $(ARGS)
 
 tests-recorder:
-	bash scripts/isolated-check.sh bash scripts/test-recorder-hardware.sh $(ARGS)
+	$(SWIFT) scripts/isolated-check.swift $(SWIFT) scripts/test-recorder-hardware.swift $(ARGS)
 
 ui:
-	bash scripts/test-ui.sh $(if $(ARGS),$(ARGS),eval)
+	$(SWIFT) scripts/test-ui.swift $(if $(ARGS),$(ARGS),eval)
 
 evals:
-	bash scripts/run-evals.sh $(if $(STAGE),--stage "$(STAGE)",$(if $(MODE),--$(MODE))) $(if $(CASE),--case "$(CASE)") $(ARGS)
+	$(SWIFT) scripts/run-evals.swift $(if $(STAGE),--stage "$(STAGE)",$(if $(MODE),--$(MODE))) $(if $(CASE),--case "$(CASE)") $(ARGS)
 
 evals-list:
-	bash scripts/run-evals.sh --list $(if $(STAGE),--stage "$(STAGE)") $(if $(CASE),--case "$(CASE)") $(ARGS)
+	$(SWIFT) scripts/run-evals.swift --list $(if $(STAGE),--stage "$(STAGE)") $(if $(CASE),--case "$(CASE)") $(ARGS)
 
 evals-pipeline:
 	$(MAKE) evals MODE=pipeline
@@ -90,7 +90,7 @@ evals-suites:
 	$(MAKE) evals MODE=suites
 
 packaging:
-	bash scripts/build-app.sh $(ARGS)
+	$(SWIFT) scripts/build-app.swift $(ARGS)
 
 release:
 	$(SWIFT) scripts/release.swift "$(BUMP)" $(ARGS)
@@ -105,7 +105,7 @@ release-cask:
 	$(SWIFT) scripts/release.swift cask "$(VERSION)" "$(SHA256)"
 
 icons:
-	bash scripts/make-iconset.sh $(ARGS)
+	$(SWIFT) scripts/make-iconset.swift $(ARGS)
 
 clean:
 	$(SWIFT) package clean
