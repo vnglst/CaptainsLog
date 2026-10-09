@@ -5,7 +5,7 @@ description: Assess filename generation quality for CaptainsLog by comparing LLM
 
 # Filename review
 
-Run fixtures through `make evals STAGE=filename`; see [the shared workflow](../../README.md#fixture-evaluations) for stage/case selection, saved runs, metadata and baselines. The runner owns isolation and output names. Review the selected cases from its printed `review.md`; required release runs still include all suites and the full pipeline.
+Run fixtures through `make evals STAGE=filename`; see [the shared workflow](../../README.md#fixture-evaluations) for stage/case selection, saved runs, metadata and baselines. The runner owns isolation and output names. Review the selected cases from its printed `review.md`; model evaluations run separately from release preparation. For dependency upgrades, new features or significant refactors, follow the build, test and sequential fixture pipeline checks in [AGENTS.md](../../AGENTS.md#development).
 
 ## Stage review
 

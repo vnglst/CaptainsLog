@@ -2,6 +2,31 @@
 
 CaptainsLog turns voice memos into searchable log entries. Recording, transcription, and text processing run locally on Apple Silicon; no cloud APIs are used.
 
+## Repository navigation
+
+For development commands, start with `make help` and [the command guide](./scripts/README.md).
+For code changes, use the entry points below. [AGENTS.md](./AGENTS.md) defines
+agent permissions, backlog ownership, verification and privacy rules.
+
+| Area | Start here |
+|---|---|
+| App launch and demo setup | [AppMain.swift](./Sources/CaptainsLogApp/AppMain.swift), [DemoMode.swift](./Sources/CaptainsLogApp/DemoMode.swift) |
+| Logs UI and Settings | [FieldNotesContentView.swift](./Sources/CaptainsLog/FieldNotesContentView.swift); spelling editor: [FieldNotesCorrectionsEditor.swift](./Sources/CaptainsLog/FieldNotesCorrectionsEditor.swift) |
+| App processing and audio discovery | [ProcessingCoordinator.swift](./Sources/CaptainsLog/ProcessingCoordinator.swift), [DirectoryWatcher.swift](./Sources/CaptainsLog/DirectoryWatcher.swift), [Pipeline.swift](./Sources/CaptainsLogCore/Pipeline.swift) |
+| Pipeline stages and native inference | [CaptainsLogCore](./Sources/CaptainsLogCore/): `Transcriber.swift`, `Cleanup.swift`, `Categorize.swift`, `Filename.swift`, `Enrich.swift`, `LLM.swift` |
+| Prompts and prompt loading | [prompts/](./prompts/), [PromptLoader.swift](./Sources/CaptainsLogCore/PromptLoader.swift), [PromptResolver.swift](./Sources/CaptainsLogCore/PromptResolver.swift) |
+| Configuration and corrections | [Config.swift](./Sources/CaptainsLogCore/Config.swift), [ConfigManager.swift](./Sources/CaptainsLog/ConfigManager.swift), [CorrectionDocument.swift](./Sources/CaptainsLog/CorrectionDocument.swift) |
+| CLI commands and evaluation batches | [CL.swift](./Sources/cl/CL.swift), [EvalBatch.swift](./Sources/cl/EvalBatch.swift) |
+| Updates | [AppUpdater.swift](./Sources/CaptainsLogCore/AppUpdater.swift), [UpdateManager.swift](./Sources/CaptainsLog/UpdateManager.swift) |
+| Tests and synthetic fixtures | [run-tests/main.swift](./Sources/run-tests/main.swift), [eval/](./eval/), [stage review skills](./skills/) |
+| Build, packaging, runtime checks and releases | [Tool implementation map](./scripts/README.md#implementation-map), [Package.swift](./Package.swift), [release workflow](./.github/workflows/release.yml) |
+
+Use `rg --files Sources scripts` to locate files before reading them. CLI command
+types share `CL.swift`, tests share `run-tests/main.swift`, and tooling entrypoint
+names do not necessarily match their implementation filenames. Current commands
+and runtime setup live in this README and the command guide; ADRs preserve dated
+decisions and may describe older implementation details.
+
 ## Install
 
 The Homebrew cask supports Apple Silicon Macs running macOS 26 or later. Homebrew adds the CaptainsLog tap automatically when you install. The app is ad-hoc signed and not notarized. The cask removes macOS quarantine from the app bundle, so install it only if you trust this project:
@@ -113,7 +138,6 @@ Transcription uses Whisper Large-v2. Cleanup, categorization, filenames, and met
 
 - [Changelog and release history](./CHANGELOG.md)
 - [Testing decision](./docs/0007-framework-free-test-coverage.md)
-- [Work and verification findings](./backlog/tasks/)
 - [Development commands](./scripts/README.md)
 - [Troubleshooting](#troubleshooting)
 - [Backlog tasks](./backlog/tasks/)
@@ -150,16 +174,18 @@ adrs doctor                     # Check numbering and links
 Read each file for its status; `adrs list -l` does not parse every legacy
 status line correctly.
 
-`adrs new` creates the next numbered file in `docs/` using a minimal MADR-style
-template. Edit that file to state the decision, its status, and its known context
-or rationale; remove empty template sections. Do not invent missing context or
-alternatives.
-Keep ADRs to 300 words or fewer; allow up to 500 only when essential rationale
-needs more room. Include the decision, relevant context, and consequences.
-Keep `docs/` limited to numbered ADRs; put implementation scope and dated
-verification findings directly in self-contained Backlog tasks, without file links. Editorial shortening must preserve existing decisions, dates, and statuses. If a decision changes, create a new ADR and link the earlier record
-from it, stating that the new decision supersedes it. Commit
-the ADR with its related change, Backlog task, and changelog entry.
+All ADR content must come from the owner, including the decision, context,
+rationale, alternatives and consequences. Agents may edit supplied wording, but
+may create an ADR only when the owner explicitly requests it and supplies its
+content. This also applies to superseding records. See [AGENTS.md](./AGENTS.md)
+for the full ownership rules.
+
+For an authorized ADR, `adrs new` creates the next numbered file in `docs/`
+using a minimal MADR-style template. Remove empty template sections. Keep records
+to 300 words, or up to 500 for essential owner-supplied rationale. Editorial
+shortening must preserve the decision, date and status. Keep `docs/` exclusively
+for numbered ADRs. Report agent verification findings in chat or PRs; commit
+authorized ADR and backlog changes with the related change and changelog entry.
 
 ## Backlog
 
@@ -167,7 +193,8 @@ The [Backlog.md tasks](./backlog/tasks/) are Markdown files committed with the p
 
 You control backlog content, scope, requirements and task creation. Agents may
 edit, rewrite, clarify or organize content you provide, but must never invent
-backlog items, requirements or acceptance criteria. They must ask you for missing
+task content, including requirements, acceptance criteria, dependencies, plans,
+findings, review notes or final summaries. They must ask you for missing
 input; backlog refinement does not authorize them to define scope or requirements.
 Tasks and drafts may be created only when you explicitly ask, using your supplied
 content. Discovered bugs, follow-up ideas, cleanup and suggested improvements
@@ -183,12 +210,11 @@ over generic Backlog.md CLI guidance. Small, mechanical changes do not need a ta
 backlog board                         # Review work by status
 backlog task list                     # List tasks
 backlog task view TASK-1              # Read a task
-backlog draft create "Possible idea"  # Capture an idea
-backlog draft promote DRAFT-1         # Turn an agreed idea into a task
-backlog task create "Task title"      # Or create a task directly
+backlog draft create "Possible idea"  # Only when requested, using owner content
+backlog draft promote DRAFT-1         # When the owner agrees to the work
+backlog task create "Task title"      # Only when requested, using owner content
 backlog task edit TASK-1 --status "Next"    # Select it for agent work
-backlog task edit TASK-1 --append-notes "Finding or decision"
-backlog task edit TASK-1 --status "Verify" --final-summary "What changed and how it was checked"
+backlog task edit TASK-1 --status "Verify"  # After checking existing criteria
 backlog task edit TASK-1 --status "Complete"  # After your review
 ```
 
@@ -205,7 +231,12 @@ scope and findings in the consolidated task.
 Condense outdated session notes while preserving the explanation, dependencies,
 status and checked acceptance criteria.
 
-Use the CLI for task updates. If review finds more work, move the task back to `Next` with a note. Commit the Markdown changes with the related code and a changelog entry. Keep essential procedures and findings in the task, and durable decisions in ADRs.
+Use the CLI for authorized task updates. After relevant checks, agents may check
+supported existing criteria and move the task to `Verify`. Leave `Complete` for
+the owner. If the owner requests changes, return the task to `Next`; review-note
+content must come from the owner. Report agent evidence, bugs and suggestions in
+chat or PRs without adding them to tasks. Commit authorized backlog changes with
+the related code and changelog entry.
 
 ## Testing
 
@@ -216,13 +247,19 @@ make tests
 make tests-coverage
 ```
 
+Before running the full suite, coverage, updater checks or local release checks,
+quit CaptainsLog when recording and processing have finished. The updater fixtures
+use fake Homebrew commands but still check for the real running app, so isolated
+config/data alone does not prevent those failures. Run checks from the repository
+root: tests resolve synthetic fixtures under `eval/` relative to that directory.
+
 GitHub Actions runs only when a release tag (`v*`) is pushed; ordinary branch pushes and pull requests do not start workflows. The release workflow runs release-tooling checks and the full deterministic suite (`make tests`) before packaging. Run the suite locally during development, or use `make tests-unit` for a lightweight, model-free check. Coverage instrumentation, CLI coverage, model evaluations, and UI checks remain opt-in.
 
 Use `make help` to discover commands and `NAME=value` for options; for example,
 `make build CONFIGURATION=release` or `make tests ARGS=--unit`. Make is the
 development entry point; scripts in `scripts/` are its implementation helpers.
 
-For the sequential model-backed fixture pipeline, run `make evals-pipeline`. Run every stage evaluation with `make evals-suites`; validate saved outputs without inference using `make evals ARGS="--validate-run <run-stamp>"`. Review generated files against `eval/*/expected/` and the matching stage skill; record dated results, semantic findings and limitations directly in the related task. For native macOS UI checks, use `make ui`; it builds a temporary app bundle and isolates config/data under a temporary directory. Prepared-machine model checks use `make tests-model` with the four `CAPTAINSLOG_*_MODEL_*` environment variables set. Actual microphone capture is a separately confirmed, interactive check via `make tests-recorder`. Neither smoke check runs in GitHub Actions. Use isolated configuration/data, only repository eval fixtures, and no personal data. Demo material is for presentation. A transcript-seeded continuation cannot establish a successful full audio run.
+For the sequential model-backed fixture pipeline, run `make evals-pipeline`. Run every stage evaluation with `make evals-suites`; validate saved outputs without inference using `make evals ARGS="--validate-run <run-stamp>"`. Review generated files against `eval/*/expected/` and the matching stage skill; report dated results, semantic findings and limitations in chat or PRs, without adding agent-authored content to tasks. For native macOS UI checks, use `make ui`; it builds a temporary app bundle and isolates config/data under a temporary directory. Prepared-machine model checks use `make tests-model` with the four `CAPTAINSLOG_*_MODEL_*` environment variables set. Actual microphone capture is a separately confirmed, interactive check via `make tests-recorder`. Neither smoke check runs in GitHub Actions. Use isolated configuration/data, only repository eval fixtures, and no personal data. Demo material is for presentation. A transcript-seeded continuation cannot establish a successful full audio run.
 
 ## Fixture evaluations
 
@@ -257,9 +294,9 @@ stage observations and remaining limits. Explain why each difference matters.
 Metadata records model/runtime identity, source/prompt/fixture hashes, settings,
 revision and timings; validation success cannot prove grounding or completeness.
 Expected wording is a reference rather than the only valid wording. Baseline diffs
-and heuristic scores help navigation but do not replace human review. Record durable
-dated findings in the corresponding task; do not claim speed or token savings without
-measurements and comparable timing scopes.
+and heuristic scores help navigation but do not replace human review. Report dated
+findings in chat or PRs; task content must come from the owner. Do not claim speed
+or token savings without measurements and comparable timing scopes.
 
 ## Troubleshooting
 

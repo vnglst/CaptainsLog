@@ -54,6 +54,28 @@ and recording controls invoke real models or hardware. Checks bypass default dem
 seeding. See the [testing workflow](../README.md#testing) and stage skills in
 [`skills/`](../skills/) for quality gates and semantic review requirements.
 
+## Implementation map
+
+Start with [Makefile](../Makefile) for command invocation. Most `scripts/*.swift`
+entrypoints delegate through [tooling.swift](tooling.swift) to the dispatch table
+in [Main.swift](Sources/Tools/Main.swift); find the implementation below rather
+than guessing a filename from a Make target.
+
+| Workflow | Implementation |
+|---|---|
+| Packaging, framework bundling, runtime verification | [Native.swift](Sources/Tools/Native.swift) |
+| UI harness, updater/model/recorder checks, pipeline artifact checks | [Checks.swift](Sources/Tools/Checks.swift) |
+| Evaluation selection, generation and review bundles | [Evals.swift](Sources/Tools/Evals.swift) |
+| Evaluation tooling fixtures and enrichment validation | [EvalChecks.swift](Sources/Tools/EvalChecks.swift), [EnrichValidation.swift](Sources/Tools/EnrichValidation.swift) |
+| Coverage | [Coverage.swift](Sources/Tools/Coverage.swift) |
+| Release preparation, notes, changelog checks and cask updates | [release.swift](release.swift); release fixtures: [ReleaseChecks.swift](Sources/Tools/ReleaseChecks.swift) |
+| Temporary config/data, subprocesses and file helpers | [Common.swift](Sources/Tools/Common.swift); `isolated-check` dispatch: [Main.swift](Sources/Tools/Main.swift) |
+
+Before full tests, coverage, updater checks or local release checks, quit the app
+when recording and processing have finished. Updater fixtures still inspect the
+real app process. Run checks from the repository root so relative `eval/` fixture
+paths resolve correctly. See [testing prerequisites](../README.md#testing).
+
 All helper implementations are Swift. A separate pinned Swift package in this
 directory compiles shared tooling; it is not a dependency of the app package.
 The package uses Yams for YAML validation. The first helper invocation resolves

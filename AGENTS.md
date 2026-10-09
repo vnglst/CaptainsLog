@@ -1,6 +1,6 @@
 # Repository Instructions
 
-Read `README.md` before working here. Follow its product requirements, build instructions, and design decisions.
+Read `README.md` before working here. Follow its product requirements, build instructions, and design decisions. Use its [repository navigation map](README.md#repository-navigation) to find source entry points and the [tool implementation map](scripts/README.md#implementation-map) for development helpers.
 
 ## Backlog
 
