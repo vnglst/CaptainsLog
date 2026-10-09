@@ -1,4 +1,4 @@
-import CLlama
+import llama
 import CryptoKit
 import Foundation
 import HuggingFace

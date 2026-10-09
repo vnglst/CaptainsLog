@@ -68,8 +68,8 @@ jobs:
           VERSION: ${{ steps.release.outputs.version }}
         run: make --silent release-notes VERSION="$VERSION" > "$RUNNER_TEMP/release-notes.md"
 
-      - name: Install build dependencies
-        run: brew install llama.cpp
+      - name: Verify pinned runtime integration
+        run: make tests-runtime
 
       - name: Run tests
         run: make tests

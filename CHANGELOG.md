@@ -25,6 +25,8 @@ entry. Git links provide the complete commit history for each release.
 
 - Require all task and ADR content to come from the owner, including plans, notes and summaries. Permit agents to edit supplied wording, update workflow status and check off verified existing items; report agent findings in chat or PRs.
 
+- Pin development and release inference to one checksum-verified llama.cpp/GGML XCFramework, remove Homebrew/OpenMP runtime resolution, verify packaged linkage and repeatable native artifact extraction, preserve the isolated UI launcher, and record framework identity in evaluation evidence. Keep the task's owner-provided text and verified checkboxes, removing agent-authored plans, notes, summaries and the runtime ADR.
+
 - Make now drives building, development launch, tests, fixture evaluations, packaging and releases, with standard variable options and supporting iteration targets. Plain `make` launches the development app; release checks and CI use the same commands, and test commands isolate configuration and data. Remove the unused legacy evaluation-validation wrapper.
 
 - Require minimal PR text, a quick review tip and concise verification, with short UI videos or suitable examples; keep detailed evidence optional or in task notes.

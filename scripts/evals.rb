@@ -293,7 +293,14 @@ module Evals
       metadata['binary_sha256'] = Digest::SHA256.file(cl).hexdigest
       metadata['swift_version'] = capture('swift', '--version').strip
       metadata['runtime'] = capture('otool', '-L', cl)
-      libs = metadata['runtime'].lines.drop(1).map { |line| line.strip.split(' (').first }.select { |p| p.include?('/opt/homebrew/') && File.file?(p) }
+      libs = metadata['runtime'].lines.drop(1).map do |line|
+        path = line.strip.split(' (').first
+        next unless path.start_with?('@rpath/llama.framework/')
+        resolved = File.join(File.dirname(cl), path.delete_prefix('@rpath/'))
+        raise "Pinned runtime not found beside CLI: #{resolved}" unless File.file?(resolved)
+        resolved
+      end.compact
+      metadata['runtime_manifest_sha256'] = Digest::SHA256.file("#{ROOT}/Package.swift").hexdigest
       metadata['runtime_hashes'] = hashes(libs)
       json("#{run}/metadata.json", metadata)
       if items.any? { |item| item['stage'] == 'enrich' }

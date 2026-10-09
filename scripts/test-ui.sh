@@ -21,7 +21,7 @@ if [ "$(uname -s)" != "Darwin" ]; then
 fi
 
 if [ "${CAPTAINSLOG_UI_SKIP_BUILD:-0}" = "1" ]; then
-    bin_dir="$PWD/.build/debug"
+    bin_dir="$(swift build --show-bin-path)"
 else
     swift build --product CaptainsLogApp
     bin_dir="$(swift build --show-bin-path)"
@@ -87,6 +87,8 @@ copy("cleanup/input/book-reference.md", ".pipeline/01-transcribed/2025-01-16-090
 PY
 
 cp "$bin_dir/CaptainsLogApp" "$app_bundle/Contents/MacOS/CaptainsLogUITest"
+bash scripts/bundle-runtime.sh "$bin_dir" "$app_bundle" \
+    "$app_bundle/Contents/MacOS/CaptainsLogUITest"
 cat > "$app_bundle/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -98,6 +100,9 @@ cat > "$app_bundle/Contents/Info.plist" <<PLIST
 <key>LSMinimumSystemVersion</key><string>26.0</string>
 </dict></plist>
 PLIST
+
+codesign --force --deep --sign - "$app_bundle"
+codesign --verify --deep --strict "$app_bundle"
 
 echo "Isolated UI app: $app_bundle"
 echo "Isolated config: $app_root/config.json"

@@ -47,7 +47,7 @@ The first launch downloads the on-device models and needs an internet connection
 
 ## Build
 
-Requirements: Apple Silicon, macOS 26 or later, Swift 6.2+, Make (included with Apple Command Line Tools), and `brew install llama.cpp` for source builds. Xcode IDE is not required.
+Requirements: Apple Silicon, macOS 26 or later, Swift 6.2+, Make (included with Apple Command Line Tools), and internet access for the initial SwiftPM dependency download. Native inference libraries require no Homebrew installation. Xcode IDE is not required.
 
 ```sh
 make build
@@ -59,6 +59,35 @@ The packaging command creates `dist/CaptainsLog.app` and a versioned ZIP archive
 ```sh
 open dist/CaptainsLog.app
 ```
+
+The development and release configurations both use the checksum-verified upstream
+`llama-b11512-xcframework.zip` (llama.cpp revision
+`a11f57ba93797579a5d1855ee216a31f10242676`). SwiftPM verifies SHA-256
+`3f6a7d0fecbf49781445bba900dc0a4a7e76303482765f5912a4a959d5fa2c38`
+before resolving the matching llama/GGML headers and framework. The universal
+macOS slice contains arm64 and x86_64 code; CaptainsLog builds arm64 with deployment
+target macOS 26.0. Upstream built the framework for macOS 13.3 with SDK 26.4
+(Apple clang 21.0.0, clang-2100.0.123.102; linker 1266.8), so it is compatible
+with the app's higher minimum. Its Release
+configuration enables Metal, embedded Metal shaders and Accelerate BLAS,
+disables OpenMP and native-host tuning, and merges GGML into the framework.
+No separate libomp or Homebrew runtime is loaded.
+
+Reproducibility here means identical prebuilt native code and headers across clean
+resolutions, local builds and releases. It does not promise identical app signatures,
+ZIP timestamps or a byte-identical rebuild of upstream's compiler output. Run
+`make tests-runtime` to independently download, verify and compare two
+clean unsigned framework extractions. Packaging runs `scripts/check-runtime.sh`
+to reject external runtime paths and verify the app/CLI deployment target.
+
+To upgrade the runtime, select an immutable upstream release and source commit,
+verify the release asset's SHA-256 independently, update the URL/checksum/revision
+in `Package.swift` and this description, and refresh that revision's MIT and native helper license notices under
+`Sources/NativeRuntime/`. Review upstream `build-xcframework.sh` at the
+pinned commit for build flags and deployment requirements. Then run the runtime
+check, clean debug and release builds, deterministic tests, packaging/signature
+checks and sequential fixture evaluations before committing. Changing system
+llama.cpp, GGML or libomp installations has no effect on the selected artifact.
 
 For a safe development demo, run `make` (or `make run`). It creates an isolated TNG-themed data copy under `tmp/demo-runtime/` from synthetic notes and locally synthesized audio in [`demo/`](./demo/). The demo copy persists between launches; move it aside to restore the original demo.
 

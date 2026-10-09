@@ -1,10 +1,10 @@
 ---
 id: TASK-28
 title: Use the same pinned native runtime for development and release builds
-status: Next
+status: Verify
 assignee: []
 created_date: '2026-10-04 13:10'
-updated_date: '2026-10-08 17:53'
+updated_date: '2026-10-09 13:36'
 labels:
   - distribution
 dependencies: []
@@ -21,11 +21,11 @@ Use the same pinned native libraries and matching headers for local development 
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 llama.cpp, GGML and required native runtime dependencies are pinned to immutable source revisions or checksum-verified artifacts, with matching headers and libraries; verified prebuilt libraries are permitted.
-- [ ] #2 Local development and release builds use the same pinned native libraries. Documented clean builds succeed without Homebrew llama.cpp, GGML or libomp and ignore unrelated system versions of those libraries.
-- [ ] #3 The native toolchain, deployment target, architecture and build options are recorded; two clean builds with the same declared inputs produce matching unsigned runtime artifacts or document and test any unavoidable nondeterminism.
-- [ ] #4 The packaged app and CLI bundle the pinned runtime, target macOS 26.0, pass signature and fixture smoke checks, and contain no Homebrew runtime paths.
-- [ ] #5 Dependency upgrade instructions, licenses and automated checks prevent accidental fallback to system-installed native libraries.
+- [x] #1 llama.cpp, GGML and required native runtime dependencies are pinned to immutable source revisions or checksum-verified artifacts, with matching headers and libraries; verified prebuilt libraries are permitted.
+- [x] #2 Local development and release builds use the same pinned native libraries. Documented clean builds succeed without Homebrew llama.cpp, GGML or libomp and ignore unrelated system versions of those libraries.
+- [x] #3 The native toolchain, deployment target, architecture and build options are recorded; two clean builds with the same declared inputs produce matching unsigned runtime artifacts or document and test any unavoidable nondeterminism.
+- [x] #4 The packaged app and CLI bundle the pinned runtime, target macOS 26.0, pass signature and fixture smoke checks, and contain no Homebrew runtime paths.
+- [x] #5 Dependency upgrade instructions, licenses and automated checks prevent accidental fallback to system-installed native libraries.
 <!-- AC:END -->
 
 ## Implementation Notes

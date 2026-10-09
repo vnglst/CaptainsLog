@@ -29,6 +29,7 @@ builds release and development launch always uses debug, regardless of
 | `make tests-coverage` | LLVM-instrumented deterministic and fixture CLI coverage; enforce production coverage floor. |
 | `make tests-updates` | Exercise simulated Homebrew updates using fake Homebrew fixtures. |
 | `make tests-release` | Model-free release/changelog fixtures and temporary local Git publication. |
+| `make tests-runtime` | Verify the pinned native archive twice and compare clean unsigned runtime artifacts and matching headers. |
 | `make tests-evals` | Model-free evaluation orchestration fixtures. |
 | `make tests-enrich` | Build, then check enrichment validation and CLI seed boundaries without inference. |
 | `make tests-model` | Opt-in installed-model smoke test; requires the four `CAPTAINSLOG_*_MODEL_*` variables in its helper. |
