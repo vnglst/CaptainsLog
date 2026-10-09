@@ -202,9 +202,9 @@ func prepareRelease(_ arguments: [String]) throws {
     defer { try? FileManager.default.removeItem(at: temporary) }
     let environment = ["CAPTAINS_LOG_CONFIG_PATH": temporary.appendingPathComponent("config.json").path,
                        "CAPTAINS_LOG_DATA_DIR": temporary.appendingPathComponent("data").path]
-    // Inference checks run sequentially and use only isolated repository fixtures.
+    // Release gates use deterministic checks with isolated config/data.
     for command in [["make", "tests-release"], ["make", "build"],
-                    ["make", "tests"], ["make", "evals"]] {
+                    ["make", "tests"]] {
         try run(command, environment: environment)
     }
     let status = try git("status", "--porcelain")

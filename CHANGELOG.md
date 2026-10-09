@@ -12,6 +12,10 @@ entry. Git links provide the complete commit history for each release.
 
 ## [Unreleased]
 
+### Added
+
+- Add `make dev` to launch the cached debug app directly with its isolated demo data, skipping SwiftPM when source and package inputs are unchanged; rebuild the app when missing or inputs change. Keep `make` and `make run` as aliases, without packaging, tests or evaluations.
+
 ### Removed
 
 - Remove the unused legacy LCARS interface, onboarding and common controls, along with their Antonio font and resource bundle; retain active Field Notes UI, shared state/color helpers and debug fixtures. Update packaging, native UI harness and coverage inputs for the removed resources. Keep the task's owner-provided text and verified checkboxes, removing agent-authored plans, notes and summaries.
@@ -22,6 +26,8 @@ entry. Git links provide the complete commit history for each release.
 - Remove the obsolete startup benchmark and its debug recording hooks; document the retained build and verification scripts in `scripts/README.md`.
 
 ### Changed
+
+- Release preparation runs only release-tooling checks, the build and deterministic tests; remove automatic model evaluations so releases no longer require local models. Keep fixture evaluations available through `make evals`.
 
 - Implement repository automation helpers in Swift, preserving Make workflows, fixture validation, packaging and release checks with executable compatibility aliases; update the documented helper commands. Verify the full audio fixture pipeline, completed-artifact resume and search readback through the Swift helpers.
 

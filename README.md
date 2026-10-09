@@ -89,7 +89,7 @@ check, clean debug and release builds, deterministic tests, packaging/signature
 checks and sequential fixture evaluations before committing. Changing system
 llama.cpp, GGML or libomp installations has no effect on the selected artifact.
 
-For a safe development demo, run `make` (or `make run`). It creates an isolated TNG-themed data copy under `tmp/demo-runtime/` from synthetic notes and locally synthesized audio in [`demo/`](./demo/). The demo copy persists between launches; move it aside to restore the original demo.
+For a safe development demo, run `make dev` (`make` and `make run` are aliases). It launches the cached debug app directly when sources and package manifests are unchanged, bypassing SwiftPM startup. If the app is missing or inputs changed (including added or removed source files), it incrementally builds only the app and its dependencies first. No packaging, tests or evaluations run. The first build needs dependency downloads and compilation. It creates an isolated TNG-themed data copy under `tmp/demo-runtime/` from synthetic notes and locally synthesized audio in [`demo/`](./demo/). The demo copy persists between launches; move it aside to restore the original demo.
 
 ## Use
 
@@ -306,7 +306,7 @@ remain in the changelog. New commit messages must follow the convention.
 Dry runs use local tags and committed history without fetching. Actual release
 preparation fetches tags first. Changelog entries still require human review.
 
-From a clean `main` checkout with the local models installed, preview a release:
+From a clean `main` checkout, preview a release:
 
 ```sh
 make release ARGS=--dry-run
@@ -316,19 +316,19 @@ Create the release locally, or create and publish it in one command:
 
 ```sh
 make release
-# Or, after reviewing the changes and evaluation findings:
+# Or, after reviewing the changes:
 make release ARGS=--publish
 ```
 
 Use `BUMP=auto` explicitly if desired, or override with `BUMP=patch`, `BUMP=minor`,
 `BUMP=major`, or an explicit `BUMP=1.2.3` version (for example, a maintenance-only release).
 The command checks Git state and existing tags, fetches `origin/main`, runs the
-release-tooling tests, `make build`, `make tests`, and the full fixture
-pipeline and stage suites sequentially with isolated config/data. Failed checks
-stop before version/changelog edits, commits, or tags. Model evaluation scores
-and artifacts still need semantic review under the stage skills; see [the
-backlog tasks](./backlog/tasks/) for remaining manual checks and
-task records for outstanding acceptance checks.
+release-tooling tests, `make build`, and `make tests` sequentially with isolated
+config/data. Failed checks stop before version/changelog edits, commits, or tags.
+Releases do not run model evaluations or other non-deterministic checks and do
+not require local models. Run `make evals` separately when evaluating model
+quality, and review its artifacts under the stage skills. See [the backlog
+tasks](./backlog/tasks/) for outstanding acceptance checks.
 
 After checks pass, the command bumps `VERSION`, moves Unreleased entries into a
 dated release section, adds the packaging entry, updates comparison links, and

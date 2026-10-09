@@ -52,7 +52,7 @@ extension Tools {
         _ = try release(["check", before, "HEAD"])
         try require(try git("log", "-1", "--format=%s") == "chore(release): CaptainsLog 0.2.0", "Release commit subject wrong")
         try require(try release(["--dry-run"], "post-release").contains("no releasable changes"), "Release commit triggered next release")
-        try require(try read(dir.appendingPathComponent("checks.log")) == "make tests-release\nmake build\nmake tests\nmake evals\n", "Release checks changed or ran out of order")
+        try require(try read(dir.appendingPathComponent("checks.log")) == "make tests-release\nmake build\nmake tests\n", "Release must run only deterministic checks in order")
         let caskBase = try git("rev-parse", "HEAD")
         _ = try release(["cask", "0.2.0", String(repeating: "0", count: 63) + "1"]); try commit(); _ = try release(["check", caskBase, "HEAD"])
         try require(try release(["--dry-run"], "maintenance-preview").contains("no releasable changes"), "Generated cask commit triggered release")

@@ -14,11 +14,14 @@ BASE ?=
 HEAD ?= HEAD
 SHA256 ?=
 
-.PHONY: help build run cli tests tests-unit tests-coverage tests-updates tests-release tests-evals tests-runtime tests-enrich tests-model tests-recorder ui evals evals-list evals-pipeline evals-suites packaging release release-notes release-check release-cask icons clean
+# Directory timestamps also invalidate the app when source files are added or removed.
+DEV_INPUTS := Package.swift Package.resolved $(shell find Sources -type f -o -type d)
+
+.PHONY: help build dev run cli tests tests-unit tests-coverage tests-updates tests-release tests-evals tests-runtime tests-enrich tests-model tests-recorder ui evals evals-list evals-pipeline evals-suites packaging release release-notes release-check release-cask icons clean
 
 help:
 	@printf '%s\n' \
-	  'make (or make run)             Start the development app' \
+	  'make dev (or make / make run)  Incrementally build and start the development app' \
 	  'make build                    Build app, CLI and test executables' \
 	  'make tests                    Run deterministic tests in isolated storage' \
 	  'make evals                    Run all fixture evaluations sequentially' \
@@ -37,8 +40,13 @@ help:
 build:
 	$(SWIFT) build -c "$(CONFIGURATION)" $(ARGS)
 
-run:
-	$(SWIFT) run -c debug CaptainsLogApp $(ARGS)
+run: dev
+
+dev: .build/debug/CaptainsLogApp
+	.build/debug/CaptainsLogApp $(ARGS)
+
+.build/debug/CaptainsLogApp: $(DEV_INPUTS)
+	$(SWIFT) build -c debug --product CaptainsLogApp
 
 cli:
 	$(SWIFT) run -c "$(CONFIGURATION)" cl $(ARGS)

@@ -7,7 +7,7 @@ required. `make help` lists available targets.
 
 | Command | Purpose / options |
 |---|---|
-| `make` / `make run` | Start the app in debug development mode, with its persistent isolated demo copy. |
+| `make dev` / `make` / `make run` | Launch the cached debug app directly with its persistent isolated demo copy, skipping SwiftPM when sources and package manifests are unchanged. Missing apps or changed inputs trigger an app-only incremental build first. No packaging, tests or evaluations run; the first build takes longer. |
 | `make build` | Build Swift package products; `CONFIGURATION=release` selects release (default: debug). |
 | `make cli ARGS='search "project architecture"'` | Run a CLI command. Normal CLI usage uses your configured data; checks must supply isolated config/data and eval fixtures. |
 | `make tests` | Run the deterministic framework-free suite with temporary config/data. `ARGS=--unit` or `make tests-unit` selects model-free unit checks. |
@@ -19,7 +19,9 @@ Additional flags use `ARGS="..."`, passed to the underlying command. Quote paths
 and stems with spaces inside ARGS as shell arguments. Existing `CAPTAINS_LOG_EVAL_*`
 model/run-directory environment overrides continue to work. Packaging always
 builds release and development launch always uses debug, regardless of
-`CONFIGURATION`; release checks use debug defaults.
+`CONFIGURATION`; release checks use debug defaults. Release preparation runs
+only release-tooling checks, the build and deterministic tests; model evaluations
+remain a separate `make evals` command and do not require running before release.
 
 | Supporting command | Purpose / options |
 |---|---|
