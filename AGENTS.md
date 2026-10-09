@@ -31,6 +31,8 @@ Read `README.md` before working here. Follow its product requirements, build ins
 
 Stage-specific evaluation workflows live in `skills/<stage>-eval/SKILL.md` for transcription, cleanup, filename, and enrichment. Use the relevant workflow when evaluating output. Reports should describe concrete changes and semantic impact, including missing or added content and hallucinations; scores alone are not enough. Human review makes the final quality judgment.
 
+- Report dated evaluation results, semantic findings and limitations in chat or PRs, without adding agent-authored content to tasks.
+
 ## Documentation
 
 - Minimize PR review effort and text. State the change, give one quick review action or tip, and summarize checks and material limits. Keep detailed evidence in optional expandable PR sections, not agent-authored task notes. Proactively include a short video for UI changes, or a concise example, screenshot or sample output suited to other changes. Use synthetic fixtures and isolated data for media. Never imply an unperformed check or recording. Help the owner assess behavior without reconstructing it from code or logs.

@@ -174,46 +174,32 @@ adrs doctor                     # Check numbering and links
 Read each file for its status; `adrs list -l` does not parse every legacy
 status line correctly.
 
-All ADR content must come from the owner, including the decision, context,
-rationale, alternatives and consequences. Agents may edit supplied wording, but
-may create an ADR only when the owner explicitly requests it and supplies its
-content. This also applies to superseding records. See [AGENTS.md](./AGENTS.md)
-for the full ownership rules.
-
-For an authorized ADR, `adrs new` creates the next numbered file in `docs/`
-using a minimal MADR-style template. Remove empty template sections. Keep records
-to 300 words, or up to 500 for essential owner-supplied rationale. Editorial
-shortening must preserve the decision, date and status. Keep `docs/` exclusively
-for numbered ADRs. Report agent verification findings in chat or PRs; commit
-authorized ADR and backlog changes with the related change and changelog entry.
+`adrs new` creates the next numbered file in `docs/` using a minimal
+MADR-style template. Remove empty template sections. Keep records to 300 words,
+or up to 500 when essential rationale needs more space. Editorial shortening
+must preserve the decision, date and status. Keep `docs/` exclusively for
+numbered ADRs, and commit ADR and backlog changes with the related change and
+changelog entry.
 
 ## Backlog
 
 The [Backlog.md tasks](./backlog/tasks/) are Markdown files committed with the project. Install the separate CLI with `brew install backlog-md`. From the repository root:
 
-You control backlog content, scope, requirements and task creation. Agents may
-edit, rewrite, clarify or organize content you provide, but must never invent
-task content, including requirements, acceptance criteria, dependencies, plans,
-findings, review notes or final summaries. They must ask you for missing
-input; backlog refinement does not authorize them to define scope or requirements.
-Tasks and drafts may be created only when you explicitly ask, using your supplied
-content. Discovered bugs, follow-up ideas, cleanup and suggested improvements
-should be reported to you without adding backlog items. This rule takes precedence
-over generic Backlog.md CLI guidance. Small, mechanical changes do not need a task.
+You control backlog content, scope, requirements and task creation.
 
-- **To Do:** Agreed tasks that have not been selected for agent work.
-- **Next:** Tasks you select for agents to pick up. Agents leave them here while implementing.
-- **Verify:** Implementation and agent checks are finished; you still need to review them.
+- **To Do:** Agreed tasks that have not been selected for work.
+- **Next:** Tasks you select for implementation.
+- **Verify:** Implementation and checks are finished; you still need to review them.
 - **Complete:** You have verified the work and it is ready for release.
 
 ```sh
 backlog board                         # Review work by status
 backlog task list                     # List tasks
 backlog task view TASK-1              # Read a task
-backlog draft create "Possible idea"  # Only when requested, using owner content
-backlog draft promote DRAFT-1         # When the owner agrees to the work
-backlog task create "Task title"      # Only when requested, using owner content
-backlog task edit TASK-1 --status "Next"    # Select it for agent work
+backlog draft create "Possible idea"  # Capture an idea not yet agreed as work
+backlog draft promote DRAFT-1         # Promote an agreed idea to a task
+backlog task create "Task title"      # Create an agreed task
+backlog task edit TASK-1 --status "Next"    # Select it for implementation
 backlog task edit TASK-1 --status "Verify"  # After checking existing criteria
 backlog task edit TASK-1 --status "Complete"  # After your review
 ```
@@ -230,13 +216,6 @@ independently useful outcomes. Archive superseded tasks after preserving their
 scope and findings in the consolidated task.
 Condense outdated session notes while preserving the explanation, dependencies,
 status and checked acceptance criteria.
-
-Use the CLI for authorized task updates. After relevant checks, agents may check
-supported existing criteria and move the task to `Verify`. Leave `Complete` for
-the owner. If the owner requests changes, return the task to `Next`; review-note
-content must come from the owner. Report agent evidence, bugs and suggestions in
-chat or PRs without adding them to tasks. Commit authorized backlog changes with
-the related code and changelog entry.
 
 ## Testing
 
@@ -259,7 +238,7 @@ Use `make help` to discover commands and `NAME=value` for options; for example,
 `make build CONFIGURATION=release` or `make tests ARGS=--unit`. Make is the
 development entry point; scripts in `scripts/` are its implementation helpers.
 
-For the sequential model-backed fixture pipeline, run `make evals-pipeline`. Run every stage evaluation with `make evals-suites`; validate saved outputs without inference using `make evals ARGS="--validate-run <run-stamp>"`. Review generated files against `eval/*/expected/` and the matching stage skill; report dated results, semantic findings and limitations in chat or PRs, without adding agent-authored content to tasks. For native macOS UI checks, use `make ui`; it builds a temporary app bundle and isolates config/data under a temporary directory. Prepared-machine model checks use `make tests-model` with the four `CAPTAINSLOG_*_MODEL_*` environment variables set. Actual microphone capture is a separately confirmed, interactive check via `make tests-recorder`. Neither smoke check runs in GitHub Actions. Use isolated configuration/data, only repository eval fixtures, and no personal data. Demo material is for presentation. A transcript-seeded continuation cannot establish a successful full audio run.
+For the sequential model-backed fixture pipeline, run `make evals-pipeline`. Run every stage evaluation with `make evals-suites`; validate saved outputs without inference using `make evals ARGS="--validate-run <run-stamp>"`. Review generated files against `eval/*/expected/` and the matching stage skill. For native macOS UI checks, use `make ui`; it builds a temporary app bundle and isolates config/data under a temporary directory. Prepared-machine model checks use `make tests-model` with the four `CAPTAINSLOG_*_MODEL_*` environment variables set. Actual microphone capture is a separately confirmed, interactive check via `make tests-recorder`. Neither smoke check runs in GitHub Actions. Use isolated configuration/data, only repository eval fixtures, and no personal data. Demo material is for presentation. A transcript-seeded continuation cannot establish a successful full audio run.
 
 ## Fixture evaluations
 
@@ -295,7 +274,7 @@ Metadata records model/runtime identity, source/prompt/fixture hashes, settings,
 revision and timings; validation success cannot prove grounding or completeness.
 Expected wording is a reference rather than the only valid wording. Baseline diffs
 and heuristic scores help navigation but do not replace human review. Report dated
-findings in chat or PRs; task content must come from the owner. Do not claim speed
+findings in chat or PRs. Do not claim speed
 or token savings without measurements and comparable timing scopes.
 
 ## Troubleshooting

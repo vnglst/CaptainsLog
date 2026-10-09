@@ -12,6 +12,10 @@ entry. Git links provide the complete commit history for each release.
 
 ## [Unreleased]
 
+### Changed
+
+- Consolidate agent-specific README instructions in AGENTS.md while retaining human-facing development, backlog, architecture and review guidance in README.md.
+
 ## [0.3.1] - 2026-10-09
 
 ### Added
