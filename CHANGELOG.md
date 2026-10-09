@@ -12,6 +12,8 @@ entry. Git links provide the complete commit history for each release.
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-09
+
 ### Added
 
 - Add `make dev` to launch the cached debug app directly with its isolated demo data, skipping SwiftPM when source and package inputs are unchanged; rebuild the app when missing or inputs change. Keep `make` and `make run` as aliases, without packaging, tests or evaluations.
@@ -108,6 +110,10 @@ entry. Git links provide the complete commit history for each release.
 
 - Route Homebrew updater Git calls for the public CaptainsLog tap through HTTPS with a temporary wrapper, avoiding SSH authentication failures without changing saved remotes or global Git configuration. Extend the updater fixture and document the transport correction and verification limits (`fed98bd`).
 
+### Release
+
+- Publish the 0.2.0 app/CLI archive and matching Homebrew cask version and checksum.
+
 ## [0.1.2] - 2026-10-01
 
 ### Added
@@ -157,7 +163,8 @@ entry. Git links provide the complete commit history for each release.
 
 - Make release tests work on clean runners without preinstalled inference models.
 
-[Unreleased]: https://github.com/vnglst/CaptainsLog/compare/v0.1.2...HEAD
+[Unreleased]: https://github.com/vnglst/CaptainsLog/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/vnglst/CaptainsLog/compare/v0.1.2...v0.2.0
 [0.1.2]: https://github.com/vnglst/CaptainsLog/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/vnglst/CaptainsLog/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/vnglst/CaptainsLog/commits/v0.1.0
