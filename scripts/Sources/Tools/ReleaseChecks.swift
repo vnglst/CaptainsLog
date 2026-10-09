@@ -35,31 +35,32 @@ extension Tools {
         _ = try release(["check", base, "HEAD"]); _ = try release(["check", String(repeating: "0", count: 40), "HEAD"]); _ = try release(["check", "HEAD", "HEAD"])
         _ = try git("switch", "-qc", "fixture-branch"); try fail(["patch"]); _ = try git("switch", "-q", "main")
         _ = try git("tag", "v0.1.3"); try fail(["patch"]); _ = try git("tag", "-d", "v0.1.3")
-        // Replace only expensive Make checks with this compiled Swift executable. Git and atomic publication use a local bare fixture.
+        // Reject any build/test invocation during local preparation; Git publication uses a local bare fixture.
         let executable = URL(fileURLWithPath: CommandLine.arguments[0]).resolvingSymlinksInPath()
         try fm.createSymbolicLink(at: bin.appendingPathComponent("make"), withDestinationURL: executable)
         fixture.environment["PATH"] = bin.path + ":" + (environment["PATH"] ?? "")
         fixture.environment["CAPTAINS_LOG_TOOL_FIXTURE_KIND"] = "release"
         fixture.environment["RELEASE_FIXTURE_CHECK_LOG"] = dir.appendingPathComponent("checks.log").path
         let before = try git("rev-parse", "HEAD")
-        fixture.environment["RELEASE_FIXTURE_FAIL"] = "1"; try fail(["patch"])
-        try require(try git("rev-parse", "HEAD") == before && git("tag", "--list") == "v0.1.2" && git("status", "--porcelain").isEmpty, "Failed checks mutated repository")
-        fixture.environment.removeValue(forKey: "RELEASE_FIXTURE_FAIL"); try write(dir.appendingPathComponent("checks.log"), "")
+        fixture.environment["RELEASE_FIXTURE_FAIL"] = "1"
+        try write(dir.appendingPathComponent("checks.log"), "")
+        let preparationStarted = Date()
         _ = try release(["--publish"], "publish")
+        print(String(format: "Local release preparation/publication fixture: %.2fs", Date().timeIntervalSince(preparationStarted)))
         try require(try fixture.read(source.appendingPathComponent("VERSION")).trimmingCharacters(in: .whitespacesAndNewlines) == "0.2.0", "Publication version wrong")
         let head = try git("rev-parse", "HEAD")
         try require(try git("status", "--porcelain").isEmpty && git("rev-parse", "v0.2.0^{}") == head && git("rev-parse", "origin/main") == head && git("ls-remote", "origin", "refs/tags/v0.2.0").contains("refs/tags/v0.2.0"), "Local atomic publication mismatch")
         _ = try release(["check", before, "HEAD"])
         try require(try git("log", "-1", "--format=%s") == "chore(release): CaptainsLog 0.2.0", "Release commit subject wrong")
         try require(try release(["--dry-run"], "post-release").contains("no releasable changes"), "Release commit triggered next release")
-        try require(try read(dir.appendingPathComponent("checks.log")) == "make tests-release\nmake build\nmake tests\n", "Release must run only deterministic checks in order")
+        try require(try read(dir.appendingPathComponent("checks.log")).isEmpty, "Local release preparation must not invoke builds or test suites")
         let caskBase = try git("rev-parse", "HEAD")
         _ = try release(["cask", "0.2.0", String(repeating: "0", count: 63) + "1"]); try commit(); _ = try release(["check", caskBase, "HEAD"])
         try require(try release(["--dry-run"], "maintenance-preview").contains("no releasable changes"), "Generated cask commit triggered release")
         let manualBase = try git("rev-parse", "HEAD")
         let cask = source.appendingPathComponent("Casks/captainslog.rb")
         try fixture.write(cask, fixture.read(cask) + "# Manual cask change\n"); try commit(); try fail(["check", manualBase, "HEAD"])
-        print("Release Git/CLI fixtures passed (checks mocked; local atomic publication verified).")
+        print("Release Git/CLI fixtures passed (no build/test invocations; local atomic publication verified).")
     }
     func releaseFixture(_ args: [String]) throws {
         try require(!(environment["CAPTAINS_LOG_CONFIG_PATH"] ?? "").isEmpty && !(environment["CAPTAINS_LOG_DATA_DIR"] ?? "").isEmpty, "Missing isolated release config/data")

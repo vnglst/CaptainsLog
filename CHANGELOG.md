@@ -27,7 +27,7 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
-- Release preparation runs only release-tooling checks, the build and deterministic tests; remove automatic model evaluations so releases no longer require local models. Keep fixture evaluations available through `make evals`.
+- Keep local release preparation fast by running only Git, version and changelog checks; leave builds, deterministic test suites and runtime verification to the tag workflow before archive publication. Bypass external Git diff tools and pagers during the whitespace check. Keep model evaluations separate through `make evals`, so releases do not require local models.
 
 - Implement repository automation helpers in Swift, preserving Make workflows, fixture validation, packaging and release checks with executable compatibility aliases; update the documented helper commands. Verify the full audio fixture pipeline, completed-artifact resume and search readback through the Swift helpers.
 

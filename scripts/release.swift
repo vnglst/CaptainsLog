@@ -197,22 +197,14 @@ func prepareRelease(_ arguments: [String]) throws {
     try require(try git("rev-list", "--count", "HEAD..origin/main") == "0", "Bring main up to date with origin/main")
     let tag = "v\(version)"
     try require(try git("tag", "--list", tag).isEmpty, "Tag \(tag) already exists")
-    let temporary = FileManager.default.temporaryDirectory.appendingPathComponent("captainslog-release-\(UUID().uuidString)")
-    try FileManager.default.createDirectory(at: temporary, withIntermediateDirectories: true)
-    defer { try? FileManager.default.removeItem(at: temporary) }
-    let environment = ["CAPTAINS_LOG_CONFIG_PATH": temporary.appendingPathComponent("config.json").path,
-                       "CAPTAINS_LOG_DATA_DIR": temporary.appendingPathComponent("data").path]
-    // Release gates use deterministic checks with isolated config/data.
-    for command in [["make", "tests-release"], ["make", "build"],
-                    ["make", "tests"]] {
-        try run(command, environment: environment)
-    }
+    // The tag workflow builds and tests before publishing; preparation stays lightweight.
+    try selfTest()
     let status = try git("status", "--porcelain")
     let checkedRevision = try git("rev-parse", "HEAD")
-    try require(status.isEmpty && checkedRevision == revision, "Source changed during release checks; review and retry")
+    try require(status.isEmpty && checkedRevision == revision, "Source changed during release preparation; review and retry")
     try write(version + "\n", "VERSION")
     try write(content, "CHANGELOG.md")
-    try run(["git", "diff", "--check"])
+    try run(["git", "--no-pager", "diff", "--no-ext-diff", "--check"])
     try run(["git", "add", "VERSION", "CHANGELOG.md"])
     try run(["git", "commit", "-m", "chore(release): CaptainsLog \(version)"])
     try run(["git", "tag", "-a", tag, "-m", "CaptainsLog \(version)"])
