@@ -28,6 +28,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
+- Record the owner's content-writing prerequisite before the landing-page verification PBI can be picked up.
+
 - Refine the Settings redesign PBI with the owner's requirement for four image-generated design previews and owner review and selection before implementation.
 
 - Refine the menu bar PBI with the owner's requirements for minimizing the app, quick recording controls, processing status, quitting and a minimal interface, plus approved recording indication, elapsed time, reopening the main window and brief error feedback.
