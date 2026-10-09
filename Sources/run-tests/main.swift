@@ -3042,20 +3042,21 @@ func runTests() async {
 
     // MARK: - ConfigManager Tests
 
-    test("Corrections: migrate spelling pairs without losing legacy notes") {
+    test("Corrections: retain spelling pairs and discard legacy notes") {
         let fixture = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
             .appendingPathComponent("eval/settings/context/corrections.md")
         let source = try String(contentsOf: fixture, encoding: .utf8)
         var document = CorrectionDocument(source + "Keep this legacy instruction.\nRik → Rick\n")
-        try expect(document.text == source + "Keep this legacy instruction.\nRik → Rick\n")
+        try expect(document.text == "Koenh -> Koen\nRik → Rick")
         try expect(document.entries.count == 2)
         try expect(document.entries[0].misspelling == "Koenh")
         try expect(document.entries[0].spelling == "Koen")
         document.entries[0].spelling = "Koen van Gilst"
         document.remove(document.entries[1].id)
         try expect(document.text.contains("Koenh → Koen van Gilst"))
-        try expect(document.text.contains("Keep this legacy instruction."))
+        try expect(!document.text.contains("Keep this legacy instruction."))
         try expect(!document.text.contains("Rik"))
+        try expect(CorrectionDocument("Legacy notes only.\n").text.isEmpty)
         document.add()
         document.entries[1].misspelling = "Whisper kit"
         document.entries[1].spelling = "WhisperKit"
@@ -3163,7 +3164,7 @@ func runTests() async {
         let savedCorrections = "Mira -> Myra"
         let persistedConfig = CaptainsLogConfig(dataDir: root.path)
         try persistedConfig.writePersonalInfo(savedContext)
-        try persistedConfig.writeCorrections(savedCorrections)
+        try persistedConfig.writeCorrections(savedCorrections + "\nLegacy correction note.\n")
         try persistedConfig.save()
 
         let manager = ConfigManager(loadContextFiles: false)
@@ -3171,6 +3172,11 @@ func runTests() async {
         manager.loadContextFilesIfNeeded()
         try expect(manager.personalContext == savedContext)
         try expect(manager.corrections == savedCorrections)
+        try expect(persistedConfig.readCorrections() == savedCorrections)
+        try persistedConfig.writeCorrections(savedCorrections + "\nAnother legacy note.\n")
+        let initiallyLoaded = ConfigManager()
+        try expect(initiallyLoaded.corrections == savedCorrections)
+        try expect(persistedConfig.readCorrections() == savedCorrections)
     }
 
     await testAsync("Settings: data folder, model choices, context, and corrections persist") {
@@ -3200,7 +3206,7 @@ func runTests() async {
         let settingsFixtures = URL(fileURLWithPath: fm.currentDirectoryPath)
             .appendingPathComponent("eval/settings/context")
         let personalContext = try String(contentsOf: settingsFixtures.appendingPathComponent("personal_info.md"), encoding: .utf8)
-        let corrections = try String(contentsOf: settingsFixtures.appendingPathComponent("corrections.md"), encoding: .utf8)
+        let corrections = CorrectionDocument(try String(contentsOf: settingsFixtures.appendingPathComponent("corrections.md"), encoding: .utf8)).text
         let transcript = try String(contentsOf: settingsFixtures.appendingPathComponent("transcript.md"), encoding: .utf8)
         manager.personalContext = personalContext
         manager.corrections = corrections

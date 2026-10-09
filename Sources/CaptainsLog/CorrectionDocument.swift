@@ -1,6 +1,6 @@
 import Foundation
 
-/// Keeps the CLI's Markdown format and preserves lines that are not spelling pairs.
+/// Keeps spelling pairs in the CLI's Markdown format, discarding legacy notes.
 public struct CorrectionDocument {
     public struct Entry: Identifiable {
         public let id: UUID
@@ -16,12 +16,7 @@ public struct CorrectionDocument {
         }
     }
 
-    private enum Line {
-        case entry(UUID)
-        case preserved(String)
-    }
     public var entries: [Entry] = []
-    private var lines: [Line] = []
 
     public init(_ text: String) {
         guard !text.isEmpty else { return }
@@ -33,43 +28,21 @@ public struct CorrectionDocument {
                 let entry = Entry(id: UUID(), misspelling: wrong, spelling: right,
                                   original: line, originalMisspelling: wrong, originalSpelling: right)
                 entries.append(entry)
-                lines.append(.entry(entry.id))
-            } else {
-                lines.append(.preserved(line))
             }
         }
     }
 
     public var text: String {
-        lines.compactMap { line in
-            switch line {
-            case .preserved(let text): return text
-            case .entry(let id): return entries.first { $0.id == id }?.text
-            }
-        }.joined(separator: "\n")
-    }
-
-    public var preservedText: String {
-        lines.compactMap { line in
-            if case .preserved(let text) = line { return text }
-            return nil
-        }.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
+        entries.map(\.text).joined(separator: "\n")
     }
 
     public mutating func add() {
         let entry = Entry(id: UUID(), misspelling: "", spelling: "", original: " → ",
                           originalMisspelling: "", originalSpelling: "")
         entries.append(entry)
-        // Keep a trailing newline at the end, rather than between new entries.
-        if let last = lines.last, case .preserved("") = last {
-            lines.insert(.entry(entry.id), at: lines.count - 1)
-        } else {
-            lines.append(.entry(entry.id))
-        }
     }
 
     public mutating func remove(_ id: UUID) {
         entries.removeAll { $0.id == id }
-        lines.removeAll { if case .entry(let entryID) = $0 { return entryID == id }; return false }
     }
 }

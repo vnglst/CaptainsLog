@@ -28,14 +28,6 @@ struct FieldNotesCorrectionsEditor: View {
                 document.add()
                 text = document.text
             }
-            if !document.preservedText.isEmpty {
-                Text("Existing correction notes (preserved)")
-                    .font(FieldNotes.Typography.metadata(11))
-                    .foregroundStyle(FieldNotes.ColorToken.secondaryText)
-                Text(document.preservedText)
-                    .font(FieldNotes.Typography.body(13))
-                    .textSelection(.enabled)
-            }
         }
         .onAppear { document = CorrectionDocument(text) }
         .onChange(of: text) { _, value in

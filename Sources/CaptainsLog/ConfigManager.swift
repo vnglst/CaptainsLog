@@ -57,7 +57,7 @@ public final class ConfigManager {
             dataDir = "\(home)/Documents/CaptainsLog"
         }
         personalContext = loadContextFiles ? (cfg.readPersonalInfo() ?? "") : ""
-        corrections = loadContextFiles ? (cfg.readCorrections() ?? "") : ""
+        corrections = loadContextFiles ? Self.loadSpellingPairs(cfg) : ""
         contextFilesLoaded = loadContextFiles
         whisperModel = cfg.whisperModel ?? ""
         whisperModelFolder = cfg.whisperModelFolder ?? ""
@@ -122,13 +122,26 @@ public final class ConfigManager {
     public func reloadContextFiles() {
         let cfg = CaptainsLogConfig().withDataDir(dataDir)
         personalContext = cfg.readPersonalInfo() ?? ""
-        corrections = cfg.readCorrections() ?? ""
+        corrections = Self.loadSpellingPairs(cfg)
         contextFilesLoaded = true
     }
 
     public func loadContextFilesIfNeeded() {
         guard !contextFilesLoaded else { return }
         reloadContextFiles()
+    }
+
+    private static func loadSpellingPairs(_ cfg: CaptainsLogConfig) -> String {
+        let stored = cfg.readCorrections() ?? ""
+        let pairs = CorrectionDocument(stored).text
+        if pairs != stored {
+            do {
+                try cfg.writeCorrections(pairs)
+            } catch {
+                fputs("Warning: Failed to remove legacy correction notes: \(error.localizedDescription)\n", stderr)
+            }
+        }
+        return pairs
     }
 
     public func pickWhisperModelFolder() {
