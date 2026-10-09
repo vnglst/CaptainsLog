@@ -24,7 +24,7 @@ extension Tools {
         try require(args.count == 1, "usage: check-runtime APP_BUNDLE")
         let app = path(args[0]), framework = app.appendingPathComponent("Contents/Frameworks/llama.framework/llama")
         try require(fm.fileExists(atPath: framework.path), "Pinned framework binary missing")
-        try run(["lipo", "-verify_arch", "arm64", framework.path])
+        try run(["lipo", framework.path, "-verify_arch", "arm64"])
         let load = try capture(["otool", "-l", framework.path])
         let minimums = load.components(separatedBy: .newlines).compactMap { match(#"^\s*minos (\d+)\.(\d+)"#, $0) }
         try require(!minimums.isEmpty, "Runtime deployment minimum is missing")
@@ -64,7 +64,7 @@ extension Tools {
             try mkdir(folder); try run(["ditto", "-x", "-k", archive.path, folder.path])
             let framework = folder.appendingPathComponent("build-apple/llama.xcframework/macos-arm64_x86_64/llama.framework")
             for header in ["llama.h", "ggml.h"] { try require(fm.fileExists(atPath: framework.appendingPathComponent("Headers/\(header)").path), "Runtime header missing: \(header)") }
-            try run(["lipo", "-verify_arch", "arm64", framework.appendingPathComponent("llama").path])
+            try run(["lipo", framework.appendingPathComponent("llama").path, "-verify_arch", "arm64"])
             try run(["codesign", "--remove-signature", framework.appendingPathComponent("llama").path], quiet: true, allowFailure: true)
             frameworks.append(framework.appendingPathComponent("Versions/A"))
         }

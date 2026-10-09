@@ -12,6 +12,11 @@ entry. Git links provide the complete commit history for each release.
 
 ## [Unreleased]
 
+### Fixed
+
+- Put the framework binary before `lipo -verify_arch` in runtime tests and packaging checks so Xcode's lipo does not parse its path as an architecture.
+- Add branch-only GitHub verification of the runtime fix, deterministic tests and release packaging on macOS 26.
+
 ## [0.2.0] - 2026-10-09
 
 ### Added
