@@ -174,12 +174,15 @@ adrs doctor                     # Check numbering and links
 Read each file for its status; `adrs list -l` does not parse every legacy
 status line correctly.
 
+Existing ADRs are immutable, including their dates and statuses. Document a
+change in a new numbered ADR that links to the record it supersedes; leave the
+original file untouched.
+
 `adrs new` creates the next numbered file in `docs/` using a minimal
-MADR-style template. Remove empty template sections. Keep records to 300 words,
-or up to 500 when essential rationale needs more space. Editorial shortening
-must preserve the decision, date and status. Keep `docs/` exclusively for
-numbered ADRs, and commit ADR and backlog changes with the related change and
-changelog entry.
+MADR-style template. Remove empty template sections from the new record. Keep
+new records to 300 words, or up to 500 when essential rationale needs more space.
+Keep `docs/` exclusively for numbered ADRs, and commit new ADR and backlog
+changes with the related change and changelog entry.
 
 ## Backlog
 

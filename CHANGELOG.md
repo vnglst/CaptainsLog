@@ -14,6 +14,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
+- Make existing ADRs immutable: document changes through new superseding records that link to the original, without editing original content, dates or statuses.
+
 - Refresh evaluation, updater, demo and website documentation, isolate the manual updater example, document `.qta` Voice Memos imports, and distinguish historical verification from current commands and runtime evidence.
 
 - Consolidate agent-specific README instructions in AGENTS.md while retaining human-facing development, backlog, architecture and review guidance in README.md.
