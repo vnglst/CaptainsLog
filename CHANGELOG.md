@@ -22,6 +22,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Removed
 
+- Remove the category-management separation sentence from the reprocessing PBI at the owner's request.
+
 - Remove the legacy correction notes section from Settings and discard free-text notes from saved corrections when the app loads them. Keep structured spelling pairs and their CLI-readable format.
 
 ### Changed

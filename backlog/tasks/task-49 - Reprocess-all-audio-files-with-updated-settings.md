@@ -4,6 +4,7 @@ title: Reprocess all audio files with updated settings
 status: To Do
 assignee: []
 created_date: '2026-10-09 19:22'
+updated_date: '2026-10-09 19:24'
 labels: []
 dependencies: []
 ordinal: 42000
@@ -12,7 +13,7 @@ ordinal: 42000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-Provide a way to reprocess all audio files with updated settings, including changes to categories. Reprocessing everything is not something to run lightly; it should be a deliberate operation that the user can leave running overnight so all files are processed using the new settings. Keep this separate from category management.
+Provide a way to reprocess all audio files with updated settings, including changes to categories. Reprocessing everything is not something to run lightly; it should be a deliberate operation that the user can leave running overnight so all files are processed using the new settings.
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
