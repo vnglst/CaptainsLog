@@ -69,7 +69,7 @@ than guessing a filename from a Make target.
 | Release preparation, notes, changelog checks and cask updates | [release.swift](release.swift); release fixtures: [ReleaseChecks.swift](Sources/Tools/ReleaseChecks.swift) |
 | Temporary config/data, subprocesses and file helpers | [Common.swift](Sources/Tools/Common.swift); `isolated-check` dispatch: [Main.swift](Sources/Tools/Main.swift) |
 
-Before full tests, coverage, updater checks or local release checks, quit the app
+Before full tests, coverage or updater checks, quit the app
 when recording and processing have finished. Updater fixtures still inspect the
 real app process. Run checks from the repository root so relative `eval/` fixture
 paths resolve correctly. See [testing prerequisites](../README.md#testing).

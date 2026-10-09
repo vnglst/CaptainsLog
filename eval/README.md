@@ -1,43 +1,31 @@
-# Evaluation Test Cases
+# Evaluation fixtures
 
-Skill-driven evaluation suites for verifying each pipeline stage.
+Active stages are `transcribe`, `cleanup`, `categorize`, `filename` and `enrich`.
+Transcription inputs live in `transcribe/audio/`; text-stage inputs live in each
+stage's `input/`. Expected outputs are semantic references, not the only valid
+wording. The `2025-01-14 side project` recording exercises the full pipeline.
 
-## Structure
+Use the runner from the repository root:
 
-Each stage follows the same folder layout:
-
+```sh
+make evals-list
+make evals STAGE=filename CASE=01_single_topic
+make evals-pipeline
+make evals-suites
+make evals ARGS="--validate-run RUN_DIR"
 ```
-eval/<stage>/
-├── input/          — Test inputs (audio, raw transcripts, etc.)
-├── expected/       — Ground truth expected outputs
-├── generated/      — Model outputs (ignored by git)
-└── reports/        — Agent-written evaluation reports (ignored by git)
-```
 
-## Stages
+The runner snapshots fixtures, isolates config/data, records model/runtime
+identity, and prints a review bundle under its temporary run directory. Text
+cases reuse one model sequentially with fresh contexts and samplers. Legacy
+`generated/` and `reports/` directories retain older ignored outputs; new run
+bundles contain their own outputs, validation and per-case reports.
 
-- **transcribe/** — Audio fixtures and expected transcriptions
-- **cleanup/** — Raw transcripts and expected polished text
-- **filename/** — Entry texts and expected filenames
-- **enrich/** — Entry texts and expected YAML frontmatter
+See [evaluation commands and isolation](../README.md#fixture-evaluations) and the
+[stage review skills](../skills/) for semantic review. Discovery and saved-run
+validation do not load inference models. Generation requires the selected models;
+never run concurrent inference jobs or use personal recordings. Model evaluations
+run separately from release preparation.
 
-The `2025-01-14 side project` recording flows through all four stages as a cross-stage integration test.
-
-## Usage
-
-Evaluations are run using the corresponding workflow in [`skills/`](../skills/): `skills/<stage>-eval/SKILL.md`.
-
-Quick CLI tests:
-
-```bash
-# Transcription
-swift run cl transcribe eval/transcribe/audio/alle-mensen-zijn-sterfelijk.m4a --output ./tmp/test.md
-
-# Full pipeline
-swift run cl pipeline --input eval/transcribe/audio/world-war-z.m4a --data-dir ./tmp/test-run
-
-# Individual stages (use eval/<stage>/input/ files)
-swift run cl cleanup --input eval/cleanup/input/<case>.md --output ./tmp/out.md
-swift run cl filename --input eval/filename/input/<case>.md --date 2025-01-15
-swift run cl enrich --input eval/enrich/input/<case>.md --output ./tmp/out.md --date 2025-01-15
-```
+The [TNG reference corpus](tng-reference/README.md) is retained material, not an
+active suite. Demo inputs under `demo/` are presentation material.

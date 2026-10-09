@@ -30,8 +30,9 @@ invocation independently returned the identical native error and trace. Another
 fresh run with seed 0 returned the same counts and error. Both tested seeds fail;
 no claim is made for all seeds or platforms. This is repetition
 within an extracted name, rather than repetition of complete list rows; it
-reaches the same native `contextExhausted` error. Fresh ordinary CLI confirmation
-and fixed-code checks are recorded in [testing verification history](../../backlog/tasks).
+reaches the same native `contextExhausted` error. The counts above are historical
+observations from the recorded model/runtime, not verification of the current
+pinned framework.
 
 Recorded baseline:
 
@@ -61,11 +62,12 @@ With the matching historical runtime, fixed code completed in **177 tokens**
 and exact source preservation passed. The artificial repeated name is shortened
 to four syllable units in persons and three in the summary; the semantic reference
 retains all 144 units. This test demonstrates bounded completion, not perfect
-extraction of unusually repetitive names. The current 0.6.0/0.26.0 runtime also
+extraction of unusually repetitive names. The then-current 0.6.0/0.26.0 runtime also
 completed in 177 tokens, with byte-identical output. All five cases passed sequential generation and saved validation in run
 `2026-10-08_18-31-07_71234_Qwen3.5-9B-Q4_K_M`. Build, 25 validator checks and
-six CLI seed boundaries passed. Native and semantic evidence is recorded in
-ADR-007 and the per-case reports under `eval/enrich/reports/`.
+six CLI seed boundaries passed. The per-case reports were retained under
+`eval/enrich/reports/`. ADR-007 records the test-runner decision; it is not an
+evaluation history.
 
 ## Historical comparison procedure
 

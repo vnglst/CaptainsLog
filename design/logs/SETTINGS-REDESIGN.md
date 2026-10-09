@@ -29,7 +29,7 @@ invented maximum lengths. Audio input remains informational with Refresh devices
 Use case: ui-mockup. Asset type: high fidelity macOS desktop Settings design reference for CaptainsLog, a local voice memo and Markdown logs app. Input image is a style reference only, not an edit target. Redesign the settings page preserving graphite/amber independent native Mac app identity. Produce one polished flat front-on screenshot, approximately 1100 by 1350 pixels, no desk, device frame, perspective or floating UI. Left sidebar ~220px has waveform circle mark, CaptainsLog, Logs, selected Settings. Main content left aligned with generous but efficient spacing, title Settings and subtitle 'Make CaptainsLog work your way.' Native SF Pro type, warm off-white text #F1EEE7, secondary #B8B5AD, background #0D0E0D, sidebar #161715, raised surfaces #1C1D1B, thin borders #30312E, accent #F5B544, quiet moss ready indicators #8FBD78. Group headings inside surfaces, avoid box-on-box stacks. Most important first section 'Updates': prominent full-width preference row 'Automatic update checks' with description 'Check once a day while the app is open.' and a beautifully crafted compact custom ON toggle at the trailing edge: 42x24 amber capsule track, dark circular thumb with a tiny light checkmark, subtle crisp stroke. Beneath a divider, slightly indented row 'Install when idle' with description 'Wait for recording and processing to finish, then restart.' and a trailing 20px custom rounded square amber checked checkbox. This is a dependent preference visually quieter than the main toggle. Below it quiet status 'Updates are installed through Homebrew.' plus two compact neutral buttons 'Check for updates' and 'Install update'; latter disabled. Second section 'Storage' includes folder icon, illustrative '~/Documents/CaptainsLog' path in a dark recessed field, outline 'Choose folder' and neutral 'Reveal in Finder' buttons, helper 'Audio and Markdown notes are saved here.' Third section 'Writing context' contains 'Personal context' with a textarea and helper 'Used to understand your vocabulary during cleanup.' and 'Name and term corrections' with another shorter textarea illustrative 'Koenh → Koen'. Lower compact horizontal sections 'Audio input' with microphone device and 'Refresh devices', then 'Models' with ready indicator and 'Local models ready', then quiet footer version and Third-party notices. Keep actual content plausible and grounded in those implemented controls. All controls distinct and precise, calm and restrained, focus on well-made checkbox and switch rather than decorative visuals. No gradients, faux telemetry, all caps labels, LCARS decoration or added fictional preferences. Do not imply save button; preferences save automatically.
 
 
-## Verification
+## Historical verification
 
 - `swift build`: passed without warnings.
 - `swift run run-tests --unit`: 138 passed, zero failed.
@@ -39,6 +39,9 @@ Use case: ui-mockup. Asset type: high fidelity macOS desktop Settings design ref
   with `kLSNoExecutableErr` (-10827). The native UI connector also failed to
   initialize its kernel assets. A live Settings screenshot and keyboard/VoiceOver
   interaction check could not be completed in this environment.
+
+For a current preview, use `make ui ARGS=eval-settings`; the commands and results
+above describe the original implementation session.
 
 On a working native UI session, inspect the Settings fixture at the 720 pt minimum
 window width and at wider widths. In an installed app, verify the enabled switch,

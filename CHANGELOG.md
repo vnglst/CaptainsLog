@@ -14,6 +14,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
+- Refresh evaluation, updater, demo and website documentation, isolate the manual updater example, document `.qta` Voice Memos imports, and distinguish historical verification from current commands and runtime evidence.
+
 - Consolidate agent-specific README instructions in AGENTS.md while retaining human-facing development, backlog, architecture and review guidance in README.md.
 
 ## [0.3.1] - 2026-10-09

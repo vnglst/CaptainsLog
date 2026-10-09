@@ -128,7 +128,7 @@ make cli ARGS="list"
 make cli ARGS='search "project architecture"'
 ```
 
-M4A and QuickTime audio (`.mov` and `.qt`) files in the configured `audio/` folder are picked up by the app. Imported files keep their original extension. The CLI also accepts WAV and MP3 audio.
+M4A and QuickTime audio (`.mov`, `.qt` and `.qta`) files in the configured `audio/` folder are picked up by the app. Imported files keep their original extension. The CLI also accepts WAV and MP3 audio.
 
 The resumable pipeline records audio, transcribes it with WhisperKit/CoreML, cleans and categorizes the text, generates a filename, and adds searchable metadata. Intermediate files live under `.pipeline/`; completed entries are saved to `logs/`. Use `make cli ARGS=--help` for other commands, including configuration and individual pipeline stages.
 
@@ -226,7 +226,7 @@ make tests
 make tests-coverage
 ```
 
-Before running the full suite, coverage, updater checks or local release checks,
+Before running the full suite, coverage or updater checks,
 quit CaptainsLog when recording and processing have finished. The updater fixtures
 use fake Homebrew commands but still check for the real running app, so isolated
 config/data alone does not prevent those failures. Run checks from the repository
