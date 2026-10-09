@@ -12,6 +12,8 @@ entry. Git links provide the complete commit history for each release.
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-10-09
+
 ### Added
 
 - Record the owner-defined PBI for deliberately reprocessing all audio files with updated settings in a run that can continue overnight.
@@ -39,6 +41,10 @@ entry. Git links provide the complete commit history for each release.
 - Clarify the playback backlog item with the owner's requirement for a sticky audio player at the bottom of a saved entry, with play, pause and seek controls.
 
 - Refine the category backlog item with owner-defined Settings controls, non-destructive removal and folder placement on subsequent processing; keep bulk reprocessing outside its scope.
+
+### Release
+
+- Publish the 0.3.0 app/CLI archive and matching Homebrew cask version and checksum.
 
 ## [0.2.1] - 2026-10-09
 
@@ -207,7 +213,8 @@ entry. Git links provide the complete commit history for each release.
 
 - Make release tests work on clean runners without preinstalled inference models.
 
-[Unreleased]: https://github.com/vnglst/CaptainsLog/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/vnglst/CaptainsLog/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/vnglst/CaptainsLog/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/vnglst/CaptainsLog/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/vnglst/CaptainsLog/compare/v0.1.2...v0.2.0
 [0.1.2]: https://github.com/vnglst/CaptainsLog/compare/v0.1.1...v0.1.2
