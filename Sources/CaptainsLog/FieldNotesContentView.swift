@@ -1107,10 +1107,8 @@ private struct FieldNotesSettingsView: View {
                     }
                     divider.padding(.vertical, 4)
                     fieldLabel("Name and term corrections")
-                    FieldNotesTextEditor(text: $state.corrections,
-                        placeholder: "One correction per line, for example:\nKoenh → Koen")
-                        .accessibilityLabel("Name and term corrections")
-                    helper("Help cleanup recognize names and terms. Use one correction per line.")
+                    FieldNotesCorrectionsEditor(text: $state.corrections)
+                    helper("Help cleanup recognize names and terms.")
                 }
 
                 section("Audio input") {
