@@ -197,8 +197,24 @@ func prepareRelease(_ arguments: [String]) throws {
     try require(try git("rev-list", "--count", "HEAD..origin/main") == "0", "Bring main up to date with origin/main")
     let tag = "v\(version)"
     try require(try git("tag", "--list", tag).isEmpty, "Tag \(tag) already exists")
-    // The tag workflow builds and tests before publishing; preparation stays lightweight.
     try selfTest()
+    let temporary = FileManager.default.temporaryDirectory.appendingPathComponent("captainslog-release-\(UUID().uuidString)")
+    let data = temporary.appendingPathComponent("data")
+    let config = temporary.appendingPathComponent("config.json")
+    try FileManager.default.createDirectory(at: data, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: temporary) }
+    try JSONSerialization.data(withJSONObject: ["dataDir": data.path]).write(to: config)
+    let environment = ["CAPTAINS_LOG_CONFIG_PATH": config.path,
+                       "CAPTAINS_LOG_DATA_DIR": data.path,
+                       "CAPTAINS_LOG_SEARCH_INTEGRATION": "0"]
+    // Build all products once, then run that build's test executable without another SwiftPM invocation.
+    for (label, command) in [("Build", ["make", "build", "CONFIGURATION=debug"]),
+                             ("Deterministic tests", [".build/debug/run-tests"])] {
+        let started = Date()
+        print("\(label)...")
+        try run(command, environment: environment)
+        print(String(format: "%@ passed in %.2fs", label, Date().timeIntervalSince(started)))
+    }
     let status = try git("status", "--porcelain")
     let checkedRevision = try git("rev-parse", "HEAD")
     try require(status.isEmpty && checkedRevision == revision, "Source changed during release preparation; review and retry")
