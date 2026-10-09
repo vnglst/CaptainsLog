@@ -28,6 +28,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
+- Refine the menu bar PBI with the owner's requirements for minimizing the app, quick recording controls, processing status, quitting and a minimal interface, plus approved recording indication, elapsed time, reopening the main window and brief error feedback.
+
 - Refine the category-filter PBI with the owner's requirements for a control near search, multiple selected categories, all categories selected by default and a recognizable UI pattern.
 
 - Clarify the playback backlog item with the owner's requirement for a sticky audio player at the bottom of a saved entry, with play, pause and seek controls.
