@@ -1,14 +1,14 @@
 ---
 id: TASK-29
 title: Remove unused legacy UI components
-status: Verify
+status: Complete
 assignee: []
 created_date: '2026-10-04 13:10'
-updated_date: '2026-10-09 13:36'
+updated_date: '2026-10-09 19:49'
 labels:
   - distribution
 dependencies: []
-ordinal: 30000
+ordinal: 9.27734375
 ---
 
 ## Description

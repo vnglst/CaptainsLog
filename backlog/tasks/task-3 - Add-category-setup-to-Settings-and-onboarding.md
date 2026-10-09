@@ -1,14 +1,14 @@
 ---
 id: TASK-3
 title: Add category setup to Settings and onboarding
-status: To Do
+status: Next
 assignee: []
 created_date: '2026-10-04 13:10'
-updated_date: '2026-10-09 19:22'
+updated_date: '2026-10-09 19:49'
 labels:
   - logs
 dependencies: []
-ordinal: 875
+ordinal: 1000
 ---
 
 ## Description

@@ -1,14 +1,14 @@
 ---
 id: TASK-28
 title: Use the same pinned native runtime for development and release builds
-status: Verify
+status: Complete
 assignee: []
 created_date: '2026-10-04 13:10'
-updated_date: '2026-10-09 13:36'
+updated_date: '2026-10-09 19:49'
 labels:
   - distribution
 dependencies: []
-ordinal: 28000
+ordinal: 74.21875
 ---
 
 ## Description

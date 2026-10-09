@@ -1,14 +1,14 @@
 ---
 id: TASK-23
 title: License CaptainsLog under MIT and reference third-party licenses
-status: Verify
+status: Complete
 assignee: []
 created_date: '2026-10-04 13:10'
-updated_date: '2026-10-08 18:30'
+updated_date: '2026-10-09 19:49'
 labels:
   - publication
 dependencies: []
-ordinal: 29000
+ordinal: 18.5546875
 ---
 
 ## Description

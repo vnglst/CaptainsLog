@@ -1,14 +1,14 @@
 ---
 id: TASK-1
 title: Add playback and seeking for saved recordings
-status: To Do
+status: Next
 assignee: []
 created_date: '2026-10-04 13:10'
-updated_date: '2026-10-09 19:16'
+updated_date: '2026-10-09 19:49'
 labels:
   - logs
 dependencies: []
-ordinal: 1000
+ordinal: 2000
 ---
 
 ## Description

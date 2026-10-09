@@ -1,13 +1,13 @@
 ---
 id: TASK-47
 title: Refactor repository scripts into one language
-status: Verify
+status: Complete
 assignee: []
 created_date: '2026-10-08 19:14'
-updated_date: '2026-10-09 15:21'
+updated_date: '2026-10-09 19:49'
 labels: []
 dependencies: []
-ordinal: 39000
+ordinal: 4.638671875
 ---
 
 ## Description
