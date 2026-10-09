@@ -2324,7 +2324,7 @@ func runPipelineOrchestrationCoverageTests() async {
     await testAsync("Pipeline: M4A and QuickTime discovery, import, resume, reprocess and deletion") {
         let fm = FileManager.default
         let repository = URL(fileURLWithPath: fm.currentDirectoryPath)
-        for ext in ["m4a", "mov", "MOV", "qt"] {
+        for ext in ["m4a", "mov", "MOV", "qt", "qta", "QTA"] {
             let root = fm.temporaryDirectory.appendingPathComponent("AudioFormats-\(UUID().uuidString)")
             defer { try? fm.removeItem(at: root) }
             let data = root.appendingPathComponent("data")
@@ -3096,7 +3096,7 @@ func runTests() async {
         let fixture = URL(fileURLWithPath: fm.currentDirectoryPath)
             .appendingPathComponent("eval/audio-formats/quicktime.mov")
         let original = try Data(contentsOf: fixture)
-        for ext in ["mov", "MOV", "qt"] {
+        for ext in ["mov", "MOV", "qt", "qta", "QTA"] {
             let input = fm.temporaryDirectory.appendingPathComponent("QuickTime-\(UUID().uuidString).\(ext)")
             try fm.copyItem(at: fixture, to: input)
             defer { try? fm.removeItem(at: input) }

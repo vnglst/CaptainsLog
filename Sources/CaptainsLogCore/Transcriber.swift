@@ -141,7 +141,7 @@ public enum Transcriber {
     /// WhisperKit reads through AVAudioFile, which cannot open QuickTime containers.
     /// Keep the original recording and export only the temporary transcription input.
     static func prepareAudio(_ input: URL) async throws -> URL {
-        guard ["mov", "qt"].contains(input.pathExtension.lowercased()) else { return input }
+        guard ["mov", "qt", "qta"].contains(input.pathExtension.lowercased()) else { return input }
         let output = FileManager.default.temporaryDirectory
             .appendingPathComponent("CaptainsLog-\(UUID().uuidString).m4a")
         let asset = AVURLAsset(url: input)

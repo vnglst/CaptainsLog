@@ -12,6 +12,10 @@ entry. Git links provide the complete commit history for each release.
 
 ## [Unreleased]
 
+### Fixed
+
+- Recognize Voice Memos `.qta` exports, including uppercase extensions, in audio discovery, import, reprocessing, deletion and QuickTime conversion.
+
 ### Changed
 
 - Make release preparation use only Git, version and changelog checks. Streamline the GitHub release workflow to validate, build the release app and CLI, verify packaging and publish; keep tooling, runtime reproducibility and deterministic test suites as explicit development commands.

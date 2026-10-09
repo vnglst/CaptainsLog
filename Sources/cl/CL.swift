@@ -59,7 +59,7 @@ struct Transcribe: AsyncParsableCommand {
         abstract: "Transcribe an audio file using Whisper."
     )
 
-    @Argument(help: "Path to the audio file (.m4a, .mov, .qt, .wav, .mp3).")
+    @Argument(help: "Path to the audio file (.m4a, .mov, .qt, .qta, .wav, .mp3).")
     var input: String
 
     @Option(help: "Output file path (default: same name with .md extension).")

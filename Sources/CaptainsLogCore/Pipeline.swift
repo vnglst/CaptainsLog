@@ -38,7 +38,7 @@ public enum Pipeline {
         public var path: String { rawValue }
     }
 
-    private static let audioExtensions = ["m4a", "mov", "qt", "wav", "mp3"]
+    private static let audioExtensions = ["m4a", "mov", "qt", "qta", "wav", "mp3"]
 
     private static func sourceAudioURLs(stem: String, dataDirURL: URL) -> [URL] {
         let directory = dataDirURL.appendingPathComponent(Directory.audio.path)
