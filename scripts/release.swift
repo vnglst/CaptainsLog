@@ -208,7 +208,7 @@ func prepareRelease(_ arguments: [String]) throws {
                        "CAPTAINS_LOG_DATA_DIR": data.path,
                        "CAPTAINS_LOG_SEARCH_INTEGRATION": "0"]
     // Build all products once, then run that build's test executable without another SwiftPM invocation.
-    for (label, command) in [("Build", ["make", "build", "CONFIGURATION=debug"]),
+    for (label, command) in [("Build", ["make", "build", "CONFIGURATION=debug", "ARGS="]),
                              ("Deterministic tests", [".build/debug/run-tests"])] {
         let started = Date()
         print("\(label)...")

@@ -14,6 +14,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Fixed
 
+- Clear inherited Make arguments for release builds so `make release ARGS=--publish` does not pass `--publish` to Swift.
+
 - Put the framework binary before `lipo -verify_arch` in runtime tests and packaging checks so Xcode's lipo does not parse its path as an architecture.
 
 ### Changed
