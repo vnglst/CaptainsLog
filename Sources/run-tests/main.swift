@@ -2509,6 +2509,40 @@ func runPipelineOrchestrationCoverageTests() async {
         try expect(unexpectedCalls.snapshot().isEmpty)
     }
 
+    await testAsync("Categories: custom pipeline placement and non-destructive removal use eval audio") {
+        let previous = CaptainsLogConfig.load()
+        defer { try? previous.save() }
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("CategoryPipeline-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let fixture = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+            .appendingPathComponent("eval/transcribe/audio/2025-01-14 side project.m4a")
+        let input = try String(contentsOfFile: "eval/categorize/input/side-project-voice-app.md", encoding: .utf8)
+        var config = previous.withDataDir(root.path)
+        config.categories = ["research", "travel"]
+        try config.save()
+        let research = Categorize.Category(rawValue: "research")!
+        let operations = Pipeline.Operations(
+            transcribe: { _, _ in input },
+            cleanup: { text, _ in text },
+            categorize: { _, cfg, _ in
+                try expect(cfg.configuredCategories.map(\.rawValue) == ["research", "travel"])
+                return research
+            },
+            filename: { _, date in "\(date)-research-fixture.md" },
+            enrich: { text, _, _, _ in text }
+        )
+        let result = try await Pipeline.run(audioInput: fixture.path, dataDir: root.path, operations: operations)
+        try expect(result.enrichedPath.contains("/logs/research/"))
+        try expect(FileManager.default.fileExists(atPath: root.appendingPathComponent("logs/travel").path))
+        try expect(!FileManager.default.fileExists(atPath: root.appendingPathComponent("logs/personal").path))
+        let bytes = try Data(contentsOf: URL(fileURLWithPath: result.enrichedPath))
+        config.categories = ["travel"]
+        try config.save()
+        try expect(try Data(contentsOf: URL(fileURLWithPath: result.enrichedPath)) == bytes)
+        try expect(Pipeline.listEntries(dataDir: root.path).contains { $0.latestPath == result.enrichedPath })
+    }
+
     await testAsync("Pipeline CLI: fake fresh run copies eval audio and writes all stage artifacts") {
         let root = FileManager.default.temporaryDirectory
             .appendingPathComponent("PipelineFreshRun-\(UUID().uuidString)", isDirectory: true)
@@ -3184,6 +3218,48 @@ func runTests() async {
         try expect(Cleanup.nameCorrectionsSection(config.readCorrections()).contains("Whisper kit → WhisperKit"))
     }
 
+    test("Categories: multi-selection filters current and retained folders, with all selected by default") {
+        var filter = CategoryFilter()
+        try expect(filter.includesAll)
+        try expect(filter.includes(path: "/isolated/logs/personal/fixture.md"))
+        try expect(filter.includes(path: "/isolated/logs/research/fixture.md"))
+        filter.select("personal", selected: false)
+        try expect(!filter.includes(path: "/isolated/logs/personal/fixture.md"))
+        try expect(filter.includes(path: "/isolated/logs/side-project/fixture.md"))
+        try expect(filter.includes(path: "/isolated/logs/professional/fixture.md"))
+        filter.select("professional", selected: false)
+        try expect(!filter.includes(path: "/isolated/logs/professional/fixture.md"))
+        filter.select("personal", selected: true)
+        try expect(filter.includes(path: "/isolated/logs/personal/fixture.md"))
+        try expect(!filter.includes(path: "/isolated/logs/professional/fixture.md"))
+        try expect(CategoryFilter.key(for: "/isolated/.pipeline/02-logs/fixture.md") == "uncategorized")
+        filter.selectAll()
+        try expect(filter.includesAll)
+        try expect(filter.includes(path: "/isolated/logs/professional/fixture.md"))
+    }
+
+    test("ConfigManager: categories persist immediately without removing existing folders") {
+        let previous = CaptainsLogConfig.load()
+        defer { try? previous.save() }
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("CategoryConfig-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        var isolated = previous.withDataDir(root.path)
+        isolated.categories = ["personal", "research"]
+        try isolated.save()
+        let retained = root.appendingPathComponent("logs/personal/fixture.md")
+        try FileManager.default.createDirectory(at: retained.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try "fixture".write(to: retained, atomically: true, encoding: .utf8)
+        let manager = ConfigManager(loadContextFiles: false)
+        manager.categories.removeAll { $0 == "personal" }
+        try expect(CaptainsLogConfig.load().configuredCategories.map(\.rawValue) == ["research"])
+        try expect(try String(contentsOf: retained, encoding: .utf8) == "fixture")
+        manager.categories.append("travel")
+        try expect(CaptainsLogConfig.load().configuredCategories.map(\.rawValue) == ["research", "travel"])
+        manager.categories.removeAll()
+        try expect(CaptainsLogConfig.load().configuredCategories.isEmpty)
+    }
+
     test("ConfigManager: initial dataDir uses configured path or the documented default") {
         let priorConfig = CaptainsLogConfig.load()
         defer { try? priorConfig.save() }
@@ -3772,6 +3848,31 @@ func runTests() async {
         try expect(rendered.contains("<user_prompt>"))
         try expect(rendered.contains("Do the thing."))
         try expect(rendered.contains("What changed?"))
+    }
+
+    test("Categories: custom configuration renders only selected categories and keeps legacy manifests") {
+        let config = CaptainsLogConfig(categories: ["Research", "Travel", "research", "../"])
+        try expect(config.configuredCategories.map(\.rawValue) == ["research", "travel"])
+        let prompt = try Categorize.renderedPrompt(logText: "fixture", config: config)
+        try expect(prompt.systemPrompt.contains("- research: Research"))
+        try expect(prompt.systemPrompt.contains("- travel: Travel"))
+        try expect(!prompt.systemPrompt.contains("- professional:"))
+        try expect(try Categorize.parseCategory("<category>research</category>", categories: config.configuredCategories).folderName == "research")
+        do {
+            _ = try Categorize.parseCategory("<category>personal</category>", categories: config.configuredCategories)
+            try expect(false, "A removed category must not be accepted from inference")
+        } catch is Categorize.CategorizeError {}
+        let decoded = try JSONDecoder().decode(Categorize.Manifest.self,
+            from: Data(#"{"sourceStem":"fixture","category":"side_project"}"#.utf8))
+        try expect(decoded.category == .sideProject)
+        try expect(decoded.category.folderName == "side-project")
+        try expect(Categorize.Category(rawValue: "../outside") == nil)
+        try expect(Categorize.Category(name: "Family & Friends")?.folderName == "family-friends")
+        try expect(CaptainsLogConfig().configuredCategories == Categorize.Category.allCases)
+        do {
+            _ = try Categorize.renderedPrompt(logText: "fixture", config: CaptainsLogConfig(categories: []))
+            try expect(false, "An empty category configuration must ask the user to add a category")
+        } catch let error as Categorize.CategorizeError { try expect(error == .noCategories) }
     }
 
     test("Categorize: parses a single XML category") {

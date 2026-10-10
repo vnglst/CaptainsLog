@@ -3,9 +3,7 @@ Choose the single category that covers most of this cleaned voice memo.
 </role>
 
 <categories>
-- personal: family, friends, health, home, hobbies, travel, private reflection, and non-work life.
-- professional: paid work, colleagues, management, teams, companies, career, planning, meetings, delivery, and work-adjacent professional development.
-- side_project: independent projects, experiments, learning projects, open-source work, apps, tools, writing, or creative/technical projects outside paid work.
+{CATEGORIES}
 </categories>
 
 <instructions>
@@ -15,7 +13,7 @@ Choose the single category that covers most of this cleaned voice memo.
 - Return exactly one XML tag and nothing else.
 </instructions>
 
-<response_format><category>personal</category></response_format>
+<response_format><category>{CATEGORY_EXAMPLE}</category></response_format>
 
 <context>
 {SPLIT_SPEAKER_CONTEXT_SECTION}

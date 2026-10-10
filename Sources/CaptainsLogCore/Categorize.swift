@@ -5,17 +5,41 @@ public enum Categorize {
     public static let defaultMaxTokens = 64
     public static let defaultTemperature: Float = 0.1
 
-    public enum Category: String, Codable, CaseIterable, Sendable {
-        case personal
-        case professional
-        case sideProject = "side_project"
+    public struct Category: RawRepresentable, Codable, CaseIterable, Hashable, Sendable {
+        public let rawValue: String
+        public static let personal = Category(rawValue: "personal")!
+        public static let professional = Category(rawValue: "professional")!
+        public static let sideProject = Category(rawValue: "side_project")!
+        /// Built-in defaults retained for older configurations and clients.
+        public static let allCases: [Category] = [.personal, .professional, .sideProject]
 
-        public var folderName: String {
-            switch self {
-            case .personal: return "personal"
-            case .professional: return "professional"
-            case .sideProject: return "side-project"
+        public init?(rawValue: String) {
+            guard !rawValue.isEmpty, rawValue.unicodeScalars.allSatisfy({
+                CharacterSet.alphanumerics.contains($0) || $0 == "_"
+            }) else { return nil }
+            self.rawValue = rawValue.lowercased()
+        }
+
+        public init?(name: String) {
+            let parts = name.lowercased().components(separatedBy: CharacterSet.alphanumerics.inverted)
+                .filter { !$0.isEmpty }
+            self.init(rawValue: parts.joined(separator: "_"))
+        }
+
+        public var folderName: String { rawValue.replacingOccurrences(of: "_", with: "-") }
+        public var displayName: String { rawValue.replacingOccurrences(of: "_", with: " ").capitalized }
+
+        public init(from decoder: Decoder) throws {
+            let container = try decoder.singleValueContainer()
+            let raw = try container.decode(String.self)
+            guard let category = Self(rawValue: raw) else {
+                throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid category")
             }
+            self = category
+        }
+        public func encode(to encoder: Encoder) throws {
+            var container = encoder.singleValueContainer()
+            try container.encode(rawValue)
         }
     }
 
@@ -38,10 +62,13 @@ public enum Categorize {
 
     public enum CategorizeError: LocalizedError, Equatable {
         case invalidXML(outputByteCount: Int)
+        case noCategories
         case missingManifest(path: String)
 
         public var errorDescription: String? {
             switch self {
+            case .noCategories:
+                return "Add a category in Settings before processing recordings."
             case .invalidXML(let count):
                 return "Category output was not valid XML (\(count) bytes received)."
             case .missingManifest(let path):
@@ -71,7 +98,7 @@ public enum Categorize {
         )
         await diagnostic("Category inference completed in \(String(format: "%.1f", Date().timeIntervalSince(start)))s with \(raw.utf8.count) output bytes.")
         do {
-            let category = try parseCategory(raw)
+            let category = try parseCategory(raw, categories: config.configuredCategories)
             await diagnostic("Category parsed: \(category.rawValue).")
             return category
         } catch {
@@ -85,13 +112,27 @@ public enum Categorize {
         config: CaptainsLogConfig = CaptainsLogConfig.load(),
         promptPath: String = defaultPromptPath
     ) throws -> RenderedPrompt {
-        RenderedPrompt(
+        guard !config.configuredCategories.isEmpty else { throw CategorizeError.noCategories }
+        return RenderedPrompt(
             systemPrompt: try PromptLoader.load(
                 path: promptPath,
-                replacements: ["{SPLIT_SPEAKER_CONTEXT_SECTION}": Cleanup.speakerContextSection(config.readPersonalInfo())]
+                replacements: [
+                    "{SPLIT_SPEAKER_CONTEXT_SECTION}": Cleanup.speakerContextSection(config.readPersonalInfo()),
+                    "{CATEGORIES}": categoryInstructions(config.configuredCategories),
+                    "{CATEGORY_EXAMPLE}": config.configuredCategories.first!.rawValue,
+                ]
             ),
             userMessage: PromptXML.document([PromptXML.element("log_entry", logText)])
         )
+    }
+
+    private static func categoryInstructions(_ categories: [Category]) -> String {
+        let descriptions: [Category: String] = [
+            .personal: "family, friends, health, home, hobbies, travel, private reflection, and non-work life.",
+            .professional: "paid work, colleagues, management, teams, companies, career, planning, meetings, delivery, and work-adjacent professional development.",
+            .sideProject: "independent projects, experiments, learning projects, open-source work, apps, tools, writing, or creative/technical projects outside paid work.",
+        ]
+        return categories.map { "- \($0.rawValue): \(descriptions[$0] ?? $0.displayName)" }.joined(separator: "\n")
     }
 
     /// Runs the file and manifest part of the categorize CLI command with an injectable inference operation.
@@ -128,13 +169,14 @@ public enum Categorize {
         return category
     }
 
-    public static func parseCategory(_ raw: String) throws -> Category {
+    public static func parseCategory(_ raw: String, categories: [Category] = Category.allCases) throws -> Category {
         let pattern = #"<\s*category\s*>([^<]+)</\s*category\s*>"#
         let range = NSRange(raw.startIndex..., in: raw)
         guard let expression = try? NSRegularExpression(pattern: pattern, options: [.caseInsensitive]),
               let match = expression.firstMatch(in: raw, range: range),
               let valueRange = Range(match.range(at: 1), in: raw),
-              let category = Category(rawValue: raw[valueRange].trimmingCharacters(in: .whitespacesAndNewlines).lowercased())
+              let category = Category(rawValue: raw[valueRange].trimmingCharacters(in: .whitespacesAndNewlines).lowercased()),
+              categories.contains(category)
         else {
             throw CategorizeError.invalidXML(outputByteCount: raw.utf8.count)
         }

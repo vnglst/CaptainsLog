@@ -132,6 +132,16 @@ M4A and QuickTime audio (`.mov`, `.qt` and `.qta`) files in the configured `audi
 
 The resumable pipeline records audio, transcribes it with WhisperKit/CoreML, cleans and categorizes the text, generates a filename, and adds searchable metadata. Intermediate files live under `.pipeline/`; completed entries are saved to `logs/`. Use `make cli ARGS=--help` for other commands, including configuration and individual pipeline stages.
 
+Settings and initial setup let you choose categories for future processing. Removing
+one keeps its existing folders and logs. The category menu beside search filters
+Logs and search results; all categories are initially selected. The CLI supports
+the same configuration:
+
+```sh
+cl config set categories "personal,professional,research"
+cl config set categories unset  # Restore built-in defaults
+```
+
 Transcription uses Whisper Large-v2. Cleanup, categorization, filenames, and metadata use Qwen 3.5 9B 4-bit through llama.cpp. Semantic search downloads the multilingual-e5-small embedding model on first use.
 
 ## Documentation

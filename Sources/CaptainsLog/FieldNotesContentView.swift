@@ -214,9 +214,22 @@ private struct FieldNotesEntriesView: View {
     @Binding var deleteTarget: LogEntry?
     let onSelect: (LogEntry) -> Void
 
+    @CLState private var categoryFilter = CategoryFilter()
+
+    private var availableCategories: [String] {
+        Set(appState.config.categories.compactMap { Categorize.Category(rawValue: $0)?.folderName }
+            + appState.allEntries.map { CategoryFilter.key(for: $0.path) }).sorted()
+    }
+    private var visibleEntries: [LogEntry] {
+        appState.allEntries.filter { categoryFilter.includes(path: $0.path) }
+    }
+    private var visibleSearchResults: [SearchResult] {
+        appState.search.results.filter { categoryFilter.includes(path: $0.path) }
+    }
+
     private var groups: [(date: Date, entries: [LogEntry])] {
         let calendar = Calendar.current
-        return Dictionary(grouping: appState.allEntries) { entry in
+        return Dictionary(grouping: visibleEntries) { entry in
             guard let date = entry.recordingDate else { return Date.distantPast }
             return calendar.startOfDay(for: date)
         }
@@ -232,6 +245,9 @@ private struct FieldNotesEntriesView: View {
                 searchContent
             } else if appState.allEntries.isEmpty {
                 emptyState
+            } else if visibleEntries.isEmpty {
+                searchStatus(icon: "line.3.horizontal.decrease.circle", title: "No logs in selected categories",
+                             detail: "Select another category or choose All categories.", showProgress: false)
             } else {
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 0) {
@@ -263,17 +279,37 @@ private struct FieldNotesEntriesView: View {
                         .foregroundStyle(FieldNotes.ColorToken.secondaryText)
                 }
                 Spacer()
-                Text("\(appState.allEntries.count) logs")
+                Text(categoryFilter.includesAll ? "\(appState.allEntries.count) logs" : "\(visibleEntries.count) of \(appState.allEntries.count) logs")
                     .font(FieldNotes.Typography.metadata())
                     .foregroundStyle(FieldNotes.ColorToken.tertiaryText)
             }
-            FieldNotesSearchField(
-                text: Binding(
-                    get: { appState.search.query },
-                    set: { appState.search.updateQuery($0, dataDir: appState.dataDir) }
-                ),
-                isWorking: searchIsWorking
-            )
+            HStack(spacing: FieldNotes.Spacing.s) {
+                FieldNotesSearchField(
+                    text: Binding(
+                        get: { appState.search.query },
+                        set: { appState.search.updateQuery($0, dataDir: appState.dataDir) }
+                    ),
+                    isWorking: searchIsWorking
+                )
+                Menu {
+                    Button("All categories") { categoryFilter.selectAll() }
+                    Divider()
+                    ForEach(availableCategories, id: \.self) { category in
+                        Toggle(category.replacingOccurrences(of: "-", with: " ").capitalized,
+                               isOn: Binding(
+                                get: { categoryFilter.includes(category) },
+                                set: { selected in
+                                    categoryFilter.select(category, selected: selected)
+                                }))
+                    }
+                } label: {
+                    Label(categoryFilter.includesAll ? "All categories" : "Categories", systemImage: "line.3.horizontal.decrease.circle")
+                        .font(FieldNotes.Typography.body(13))
+                }
+                .menuStyle(.borderlessButton)
+                .fixedSize()
+                .accessibilityLabel("Filter logs by category")
+            }
         }
         .padding(.horizontal, FieldNotes.Spacing.xl)
         .padding(.vertical, FieldNotes.Spacing.xl)
@@ -299,9 +335,9 @@ private struct FieldNotesEntriesView: View {
             searchStatus(icon: "waveform.path.ecg", title: "Following the signal",
                          detail: "Comparing your words with the local note index.")
         case .ready:
-            if appState.search.results.isEmpty {
+            if visibleSearchResults.isEmpty {
                 searchStatus(icon: "scope", title: "No matching logs",
-                             detail: "Try describing the idea another way.", showProgress: false)
+                             detail: categoryFilter.includesAll ? "Try describing the idea another way." : "Try another category or choose All categories.", showProgress: false)
             } else {
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 0) {
@@ -314,7 +350,7 @@ private struct FieldNotesEntriesView: View {
                         .padding(.top, FieldNotes.Spacing.l)
                         .padding(.bottom, FieldNotes.Spacing.xs)
 
-                        ForEach(Array(appState.search.results.enumerated()), id: \.element.stem) { index, result in
+                        ForEach(Array(visibleSearchResults.enumerated()), id: \.element.stem) { index, result in
                             FieldNotesSearchResultRow(result: result, rank: index + 1) {
                                 if let entry = appState.allEntries.first(where: { $0.stem == result.stem }) {
                                     onSelect(entry)
@@ -1119,6 +1155,10 @@ private struct FieldNotesSettingsView: View {
                         : "Audio, transcripts, and Markdown notes are saved here.")
                 }
 
+                section("Categories") {
+                    FieldNotesCategoriesEditor()
+                }
+
                 section("Writing context") {
                     fieldLabel("Personal context")
                     FieldNotesTextEditor(text: $state.personalContext,
@@ -1433,7 +1473,7 @@ private struct FieldNotesOnboardingView: View {
                 Text("CaptainsLog").font(FieldNotes.Typography.title(23)).foregroundStyle(FieldNotes.ColorToken.primaryText)
                 Spacer()
                 Text("1  Storage").font(FieldNotes.Typography.metadata()).foregroundStyle(FieldNotes.ColorToken.amber)
-                Text("2  Local models").font(FieldNotes.Typography.metadata()).foregroundStyle(FieldNotes.ColorToken.secondaryText)
+                Text("2  Categories").font(FieldNotes.Typography.metadata()).foregroundStyle(FieldNotes.ColorToken.secondaryText)
             }
             .padding(FieldNotes.Spacing.xxl).frame(width: 230, alignment: .leading).background(FieldNotes.ColorToken.surface)
             VStack(alignment: .leading, spacing: FieldNotes.Spacing.xl) {
@@ -1443,6 +1483,10 @@ private struct FieldNotesOnboardingView: View {
                     Text("Storage location").font(FieldNotes.Typography.title(18)).foregroundStyle(FieldNotes.ColorToken.primaryText)
                     Text(shortenedPath(appState.dataDir)).font(FieldNotes.Typography.metadata(12)).foregroundStyle(FieldNotes.ColorToken.primaryText)
                     FieldNotesButton(title: "Choose folder") { appState.pickDataDirectory() }
+                }.padding(FieldNotes.Spacing.m).fieldNotesSurface()
+                VStack(alignment: .leading, spacing: FieldNotes.Spacing.s) {
+                    Text("Categories").font(FieldNotes.Typography.title(18))
+                    FieldNotesCategoriesEditor()
                 }.padding(FieldNotes.Spacing.m).fieldNotesSurface()
                 Spacer()
                 HStack { Text("Nothing leaves your Mac").font(FieldNotes.Typography.body(13)).foregroundStyle(FieldNotes.ColorToken.secondaryText); Spacer(); FieldNotesButton(title: "Set up CaptainsLog") { appState.completeFirstRun(); dismiss() } }

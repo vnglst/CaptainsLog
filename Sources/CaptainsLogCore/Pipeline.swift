@@ -829,7 +829,7 @@ public enum Pipeline {
                 withIntermediateDirectories: true
             )
         }
-        for category in Categorize.Category.allCases {
+        for category in CaptainsLogConfig.load().configuredCategories {
             try FileManager.default.createDirectory(
                 at: dataDirURL
                     .appendingPathComponent(Directory.enriched.path)

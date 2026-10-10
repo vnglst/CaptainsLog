@@ -14,6 +14,14 @@ public struct CaptainsLogConfig: Codable {
     public var automaticUpdates: Bool?
     public var automaticUpdateChecks: Bool?
     public var schemaVersion: Int
+    public var categories: [String]?
+    public var configuredCategories: [Categorize.Category] {
+        let parsed = (categories ?? Categorize.Category.allCases.map(\.rawValue))
+            .compactMap { Categorize.Category(name: $0) }
+        var seen = Set<Categorize.Category>()
+        let unique = parsed.filter { seen.insert($0).inserted }
+        return unique
+    }
     public var dataDir: String?
     public var whisperModelFolder: String?
     public var whisperModel: String?
@@ -24,6 +32,7 @@ public struct CaptainsLogConfig: Codable {
         automaticUpdateChecks: Bool? = nil,
         automaticUpdates: Bool? = nil,
         dataDir: String? = nil,
+        categories: [String]? = nil,
         whisperModelFolder: String? = nil,
         whisperModel: String? = nil,
         qwenModelId: String? = nil,
@@ -33,6 +42,7 @@ public struct CaptainsLogConfig: Codable {
         self.automaticUpdateChecks = automaticUpdateChecks
         self.schemaVersion = schemaVersion
         self.dataDir = dataDir
+        self.categories = categories
         self.whisperModelFolder = whisperModelFolder
         self.whisperModel = whisperModel
         self.qwenModelId = qwenModelId

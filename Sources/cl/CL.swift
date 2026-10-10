@@ -558,6 +558,7 @@ struct ConfigShow: AsyncParsableCommand {
         print("Config file: \(CaptainsLogConfig.configURL.path)")
         print("  automaticUpdates: \(cfg.automaticUpdates ?? true)")
         print("  automaticUpdateChecks: \(cfg.automaticUpdateChecks ?? true)")
+        print("  categories:          \(cfg.configuredCategories.map(\.rawValue).joined(separator: ", "))")
         print("  dataDir:             \(cfg.dataDir ?? "(unset)")")
         print("  whisperModel:        \(cfg.whisperModel ?? "(unset, default: \(Transcriber.defaultModel))")")
         print("  whisperModelFolder:  \(cfg.whisperModelFolder ?? "(unset — will fetch from network)")")
@@ -574,15 +575,16 @@ struct ConfigSet: AsyncParsableCommand {
         abstract: "Set a config value."
     )
 
-    @Argument(help: "Key (dataDir, whisperModel, whisperModelFolder, qwenModelId, qwenModelFolder, automaticUpdateChecks, automaticUpdates).")
+    @Argument(help: "Key (categories, dataDir, whisperModel, whisperModelFolder, qwenModelId, qwenModelFolder, automaticUpdateChecks, automaticUpdates).")
     var key: String
 
-    @Argument(help: "Value (use 'unset' to clear).")
+    @Argument(help: "Value (use 'unset' to clear; categories are comma-separated names).")
     var value: String
 
     func run() async throws {
         let v: String? = (value == "unset") ? nil : value
         let knownKeys = Set([
+            "categories",
             "automaticUpdates",
             "automaticUpdateChecks",
             "dataDir",
@@ -596,7 +598,7 @@ struct ConfigSet: AsyncParsableCommand {
             throw ValidationError(
                 """
                 Unknown key: \(key)
-                Valid keys: dataDir, whisperModel, whisperModelFolder, qwenModelId, qwenModelFolder, automaticUpdateChecks, automaticUpdates
+                Valid keys: categories, dataDir, whisperModel, whisperModelFolder, qwenModelId, qwenModelFolder, automaticUpdateChecks, automaticUpdates
                 Edit context files directly:
                   personal_info: \(cfg.contextDir().path)/personal_info.md
                   corrections:   \(cfg.contextDir().path)/corrections.md
@@ -606,8 +608,14 @@ struct ConfigSet: AsyncParsableCommand {
         if ["automaticUpdateChecks", "automaticUpdates"].contains(key), let v, v != "true", v != "false" {
             throw ValidationError("\(key) must be true, false, or unset.")
         }
+        let categoryNames = v?.split(separator: ",").map(String.init)
+        if key == "categories", let categoryNames,
+           categoryNames.contains(where: { Categorize.Category(name: $0) == nil }) {
+            throw ValidationError("Each category must contain letters or numbers.")
+        }
         try CaptainsLogConfig.update { cfg in
             switch key {
+            case "categories": cfg.categories = categoryNames.map { $0.compactMap { Categorize.Category(name: $0)?.rawValue } }
             case "automaticUpdates": cfg.automaticUpdates = v.map { $0 == "true" }
             case "automaticUpdateChecks": cfg.automaticUpdateChecks = v.map { $0 == "true" }
             case "dataDir": cfg.dataDir = v

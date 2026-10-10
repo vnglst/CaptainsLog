@@ -18,6 +18,13 @@ public final class ConfigManager {
             reloadContextFiles()
         }
     }
+    public var categories: [String] {
+        didSet {
+            // Category changes must be visible to processing started immediately afterwards.
+            do { try CaptainsLogConfig.update { $0.categories = categories } }
+            catch { logWarning("Failed to save categories: \(error.localizedDescription)") }
+        }
+    }
     public var personalContext: String { didSet { scheduleContextSave() } }
     public var corrections: String { didSet { scheduleContextSave() } }
     public var whisperModel: String { didSet { scheduleConfigSave() } }
@@ -56,6 +63,7 @@ public final class ConfigManager {
             let home = FileManager.default.homeDirectoryForCurrentUser.path
             dataDir = "\(home)/Documents/CaptainsLog"
         }
+        categories = cfg.configuredCategories.map(\.rawValue)
         personalContext = loadContextFiles ? (cfg.readPersonalInfo() ?? "") : ""
         corrections = loadContextFiles ? Self.loadSpellingPairs(cfg) : ""
         contextFilesLoaded = loadContextFiles
@@ -87,6 +95,7 @@ public final class ConfigManager {
             do {
                 try CaptainsLogConfig.update { cfg in
                     cfg.dataDir = self.dataDir
+                    cfg.categories = self.categories
                     cfg.whisperModel = self.whisperModel.isEmpty ? nil : self.whisperModel
                     cfg.whisperModelFolder = self.whisperModelFolder.isEmpty ? nil : self.whisperModelFolder
                     cfg.qwenModelId = self.qwenModelId.isEmpty ? nil : self.qwenModelId
