@@ -4,7 +4,7 @@ title: Add playback and seeking for saved recordings
 status: Verify
 assignee: []
 created_date: '2026-10-04 13:10'
-updated_date: '2026-10-10 12:30'
+updated_date: '2026-10-10 12:48'
 labels:
   - logs
 dependencies: []
@@ -19,6 +19,6 @@ When opening a single saved entry, the user should see its audio in a sticky pla
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [x] #1 Opening a single saved entry shows a sticky audio player at the bottom of the entry detail view.
-- [x] #2 The player allows the user to play and pause the recording and seek through the audio.
+- [ ] #1 Opening a single saved entry shows a sticky audio player at the bottom of the entry detail view.
+- [ ] #2 The player allows the user to play and pause the recording and seek through the audio.
 <!-- AC:END -->

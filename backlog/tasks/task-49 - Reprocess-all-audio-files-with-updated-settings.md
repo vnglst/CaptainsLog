@@ -4,7 +4,7 @@ title: Reprocess all audio files with updated settings
 status: Verify
 assignee: []
 created_date: '2026-10-09 19:22'
-updated_date: '2026-10-10 12:31'
+updated_date: '2026-10-10 12:48'
 labels: []
 dependencies: []
 ordinal: 4000
@@ -18,6 +18,6 @@ Provide a way to reprocess all audio files with updated settings, including chan
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [x] #1 The user can start reprocessing all audio files using the updated settings.
+- [ ] #1 The user can start reprocessing all audio files using the updated settings.
 - [ ] #2 The reprocessing run can be left running overnight.
 <!-- AC:END -->

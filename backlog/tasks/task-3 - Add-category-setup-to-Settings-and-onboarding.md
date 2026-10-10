@@ -4,7 +4,7 @@ title: Add category setup to Settings and onboarding
 status: Verify
 assignee: []
 created_date: '2026-10-04 13:10'
-updated_date: '2026-10-10 12:30'
+updated_date: '2026-10-10 12:48'
 labels:
   - logs
 dependencies: []
@@ -23,8 +23,8 @@ A way to reprocess all audio files belongs in a separate PBI and is outside this
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [x] #1 Users can add any number of categories in Settings.
-- [x] #2 Users can remove categories in Settings, including categories that contain entries.
-- [x] #3 Removing a category does not delete existing folders or their entries.
-- [x] #4 Subsequent processing of an audio file uses the configured categories for folder creation and entry placement.
+- [ ] #1 Users can add any number of categories in Settings.
+- [ ] #2 Users can remove categories in Settings, including categories that contain entries.
+- [ ] #3 Removing a category does not delete existing folders or their entries.
+- [ ] #4 Subsequent processing of an audio file uses the configured categories for folder creation and entry placement.
 <!-- AC:END -->

@@ -42,12 +42,12 @@ struct FieldNotesCategoriesEditor: View {
                     .accessibilityLabel("New category")
                 FieldNotesButton(title: "Add", kind: .secondary, isDisabled: !canAdd, action: addCategory)
             }
-            Text(appState.config.categories.isEmpty
-                 ? "Add a category before processing recordings."
-                 : "New processing uses these categories. Removing a category keeps its folders and existing logs.")
-                .font(FieldNotes.Typography.body(12))
-                .foregroundStyle(FieldNotes.ColorToken.secondaryText)
-                .fixedSize(horizontal: false, vertical: true)
+            if appState.config.categories.isEmpty {
+                Text("Add a category before processing recordings.")
+                    .font(FieldNotes.Typography.body(12))
+                    .foregroundStyle(FieldNotes.ColorToken.secondaryText)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
         .foregroundStyle(FieldNotes.ColorToken.primaryText)
     }

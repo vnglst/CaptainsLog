@@ -40,6 +40,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Removed
 
+- Remove the explanatory category-removal text from Settings and onboarding; leave all five implemented tasks in Verify with acceptance checklists for the owner.
+
 - Remove legacy `.sh` and `.rb` automation aliases; use Make commands or the `.swift` helpers directly.
 
 ### Fixed
