@@ -5,6 +5,7 @@ import SwiftUI
 @main
 struct CaptainsLogApp: App {
     @CLState private var appState: AppState
+    @NSApplicationDelegateAdaptor(CaptainsLogAppDelegate.self) private var appDelegate
 
     #if DEBUG
     private let designFixture = ProcessInfo.processInfo.environment["CAPTAINSLOG_UI_FIXTURE"]
@@ -29,7 +30,7 @@ struct CaptainsLogApp: App {
     }
 
     var body: some Scene {
-        WindowGroup {
+        Window("CaptainsLog", id: "main") {
             FieldNotesContentView(
                 bootstrap: {
                     #if DEBUG
@@ -50,6 +51,38 @@ struct CaptainsLogApp: App {
         }
         .windowStyle(.hiddenTitleBar)
         .defaultSize(width: 840, height: 780)
+        .commands {
+            CommandGroup(after: .windowArrangement) {
+                Button("Minimize to Menu Bar") {
+                    NSApplication.shared.hide(nil)
+                }
+                .keyboardShortcut("m", modifiers: [.command, .shift])
+            }
+        }
 
+        MenuBarExtra {
+            CaptainsLogMenuBarView()
+                .environment(appState)
+        } label: {
+            HStack(spacing: 4) {
+                Image(systemName: appState.isRecording ? "record.circle.fill" :
+                    (appState.isProcessing ? "waveform" : "mic"))
+                if appState.isRecording {
+                    Text(String(format: "%02d:%02d", Int(appState.recordingDuration) / 60,
+                                Int(appState.recordingDuration) % 60))
+                        .monospacedDigit()
+                }
+            }
+            .accessibilityLabel(appState.isRecording ? "CaptainsLog recording" : "CaptainsLog")
+        }
+        .menuBarExtraStyle(.window)
+
+    }
+}
+
+@MainActor
+private final class CaptainsLogAppDelegate: NSObject, NSApplicationDelegate {
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+        false
     }
 }

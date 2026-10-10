@@ -15,6 +15,7 @@ entry. Git links provide the complete commit history for each release.
 ### Added
 
 - Add a sticky saved-recording player in entry details with play, pause, elapsed time and seeking; stop playback when leaving the entry and show unavailable audio clearly. Cover native transport and unreadable recordings with eval fixtures, and seed matching audio in the isolated UI harness.
+- Add menu bar recording controls with recording time, processing status, brief errors, and actions to reopen or quit CaptainsLog. The Window menu can hide the app to the menu bar, and closing the main window keeps it available.
 
 ### Changed
 
