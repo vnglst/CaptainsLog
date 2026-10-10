@@ -87,7 +87,7 @@ extension Tools {
     }
     func testUI(_ args: [String]) throws {
         let fixture = args.first ?? "eval"
-        let fixtures = ["onboarding", "eval", "eval-settings", "eval-empty", "eval-processing", "eval-paused", "eval-failed", "eval-search-results", "eval-search-empty", "eval-search-error", "eval-search-preparing", "eval-searching", "eval-indexing", "eval-model-downloading", "eval-model-error", "eval-recording", "eval-recording-paused"]
+        let fixtures = ["onboarding", "eval", "eval-settings", "eval-empty", "eval-processing", "eval-paused", "eval-failed", "eval-search-results", "eval-search-empty", "eval-search-error", "eval-search-preparing", "eval-searching", "eval-indexing", "eval-model-downloading", "eval-model-error", "eval-recording", "eval-recording-paused", "eval-menu", "eval-menu-recording", "eval-menu-processing", "eval-menu-failed"]
         try require(fixtures.contains(fixture), "Unknown UI fixture: \(fixture)", status: 2)
         try require(try capture(["uname", "-s"]) == "Darwin", "The native UI check requires macOS; Xcode IDE is not required.", status: 2)
         if environment["CAPTAINSLOG_UI_SKIP_BUILD"] != "1" { try run(["swift", "build", "--product", "CaptainsLogApp"]) }
@@ -118,6 +118,9 @@ extension Tools {
         try PropertyListSerialization.data(fromPropertyList: plist, format: .xml, options: 0).write(to: app.appendingPathComponent("Contents/Info.plist"))
         try run(["codesign", "--force", "--deep", "--sign", "-", app.path]); try run(["codesign", "--verify", "--deep", "--strict", app.path])
         print("Isolated UI app: \(app.path)\nIsolated config: \(dir.path)/config.json\nIsolated eval data: \(data.path)\nFixture state: \(fixture)\nBundle identifier: \(identifier)")
+        if fixture.hasPrefix("eval-menu") {
+            print("The synthetic preview window renders the same menu panel as the status item. Recording and processing indicators are simulated; no microphone capture or inference has been performed.")
+        }
         print("The app launch skips model download and audio discovery. Do not activate processing or recording controls; those use real inference or audio hardware.")
         var open = ["open", "--env", "CAPTAINS_LOG_CONFIG_PATH=\(dir.path)/config.json", "--env", "CAPTAINSLOG_UI_FIXTURE=\(fixture)"]
         if fixture == "onboarding" { open += ["--env", "CAPTAINSLOG_DEMO_MODE=1"] }

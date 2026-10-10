@@ -38,7 +38,7 @@ evaluations remain a separate `make evals` command.
 | `make tests-enrich` | Build, then check enrichment validation and CLI seed boundaries without inference. |
 | `make tests-model` | Opt-in installed-model smoke test; requires the four `CAPTAINSLOG_*_MODEL_*` variables in its helper. |
 | `make tests-recorder` | Interactive microphone smoke check with explicit confirmation. |
-| `make ui` | Launch temporary eval-backed native UI; optional state selector via `ARGS`. |
+| `make ui` | Launch temporary eval-backed native UI; optional state selector via `ARGS`. Use `eval-menu`, `eval-menu-recording`, `eval-menu-processing`, or `eval-menu-failed` to inspect the shared menu panel in a labeled synthetic preview window. |
 | `make release-notes VERSION=0.1.2` | Extract release notes. |
 | `make release-check BASE=<commit> HEAD=<commit>` | Validate changelog coverage (HEAD defaults to HEAD). |
 | `make release-cask VERSION=0.1.2 SHA256=<hash>` | Update Homebrew cask metadata. |

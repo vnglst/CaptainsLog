@@ -11,7 +11,14 @@ import Foundation
 @MainActor
 extension AppState {
     public func applyDesignFixture(named name: String) {
-        let fixtureName = name.lowercased()
+        let requestedName = name.lowercased()
+        let menuFixtures = [
+            "eval-menu": "eval",
+            "eval-menu-recording": "eval-recording",
+            "eval-menu-processing": "eval-processing",
+            "eval-menu-failed": "eval-failed",
+        ]
+        let fixtureName = menuFixtures[requestedName] ?? requestedName
         if fixtureName != "onboarding" {
             suppressFirstRunForDesignFixture()
         } else {

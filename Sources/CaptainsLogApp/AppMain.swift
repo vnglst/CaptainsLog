@@ -42,6 +42,7 @@ struct CaptainsLogApp: App {
             )
                 .environment(appState)
                 #if DEBUG
+                .background(MenuBarFixtureLauncher(enabled: designFixture?.hasPrefix("eval-menu") == true))
                 .task {
                     if let designFixture {
                         appState.applyDesignFixture(named: designFixture)
@@ -59,6 +60,21 @@ struct CaptainsLogApp: App {
                 .keyboardShortcut("m", modifiers: [.command, .shift])
             }
         }
+
+        #if DEBUG
+        Window("Synthetic Menu Bar Preview", id: "menu-preview") {
+            VStack(alignment: .leading, spacing: 0) {
+                Text("Synthetic menu preview · no microphone capture")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .padding([.horizontal, .top], 16)
+                CaptainsLogMenuBarView()
+                    .environment(appState)
+            }
+        }
+        .defaultLaunchBehavior(.suppressed)
+        .windowResizability(.contentSize)
+        #endif
 
         MenuBarExtra {
             CaptainsLogMenuBarView()
@@ -86,3 +102,17 @@ private final class CaptainsLogAppDelegate: NSObject, NSApplicationDelegate {
         false
     }
 }
+
+#if DEBUG
+private struct MenuBarFixtureLauncher: View {
+    @Environment(\.openWindow) private var openWindow
+    let enabled: Bool
+
+    var body: some View {
+        Color.clear
+            .task {
+                if enabled { openWindow(id: "menu-preview") }
+            }
+    }
+}
+#endif
