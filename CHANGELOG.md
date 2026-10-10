@@ -24,6 +24,7 @@ entry. Git links provide the complete commit history for each release.
 ### Changed
 
 - `Categorize.Category` is now a string-backed value supporting configured categories; downstream Swift clients with exhaustive switches over the three built-in enum cases must add a fallback branch. Legacy category manifest values remain compatible.
+- Match the menu panel to the Field Notes colors, typography, waveform identity and recording controls, without an idle label while recording; Open CaptainsLog focuses the main window when other windows are open.
 
 - Add ADRs 021–026 superseding obsolete runtime, verification, release, demo and documentation guidance in ADRs 005, 006, 007, 010, 013 and 020; preserve all original records.
 

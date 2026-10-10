@@ -9,62 +9,100 @@ public struct CaptainsLogMenuBarView: View {
     public init() {}
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Image(systemName: appState.isRecording ? "record.circle.fill" : "mic")
-                    .foregroundStyle(appState.isRecording ? Color.red : Color.primary)
-                Text(recordingLabel)
-                    .monospacedDigit()
-                Spacer()
+        VStack(alignment: .leading, spacing: FieldNotes.Spacing.m) {
+            HStack(spacing: FieldNotes.Spacing.s) {
+                Image(systemName: "waveform")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(FieldNotes.ColorToken.amber)
+                    .frame(width: 30, height: 30)
+                    .overlay(Circle().stroke(FieldNotes.ColorToken.amber, lineWidth: 1))
+                Text("CaptainsLog")
+                    .font(FieldNotes.Typography.title(18))
             }
-            .font(.headline)
 
-            Button(appState.isRecording ? "Stop Recording" : "Start Recording",
-                   systemImage: appState.isRecording ? "stop.fill" : "record.circle") {
+            Button {
                 if appState.isRecording {
                     appState.stopRecording()
                 } else {
                     appState.startRecording()
                 }
+            } label: {
+                HStack(spacing: FieldNotes.Spacing.s) {
+                    Image(systemName: appState.isRecording ? "stop.fill" : "record.circle")
+                    Text(appState.isRecording ? "Stop recording" : "Start recording")
+                        .font(FieldNotes.Typography.body(14, weight: .semibold))
+                }
+                .frame(maxWidth: .infinity, minHeight: 42)
+                .foregroundStyle(FieldNotes.ColorToken.canvas)
+                .background(appState.isRecording ? FieldNotes.ColorToken.danger : FieldNotes.ColorToken.amber)
+                .clipShape(RoundedRectangle(cornerRadius: FieldNotes.Radius.control, style: .continuous))
             }
-            .buttonStyle(.borderedProminent)
+            .buttonStyle(.plain)
             .disabled(!appState.isRecording &&
                 (appState.needsFirstRun || appState.updates.isInstalling || appState.updates.needsRestart))
 
-            VStack(alignment: .leading, spacing: 6) {
-                HStack(spacing: 6) {
-                    if showsProcessing { ProgressView().controlSize(.small) }
-                    Text(processingLabel)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(2)
+            VStack(alignment: .leading, spacing: FieldNotes.Spacing.xs) {
+                if appState.isRecording {
+                    HStack(spacing: FieldNotes.Spacing.xs) {
+                        Circle().fill(FieldNotes.ColorToken.danger).frame(width: 7, height: 7)
+                        Text(recordingLabel)
+                            .font(FieldNotes.Typography.body(13, weight: .medium))
+                            .monospacedDigit()
+                    }
+                    .foregroundStyle(FieldNotes.ColorToken.danger)
+                }
+                if !appState.isRecording || showsProcessing || appState.processing.hasScheduledWork {
+                    HStack(spacing: FieldNotes.Spacing.xs) {
+                        if showsProcessing {
+                            ProgressView().controlSize(.small).tint(FieldNotes.ColorToken.amber)
+                        }
+                        Text(processingLabel)
+                            .font(FieldNotes.Typography.body(12))
+                            .foregroundStyle(FieldNotes.ColorToken.secondaryText)
+                            .lineLimit(2)
+                    }
                 }
                 if let error = appState.errorMessage {
                     Label(error, systemImage: "exclamationmark.triangle")
-                        .font(.caption)
-                        .foregroundStyle(.red)
+                        .font(FieldNotes.Typography.body(12))
+                        .foregroundStyle(FieldNotes.ColorToken.danger)
                         .lineLimit(2)
                         .help(error)
                 }
             }
-            .frame(height: 60, alignment: .topLeading)
+            .frame(maxWidth: .infinity, alignment: .leading)
 
-            Divider()
-            Button("Open CaptainsLog", systemImage: "macwindow") {
-                openWindow(id: "main")
-                NSApplication.shared.unhide(nil)
-                NSApplication.shared.activate(ignoringOtherApps: true)
-                for window in NSApplication.shared.windows where window.canBecomeMain {
-                    window.deminiaturize(nil)
-                    window.makeKeyAndOrderFront(nil)
+            Rectangle().fill(FieldNotes.ColorToken.stroke).frame(height: 1)
+            VStack(alignment: .leading, spacing: FieldNotes.Spacing.xs) {
+                menuAction("Open CaptainsLog", icon: "macwindow") {
+                    openWindow(id: "main")
+                    NSApplication.shared.unhide(nil)
+                    NSApplication.shared.activate(ignoringOtherApps: true)
+                    if let window = NSApplication.shared.windows.first(where: { $0.title == "CaptainsLog" }) {
+                        window.deminiaturize(nil)
+                        window.makeKeyAndOrderFront(nil)
+                    }
+                }
+                menuAction("Quit CaptainsLog", icon: "power") {
+                    NSApplication.shared.terminate(nil)
                 }
             }
-            Button("Quit CaptainsLog", systemImage: "power") {
-                NSApplication.shared.terminate(nil)
-            }
         }
-        .padding(16)
-        .frame(width: 260)
+        .padding(FieldNotes.Spacing.m)
+        .frame(width: 292)
+        .foregroundStyle(FieldNotes.ColorToken.primaryText)
+        .background(FieldNotes.ColorToken.surface)
+        .preferredColorScheme(.dark)
+    }
+
+    private func menuAction(_ title: String, icon: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Label(title, systemImage: icon)
+                .font(FieldNotes.Typography.body(13))
+                .frame(maxWidth: .infinity, minHeight: 30, alignment: .leading)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 
     private var recordingLabel: String {
