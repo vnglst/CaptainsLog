@@ -137,7 +137,7 @@ Transcription uses Whisper Large-v2. Cleanup, categorization, filenames, and met
 ## Documentation
 
 - [Changelog and release history](./CHANGELOG.md)
-- [Testing decision](./docs/0007-framework-free-test-coverage.md)
+- [Testing decision](./docs/0023-keep-framework-free-verification-evidence-outside-backlog-tasks.md)
 - [Development commands](./scripts/README.md)
 - [Troubleshooting](#troubleshooting)
 - [Backlog tasks](./backlog/tasks/)
@@ -367,7 +367,7 @@ entry, build the app/CLI archive, publish those notes and the archive, and updat
 the source cask and Homebrew tap. Reruns also refresh the release notes. Check the
 workflow results and test the published install/upgrade before announcing the
 release. `HOMEBREW_TAP_TOKEN` must be configured as described in
-[ADR-010](./docs/0010-tag-driven-homebrew-releases.md).
+[ADR-024](./docs/0024-separate-release-publication-from-development-checks.md).
 
 Release-tooling tests use Swift and Git:
 

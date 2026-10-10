@@ -14,6 +14,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
+- Add ADRs 021–026 superseding obsolete runtime, verification, release, demo and documentation guidance in ADRs 005, 006, 007, 010, 013 and 020; preserve all original records.
+
 - Make existing ADRs immutable: document changes through new superseding records that link to the original, without editing original content, dates or statuses.
 
 - Refresh evaluation, updater, demo and website documentation, isolate the manual updater example, document `.qta` Voice Memos imports, and distinguish historical verification from current commands and runtime evidence.
