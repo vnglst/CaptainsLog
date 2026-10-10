@@ -36,6 +36,16 @@ entry. Git links provide the complete commit history for each release.
 
 - Consolidate agent-specific README instructions in AGENTS.md while retaining human-facing development, backlog, architecture and review guidance in README.md.
 
+- Use fictional character names in correction tests.
+
+### Removed
+
+- Remove legacy `.sh` and `.rb` automation aliases; use Make commands or the `.swift` helpers directly.
+
+### Fixed
+
+- Sort logs newest first by metadata date, falling back to recording date and source file creation date; use the same date for Logs day groups and entry details.
+
 ## [0.3.1] - 2026-10-09
 
 ### Added

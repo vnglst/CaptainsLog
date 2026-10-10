@@ -87,8 +87,6 @@ throwaway configuration/data and removes it afterward. Call Make for these
 workflows instead of treating the helpers as a separate command interface.
 
 Direct helper usage is `swift scripts/NAME.swift [arguments]` or the executable
-`./scripts/NAME.swift`. Former `.sh` and `.rb` filenames remain executable
-symlinks to Swift entrypoints for path compatibility; invoke them directly,
-not through Bash or Ruby. Existing Make targets and arguments are unchanged.
+`./scripts/NAME.swift`. Helpers use only `.swift` filenames.
 For example, `swift scripts/run-evals.swift --stage filename --list` lists
 fixtures without loading a model.
