@@ -191,7 +191,10 @@ public final class AppState {
         config.pickQwenModelFolder()
     }
 
+    var canChangeDataDirectory: Bool { !isRecording && !isProcessing && !processing.hasScheduledWork && processing.processingStem == nil }
+
     func pickDataDirectory() {
+        guard canChangeDataDirectory else { return }
         config.pickDataDirectory()
         loadEntries()
         directoryWatcher.startWatching(dataDir: config.dataDir)
@@ -287,7 +290,7 @@ public final class AppState {
 
     func reprocessEntry(stem: String, slug: String?) {
         guard !updates.isInstalling, !updates.needsRestart else { return }
-        guard processing.processingStem == nil else { return }
+        guard !processing.hasScheduledWork, processing.processingStem == nil else { return }
         do {
             try Pipeline.resetForReprocessing(stem: stem, slug: slug, dataDir: config.dataDir)
             loadEntries()
@@ -295,6 +298,20 @@ public final class AppState {
         } catch {
             processing.recordPreparationFailure(error, for: stem)
             loadEntries()
+        }
+    }
+
+    var reprocessingAudioCount: Int { (try? Reprocessing.audioItems(dataDir: dataDir).count) ?? 0 }
+    var hasUnfinishedReprocessing: Bool { (Reprocessing.savedRun(dataDir: dataDir)?.remaining ?? 0) > 0 }
+    var canReprocessAll: Bool { !isRecording && !isProcessing && processing.processingStem == nil && !processing.hasScheduledWork && !updates.isInstalling && !updates.needsRestart && modelsReady }
+
+    func reprocessAll(resumeSaved: Bool = false) {
+        guard canReprocessAll else { return }
+        processing.reprocessAll(dataDir: dataDir, resumeSaved: resumeSaved) { [weak self] in
+            self?.loadEntries()
+            guard let self else { return }
+            self.search.invalidateIndex(dataDir: self.dataDir)
+            if !self.processing.isReprocessing { self.startQueuedProcessingIfPossible() }
         }
     }
 

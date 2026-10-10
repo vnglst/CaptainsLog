@@ -1146,7 +1146,7 @@ private struct FieldNotesSettingsView: View {
                     .background(FieldNotes.ColorToken.canvas, in: RoundedRectangle(cornerRadius: 8))
                     .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(FieldNotes.ColorToken.stroke))
                     HStack(spacing: 8) {
-                        FieldNotesButton(title: "Choose folder", kind: .secondary, isDisabled: isDemoMode) {
+                        FieldNotesButton(title: "Choose folder", kind: .secondary, isDisabled: isDemoMode || !appState.canChangeDataDirectory) {
                             appState.pickDataDirectory()
                         }
                         FieldNotesButton(title: "Reveal in Finder", kind: .secondary) {
@@ -1160,6 +1160,7 @@ private struct FieldNotesSettingsView: View {
                 section("Categories") {
                     FieldNotesCategoriesEditor()
                 }
+                section("Reprocess recordings") { FieldNotesReprocessingControls(appState: appState) }
 
                 section("Writing context") {
                     fieldLabel("Personal context")

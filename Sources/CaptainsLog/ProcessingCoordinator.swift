@@ -15,6 +15,8 @@ public final class ProcessingCoordinator {
     public var stage: AppStage = .idle
     public var statusMessage = "Ready to record"
     public var errorMessage: String?
+    public var reprocessingSummary: String?
+    public private(set) var isReprocessing = false
     public var processingStem: String?
     private(set) var failedEntries: [String: String] = [:]
 
@@ -109,6 +111,11 @@ public final class ProcessingCoordinator {
     /// Pause/cancel current processing.
     public func pauseProcessing() {
         processingTask?.cancel()
+        if isReprocessing {
+            stage = .idle
+            statusMessage = "Pausing reprocessing…"
+            return // Keep the batch reserved until its worker releases the lock.
+        }
         processingTask = nil
         pendingProcessingStems = []
         stage = .idle
@@ -174,6 +181,61 @@ public final class ProcessingCoordinator {
             processingStem = nil
             processingTask = nil
             onComplete()
+        }
+    }
+
+    private enum ReprocessingUpdate: Sendable {
+        case batch(Reprocessing.Run, String?)
+        case stage(Pipeline.Progress)
+    }
+
+    func reprocessAll(dataDir: String, resumeSaved: Bool, onProgress: @escaping () -> Void) {
+        guard !hasScheduledWork else { return }
+        errorMessage = nil
+        isReprocessing = true
+        stage = .transcribing
+        reprocessingSummary = "Preparing reprocessing…"
+        let resume = resumePipeline
+        processingTask = Task { [self] in
+            defer {
+                isReprocessing = false
+                processingStem = nil
+                processingTask = nil
+                onProgress()
+            }
+            let (updates, continuation) = AsyncStream<ReprocessingUpdate>.makeStream()
+            let worker = Task {
+                defer { continuation.finish() }
+                return try await Reprocessing.run(dataDir: dataDir, resumeSaved: resumeSaved, resume: resume, onUpdate: { run, stem in
+                    continuation.yield(.batch(run, stem))
+                }, progress: { progress in continuation.yield(.stage(progress)) })
+            }
+            do {
+                let result = try await withTaskCancellationHandler {
+                    for await update in updates {
+                        guard !Task.isCancelled else { continue }
+                        switch update {
+                        case .batch(let run, let stem):
+                            processingStem = stem
+                            reprocessingSummary = "\(run.completed.count) of \(run.items.count) completed · \(run.failures.count) failed"
+                            statusMessage = "Reprocessing recordings…"
+                        case .stage(let progress):
+                            stage = Self.appStage(for: progress.stage)
+                            statusMessage = "Reprocessing · \(progress.stage.rawValue.capitalized)…"
+                        }
+                        onProgress()
+                    }
+                    return try await worker.value
+                } onCancel: { worker.cancel() }
+                reprocessingSummary = "\(result.completed.count) of \(result.items.count) completed · \(result.failures.count) failed"
+                errorMessage = result.failures.values.sorted().first
+                stage = .done
+                statusMessage = result.failures.isEmpty ? "Reprocessing complete" : "Reprocessing finished with failures"
+            } catch {
+                stage = .idle
+                statusMessage = Task.isCancelled ? "Reprocessing paused" : "Reprocessing failed"
+                if !Task.isCancelled { errorMessage = error.localizedDescription }
+            }
         }
     }
 
