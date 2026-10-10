@@ -12,6 +12,10 @@ entry. Git links provide the complete commit history for each release.
 
 ## [Unreleased]
 
+### Fixed
+
+- Sort logs newest first by metadata date, falling back to recording date and source file creation date; use the same date for Logs day groups and entry details.
+
 ### Changed
 
 - Add ADRs 021–026 superseding obsolete runtime, verification, release, demo and documentation guidance in ADRs 005, 006, 007, 010, 013 and 020; preserve all original records.

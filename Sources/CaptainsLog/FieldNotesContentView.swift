@@ -217,7 +217,7 @@ private struct FieldNotesEntriesView: View {
     private var groups: [(date: Date, entries: [LogEntry])] {
         let calendar = Calendar.current
         return Dictionary(grouping: appState.allEntries) { entry in
-            guard let date = entry.recordingDate else { return Date.distantPast }
+            guard let date = entry.sortDate ?? entry.recordingDate else { return Date.distantPast }
             return calendar.startOfDay(for: date)
         }
         .map { (date: $0.key, entries: $0.value) }
@@ -786,7 +786,7 @@ private struct FieldNotesEntryDetailView: View {
                 .textSelection(.enabled)
 
             FieldNotesMetadataFlowLayout(spacing: FieldNotes.Spacing.xs) {
-                if let date = entry.recordingDate {
+                if let date = entry.sortDate ?? entry.recordingDate {
                     FieldNotesMetadataPill(
                         title: date.formatted(date: .long, time: .omitted),
                         icon: "calendar",

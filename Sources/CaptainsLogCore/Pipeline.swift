@@ -370,6 +370,8 @@ public enum Pipeline {
         public let nextStage: Stage
         /// Absolute path to the most advanced artifact on disk (for reveal-in-finder).
         public let latestPath: String
+        /// Metadata date, recording timestamp, or file creation date, in that order.
+        public var sortDate: Date? = nil
     }
 
     /// Scan a data directory and return one entry per distinct recording, tagged
@@ -446,7 +448,19 @@ public enum Pipeline {
             }
         }
 
-        return out.sorted { $0.stem > $1.stem }
+        return out.map { entry in
+            var entry = entry
+            entry.sortDate = EntryDate.resolve(
+                stem: entry.stem,
+                latestPath: entry.latestPath,
+                audioPath: sourceAudioPath(stem: entry.stem, dataDirURL: dataDirURL)
+            )
+            return entry
+        }.sorted {
+            let lhs = $0.sortDate ?? .distantPast
+            let rhs = $1.sortDate ?? .distantPast
+            return lhs == rhs ? $0.stem > $1.stem : lhs > rhs
+        }
     }
 
     public static func deletionCandidatePaths(stem: String, slug: String?, dataDir: String) -> [String] {

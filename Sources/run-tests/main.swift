@@ -1690,6 +1690,54 @@ func runCoreCoverageTests() {
         ) == "00:00")
     }
 
+    test("Logs: metadata, recording and creation dates share chronological ordering") {
+        let root = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let repository = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+        let fixture = try String(contentsOf: repository.appendingPathComponent(
+            "eval/enrich/expected/2025-01-14 side project.md"
+        ), encoding: .utf8)
+        let metadataStem = "2024-01-01-0900"
+        let note = try makeCompletedSearchEntry(
+            root: root, stem: metadataStem, slug: "metadata-first", category: .sideProject,
+            content: fixture.replacingOccurrences(of: "2025-01-14", with: "2025-01-16")
+        )
+        let audioDir = root.appendingPathComponent("audio")
+        try FileManager.default.createDirectory(at: audioDir, withIntermediateDirectories: true)
+        let audioFixture = repository.appendingPathComponent("eval/transcribe/audio/2025-01-14 side project.m4a")
+        for stem in ["2025-01-15-0900", "2025-01-15-1700", "imported-memo"] {
+            let audio = audioDir.appendingPathComponent("\(stem).m4a")
+            try FileManager.default.copyItem(at: audioFixture, to: audio)
+            try FileManager.default.setAttributes(
+                [.creationDate: Date(timeIntervalSince1970: 1_600_000_000)], ofItemAtPath: audio.path
+            )
+        }
+        let listings = Pipeline.listEntries(dataDir: root.path)
+        try expect(listings.map(\.stem) == [metadataStem, "2025-01-15-1700", "2025-01-15-0900", "imported-memo"],
+                   "Metadata date must override the original stem, followed by recording and creation dates")
+        let entry = LogEntry.from(listings[0])
+        try expect(entry.sortDate == listings[0].sortDate, "UI grouping must use the CLI's resolved date")
+        let parts = Calendar.current.dateComponents([.year, .month, .day, .hour], from: entry.sortDate!)
+        try expect(parts.year == 2025 && parts.month == 1 && parts.day == 16 && parts.hour == 12)
+        let creationDate = try FileManager.default.attributesOfItem(
+            atPath: audioDir.appendingPathComponent("imported-memo.m4a").path
+        )[.creationDate] as? Date
+        try expect(listings.last?.sortDate == creationDate, "Undated imports use source creation date")
+
+        for invalid in ["", "not-a-date", "2025-02-30"] {
+            try fixture.replacingOccurrences(of: "2025-01-14", with: invalid)
+                .write(to: note, atomically: true, encoding: .utf8)
+            let fallback = Pipeline.listEntries(dataDir: root.path).first { $0.stem == metadataStem }!
+            let day = Calendar.current.dateComponents([.year, .month, .day, .hour], from: fallback.sortDate!)
+            try expect(day.year == 2024 && day.month == 1 && day.day == 1 && day.hour == 9,
+                       "Invalid metadata \(invalid) must fall back to the recording timestamp: \(day)")
+        }
+        try "date: 2099-01-01\n".write(to: note, atomically: true, encoding: .utf8)
+        let noFrontmatter = Pipeline.listEntries(dataDir: root.path).first { $0.stem == metadataStem }!
+        try expect(Calendar.current.component(.year, from: noFrontmatter.sortDate!) == 2024,
+                   "Body text must not be treated as metadata")
+    }
+
     test("AppState: LogEntry parses completed-entry frontmatter") {
         let root = try makeTemporaryDirectory()
         defer { try? FileManager.default.removeItem(at: root) }

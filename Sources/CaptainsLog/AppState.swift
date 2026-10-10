@@ -378,6 +378,8 @@ struct LogEntry: Identifiable, Sendable {
     let projects: [String]
     /// Recording time from frontmatter, if present. Canonical over stem-based parsing.
     let frontmatterTime: String?
+    /// Resolved date shared with CLI ordering and calendar grouping.
+    var sortDate: Date? = nil
     /// Next stage to run. `.done` means fully processed.
     var stage: Pipeline.Stage
     /// True when this entry is the one actively being processed (not paused).
@@ -428,6 +430,7 @@ struct LogEntry: Identifiable, Sendable {
             tags: tags,
             projects: projects,
             frontmatterTime: frontmatterTime,
+            sortDate: listing.sortDate,
             stage: listing.nextStage
         )
     }
