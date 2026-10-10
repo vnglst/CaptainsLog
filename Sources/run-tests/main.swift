@@ -1449,9 +1449,9 @@ func runCoreCoverageTests() {
         defer { try? FileManager.default.removeItem(at: root) }
         let config = CaptainsLogConfig(dataDir: root.path)
         try config.writePersonalInfo("Works on local-first software.")
-        try config.writeCorrections("Jon -> Jorian")
+        try config.writeCorrections("Pikard -> Picard")
         try expect(config.readPersonalInfo() == "Works on local-first software.")
-        try expect(config.readCorrections() == "Jon -> Jorian")
+        try expect(config.readCorrections() == "Pikard -> Picard")
         try expect(config.contextDir().path == root.appendingPathComponent("context").path)
     }
 
@@ -3621,13 +3621,13 @@ func runTests() async {
 
     test("Cleanup: prompt helpers wrap context and transcript in XML tags") {
         let speaker = Cleanup.speakerContextSection("Works on ML systems.")
-        let corrections = Cleanup.nameCorrectionsSection("Jon -> Jorian")
+        let corrections = Cleanup.nameCorrectionsSection("Pikard -> Picard")
         let transcript = Cleanup.userMessage(transcript: "Uh, I shipped it.")
 
         try expect(speaker.contains("<speaker_context>"))
         try expect(speaker.contains("Works on ML systems."))
         try expect(corrections.contains("<name_corrections>"))
-        try expect(corrections.contains("Jon -> Jorian"))
+        try expect(corrections.contains("Pikard -> Picard"))
         try expect(transcript.contains("<transcript>"))
         try expect(transcript.contains("Uh, I shipped it."))
     }

@@ -12,11 +12,17 @@ entry. Git links provide the complete commit history for each release.
 
 ## [Unreleased]
 
+### Removed
+
+- Remove legacy `.sh` and `.rb` automation aliases; use Make commands or the `.swift` helpers directly.
+
 ### Fixed
 
 - Sort logs newest first by metadata date, falling back to recording date and source file creation date; use the same date for Logs day groups and entry details.
 
 ### Changed
+
+- Use fictional character names in correction tests.
 
 - Add ADRs 021–026 superseding obsolete runtime, verification, release, demo and documentation guidance in ADRs 005, 006, 007, 010, 013 and 020; preserve all original records.
 
