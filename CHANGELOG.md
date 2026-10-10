@@ -12,6 +12,8 @@ entry. Git links provide the complete commit history for each release.
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-10-10
+
 ### Added
 
 - Add a sticky saved-recording player in entry details with play, pause, elapsed time and seeking; stop playback when leaving the entry and show unavailable audio clearly. Cover native transport and unreadable recordings with eval fixtures, and seed matching audio in the isolated UI harness.
@@ -47,6 +49,10 @@ entry. Git links provide the complete commit history for each release.
 ### Fixed
 
 - Sort logs newest first by metadata date, falling back to recording date and source file creation date; use the same date for Logs day groups and entry details.
+
+### Release
+
+- Publish the 0.4.0 app/CLI archive and matching Homebrew cask version and checksum.
 
 ## [0.3.1] - 2026-10-09
 
@@ -269,7 +275,8 @@ entry. Git links provide the complete commit history for each release.
 
 - Make release tests work on clean runners without preinstalled inference models.
 
-[Unreleased]: https://github.com/vnglst/CaptainsLog/compare/v0.3.1...HEAD
+[Unreleased]: https://github.com/vnglst/CaptainsLog/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/vnglst/CaptainsLog/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/vnglst/CaptainsLog/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/vnglst/CaptainsLog/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/vnglst/CaptainsLog/compare/v0.2.0...v0.2.1
