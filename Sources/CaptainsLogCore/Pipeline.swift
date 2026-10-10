@@ -40,7 +40,8 @@ public enum Pipeline {
 
     private static let audioExtensions = ["m4a", "mov", "qt", "qta", "wav", "mp3"]
 
-    private static func sourceAudioURLs(stem: String, dataDirURL: URL) -> [URL] {
+    /// Supported source recordings for an entry, in preferred playback/import order.
+    public static func sourceAudioURLs(stem: String, dataDirURL: URL) -> [URL] {
         let directory = dataDirURL.appendingPathComponent(Directory.audio.path)
         let files = (try? FileManager.default.contentsOfDirectory(
             at: directory, includingPropertiesForKeys: [.isRegularFileKey]

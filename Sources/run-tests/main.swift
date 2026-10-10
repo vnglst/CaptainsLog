@@ -3117,6 +3117,42 @@ func runTests() async {
         try expect(unchanged == m4a)
     }
 
+    await testAsync("Saved audio: transport loads fixture, pauses, seeks and stops") {
+        let playback = SavedAudioPlayback()
+        let fixture = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+            .appendingPathComponent("eval/transcribe/audio/2025-01-14 side project.m4a")
+        await playback.load(url: fixture)
+        try expect(playback.error == nil && !playback.isLoading && playback.duration > 1)
+        try expect(!playback.isPlaying && playback.position == 0)
+        playback.togglePlayback()
+        try expect(playback.isPlaying)
+        playback.togglePlayback()
+        try expect(!playback.isPlaying)
+        let target = playback.duration / 2
+        playback.seek(to: target)
+        try await Task.sleep(for: .milliseconds(300))
+        playback.refresh()
+        try expect(abs(playback.position - target) < 0.1, "Native playback must seek to the requested time")
+        playback.stop()
+        playback.togglePlayback()
+        try expect(!playback.isPlaying, "Leaving the detail must release the player")
+    }
+
+    await testAsync("Saved audio: QuickTime, missing and unreadable recordings") {
+        let playback = SavedAudioPlayback()
+        let fixture = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+            .appendingPathComponent("eval/audio-formats/quicktime.mov")
+        await playback.load(url: fixture)
+        try expect(playback.error == nil && playback.duration > 2.9 && playback.duration < 3.2)
+        await playback.load(url: nil)
+        try expect(playback.error != nil && !playback.isLoading && playback.duration == 0)
+        let invalid = FileManager.default.temporaryDirectory.appendingPathComponent("invalid-audio-\(UUID().uuidString).m4a")
+        try Data("invalid audio".utf8).write(to: invalid)
+        defer { try? FileManager.default.removeItem(at: invalid) }
+        await playback.load(url: invalid)
+        try expect(playback.error != nil && !playback.isLoading)
+    }
+
     // MARK: - ConfigManager Tests
 
     test("Corrections: retain spelling pairs and discard legacy notes") {

@@ -12,6 +12,10 @@ entry. Git links provide the complete commit history for each release.
 
 ## [Unreleased]
 
+### Added
+
+- Add a sticky saved-recording player in entry details with play, pause, elapsed time and seeking; stop playback when leaving the entry and show unavailable audio clearly. Cover native transport and unreadable recordings with eval fixtures, and seed matching audio in the isolated UI harness.
+
 ### Changed
 
 - Add ADRs 021–026 superseding obsolete runtime, verification, release, demo and documentation guidance in ADRs 005, 006, 007, 010, 013 and 020; preserve all original records.

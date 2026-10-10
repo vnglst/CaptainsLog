@@ -106,6 +106,7 @@ extension Tools {
         let slug = try source("filename/expected/2025-01-14 side project.md").trimmingCharacters(in: .whitespacesAndNewlines).replacingOccurrences(of: ".md", with: "")
         let cleaned = try source("cleanup/expected/2025-01-14 side project.md")
         try completed("2025-01-14-0730", slug, "side_project", "transcribe/expected/2025-01-14 side project.md", cleaned, source("enrich/expected/2025-01-14 side project.md") + cleaned)
+        try copy(path("eval/transcribe/audio/2025-01-14 side project.m4a"), data.appendingPathComponent("audio/2025-01-14-0730.m4a"))
         let work = try source("enrich/input/01_work_week.md")
         try completed("2025-01-15-1200", "2025-01-15-work-week-review", "professional", "enrich/input/01_work_week.md", work, source("enrich/expected/01_work_week.md") + work)
         try copy(path("eval/cleanup/input/book-reference.md"), data.appendingPathComponent(".pipeline/01-transcribed/2025-01-16-0900.md"))

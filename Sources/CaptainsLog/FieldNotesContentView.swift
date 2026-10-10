@@ -696,6 +696,7 @@ private struct FieldNotesEntryRow: View {
 private struct FieldNotesEntryDetailView: View {
     let entry: LogEntry
     let onBack: () -> Void
+    @Environment(AppState.self) private var appState
     @CLState private var markdown = AttributedString()
     @CLState private var loadError: String?
     @CLState private var transcription = ""
@@ -739,6 +740,9 @@ private struct FieldNotesEntryDetailView: View {
                 .padding(.bottom, FieldNotes.Spacing.xxl)
                 .frame(maxWidth: .infinity)
             }
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            SavedAudioPlayerView(stem: entry.stem, dataDir: appState.config.dataDir)
         }
         .task(id: entry.path) { loadEntry() }
         .onExitCommand(perform: onBack)
