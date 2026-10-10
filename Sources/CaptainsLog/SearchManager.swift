@@ -25,6 +25,7 @@ public final class SearchManager {
         !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
+    private var excludedCategoryFolders = Set<String>()
     private var searchTask: Task<Void, Never>?
     private var engine: SemanticSearch?
     private var engineDataDir: String?
@@ -80,6 +81,12 @@ public final class SearchManager {
         }
     }
 
+    func updateCategoryFilter(_ excluded: Set<String>, dataDir: String) {
+        guard excluded != excludedCategoryFolders else { return }
+        excludedCategoryFolders = excluded
+        updateQuery(query, dataDir: dataDir)
+    }
+
     func releaseModel() {
         searchTask?.cancel()
         engine = nil
@@ -112,7 +119,7 @@ public final class SearchManager {
                 engineDataDir = dataDir
             }
 
-            let matches = try await search.search(query, limit: 20) { [weak self] progress in
+            let matches = try await search.search(query, limit: 20, excludedCategoryFolders: excludedCategoryFolders) { [weak self] progress in
                 Task { @MainActor in
                     guard let self else { return }
                     switch progress.phase {

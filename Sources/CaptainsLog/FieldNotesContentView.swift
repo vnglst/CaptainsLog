@@ -42,7 +42,7 @@ public struct FieldNotesContentView: View {
                             }
                             .transition(detailTransition)
                         } else {
-                            FieldNotesEntriesView(deleteTarget: $deleteTarget) { entry in
+                            FieldNotesEntriesView(deleteTarget: $deleteTarget, categoryFilter: $navigation.categoryFilter) { entry in
                                 show(entry)
                             }
                             .transition(listTransition)
@@ -212,9 +212,8 @@ private struct FieldNotesSidebarItem: View {
 private struct FieldNotesEntriesView: View {
     @Environment(AppState.self) private var appState
     @Binding var deleteTarget: LogEntry?
+    @Binding var categoryFilter: CategoryFilter
     let onSelect: (LogEntry) -> Void
-
-    @CLState private var categoryFilter = CategoryFilter()
 
     private var availableCategories: [String] {
         Set(appState.config.categories.compactMap { Categorize.Category(rawValue: $0)?.folderName }
@@ -264,6 +263,9 @@ private struct FieldNotesEntriesView: View {
                     .padding(.bottom, 120)
                 }
             }
+        }
+        .onChange(of: categoryFilter.excluded) { _, excluded in
+            appState.search.updateCategoryFilter(excluded, dataDir: appState.dataDir)
         }
     }
 

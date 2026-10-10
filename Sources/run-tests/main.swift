@@ -322,6 +322,59 @@ func runSearchCoverageTests() async {
         try expect(remaining.first?.slug == "2026-07-11-sqlite-storage")
     }
 
+    await testAsync("Category search: exclusions precede keyword limits and semantic nearest-neighbor candidates") {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("CategorySearch-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let fixture = try String(contentsOfFile: "eval/categorize/input/side-project-voice-app.md", encoding: .utf8)
+        let research = Categorize.Category(rawValue: "research")!
+        let wanted = try makeCompletedSearchEntry(root: root, stem: "2026-07-12-0800",
+            slug: "2026-07-12-fixture-00", category: research, content: fixture)
+        // More excluded results than both the UI's 20 results and sqlite-vec's 40 candidate floor.
+        for index in 0..<45 {
+            _ = try makeCompletedSearchEntry(root: root, stem: "2026-07-11-\(String(format: "%04d", index))",
+                slug: "2026-07-11-fixture-\(String(format: "%02d", index))", category: .personal, content: fixture)
+        }
+        let search = try SemanticSearch(dataDir: root.path, model: FakeEmbeddingModel())
+        _ = try await search.synchronize()
+        let limited = try await search.search("voice", limit: 20, synchronizeFirst: false)
+        try expect(limited.count == 20)
+        try expect(!limited.contains { $0.path == wanted.path }, "Fixture must reproduce a selected category below the global cutoff")
+        let keyword = try await search.search("voice", limit: 1,
+            excludedCategoryFolders: ["personal"], synchronizeFirst: false)
+        try expect(keyword.count == 1 && keyword[0].path == wanted.path)
+        try expect(keyword[0].matchKind == .keyword)
+        // Make the selected entry semantically farther away than all 45 excluded entries.
+        let distantFixture = try String(contentsOfFile: "eval/categorize/input/personal-weekend.md", encoding: .utf8)
+        try distantFixture.write(to: wanted, atomically: true, encoding: .utf8)
+        _ = try await search.synchronize()
+        let unfilteredSemantic = try await search.search("database", limit: 1, synchronizeFirst: false)
+        try expect(unfilteredSemantic.first?.path != wanted.path)
+        let semantic = try await search.search("database", limit: 1,
+            excludedCategoryFolders: ["personal"], synchronizeFirst: false)
+        try expect(semantic.count == 1 && semantic[0].path == wanted.path)
+        try expect(semantic[0].matchKind == .semantic)
+        let none = try await search.search("voice", limit: 20,
+            excludedCategoryFolders: ["personal", "research"], synchronizeFirst: false)
+        try expect(none.isEmpty)
+        let restored = try await search.search("voice", limit: 20, synchronizeFirst: false)
+        try expect(restored.count == 20)
+
+        let manager = SearchManager(debounceInterval: .zero) { dataDir, _ in
+            try SemanticSearch(dataDir: dataDir, model: FakeEmbeddingModel())
+        }
+        manager.updateQuery("voice", dataDir: root.path)
+        for _ in 0..<150 where manager.state != .ready { try await Task.sleep(for: .milliseconds(10)) }
+        try expect(manager.results.count == 20)
+        manager.updateCategoryFilter(["personal"], dataDir: root.path)
+        for _ in 0..<150 where manager.results.first?.path != wanted.path { try await Task.sleep(for: .milliseconds(10)) }
+        try expect(manager.query == "voice", "Changing category selection must rerun the current query")
+        try expect(manager.results.count == 1 && manager.results[0].path == wanted.path)
+        manager.updateCategoryFilter([], dataDir: root.path)
+        for _ in 0..<150 where manager.results.count != 20 { try await Task.sleep(for: .milliseconds(10)) }
+        try expect(manager.results.count == 20)
+    }
+
     await testAsync("Hybrid search: keyword passage is centered and highlighted") {
         let root = FileManager.default.temporaryDirectory
             .appendingPathComponent("HybridPassageTests-\(UUID().uuidString)", isDirectory: true)
@@ -1865,10 +1918,13 @@ func runCoreCoverageTests() {
         )
         var navigation = EntryNavigationState()
         try expect(navigation.selectedStem == nil, "The initial view should show the list")
+        navigation.categoryFilter.select("professional", selected: false)
         navigation.show(entry)
         try expect(navigation.selectedStem == entry.stem, "Selecting an entry should open its detail")
         navigation.returnToList()
         try expect(navigation.selectedStem == nil, "Returning should restore the list")
+        try expect(!navigation.categoryFilter.includes("professional"), "Returning must retain the category selection")
+        try expect(navigation.categoryFilter.includes("personal"))
     }
 
     test("Record dock behavior: start, stop, pause, input selection, and meter follow recorder state") {

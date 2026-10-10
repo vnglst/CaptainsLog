@@ -43,6 +43,7 @@ struct EntryRowBehavior: Equatable {
 }
 
 struct EntryNavigationState {
+    var categoryFilter = CategoryFilter()
     private(set) var selectedEntry: LogEntry?
 
     var selectedStem: String? { selectedEntry?.stem }

@@ -19,8 +19,11 @@ entry. Git links provide the complete commit history for each release.
 - Configure processing categories in Settings, initial setup, and the CLI; category removal preserves existing folders and logs.
 - Filter Logs and search results by multiple categories with a checkbox menu beside search, including categories retained by existing logs.
 - Add menu bar recording controls with recording time, processing status, brief errors, and actions to reopen or quit CaptainsLog. The Window menu can hide the app to the menu bar, and closing the main window keeps it available. Add isolated, labeled synthetic menu panel previews to the native UI harness for idle, recording, processing and error states.
+- Filter Logs and search results by multiple categories with a checkbox menu beside search, including categories retained by existing logs; preserve selections when opening entries and apply category restrictions before search result limits.
 
 ### Changed
+
+- `Categorize.Category` is now a string-backed value supporting configured categories; downstream Swift clients with exhaustive switches over the three built-in enum cases must add a fallback branch. Legacy category manifest values remain compatible.
 
 - Add ADRs 021–026 superseding obsolete runtime, verification, release, demo and documentation guidance in ADRs 005, 006, 007, 010, 013 and 020; preserve all original records.
 

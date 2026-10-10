@@ -196,6 +196,7 @@ public actor SemanticSearch {
     public func search(
         _ query: String,
         limit: Int = 10,
+        excludedCategoryFolders: Set<String> = [],
         synchronizeFirst: Bool = true,
         progress: @Sendable (SearchProgress) -> Void = { _ in }
     ) async throws -> [SearchResult] {
@@ -207,7 +208,8 @@ public actor SemanticSearch {
         progress(SearchProgress(
             phase: .searching, completed: 0, total: 2, message: "Searching exact words"))
         let terms = Self.keywordTerms(in: trimmed)
-        var results = try store.keywordSearch(terms: terms, limit: limit)
+        let excludedDocuments = try store.documentIDs(in: excludedCategoryFolders)
+        var results = try store.keywordSearch(terms: terms, limit: limit, excluding: excludedDocuments)
 
         if results.count < limit {
             progress(SearchProgress(
@@ -219,7 +221,8 @@ public actor SemanticSearch {
                 embedding: embedding,
                 terms: terms,
                 excluding: excludedPaths,
-                limit: limit - results.count
+                limit: limit - results.count,
+                excludingDocuments: excludedDocuments
             )
             results.append(contentsOf: semantic)
         }
@@ -395,7 +398,20 @@ private final class SearchStore {
         }
     }
 
-    func keywordSearch(terms: [String], limit: Int) throws -> [SearchResult] {
+    /// Resolve folders against indexed document paths, including legacy uncategorized logs.
+    func documentIDs(in categoryFolders: Set<String>) throws -> [Int64] {
+        guard !categoryFolders.isEmpty else { return [] }
+        var ids: [Int64] = []
+        try query("SELECT id, path FROM documents") { statement in
+            let parent = URL(fileURLWithPath: columnText(statement, 1)).deletingLastPathComponent()
+            let folder = parent.deletingLastPathComponent().lastPathComponent == "logs"
+                ? parent.lastPathComponent : "uncategorized"
+            if categoryFolders.contains(folder) { ids.append(sqlite3_column_int64(statement, 0)) }
+        }
+        return ids
+    }
+
+    func keywordSearch(terms: [String], limit: Int, excluding excludedDocuments: [Int64]) throws -> [SearchResult] {
         guard !terms.isEmpty, limit > 0 else { return [] }
         let expression = terms
             .map { "\"\($0.replacingOccurrences(of: "\"", with: "\"\""))\"" }
@@ -410,6 +426,7 @@ private final class SearchStore {
             JOIN chunks AS c ON c.id = chunk_fts.chunk_id
             JOIN documents AS d ON d.id = c.document_id
             WHERE chunk_fts MATCH ?
+            \(excludedDocuments.isEmpty ? "" : "AND d.id NOT IN (" + excludedDocuments.map(String.init).joined(separator: ",") + ")")
             ORDER BY relevance, d.id DESC
             LIMIT ?
             """,
@@ -439,7 +456,8 @@ private final class SearchStore {
         embedding: [Float],
         terms: [String],
         excluding excludedPaths: Set<String>,
-        limit: Int
+        limit: Int,
+        excludingDocuments excludedDocuments: [Int64]
     ) throws -> [SearchResult] {
         guard limit > 0 else { return [] }
         let candidateCount = max(limit * 8, 40)
@@ -452,6 +470,7 @@ private final class SearchStore {
             JOIN chunks AS c ON c.id = v.chunk_id
             JOIN documents AS d ON d.id = c.document_id
             WHERE v.embedding MATCH ? AND k = ?
+            \(excludedDocuments.isEmpty ? "" : "AND v.chunk_id IN (SELECT id FROM chunks WHERE document_id NOT IN (" + excludedDocuments.map(String.init).joined(separator: ",") + "))")
             ORDER BY v.distance
             """,
             bindings: [.blob(Self.vectorData(embedding)), .integer(Int64(candidateCount))]

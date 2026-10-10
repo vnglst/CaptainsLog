@@ -1,10 +1,10 @@
 ---
 id: TASK-4
 title: Add category filters in Logs
-status: Next
+status: Verify
 assignee: []
 created_date: '2026-10-04 13:10'
-updated_date: '2026-10-09 19:49'
+updated_date: '2026-10-10 12:30'
 labels:
   - logs
 dependencies: []
@@ -19,8 +19,8 @@ Users should be able to filter the Logs view by category using a control near th
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 A category filter control is available near the search bar in Logs.
-- [ ] #2 All categories are selected by default.
-- [ ] #3 Users can select multiple categories at the same time, and the Logs view reflects the selected categories.
-- [ ] #4 Category selection uses a recognizable UI pattern.
+- [x] #1 A category filter control is available near the search bar in Logs.
+- [x] #2 All categories are selected by default.
+- [x] #3 Users can select multiple categories at the same time, and the Logs view reflects the selected categories.
+- [x] #4 Category selection uses a recognizable UI pattern.
 <!-- AC:END -->
