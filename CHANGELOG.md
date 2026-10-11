@@ -14,6 +14,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
+- Document Context as the selected output-settings menu label and save the combined Context and Settings concept with the design references, linked from TASK-7.
+- Record the owner's Settings redesign selection: a separate Writing destination for output settings, no preview, existing controls preserved, and reordered Settings without a submenu; track category drag-and-drop ordering separately.
 - Clarify TASK-51 with the owner's requirement to remove separate CLI reprocessing and backups, use output deletion followed by existing CLI or UI processing, and return the task to Next.
 
 ## [0.5.0] - 2026-10-11
