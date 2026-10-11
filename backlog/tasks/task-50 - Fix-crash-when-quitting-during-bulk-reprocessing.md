@@ -1,10 +1,10 @@
 ---
 id: TASK-50
 title: Stop active work and quit promptly without crashing
-status: Next
+status: Verify
 assignee: []
 created_date: '2026-10-11 11:27'
-updated_date: '2026-10-11 11:39'
+updated_date: '2026-10-11 14:05'
 labels: []
 dependencies: []
 type: bug

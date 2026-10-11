@@ -1,5 +1,6 @@
 import AppKit
 import CaptainsLog
+import CaptainsLogCore
 import SwiftUI
 
 @main
@@ -22,7 +23,14 @@ struct CaptainsLogApp: App {
             }
         }
         #endif
-        _appState = CLState(wrappedValue: AppState())
+        let state = AppState()
+        _appState = CLState(wrappedValue: state)
+        appDelegate.prepareForTermination = {
+            async let processing: Void = state.processing.stopForTermination()
+            async let recording: Void = state.recording.stopForTermination()
+            async let native: Void = NativeInferenceLifecycle.shared.stopAndWait()
+            _ = await (processing, recording, native)
+        }
         // Required: SwiftPM executables have no .app bundle, so without this macOS won't let windows become key and keystrokes leak to the Finder.
         NSApplication.shared.setActivationPolicy(.regular)
         NSApplication.shared.activate(ignoringOtherApps: true)
@@ -98,6 +106,20 @@ struct CaptainsLogApp: App {
 
 @MainActor
 private final class CaptainsLogAppDelegate: NSObject, NSApplicationDelegate {
+    var prepareForTermination: (@MainActor () async -> Void)?
+    private var isTerminating = false
+
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        guard !isTerminating else { return .terminateLater }
+        isTerminating = true
+        Task { @MainActor in
+            await prepareForTermination?()
+            // Native contexts have unwound before AppKit frees global Metal state.
+            sender.reply(toApplicationShouldTerminate: true)
+        }
+        return .terminateLater
+    }
+
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
         false
     }

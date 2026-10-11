@@ -15,6 +15,7 @@ entry. Git links provide the complete commit history for each release.
 ### Fixed
 
 - Prevent idle system sleep during single-entry, queued, pending and bulk processing, including with the screen locked; allow display sleep and release the activity after workers finish, fail or stop.
+- Cancel active work on quit and close the recording without starting processing; wait for the current native call to release its resources before app teardown instead of finishing the pipeline. Keep paused processing reserved until its worker exits and discard cancelled model output before saving pipeline artifacts.
 
 ### Changed
 

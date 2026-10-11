@@ -209,6 +209,14 @@ public final class RecordingState {
         }
     }
 
+    /// Close the active audio file without scheduling processing, before app exit.
+    public func stopForTermination() async {
+        let task = recordingTask
+        stopRecording()
+        task?.cancel()
+        await task?.value
+    }
+
     /// Cancel any ongoing recording without invoking completion handlers.
     public func cancelRecording() {
         stopRecording()

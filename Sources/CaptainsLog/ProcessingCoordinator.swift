@@ -20,6 +20,7 @@ public final class ProcessingCoordinator {
 
     private var processingTask: Task<Void, Never>?
     private var pendingProcessingStems: [String] = []
+    private var isStopping = false
     private let resumePipeline: PipelineResume
 
     /// Includes queued entries and the interval before a task reports its first stage.
@@ -62,6 +63,7 @@ public final class ProcessingCoordinator {
 
     /// Queue a stem for processing (called when recording completes).
     func queueProcessing(stem: String) {
+        guard !isStopping else { return }
         pendingProcessingStems.append(stem)
     }
 
@@ -73,7 +75,7 @@ public final class ProcessingCoordinator {
         onComplete: @escaping () -> Void,
         onError: @escaping (Error) -> Void
     ) {
-        guard !pendingProcessingStems.isEmpty, processingTask == nil else { return }
+        guard !isStopping, !pendingProcessingStems.isEmpty, processingTask == nil else { return }
 
         processingTask = Task { [self] in
             let activity = ProcessInfo.processInfo.beginActivity(
@@ -81,6 +83,7 @@ public final class ProcessingCoordinator {
                 reason: "Processing CaptainsLog recordings"
             )
             defer { ProcessInfo.processInfo.endActivity(activity) }
+            defer { if Task.isCancelled { processingTask = nil } }
             while !pendingProcessingStems.isEmpty {
                 guard !Task.isCancelled else { break }
                 let stem = pendingProcessingStems.removeFirst()
@@ -114,11 +117,19 @@ public final class ProcessingCoordinator {
     /// Pause/cancel current processing.
     public func pauseProcessing() {
         processingTask?.cancel()
-        processingTask = nil
         pendingProcessingStems = []
         stage = .idle
         statusMessage = "Paused"
         processingStem = nil
+    }
+
+    /// Retain ownership until cancellation finishes so retries and output deletion
+    /// cannot overlap native inference or unfinished pipeline writes.
+    public func stopForTermination() async {
+        isStopping = true
+        let task = processingTask
+        pauseProcessing()
+        await task?.value
     }
 
     /// Resume a specific entry from a given stage.
@@ -129,7 +140,7 @@ public final class ProcessingCoordinator {
         onComplete: @escaping () -> Void,
         onError: @escaping (Error) -> Void
     ) {
-        guard processingTask == nil else { return }
+        guard !isStopping, processingTask == nil else { return }
         errorMessage = nil
         failedEntries.removeValue(forKey: stem)
         processingStem = stem
@@ -139,6 +150,7 @@ public final class ProcessingCoordinator {
                 reason: "Processing CaptainsLog recordings"
             )
             defer { ProcessInfo.processInfo.endActivity(activity) }
+            defer { if Task.isCancelled { processingTask = nil } }
             await runResume(stem: stem, fromStage: fromStage, dataDir: dataDir, onComplete: onComplete, onError: onError)
         }
     }
@@ -151,7 +163,7 @@ public final class ProcessingCoordinator {
         onComplete: @escaping () -> Void,
         onError: @escaping (Error) -> Void
     ) {
-        guard processingTask == nil else { return }
+        guard !isStopping, processingTask == nil else { return }
         guard !pendingEntries.isEmpty else { return }
 
         errorMessage = nil
@@ -161,6 +173,7 @@ public final class ProcessingCoordinator {
                 reason: "Processing CaptainsLog recordings"
             )
             defer { ProcessInfo.processInfo.endActivity(activity) }
+            defer { if Task.isCancelled { processingTask = nil } }
             for entry in pendingEntries {
                 guard !Task.isCancelled else { break }
                 processingStem = entry.stem
