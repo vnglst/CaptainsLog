@@ -138,7 +138,9 @@ The resumable pipeline records audio, transcribes it with WhisperKit/CoreML, cle
 `.pipeline/reprocessing-backups/`. It saves progress after every recording,
 continues past per-recording failures, and prevents idle sleep while running.
 Keep the Mac connected to power with the lid open for an overnight run. Settings
-also offers confirmation, pause and resume controls.
+lets you delete all intermediate results, finished logs and reprocessing backups
+while keeping original audio and settings. Return to Logs to process all
+unprocessed recordings with the current settings.
 
 Intermediate files live under `.pipeline/`; completed entries are saved to `logs/`. Use `make cli ARGS=--help` for other commands, including configuration and individual pipeline stages.
 

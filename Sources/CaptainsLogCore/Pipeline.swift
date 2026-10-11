@@ -464,6 +464,19 @@ public enum Pipeline {
         }
     }
 
+    /// Remove every intermediate and completed log, including orphaned outputs
+    /// and previous bulk-reprocessing backups. Source audio and context stay intact.
+    public static func deleteProcessingOutputs(dataDir: String) throws {
+        let root = URL(fileURLWithPath: dataDir, isDirectory: true)
+        let fm = FileManager.default
+        for folder in [".pipeline", Directory.enriched.path] {
+            let url = root.appendingPathComponent(folder, isDirectory: true)
+            if fm.fileExists(atPath: url.path) {
+                try fm.removeItem(at: url)
+            }
+        }
+    }
+
     public static func deletionCandidatePaths(stem: String, slug: String?, dataDir: String) -> [String] {
         artifactCandidatePaths(stem: stem, slug: slug, dataDir: dataDir, includeAudio: true)
     }

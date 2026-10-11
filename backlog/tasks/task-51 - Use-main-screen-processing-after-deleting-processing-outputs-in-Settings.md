@@ -1,10 +1,10 @@
 ---
 id: TASK-51
 title: Use main-screen processing after deleting processing outputs in Settings
-status: Next
+status: Verify
 assignee: []
 created_date: '2026-10-11 11:28'
-updated_date: '2026-10-11 11:37'
+updated_date: '2026-10-11 11:58'
 labels: []
 dependencies: []
 type: enhancement
