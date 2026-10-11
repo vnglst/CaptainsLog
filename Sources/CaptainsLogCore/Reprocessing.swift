@@ -70,7 +70,7 @@ public enum Reprocessing {
             try encoder.encode(run).write(to: manifest, options: .atomic)
         }
         try save(run)
-        let activity = ProcessInfo.processInfo.beginActivity(options: [.userInitiated, .idleSystemSleepDisabled], reason: "Reprocessing CaptainsLog recordings")
+        let activity = ProcessInfo.processInfo.beginActivity(options: [.userInitiatedAllowingIdleSystemSleep, .idleSystemSleepDisabled], reason: "Reprocessing CaptainsLog recordings")
         defer { ProcessInfo.processInfo.endActivity(activity) }
 
         for item in run.items where !run.completed.contains(item.stem) {

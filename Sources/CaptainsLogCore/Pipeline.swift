@@ -339,6 +339,12 @@ public enum Pipeline {
             return []
         }
 
+        let activity = ProcessInfo.processInfo.beginActivity(
+            options: [.userInitiatedAllowingIdleSystemSleep, .idleSystemSleepDisabled],
+            reason: "Processing CaptainsLog pending recordings"
+        )
+        defer { ProcessInfo.processInfo.endActivity(activity) }
+
         print("Resuming \(entries.count) pending entr\(entries.count == 1 ? "y" : "ies")...\n")
         var results: [Result] = []
         for entry in entries {
@@ -586,6 +592,14 @@ public enum Pipeline {
         progress: (@Sendable (Progress) -> Void)?,
         operations: Operations? = nil
     ) async throws -> Result {
+        // Keep the system awake even when the session is locked, without keeping
+        // the display lit. Release only after the processing worker has returned.
+        let activity = ProcessInfo.processInfo.beginActivity(
+            options: [.userInitiatedAllowingIdleSystemSleep, .idleSystemSleepDisabled],
+            reason: "Processing CaptainsLog recording"
+        )
+        defer { ProcessInfo.processInfo.endActivity(activity) }
+
         let dataDirURL = URL(fileURLWithPath: dataDir)
         let categoryDiagnostics = DiagnosticLog(
             path: dataDirURL

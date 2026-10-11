@@ -2015,6 +2015,32 @@ func runCoreCoverageTests() {
     }
 }
 
+/// Inspect only this test process's assertions; other apps may legitimately keep
+/// the system or display awake during a test run.
+func processingSleepAssertions() throws -> [String] {
+    let output = Pipe()
+    let check = Process()
+    check.executableURL = URL(fileURLWithPath: "/usr/bin/pmset")
+    check.arguments = ["-g", "assertions"]
+    check.standardOutput = output
+    try check.run()
+    let text = String(data: output.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
+    check.waitUntilExit()
+    try expect(check.terminationStatus == 0)
+    return text.components(separatedBy: .newlines).filter {
+        $0.contains("pid \(ProcessInfo.processInfo.processIdentifier)(")
+            && $0.contains("Processing CaptainsLog")
+    }
+}
+
+func expectProcessingPreventsIdleSleep() throws {
+    let assertions = try processingSleepAssertions()
+    try expect(assertions.contains { $0.contains("PreventUserIdleSystemSleep") },
+               "Processing must hold an actual idle system sleep assertion")
+    try expect(!assertions.contains { $0.contains("PreventUserIdleDisplaySleep") },
+               "Processing must allow idle display sleep")
+}
+
 @MainActor
 func runCoordinatorCoverageTests() async {
     @Sendable func result(for stem: String) -> Pipeline.Result {
@@ -2027,6 +2053,93 @@ func runCoordinatorCoverageTests() async {
             slug: stem,
             category: .personal
         )
+    }
+
+    await testAsync("Processing sleep: queue holds system assertion across files and releases after completion") {
+        let processed = LockedStringArray()
+        let coordinator = ProcessingCoordinator { stem, _, _, _ in
+            try expectProcessingPreventsIdleSleep()
+            processed.append(stem)
+            return result(for: stem)
+        }
+        coordinator.queueProcessing(stem: "first")
+        coordinator.queueProcessing(stem: "second")
+        coordinator.startProcessing(dataDir: "/tmp/sleep-fixture", isRecording: false,
+                                    onProgress: {}, onComplete: {}, onError: { _ in })
+        for _ in 0..<1000 where coordinator.hasScheduledWork {
+            try await Task.sleep(for: .milliseconds(1))
+        }
+        try expect(processed.snapshot() == ["first", "second"])
+        try expect(try processingSleepAssertions().isEmpty, "Completion must release sleep prevention")
+    }
+
+    await testAsync("Processing sleep: single retry releases system assertion on failure") {
+        let entered = LockedStringArray()
+        let coordinator = ProcessingCoordinator { _, _, _, _ in
+            try expectProcessingPreventsIdleSleep()
+            entered.append("entered")
+            throw NSError(domain: "Fixture", code: 1)
+        }
+        coordinator.resumeEntry(stem: "failure", dataDir: "/tmp/sleep-fixture", onComplete: {}, onError: { _ in })
+        for _ in 0..<1000 where coordinator.hasScheduledWork {
+            try await Task.sleep(for: .milliseconds(1))
+        }
+        try expect(entered.snapshot() == ["entered"])
+        try expect(try processingSleepAssertions().isEmpty, "Failure must release sleep prevention")
+    }
+
+    await testAsync("Processing sleep: pause retains assertion until the worker actually stops") {
+        let gate = LockedValue<CheckedContinuation<Void, Never>?>(nil)
+        let stopped = LockedStringArray()
+        let coordinator = ProcessingCoordinator { stem, _, _, _ in
+            await withCheckedContinuation { gate.set($0) }
+            stopped.append("stopped")
+            return result(for: stem)
+        }
+        coordinator.resumeEntry(stem: "cancel", dataDir: "/tmp/sleep-fixture", onComplete: {}, onError: { _ in })
+        for _ in 0..<1000 where gate.get() == nil {
+            try await Task.sleep(for: .milliseconds(1))
+        }
+        defer { if stopped.snapshot().isEmpty { gate.get()?.resume() } }
+        try expect(gate.get() != nil)
+        coordinator.pauseProcessing()
+        try expectProcessingPreventsIdleSleep()
+        gate.get()?.resume()
+        gate.set(nil)
+        for _ in 0..<1000 {
+            if try processingSleepAssertions().isEmpty { break }
+            try await Task.sleep(for: .milliseconds(1))
+        }
+        try expect(stopped.snapshot() == ["stopped"])
+        try expect(try processingSleepAssertions().isEmpty, "Stopped worker must release sleep prevention")
+    }
+
+    await testAsync("Processing sleep: fixture CLI pipeline holds assertion through stages and releases on success or error") {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("SleepPipeline-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: root) }
+        let fixture = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+            .appendingPathComponent("eval/transcribe/audio/durins-volk.m4a")
+        let checked = LockedStringArray()
+        let operations = Pipeline.Operations(
+            transcribe: { _, _ in try expectProcessingPreventsIdleSleep(); checked.append("transcribe"); return "Fixture" },
+            cleanup: { text, _ in try expectProcessingPreventsIdleSleep(); checked.append("cleanup"); return text },
+            categorize: { _, _, _ in try expectProcessingPreventsIdleSleep(); checked.append("category"); return .personal },
+            filename: { _, _ in try expectProcessingPreventsIdleSleep(); checked.append("filename"); return "2025-01-14-fixture.md" },
+            enrich: { text, _, _, _ in try expectProcessingPreventsIdleSleep(); checked.append("enrich"); return text }
+        )
+        _ = try await Pipeline.runCommand(audioInput: fixture.path, dataDir: root.path, operations: operations)
+        try expect(checked.snapshot() == ["transcribe", "cleanup", "category", "filename", "enrich"])
+        try expect(try processingSleepAssertions().isEmpty)
+        let failing = Pipeline.Operations(
+            transcribe: { _, _ in try expectProcessingPreventsIdleSleep(); throw NSError(domain: "Fixture", code: 1) },
+            cleanup: operations.cleanup, categorize: operations.categorize,
+            filename: operations.filename, enrich: operations.enrich
+        )
+        do {
+            _ = try await Pipeline.resumeCommand(stem: "durins-volk", dataDir: root.path, fromStage: .transcribing, operations: failing)
+            try expect(false, "Expected injected failure")
+        } catch { try expect((error as NSError).domain == "Fixture") }
+        try expect(try processingSleepAssertions().isEmpty, "Pipeline errors must release sleep prevention")
     }
 
     await testAsync("AppState: resuming after deletion downloads models before processing") {

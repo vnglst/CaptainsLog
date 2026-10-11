@@ -12,6 +12,10 @@ entry. Git links provide the complete commit history for each release.
 
 ## [Unreleased]
 
+### Fixed
+
+- Prevent idle system sleep during single-entry, queued, pending and bulk processing, including with the screen locked; allow display sleep and release the activity after workers finish, fail or stop.
+
 ### Changed
 
 - Replace Settings bulk reprocessing with confirmed deletion of intermediate results, finished logs and reprocessing backups while keeping source audio and settings; use the existing Logs processing controls to regenerate recordings.
