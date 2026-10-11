@@ -12,6 +12,10 @@ entry. Git links provide the complete commit history for each release.
 
 ## [Unreleased]
 
+### Changed
+
+- Clarify TASK-51 with the owner's requirement to remove separate CLI reprocessing and backups, use output deletion followed by existing CLI or UI processing, and return the task to Next.
+
 ## [0.5.0] - 2026-10-11
 
 ### Fixed
