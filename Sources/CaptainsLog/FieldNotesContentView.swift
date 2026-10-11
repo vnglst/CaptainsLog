@@ -1160,7 +1160,7 @@ private struct FieldNotesSettingsView: View {
                 section("Categories") {
                     FieldNotesCategoriesEditor()
                 }
-                section("Reprocess recordings") { FieldNotesReprocessingControls(appState: appState) }
+                section("Processing outputs") { FieldNotesProcessingOutputControls(appState: appState) }
 
                 section("Writing context") {
                     fieldLabel("Personal context")

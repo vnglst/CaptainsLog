@@ -5519,6 +5519,73 @@ func runTests() async {
         try expect(appState.allEntries.isEmpty, "A watcher reload should remove deleted entries from Logs")
     }
 
+    test("AppState: deleting processing outputs preserves audio and exposes the normal pending queue") {
+        let fm = FileManager.default
+        let root = fm.temporaryDirectory.appendingPathComponent("DeleteProcessingOutputs-\(UUID().uuidString)")
+        defer { try? fm.removeItem(at: root) }
+        let stem = "2025-01-14-0730"
+        let audio = root.appendingPathComponent("audio/\(stem).m4a")
+        let audioFixture = URL(fileURLWithPath: fm.currentDirectoryPath)
+            .appendingPathComponent("eval/transcribe/audio/2025-01-14 side project.m4a")
+        try fm.createDirectory(at: audio.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try fm.copyItem(at: audioFixture, to: audio)
+        let originalAudio = try Data(contentsOf: audio)
+        let outputFixture = URL(fileURLWithPath: fm.currentDirectoryPath)
+            .appendingPathComponent("eval/cleanup/expected/2025-01-14 side project.md")
+        for path in [".pipeline/01-transcribed/\(stem).md", ".pipeline/02-logs/\(stem).md",
+                     ".pipeline/reprocessing-backups/previous/logs/orphan.md", "logs/side-project/orphan.md"] {
+            let output = root.appendingPathComponent(path)
+            try fm.createDirectory(at: output.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try fm.copyItem(at: outputFixture, to: output)
+        }
+        let context = root.appendingPathComponent("context/personal_info.md")
+        try fm.createDirectory(at: context.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try fm.copyItem(at: outputFixture, to: context)
+        let originalContext = try Data(contentsOf: context)
+        let config = ConfigManager(loadContextFiles: false)
+        config.dataDir = root.path
+        let models = ModelManager()
+        models.didDeleteModel(.whisper)
+        let appState = AppState(config: config, models: models)
+        appState.loadEntries()
+        try expect(appState.canDeleteProcessingOutputs, "Deletion should not require downloaded models")
+
+        appState.deleteProcessingOutputs()
+
+        try expect(!fm.fileExists(atPath: root.appendingPathComponent(".pipeline").path))
+        try expect(!fm.fileExists(atPath: root.appendingPathComponent("logs").path))
+        try expect(try Data(contentsOf: audio) == originalAudio, "Original recording must be byte-for-byte unchanged")
+        try expect(try Data(contentsOf: context) == originalContext, "Context must remain unchanged")
+        try expect(appState.pendingEntries.map(\.stem) == [stem], "Audio must return to the existing pending list")
+        try expect(appState.pendingEntries.first?.stage == .transcribing)
+        try expect(!appState.processing.hasScheduledWork, "Deletion must not automatically start processing")
+        appState.deleteProcessingOutputs()
+        try expect(appState.errorMessage == nil, "Repeated deletion of empty outputs should succeed")
+    }
+
+    test("AppState: deleting processing outputs is blocked for active and queued work") {
+        let fm = FileManager.default
+        let root = fm.temporaryDirectory.appendingPathComponent("DeleteOutputsActive-\(UUID().uuidString)")
+        defer { try? fm.removeItem(at: root) }
+        let transcript = root.appendingPathComponent(".pipeline/01-transcribed/2025-01-14-0730.md")
+        try fm.createDirectory(at: transcript.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try fm.copyItem(at: URL(fileURLWithPath: fm.currentDirectoryPath)
+            .appendingPathComponent("eval/transcribe/expected/2025-01-14 side project.md"), to: transcript)
+        let config = ConfigManager(loadContextFiles: false)
+        config.dataDir = root.path
+        let processing = ProcessingCoordinator()
+        let appState = AppState(config: config, processing: processing)
+        processing.processingStem = "2025-01-14-0730"
+        try expect(!appState.canDeleteProcessingOutputs)
+        appState.deleteProcessingOutputs()
+        try expect(fm.fileExists(atPath: transcript.path))
+        processing.processingStem = nil
+        processing.queueProcessing(stem: "2025-01-14-0730")
+        try expect(!appState.canDeleteProcessingOutputs)
+        appState.deleteProcessingOutputs()
+        try expect(fm.fileExists(atPath: transcript.path))
+    }
+
     test("AppState: pause processing delegates to coordinator") {
         let appState = AppState()
         appState.pauseProcessing()

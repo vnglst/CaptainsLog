@@ -301,18 +301,21 @@ public final class AppState {
         }
     }
 
-    var reprocessingAudioCount: Int { (try? Reprocessing.audioItems(dataDir: dataDir).count) ?? 0 }
-    var hasUnfinishedReprocessing: Bool { (Reprocessing.savedRun(dataDir: dataDir)?.remaining ?? 0) > 0 }
-    var canReprocessAll: Bool { !isRecording && !isProcessing && processing.processingStem == nil && !processing.hasScheduledWork && !updates.isInstalling && !updates.needsRestart && modelsReady }
+    var canDeleteProcessingOutputs: Bool {
+        !isRecording && !isProcessing && processing.processingStem == nil
+            && !processing.hasScheduledWork && !updates.isInstalling && !updates.needsRestart
+    }
 
-    func reprocessAll(resumeSaved: Bool = false) {
-        guard canReprocessAll else { return }
-        processing.reprocessAll(dataDir: dataDir, resumeSaved: resumeSaved) { [weak self] in
-            self?.loadEntries()
-            guard let self else { return }
-            self.search.invalidateIndex(dataDir: self.dataDir)
-            if !self.processing.isReprocessing { self.startQueuedProcessingIfPossible() }
+    func deleteProcessingOutputs() {
+        guard canDeleteProcessingOutputs else { return }
+        do {
+            try Pipeline.deleteProcessingOutputs(dataDir: dataDir)
+            processing.resetAfterDeletingOutputs()
+        } catch {
+            processing.errorMessage = error.localizedDescription
         }
+        loadEntries()
+        search.invalidateIndex(dataDir: dataDir)
     }
 
     public func batchResumePending() {
