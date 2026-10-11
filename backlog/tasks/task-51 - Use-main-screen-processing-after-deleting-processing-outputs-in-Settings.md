@@ -1,10 +1,10 @@
 ---
 id: TASK-51
 title: Delete processing outputs and use existing processing in CLI and UI
-status: Next
+status: Verify
 assignee: []
 created_date: '2026-10-11 11:28'
-updated_date: '2026-10-11 15:01'
+updated_date: '2026-10-11 18:13'
 labels: []
 dependencies: []
 type: enhancement

@@ -15,6 +15,7 @@ entry. Git links provide the complete commit history for each release.
 ### Changed
 
 - Move personal context, name and term corrections, and categories into a separate Context destination using their existing editors; reorder Settings to audio input, storage, models, updates, processing outputs, and About without a submenu.
+- Remove separate CLI and per-entry UI reprocessing, backup creation and saved batch resume; add confirmed `cl delete-outputs` and use existing pending processing after deletion.
 
 - Document Context as the selected output-settings menu label and save the combined Context and Settings concept with the design references, linked from TASK-7.
 - Record the owner's Settings redesign selection: a separate Writing destination for output settings, no preview, existing controls preserved, and reordered Settings without a submenu; track category drag-and-drop ordering separately.

@@ -686,9 +686,6 @@ private struct FieldNotesEntryRow: View {
                                 appState.resumeProcessing(stem: entry.stem, fromStage: entry.stage)
                             }
                         }
-                        if behavior.canReprocess {
-                            Button("Reprocess from audio") { appState.reprocessEntry(stem: entry.stem, slug: entry.slug) }
-                        }
                         Divider()
                         Button("Move to Trash", role: .destructive) { deleteTarget = entry }
                     } label: {

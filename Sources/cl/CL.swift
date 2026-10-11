@@ -7,7 +7,7 @@ struct CL: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "cl",
         abstract: "CaptainsLog command-line interface.",
-        subcommands: [EvalBatch.self, Ping.self, Record.self, Warm.self, Transcribe.self, CleanupCommand.self, CategorizeCommand.self, FilenameCommand.self, EnrichCommand.self, PipelineCommand.self, ResumeCommand.self, ReprocessCommand.self, ListCommand.self, SearchIndexCommand.self, SearchCommand.self, ConfigCommand.self, ModelsCommand.self, UpdateCommand.self]
+        subcommands: [EvalBatch.self, Ping.self, Record.self, Warm.self, Transcribe.self, CleanupCommand.self, CategorizeCommand.self, FilenameCommand.self, EnrichCommand.self, PipelineCommand.self, ResumeCommand.self, DeleteOutputsCommand.self, ListCommand.self, SearchIndexCommand.self, SearchCommand.self, ConfigCommand.self, ModelsCommand.self, UpdateCommand.self]
     )
 }
 
@@ -398,31 +398,23 @@ struct ResumeCommand: AsyncParsableCommand {
     }
 }
 
-struct ReprocessCommand: AsyncParsableCommand {
-    static let configuration = CommandConfiguration(commandName: "reprocess", abstract: "Reprocess every saved recording with current settings, sequentially. Keeps this Mac awake while running.")
-
-    @Option(name: .long, help: "Data directory containing saved audio.")
+struct DeleteOutputsCommand: ParsableCommand {
+    static let configuration = CommandConfiguration(
+        commandName: "delete-outputs",
+        abstract: "Delete all processing outputs and legacy backups, keeping source audio and settings."
+    )
+    @Option(name: .long, help: "Data directory. Quit the app before deleting outputs.")
     var dataDir: String?
-
-    @Flag(help: "Confirm replacement of generated notes. Previous files are backed up under .pipeline/reprocessing-backups.")
+    @Flag(help: "Confirm permanent deletion of intermediate results, finished logs and legacy backups.")
     var confirm = false
-
-    @Flag(help: "Resume the saved batch, skipping recordings already completed.")
-    var resume = false
-
     func validate() throws {
-        guard confirm else { throw ValidationError("Reprocessing replaces generated notes and can take hours. Pass --confirm to start, or --resume --confirm to continue a saved batch.") }
+        guard confirm else {
+            throw ValidationError("This permanently deletes all processing outputs. Pass --confirm to delete them. Source audio and settings are kept.")
+        }
     }
-
-    func run() async throws {
-        let result = try await Reprocessing.run(dataDir: resolveDataDir(dataDir), resumeSaved: resume, resume: { stem, dir, stage, progress in
-            try await Pipeline.resumeCommand(stem: stem, dataDir: dir, fromStage: stage, progress: progress)
-        }, onUpdate: { run, stem in
-            if let stem { print("[\(run.completed.count + 1)/\(run.items.count)] Reprocessing \(stem)") }
-        })
-        print("Reprocessed \(result.completed.count)/\(result.items.count) recordings. \(result.failures.count) failed.")
-        for (stem, message) in result.failures.sorted(by: { $0.key < $1.key }) { print("\(stem): \(message)") }
-        if !result.failures.isEmpty { throw ExitCode.failure }
+    func run() throws {
+        try Pipeline.deleteProcessingOutputs(dataDir: resolveDataDir(dataDir))
+        print("Deleted processing outputs. Source audio and settings kept. Use resume to process pending recordings.")
     }
 }
 

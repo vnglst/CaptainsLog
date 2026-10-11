@@ -15,6 +15,11 @@ required. `make help` lists available targets.
 | `make packaging` | Build the release app and CLI, bundle native libraries and notices, sign ad hoc, and create `dist/CaptainsLog-VERSION.zip`. |
 | `make release` | Infer version from Conventional Commits and prepare a local release on clean main. `BUMP=patch`, `minor`, `major` or an explicit version overrides `auto`; `ARGS=--dry-run` previews and `ARGS=--publish` publishes. See the [release checklist](../README.md#changelog-and-releases). |
 
+Use `make cli ARGS="delete-outputs --confirm"` with the app quit to delete all
+intermediate results, finished logs and legacy backups while retaining audio and
+settings. This does not start processing; `make cli ARGS="resume"` processes
+pending recordings afterwards. Checks must use isolated config/data and eval fixtures.
+
 Additional flags use `ARGS="..."`, passed to the underlying command. Quote paths
 and stems with spaces inside ARGS as shell arguments. Existing `CAPTAINS_LOG_EVAL_*`
 model/run-directory environment overrides continue to work. Packaging always

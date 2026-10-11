@@ -288,19 +288,6 @@ public final class AppState {
         )
     }
 
-    func reprocessEntry(stem: String, slug: String?) {
-        guard !updates.isInstalling, !updates.needsRestart else { return }
-        guard !processing.hasScheduledWork, processing.processingStem == nil else { return }
-        do {
-            try Pipeline.resetForReprocessing(stem: stem, slug: slug, dataDir: config.dataDir)
-            loadEntries()
-            resumeProcessing(stem: stem, fromStage: .transcribing)
-        } catch {
-            processing.recordPreparationFailure(error, for: stem)
-            loadEntries()
-        }
-    }
-
     var canDeleteProcessingOutputs: Bool {
         !isRecording && !isProcessing && processing.processingStem == nil
             && !processing.hasScheduledWork && !updates.isInstalling && !updates.needsRestart

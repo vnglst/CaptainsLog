@@ -125,18 +125,16 @@ make cli ARGS="pipeline"
 make cli ARGS="pipeline --input <audio.m4a>"
 make cli ARGS="resume <stem>"
 make cli ARGS="list"
-# Deliberately regenerate every saved recording with current settings:
-make cli ARGS="reprocess --confirm"
-# Continue an interrupted batch without redoing successful recordings:
-make cli ARGS="reprocess --resume --confirm"
+# Quit the app, then delete generated outputs, keeping audio and settings:
+make cli ARGS="delete-outputs --confirm"
+# Process all pending recordings with current settings:
+make cli ARGS="resume"
 make cli ARGS='search "project architecture"'
 ```
 
 M4A and QuickTime audio (`.mov`, `.qt` and `.qta`) files in the configured `audio/` folder are picked up by the app. Imported files keep their original extension. The CLI also accepts WAV and MP3 audio.
 
-The resumable pipeline records audio, transcribes it with WhisperKit/CoreML, cleans and categorizes the text, generates a filename, and adds searchable metadata. Bulk reprocessing replaces generated notes and keeps previous files under
-`.pipeline/reprocessing-backups/`. It saves progress after every recording,
-continues past per-recording failures. All processing keeps the system awake,
+The resumable pipeline records audio, transcribes it with WhisperKit/CoreML, cleans and categorizes the text, generates a filename, and adds searchable metadata. All processing keeps the system awake,
 including with the screen locked, while allowing the display to sleep. Normal idle
 sleep resumes when processing finishes, fails or finishes stopping after a pause.
 Keep the Mac connected to power with the lid open for an overnight run; lid closure

@@ -1329,60 +1329,6 @@ func runAppWorkflowCoverageTests() async {
         try expect(appState.allEntries.map(\.stem) == [stem], "Entry should remain visible when its artifact remains")
     }
 
-    test("AppState: reprocess without source audio preserves files and exposes a retryable error") {
-        let fm = FileManager.default
-        let root = fm.temporaryDirectory
-            .appendingPathComponent("CaptainsLogReprocessMissingAudio-\(UUID().uuidString)", isDirectory: true)
-        defer { try? fm.removeItem(at: root) }
-        let stem = "2025-01-14-0830"
-        let transcript = root.appendingPathComponent(".pipeline/01-transcribed/\(stem).md")
-        let fixture = URL(fileURLWithPath: fm.currentDirectoryPath)
-            .appendingPathComponent("eval/transcribe/expected/durins-volk.md")
-        try fm.createDirectory(at: transcript.deletingLastPathComponent(), withIntermediateDirectories: true)
-        try fm.copyItem(at: fixture, to: transcript)
-
-        let config = ConfigManager()
-        config.dataDir = root.path
-        let appState = AppState(config: config, processing: ProcessingCoordinator())
-        appState.loadEntries()
-        try expect(appState.allEntries.map(\.stem) == [stem])
-
-        appState.reprocessEntry(stem: stem, slug: nil)
-
-        try expect(fm.fileExists(atPath: transcript.path), "Missing audio must not delete the existing transcript")
-        try expect(appState.allEntries.map(\.stem) == [stem], "Failed reprocess must leave the entry listed")
-        try expect(
-            appState.allEntries.first?.processingError?.contains("source recording is missing") == true,
-            "The entry should expose the missing-audio failure for retry or explanation"
-        )
-        try expect(appState.errorMessage?.contains("source recording is missing") == true)
-        try expect(appState.statusMessage == "Processing failed. Retry available.")
-        try expect(appState.processing.processingStem == nil)
-    }
-
-    test("AppState: reprocess does not reset an entry while another entry is active") {
-        let fm = FileManager.default
-        let root = fm.temporaryDirectory
-            .appendingPathComponent("CaptainsLogReprocessWhileActive-\(UUID().uuidString)", isDirectory: true)
-        defer { try? fm.removeItem(at: root) }
-        let stem = "2025-01-14-0830"
-        let transcript = root.appendingPathComponent(".pipeline/01-transcribed/\(stem).md")
-        try fm.createDirectory(at: transcript.deletingLastPathComponent(), withIntermediateDirectories: true)
-        try "fixture transcript".write(to: transcript, atomically: true, encoding: .utf8)
-
-        let config = ConfigManager(loadContextFiles: false)
-        config.dataDir = root.path
-        let processing = ProcessingCoordinator()
-        processing.processingStem = "2025-01-15-0900"
-        let appState = AppState(config: config, processing: processing)
-
-        appState.reprocessEntry(stem: stem, slug: nil)
-
-        try expect(try String(contentsOf: transcript, encoding: .utf8) == "fixture transcript")
-        try expect(processing.processingStem == "2025-01-15-0900")
-        try expect(Pipeline.detectNextStage(stem: stem, dataDir: root.path) == .cleaning)
-    }
-
     await testAsync("AppState: failed resume keeps the log pending and reports its stage") {
         let fm = FileManager.default
         let root = fm.temporaryDirectory
@@ -1680,59 +1626,6 @@ func runCoreCoverageTests() {
         try expect(Pipeline.detectNextStage(stem: stem, dataDir: root.path) == .done)
     }
 
-    test("Pipeline: full reprocessing removes derived files but preserves source audio") {
-        let root = try makeTemporaryDirectory()
-        defer { try? FileManager.default.removeItem(at: root) }
-        let stem = "2026-07-10-1200"
-        let slug = "2026-07-10-coverage"
-        let files: [(String, String)] = [
-            ("audio/\(stem).m4a", "audio"),
-            (".pipeline/01-transcribed/\(stem).md", "transcript"),
-            (".pipeline/02-logs/\(stem).md", "cleaned"),
-            (".pipeline/03-category/\(stem).json", #"{"sourceStem":"2026-07-10-1200","category":"side_project"}"#),
-            (".pipeline/03-category/\(stem).log", "diagnostics"),
-            (".pipeline/04-rename/\(stem).slug.txt", slug),
-            (".pipeline/04-rename/\(slug).md", "renamed"),
-            ("logs/side-project/\(slug).md", "enriched"),
-        ]
-        for (relativePath, contents) in files {
-            let url = root.appendingPathComponent(relativePath)
-            try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
-            try contents.write(to: url, atomically: true, encoding: .utf8)
-        }
-
-        let candidates = Pipeline.reprocessingCandidatePaths(stem: stem, slug: slug, dataDir: root.path)
-        try expect(!candidates.contains(root.appendingPathComponent("audio/\(stem).m4a").path))
-        try Pipeline.resetForReprocessing(stem: stem, slug: slug, dataDir: root.path)
-
-        try expect(FileManager.default.fileExists(atPath: root.appendingPathComponent("audio/\(stem).m4a").path))
-        for (relativePath, _) in files.dropFirst() {
-            try expect(!FileManager.default.fileExists(atPath: root.appendingPathComponent(relativePath).path))
-        }
-        try expect(Pipeline.detectNextStage(stem: stem, dataDir: root.path) == .transcribing)
-    }
-
-    test("Pipeline: reprocessing keeps derived files when source audio is missing") {
-        let root = try makeTemporaryDirectory()
-        defer { try? FileManager.default.removeItem(at: root) }
-        let stem = "2026-07-10-1200"
-        let cleaned = root.appendingPathComponent(".pipeline/02-logs/\(stem).md")
-        try FileManager.default.createDirectory(at: cleaned.deletingLastPathComponent(), withIntermediateDirectories: true)
-        try "cleaned".write(to: cleaned, atomically: true, encoding: .utf8)
-
-        do {
-            try Pipeline.resetForReprocessing(stem: stem, slug: nil, dataDir: root.path)
-            try expect(false, "Expected missing source audio to prevent reprocessing")
-        } catch let error as Pipeline.PipelineError {
-            if case .missingSourceAudio(let path) = error {
-                try expect(path.hasSuffix("audio/\(stem).m4a"))
-            } else {
-                try expect(false, "Expected missingSourceAudio error")
-            }
-        }
-        try expect(FileManager.default.fileExists(atPath: cleaned.path))
-    }
-
     test("Core coverage: pipeline extracts date and recording time from a stem fallback") {
         try expect(Pipeline.extractDate(from: "2026-07-10-1205-idea") == "2026-07-10")
         try expect(Pipeline.extractRecordingTime(
@@ -1928,23 +1821,23 @@ func runCoreCoverageTests() {
         let active = EntryRowBehavior(entry: entry(stage: .cleaning, isActive: true))
         try expect(active.status == .active("Cleaning"), "active stage should be shown")
         try expect(active.compactStatusLabel == "LIVE", "active row should show LIVE")
-        try expect(!active.canOpen && !active.canResume && !active.canReprocess, "active row should not expose completed or retry actions")
+        try expect(!active.canOpen && !active.canResume, "active row should not expose completed or retry actions")
 
         let paused = EntryRowBehavior(entry: entry(stage: .transcribing))
         try expect(paused.status == .paused, "inactive unfinished entry should be paused")
         try expect(paused.compactStatusLabel == "PAUSED", "paused row should show PAUSED")
         try expect(paused.canResume && paused.resumeTitle == "Resume processing", "paused row should offer resume")
-        try expect(!paused.canOpen && !paused.canReprocess, "paused row should not expose completed actions")
+        try expect(!paused.canOpen, "paused row should not expose completed actions")
 
         let failed = EntryRowBehavior(entry: entry(stage: .cleaning, error: "fixture failure"))
         try expect(failed.status == .failed, "error should take status precedence over paused")
         try expect(failed.compactStatusLabel == "ERROR" && failed.isFailure, "failed row should show its error status")
         try expect(failed.canResume && failed.resumeTitle == "Retry processing", "failed row should offer retry")
-        try expect(!failed.canOpen && !failed.canReprocess, "failed row should not expose completed actions")
+        try expect(!failed.canOpen, "failed row should not expose completed actions")
 
         let completed = EntryRowBehavior(entry: entry(stage: .done))
         try expect(completed.status == .processed, "done entries should be processed")
-        try expect(completed.canOpen && completed.canReprocess, "done entries should open and reprocess")
+        try expect(completed.canOpen, "done entries should open")
         try expect(!completed.canResume && completed.resumeTitle == nil, "done entries should not resume")
         try expect(completed.canRevealInFinder, "non-empty path should be revealable")
 
@@ -2565,118 +2458,7 @@ func runPipelineOrchestrationCoverageTests() async {
         return root
     }
 
-    await testAsync("Reprocessing: failures continue, checkpoints resume and previous notes survive") {
-        let fm = FileManager.default
-        let root = fm.temporaryDirectory.appendingPathComponent("ReprocessTests-\(UUID().uuidString)")
-        defer { try? fm.removeItem(at: root) }
-        let audio = root.appendingPathComponent("audio")
-        try fm.createDirectory(at: audio, withIntermediateDirectories: true)
-        let repository = URL(fileURLWithPath: fm.currentDirectoryPath)
-        let stems = ["2025-01-14-0900", "2025-01-15-1000"]
-        for stem in stems {
-            try fm.copyItem(at: repository.appendingPathComponent("eval/transcribe/audio/durins-volk.m4a"), to: audio.appendingPathComponent("\(stem).M4A"))
-            let transcript = root.appendingPathComponent(".pipeline/01-transcribed/\(stem).md")
-            try fm.createDirectory(at: transcript.deletingLastPathComponent(), withIntermediateDirectories: true)
-            try "previous user-edited text".write(to: transcript, atomically: true, encoding: .utf8)
-        }
-        try fm.createDirectory(at: audio.appendingPathComponent("ignore.wav"), withIntermediateDirectories: true)
-        let calls = LockedStringArray()
-        let operations = Pipeline.Operations(
-            transcribe: { _, _ in "fresh transcript" }, cleanup: { text, _ in text },
-            categorize: { _, _, _ in .personal }, filename: { _, date in "\(date)-fresh.md" },
-            enrich: { text, _, _, _ in text }
-        )
-        let result = try await Reprocessing.run(dataDir: root.path, resume: { stem, dir, stage, progress in
-            calls.append(stem)
-            if stem == stems[0] { throw NSError(domain: "fixture", code: 1) }
-            return try await Pipeline.resumeCommand(stem: stem, dataDir: dir, fromStage: stage, operations: operations, progress: progress)
-        })
-        try expect(calls.snapshot() == stems, "Failure must not stop the remaining recordings")
-        try expect(result.completed == Set([stems[1]]) && result.failures.count == 1)
-        let checkpoint = Reprocessing.savedRun(dataDir: root.path)
-        try expect(checkpoint?.remaining == 1 && checkpoint?.id == result.id)
-        for stem in stems {
-            let backup = root.appendingPathComponent(".pipeline/reprocessing-backups/\(result.id.uuidString)/\(stem)/.pipeline/01-transcribed/\(stem).md")
-            try expect(try String(contentsOf: backup, encoding: .utf8) == "previous user-edited text")
-            try expect(fm.fileExists(atPath: audio.appendingPathComponent("\(stem).M4A").path))
-        }
-        let resumed = try await Reprocessing.run(dataDir: root.path, resumeSaved: true, resume: { stem, dir, stage, progress in
-            calls.append(stem)
-            return try await Pipeline.resumeCommand(stem: stem, dataDir: dir, fromStage: stage, operations: operations, progress: progress)
-        })
-        try expect(calls.snapshot() == stems + [stems[0]], "Resume must skip successful recordings")
-        try expect(resumed.remaining == 0 && resumed.failures.isEmpty)
-        let backup = root.appendingPathComponent(".pipeline/reprocessing-backups/\(result.id.uuidString)/\(stems[0])/.pipeline/01-transcribed/\(stems[0]).md")
-        try expect(try String(contentsOf: backup, encoding: .utf8) == "previous user-edited text", "Retry must retain the original backup")
-    }
-
-    await testAsync("Reprocessing: retry removes a new slug written before a failed checkpoint") {
-        let fm = FileManager.default
-        let root = fm.temporaryDirectory.appendingPathComponent("ReprocessRename-\(UUID().uuidString)")
-        defer { try? fm.removeItem(at: root) }
-        let audio = root.appendingPathComponent("audio")
-        try fm.createDirectory(at: audio, withIntermediateDirectories: true)
-        let fixture = URL(fileURLWithPath: fm.currentDirectoryPath).appendingPathComponent("eval/transcribe/audio/durins-volk.m4a")
-        let stem = "2025-01-14-0900"
-        try fm.copyItem(at: fixture, to: audio.appendingPathComponent("\(stem).m4a"))
-        func operations(slug: String) -> Pipeline.Operations {
-            Pipeline.Operations(transcribe: { _, _ in "fixture transcript" }, cleanup: { text, _ in text }, categorize: { _, _, _ in .personal }, filename: { _, _ in "\(slug).md" }, enrich: { text, _, _, _ in text })
-        }
-        _ = try await Pipeline.resumeCommand(stem: stem, dataDir: root.path, operations: operations(slug: "2025-01-14-original"))
-        let interrupted = operations(slug: "2025-01-14-interrupted")
-        let first = try await Reprocessing.run(dataDir: root.path, resume: { stem, dir, stage, progress in
-            _ = try await Pipeline.resumeCommand(stem: stem, dataDir: dir, fromStage: stage, operations: interrupted, progress: progress)
-            throw NSError(domain: "fixture-after-naming", code: 1)
-        })
-        try expect(first.remaining == 1)
-        let final = operations(slug: "2025-01-14-final")
-        let resumed = try await Reprocessing.run(dataDir: root.path, resumeSaved: true, resume: { stem, dir, stage, progress in
-            try await Pipeline.resumeCommand(stem: stem, dataDir: dir, fromStage: stage, operations: final, progress: progress)
-        })
-        try expect(resumed.remaining == 0)
-        try expect(!fm.fileExists(atPath: root.appendingPathComponent("logs/personal/2025-01-14-interrupted.md").path), "Retry must remove the interrupted attempt's final note")
-        try expect(!fm.fileExists(atPath: root.appendingPathComponent(".pipeline/04-rename/2025-01-14-interrupted.md").path))
-        try expect(fm.fileExists(atPath: root.appendingPathComponent("logs/personal/2025-01-14-final.md").path))
-    }
-
-    await testAsync("Reprocessing: cancellation keeps a resumable checkpoint and rejects a second run") {
-        let fm = FileManager.default
-        let root = fm.temporaryDirectory.appendingPathComponent("ReprocessCancel-\(UUID().uuidString)")
-        defer { try? fm.removeItem(at: root) }
-        let audio = root.appendingPathComponent("audio")
-        try fm.createDirectory(at: audio, withIntermediateDirectories: true)
-        let fixture = URL(fileURLWithPath: fm.currentDirectoryPath).appendingPathComponent("eval/transcribe/audio/durins-volk.m4a")
-        try fm.copyItem(at: fixture, to: audio.appendingPathComponent("2025-01-14-0900.m4a"))
-        let entered = LockedStringArray()
-        let worker = Task {
-            try await Reprocessing.run(dataDir: root.path, resume: { _, _, _, _ in
-                entered.append("entered")
-                try await Task.sleep(for: .seconds(30))
-                throw CancellationError()
-            })
-        }
-        for _ in 0..<1000 where entered.snapshot().isEmpty { await Task.yield() }
-        try expect(!entered.snapshot().isEmpty)
-        let assertions = Pipe()
-        let powerCheck = Process()
-        powerCheck.executableURL = URL(fileURLWithPath: "/usr/bin/pmset")
-        powerCheck.arguments = ["-g", "assertions"]
-        powerCheck.standardOutput = assertions
-        try powerCheck.run()
-        let assertionText = String(data: assertions.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
-        powerCheck.waitUntilExit()
-        try expect(powerCheck.terminationStatus == 0 && assertionText.contains("Reprocessing CaptainsLog recordings"), "Active batch must register its idle-sleep prevention assertion")
-        do {
-            _ = try await Reprocessing.run(dataDir: root.path, resume: { _, _, _, _ in throw CancellationError() })
-            try expect(false, "Concurrent batch should be rejected")
-        } catch { try expect(error.localizedDescription.contains("already active")) }
-        worker.cancel()
-        do { _ = try await worker.value; try expect(false, "Expected cancellation") }
-        catch { try expect(error is CancellationError) }
-        try expect(Reprocessing.savedRun(dataDir: root.path)?.remaining == 1)
-    }
-
-    await testAsync("Pipeline: M4A and QuickTime discovery, import, resume, reprocess and deletion") {
+    await testAsync("Pipeline: M4A and QuickTime discovery, import, output deletion and resume") {
         let fm = FileManager.default
         let repository = URL(fileURLWithPath: fm.currentDirectoryPath)
         for ext in ["m4a", "mov", "MOV", "qt", "qta", "QTA"] {
@@ -2713,7 +2495,7 @@ func runPipelineOrchestrationCoverageTests() async {
             )
             let imported = try await Pipeline.runCommand(audioInput: source.path, dataDir: data.path, operations: operations)
             try expect(imported.audioPath == stored.path)
-            try Pipeline.resetForReprocessing(stem: stem, slug: nil, dataDir: data.path)
+            try Pipeline.deleteProcessingOutputs(dataDir: data.path)
             try expect(fm.fileExists(atPath: stored.path))
             let resumed = try await Pipeline.resumePendingCommand(dataDir: data.path, operations: operations)
             try expect(resumed.count == 1 && resumed[0].audioPath == stored.path)
@@ -3501,7 +3283,7 @@ func runPipelineOrchestrationCoverageTests() async {
         let audio = root.appendingPathComponent("audio/\(stem).m4a")
         try fm.createDirectory(at: audio.deletingLastPathComponent(), withIntermediateDirectories: true)
         try Data("synthetic source audio".utf8).write(to: audio)
-        try Pipeline.resetForReprocessing(stem: stem, slug: nil, dataDir: root.path)
+        try Pipeline.deleteProcessingOutputs(dataDir: root.path)
 
         try expect(!fm.fileExists(atPath: marker.path))
         try expect(try String(contentsOf: renameVictim, encoding: .utf8) == "preserve synthetic outside file")
