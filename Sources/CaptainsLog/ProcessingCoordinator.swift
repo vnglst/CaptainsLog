@@ -78,6 +78,11 @@ public final class ProcessingCoordinator {
         guard !pendingProcessingStems.isEmpty, processingTask == nil else { return }
 
         processingTask = Task { [self] in
+            let activity = ProcessInfo.processInfo.beginActivity(
+                options: [.userInitiatedAllowingIdleSystemSleep, .idleSystemSleepDisabled],
+                reason: "Processing CaptainsLog recordings"
+            )
+            defer { ProcessInfo.processInfo.endActivity(activity) }
             while !pendingProcessingStems.isEmpty {
                 guard !Task.isCancelled else { break }
                 let stem = pendingProcessingStems.removeFirst()
@@ -136,6 +141,11 @@ public final class ProcessingCoordinator {
         failedEntries.removeValue(forKey: stem)
         processingStem = stem
         processingTask = Task {
+            let activity = ProcessInfo.processInfo.beginActivity(
+                options: [.userInitiatedAllowingIdleSystemSleep, .idleSystemSleepDisabled],
+                reason: "Processing CaptainsLog recordings"
+            )
+            defer { ProcessInfo.processInfo.endActivity(activity) }
             await runResume(stem: stem, fromStage: fromStage, dataDir: dataDir, onComplete: onComplete, onError: onError)
         }
     }
@@ -153,6 +163,11 @@ public final class ProcessingCoordinator {
 
         errorMessage = nil
         processingTask = Task { [self] in
+            let activity = ProcessInfo.processInfo.beginActivity(
+                options: [.userInitiatedAllowingIdleSystemSleep, .idleSystemSleepDisabled],
+                reason: "Processing CaptainsLog recordings"
+            )
+            defer { ProcessInfo.processInfo.endActivity(activity) }
             for entry in pendingEntries {
                 guard !Task.isCancelled else { break }
                 processingStem = entry.stem
@@ -197,6 +212,11 @@ public final class ProcessingCoordinator {
         reprocessingSummary = "Preparing reprocessing…"
         let resume = resumePipeline
         processingTask = Task { [self] in
+            let activity = ProcessInfo.processInfo.beginActivity(
+                options: [.userInitiatedAllowingIdleSystemSleep, .idleSystemSleepDisabled],
+                reason: "Processing CaptainsLog recordings"
+            )
+            defer { ProcessInfo.processInfo.endActivity(activity) }
             defer {
                 isReprocessing = false
                 processingStem = nil

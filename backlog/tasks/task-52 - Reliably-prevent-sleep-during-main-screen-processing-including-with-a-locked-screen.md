@@ -1,10 +1,10 @@
 ---
 id: TASK-52
 title: 'Reliably prevent sleep during any processing, including with a locked screen'
-status: Next
+status: Verify
 assignee: []
 created_date: '2026-10-11 11:29'
-updated_date: '2026-10-11 11:38'
+updated_date: '2026-10-11 11:57'
 labels: []
 dependencies: []
 priority: high

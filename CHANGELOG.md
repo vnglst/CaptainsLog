@@ -12,6 +12,10 @@ entry. Git links provide the complete commit history for each release.
 
 ## [Unreleased]
 
+### Fixed
+
+- Prevent idle system sleep during single-entry, queued, pending and bulk processing, including with the screen locked; allow display sleep and release the activity after workers finish, fail or stop.
+
 ### Changed
 
 - Refine the three processing backlog items with owner clarifications and concise descriptions without duplicate acceptance criteria, and move them to Next at the owner’s request.
