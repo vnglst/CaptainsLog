@@ -12,6 +12,13 @@ entry. Git links provide the complete commit history for each release.
 
 ## [Unreleased]
 
+### Changed
+
+- Refine the three processing backlog items with owner clarifications and concise descriptions without duplicate acceptance criteria, and move them to Next at the owner’s request.
+- Record a backlog bug to stop active work and quit promptly without crashing, including a summary of the owner-supplied crash report with identifying details omitted.
+- Record a backlog item to delete all processing outputs, including intermediate results and finished logs, in Settings while retaining original source audio, and use existing main-screen processing for unprocessed files.
+- Record a high-priority backlog item for reliable system sleep prevention during any processing, including while the screen is locked, allowing display sleep and restoring normal system sleep after completion.
+
 ## [0.4.0] - 2026-10-10
 
 ### Added
