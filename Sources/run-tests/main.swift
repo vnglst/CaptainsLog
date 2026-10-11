@@ -2162,6 +2162,17 @@ func runCoordinatorCoverageTests() async {
         }
         try expect(firstGate.get() != nil)
         coordinator.pauseProcessing()
+        try expect(coordinator.hasScheduledWork, "Cancelled native work must retain ownership until it returns")
+        coordinator.resumeEntry(stem: stem, dataDir: "/tmp/captainslog-retry",
+                                onComplete: { completions.append("overlap") },
+                                onError: { _ in completions.append("overlap-error") })
+        try await Task.sleep(for: .milliseconds(10))
+        try expect(calls.snapshot().count == 1, "Retry cannot overlap the cancelled worker")
+        firstGate.get()?.resume()
+        for _ in 0..<100 where coordinator.hasScheduledWork {
+            try await Task.sleep(for: .milliseconds(1))
+        }
+        try expect(!coordinator.hasScheduledWork)
         coordinator.resumeEntry(stem: stem, dataDir: "/tmp/captainslog-retry",
                                 onComplete: { completions.append("retry") },
                                 onError: { _ in completions.append("retry-error") })
@@ -2169,7 +2180,6 @@ func runCoordinatorCoverageTests() async {
             try await Task.sleep(for: .milliseconds(1))
         }
         try expect(retryGate.get() != nil && coordinator.stage == .enriching)
-        firstGate.get()?.resume()
         // Even an uncooperative producer retaining its callback must not change the retry.
         staleProgress.get()?(.init(stem: stem, stage: .transcribing))
         try await Task.sleep(for: .milliseconds(30))
@@ -2383,6 +2393,23 @@ func runCoordinatorCoverageTests() async {
         try await Task.sleep(for: .milliseconds(30))
         try expect(coordinator.stage == .idle, "Cancelled queue should not overwrite Paused with Done")
         try expect(coordinator.statusMessage == "Paused", "Cancelled queue should preserve the paused status")
+    }
+
+    await testAsync("ProcessingCoordinator: quit rejects late queued work") {
+        let calls = LockedStringArray()
+        let coordinator = ProcessingCoordinator { stem, _, _, _ in
+            calls.append(stem)
+            return result(for: stem)
+        }
+        await coordinator.stopForTermination()
+        coordinator.queueProcessing(stem: "2025-01-14-0830")
+        coordinator.startProcessing(dataDir: "/tmp/captainslog-quit", isRecording: false,
+                                    onProgress: {}, onComplete: {}, onError: { _ in })
+        coordinator.resumeEntry(stem: "2025-01-14-0830", dataDir: "/tmp/captainslog-quit",
+                                onComplete: {}, onError: { _ in })
+        try await Task.sleep(for: .milliseconds(10))
+        try expect(!coordinator.hasScheduledWork)
+        try expect(calls.snapshot().isEmpty)
     }
 
     await testAsync("ProcessingCoordinator: pausing newly recorded work does not report completion") {
@@ -3148,6 +3175,41 @@ func runPipelineOrchestrationCoverageTests() async {
         ))
     }
 
+    await testAsync("Resume CLI: cancellation after uncooperative inference preserves retry stage") {
+        let stem = "2026-07-10-1115"
+        let root = try makeRoot(stem: stem)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let gate = LockedValue<CheckedContinuation<Void, Never>?>(nil)
+        let later = LockedStringArray()
+        let operations = Pipeline.Operations(
+            transcribe: { _, _ in "unused" },
+            cleanup: { _, _ in
+                await withCheckedContinuation { gate.set($0) }
+                return "cancelled output"
+            },
+            categorize: { _, _, _ in later.append("categorize"); return .personal },
+            filename: { _, _ in later.append("filename"); return "unused.md" },
+            enrich: { _, _, _, _ in later.append("enrich"); return "unused" }
+        )
+        let worker = Task {
+            try await Pipeline.resumeCommand(stem: stem, dataDir: root.path,
+                                             fromStage: .cleaning, operations: operations)
+        }
+        for _ in 0..<100 where gate.get() == nil {
+            try await Task.sleep(for: .milliseconds(1))
+        }
+        try expect(gate.get() != nil)
+        worker.cancel()
+        gate.get()?.resume()
+        do {
+            _ = try await worker.value
+            try expect(false, "Cancelled stage must be discarded")
+        } catch is CancellationError {}
+        try expect(later.snapshot().isEmpty)
+        try expect(Pipeline.detectNextStage(stem: stem, dataDir: root.path) == .cleaning)
+        try expect(!FileManager.default.fileExists(atPath: root.appendingPathComponent(".pipeline/02-logs/\(stem).md").path))
+    }
+
     await testAsync("Resume CLI: malformed category manifest reruns categorization before later stages") {
         let stem = "2026-07-10-1215"
         let root = try makeRoot(stem: stem)
@@ -3909,6 +3971,45 @@ func runTests() async {
         try expect(corrections.contains("Pikard -> Picard"))
         try expect(transcript.contains("<transcript>"))
         try expect(transcript.contains("Uh, I shipped it."))
+    }
+
+    await testAsync("Native shutdown: reject new operations and wait for active teardown") {
+        let lifecycle = NativeInferenceLifecycle()
+        try lifecycle.beginOperation()
+        let finished = LockedValue(false)
+        let shutdown = Task { await lifecycle.stopAndWait(); finished.set(true) }
+        try await Task.sleep(for: .milliseconds(10))
+        try expect(!finished.get(), "Shutdown cannot race an active native operation")
+        do {
+            try lifecycle.beginOperation()
+            try expect(false, "Shutdown must reject new native operations")
+        } catch is CancellationError {}
+        lifecycle.endOperation()
+        await shutdown.value
+        try expect(finished.get())
+        await lifecycle.stopAndWait()
+    }
+
+    await testAsync("LLM: cancellation discards unfinished output before the next decode") {
+        let samples = LockedValue(0)
+        let worker = Task.detached {
+            try LLM.generateTokens(
+                generationLimit: 100, maxTokens: 100, promptTokenCount: 1,
+                allocatedContextSize: 128,
+                sampleToken: {
+                    samples.set(samples.get() + 1)
+                    withUnsafeCurrentTask { $0?.cancel() }
+                    return 1
+                },
+                isEndToken: { _ in false }, tokenString: { _ in "partial" },
+                decodeToken: { _ in }
+            )
+        }
+        do {
+            _ = try await worker.value
+            try expect(false, "Cancelled inference cannot return partial output")
+        } catch is CancellationError {}
+        try expect(samples.get() == 1, "Cancellation stops without completing the output budget")
     }
 
     test("LLM: reproduces reported context exhaustion and rejects partial text") {
@@ -4713,6 +4814,26 @@ func runTests() async {
         try expect(recording.recordingDuration == 0, "Cancellation must stop the duration timer")
         try expect(recording.errorMessage == nil)
         try expect(callbacks.snapshot().isEmpty, "Cancellation must not report success or failure")
+    }
+
+    await testAsync("RecordingState: quit waits for writer release and suppresses processing") {
+        let events = LockedStringArray()
+        let (started, continuation) = AsyncStream<Void>.makeStream()
+        let recording = RecordingState(dependencies: .init(
+            listInputDevices: { [] }, defaultInputDevice: { nil },
+            record: { _, _, stopTrigger, _, _ in
+                continuation.yield(())
+                for await _ in stopTrigger { break }
+                events.append("writer-closed")
+            }
+        ))
+        recording.startRecording(dataDir: FileManager.default.temporaryDirectory.path,
+                                 onComplete: { _ in events.append("processing") },
+                                 onError: { _ in events.append("error") })
+        for await _ in started { break }
+        await recording.stopForTermination()
+        try expect(events.snapshot() == ["writer-closed"])
+        try expect(!recording.isRecording)
     }
 
     await testAsync("RecordingState: cancellation errors are not surfaced as recording failures") {

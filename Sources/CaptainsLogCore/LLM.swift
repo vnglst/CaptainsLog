@@ -130,6 +130,7 @@ public enum LLM {
 
     /// Loads the model and returns a container for inference.
     public static func loadModel(modelId: String? = nil) async throws -> ModelContainer {
+        try NativeInferenceLifecycle.shared.checkCancellation()
         if resolveModelPath(modelId: modelId) == nil {
             try await download(modelId: modelId)
         }
@@ -144,6 +145,8 @@ public enum LLM {
             throw NSError(domain: "LLM", code: 1, userInfo: [NSLocalizedDescriptionKey: "Model file not found: \(modelPath)"])
         }
 
+        try NativeInferenceLifecycle.shared.beginOperation()
+        defer { NativeInferenceLifecycle.shared.endOperation() }
         LlamaRuntime.initialize()
 
         var params = llama_model_default_params()
@@ -154,6 +157,13 @@ public enum LLM {
             throw NSError(domain: "LLM", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to load model: \(modelPath)"])
         }
 
+        do {
+            try NativeInferenceLifecycle.shared.checkCancellation()
+        } catch {
+            // Free a cancelled load while it is still covered by the shutdown barrier.
+            llama_model_free(model)
+            throw error
+        }
         return ModelContainer(modelPath: modelPath, model: model)
     }
 
@@ -221,6 +231,8 @@ public enum LLM {
         seed: UInt32? = nil,
         diagnostic: (@Sendable (String) -> Void)? = nil
     ) throws -> String {
+        try NativeInferenceLifecycle.shared.beginOperation()
+        defer { NativeInferenceLifecycle.shared.endOperation() }
         let prompt = makePrompt(systemPrompt: systemPrompt, userPrompt: userPrompt)
         let vocab = llama_model_get_vocab(container.model)
         let promptTokens = try tokenize(prompt, vocab: vocab, addSpecial: true, parseSpecial: true)
@@ -242,7 +254,12 @@ public enum LLM {
         guard let context = llama_init_from_model(container.model, contextParams) else {
             throw NSError(domain: "LLM", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to create llama context"])
         }
-        defer { llama_free(context) }
+        defer {
+            // Decode may enqueue Metal work asynchronously. A cancelled request
+            // must finish that work before releasing the context or draining shutdown.
+            llama_synchronize(context)
+            llama_free(context)
+        }
         diagnostic?("Llama context created (allocated=\(contextParams.n_ctx), model maximum=\(modelContextSize), batch=\(contextParams.n_batch), threads=\(contextParams.n_threads)).")
 
         let allocatedContextSize = Int(llama_n_ctx(context))
@@ -292,6 +309,7 @@ public enum LLM {
         var output = ""
         var reachedEndOfGeneration = false
         for tokenIndex in 0..<generationLimit {
+            try NativeInferenceLifecycle.shared.checkCancellation()
             let token = sampleToken()
 
             if isEndToken(token) {
@@ -310,6 +328,7 @@ public enum LLM {
         // The final decoded token still has logits, even at the context boundary.
         // Accept an end token immediately after the budget, but never decode an
         // additional content token or return an unfinished response as success.
+        try NativeInferenceLifecycle.shared.checkCancellation()
         if !reachedEndOfGeneration {
             reachedEndOfGeneration = isEndToken(sampleToken())
         }
@@ -396,6 +415,7 @@ public enum LLM {
     private static func decode(tokens: [llama_token], context: OpaquePointer, batchSize: Int) throws {
         var offset = 0
         while offset < tokens.count {
+            try NativeInferenceLifecycle.shared.checkCancellation()
             let count = min(batchSize, tokens.count - offset)
             var chunk = Array(tokens[offset..<(offset + count)])
             let result = chunk.withUnsafeMutableBufferPointer { buffer in

@@ -573,6 +573,7 @@ public enum Pipeline {
         progress: (@Sendable (Progress) -> Void)?,
         operations: Operations? = nil
     ) async throws -> Result {
+        try Task.checkCancellation()
         let dataDirURL = URL(fileURLWithPath: dataDir)
         let categoryDiagnostics = DiagnosticLog(
             path: dataDirURL
@@ -604,6 +605,7 @@ public enum Pipeline {
         if let operations {
             textOperations = operations
         } else {
+            try Task.checkCancellation()
             let container = try await LLM.loadModel(modelId: modelId)
             textOperations = Operations(
                 transcribe: { _, _ in "" },
@@ -661,6 +663,7 @@ public enum Pipeline {
         let renamedPath = dataDirURL.appendingPathComponent(Directory.rename.path).appendingPathComponent("\(slugStem).md").path
         let enrichedPath = dataDirURL.appendingPathComponent(Directory.enriched.path).appendingPathComponent(category.folderName).appendingPathComponent("\(slugStem).md").path
 
+        try Task.checkCancellation()
         progress?(Progress(stem: stem, stage: .done))
         print("Pipeline complete!")
         return Result(
@@ -695,6 +698,7 @@ public enum Pipeline {
             NSTemporaryDirectory(),
         ])
         let transcript = try await operation(audioPath, language)
+        try Task.checkCancellation()
         try FileSystemGuard.writeText(transcript, to: transcriptPath)
         return transcript
     }
@@ -715,6 +719,7 @@ public enum Pipeline {
         progress?(Progress(stem: stem, stage: .cleaning))
         print("[3/6] Cleaning up...")
         let cleaned = try await operation(transcript, config)
+        try Task.checkCancellation()
         try FileSystemGuard.writeText(cleaned, to: cleanedPath)
         return cleaned
     }
@@ -754,6 +759,7 @@ public enum Pipeline {
             await diagnostics.log("Category stage failed (error type: \(String(reflecting: type(of: error)))).")
             throw error
         }
+        try Task.checkCancellation()
         let manifest = Categorize.Manifest(sourceStem: stem, category: category)
         try Categorize.writeManifest(manifest, dataDirURL: dataDirURL)
         await diagnostics.log("Category manifest written to \(Categorize.manifestURL(stem: stem, dataDirURL: dataDirURL).path).")
@@ -790,6 +796,7 @@ public enum Pipeline {
         progress?(Progress(stem: stem, stage: .naming))
         print("[5/6] Generating filename...")
         let slug = try await operation(cleaned, date)
+        try Task.checkCancellation()
         guard isSafeSlug(slug) else {
             throw PipelineError.invalidSlug(value: slug)
         }
@@ -823,6 +830,7 @@ public enum Pipeline {
         progress?(Progress(stem: stem, stage: .enriching))
         print("[6/6] Enriching...")
         let enriched = try await operation(cleaned, date, recordingTime, config)
+        try Task.checkCancellation()
         try FileSystemGuard.writeText(enriched, to: enrichedPath)
     }
 

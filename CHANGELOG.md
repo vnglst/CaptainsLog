@@ -12,6 +12,10 @@ entry. Git links provide the complete commit history for each release.
 
 ## [Unreleased]
 
+### Fixed
+
+- Cancel active work on quit and close the recording without starting processing; wait for the current native call to release its resources before app teardown instead of finishing the pipeline. Keep paused processing reserved until its worker exits and discard cancelled model output before saving pipeline artifacts.
+
 ### Changed
 
 - Refine the three processing backlog items with owner clarifications and concise descriptions without duplicate acceptance criteria, and move them to Next at the owner’s request.

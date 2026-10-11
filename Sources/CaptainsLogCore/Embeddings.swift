@@ -124,6 +124,8 @@ public actor E5EmbeddingModel: TextEmbeddingModel {
     ) async throws -> E5EmbeddingModel {
         try await download(progressHandler: progressHandler)
         let url = modelURL()
+        try NativeInferenceLifecycle.shared.beginOperation()
+        defer { NativeInferenceLifecycle.shared.endOperation() }
         LlamaRuntime.initialize()
 
         var parameters = llama_model_default_params()
@@ -137,10 +139,18 @@ public actor E5EmbeddingModel: TextEmbeddingModel {
             llama_model_free(model)
             throw SearchError.invalidEmbeddingDimension(expected: Self.dimension, actual: dimension)
         }
+        do {
+            try NativeInferenceLifecycle.shared.checkCancellation()
+        } catch {
+            llama_model_free(model)
+            throw error
+        }
         return E5EmbeddingModel(container: ModelContainer(modelPath: url.path, model: model))
     }
 
     public func embed(_ text: String, as kind: EmbeddingInputKind) throws -> [Float] {
+        try NativeInferenceLifecycle.shared.beginOperation()
+        defer { NativeInferenceLifecycle.shared.endOperation() }
         let input = kind.prefix + text
         let vocabulary = llama_model_get_vocab(container.model)
         let tokens = try tokenize(input, vocabulary: vocabulary, addSpecial: true)
@@ -162,7 +172,12 @@ public actor E5EmbeddingModel: TextEmbeddingModel {
         guard let context = llama_init_from_model(container.model, parameters) else {
             throw SearchError.embeddingContextCreationFailed
         }
-        defer { llama_free(context) }
+        defer {
+            // Decode may enqueue Metal work asynchronously. A cancelled request
+            // must finish that work before releasing the context or draining shutdown.
+            llama_synchronize(context)
+            llama_free(context)
+        }
 
         var mutableTokens = tokens
         let decodeResult = mutableTokens.withUnsafeMutableBufferPointer { buffer in
@@ -173,6 +188,7 @@ public actor E5EmbeddingModel: TextEmbeddingModel {
             throw SearchError.embeddingDecodeFailed(Int(decodeResult))
         }
 
+        try NativeInferenceLifecycle.shared.checkCancellation()
         guard let pointer = llama_get_embeddings_seq(context, 0) else {
             throw SearchError.embeddingUnavailable
         }
@@ -185,6 +201,8 @@ public actor E5EmbeddingModel: TextEmbeddingModel {
     }
 
     public func chunks(for text: String, maxTokens: Int = 384, overlap: Int = 48) throws -> [String] {
+        try NativeInferenceLifecycle.shared.beginOperation()
+        defer { NativeInferenceLifecycle.shared.endOperation() }
         precondition(maxTokens > 0)
         precondition(overlap >= 0 && overlap < maxTokens)
         let vocabulary = llama_model_get_vocab(container.model)
@@ -194,6 +212,7 @@ public actor E5EmbeddingModel: TextEmbeddingModel {
         var result: [String] = []
         var start = 0
         while start < tokens.count {
+            try NativeInferenceLifecycle.shared.checkCancellation()
             let end = min(start + maxTokens, tokens.count)
             let chunk = tokens[start..<end]
                 .map { tokenToString($0, vocabulary: vocabulary) }
