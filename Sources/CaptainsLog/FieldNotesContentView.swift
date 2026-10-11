@@ -14,7 +14,7 @@ public struct FieldNotesContentView: View {
 
     private var selectedEntry: LogEntry? { navigation.selectedEntry }
 
-    enum Section { case entries, settings }
+    enum Section { case entries, context, settings }
 
     public init(bootstrap: Bool = true) {
         self.bootstrap = bootstrap
@@ -47,6 +47,7 @@ public struct FieldNotesContentView: View {
                             }
                             .transition(listTransition)
                         }
+                    case .context: FieldNotesContextView()
                     case .settings: FieldNotesSettingsView()
                     }
                 }
@@ -153,6 +154,9 @@ private struct FieldNotesSidebar: View {
             FieldNotesSidebarItem(title: "Logs", icon: "doc.text", isSelected: section == .entries) {
                 section = .entries
                 onShowEntries()
+            }
+            FieldNotesSidebarItem(title: "Context", icon: "pencil", isSelected: section == .context) {
+                section = .context
             }
             FieldNotesSidebarItem(title: "Settings", icon: "gearshape", isSelected: section == .settings) {
                 section = .settings
@@ -1105,6 +1109,82 @@ private struct FieldNotesRecordDock: View {
     private var normalizedLevel: Float { max(0, min(1, (20 * log10(max(appState.audioLevel, 0.0001)) + 60) / 60)) }
 }
 
+private struct FieldNotesContextView: View {
+    @Environment(AppState.self) private var appState
+
+    var body: some View {
+        @Bindable var state = appState
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Context")
+                        .font(FieldNotes.Typography.title(30))
+                        .foregroundStyle(FieldNotes.ColorToken.primaryText)
+                    Text("Shape the notes created from your recordings.")
+                        .font(FieldNotes.Typography.body(14))
+                        .foregroundStyle(FieldNotes.ColorToken.secondaryText)
+                }
+                .padding(.bottom, 8)
+
+                section("Writing context") {
+                    fieldLabel("Personal context")
+                    FieldNotesTextEditor(text: $state.personalContext,
+                        placeholder: "Your work, interests, and vocabulary.")
+                        .accessibilityLabel("Personal context")
+                    HStack(alignment: .top, spacing: 12) {
+                        helper("Helps CaptainsLog understand your vocabulary during cleanup.")
+                        Spacer(minLength: 0)
+                        Text("\(appState.personalContext.count) characters")
+                            .font(FieldNotes.Typography.metadata(11))
+                            .foregroundStyle(FieldNotes.ColorToken.secondaryText)
+                            .fixedSize()
+                    }
+                    divider.padding(.vertical, 4)
+                    fieldLabel("Name and term corrections")
+                    FieldNotesCorrectionsEditor(text: $state.corrections)
+                    helper("Help cleanup recognize names and terms.")
+                }
+
+                section("Categories") {
+                    FieldNotesCategoriesEditor()
+                }
+            }
+            .frame(maxWidth: 760, alignment: .leading)
+            .padding(24)
+            .padding(.bottom, 16)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .onAppear { appState.config.loadContextFilesIfNeeded() }
+    }
+
+    private func section<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text(title)
+                .font(FieldNotes.Typography.title(17))
+                .foregroundStyle(FieldNotes.ColorToken.primaryText)
+            content()
+        }
+        .padding(20)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .fieldNotesSurface()
+    }
+
+    private var divider: some View {
+        Rectangle().fill(FieldNotes.ColorToken.stroke).frame(height: 1)
+    }
+
+    private func fieldLabel(_ title: String) -> some View {
+        Text(title).font(FieldNotes.Typography.body(13, weight: .medium))
+            .foregroundStyle(FieldNotes.ColorToken.primaryText)
+    }
+
+    private func helper(_ text: String) -> some View {
+        Text(text).font(FieldNotes.Typography.body(12))
+            .foregroundStyle(FieldNotes.ColorToken.secondaryText)
+            .fixedSize(horizontal: false, vertical: true)
+    }
+}
+
 private struct FieldNotesSettingsView: View {
     @Environment(AppState.self) private var appState
     @CLState private var showThirdPartyNotices = false
@@ -1114,7 +1194,6 @@ private struct FieldNotesSettingsView: View {
     @CLState private var deletingModel = false
 
     var body: some View {
-        @Bindable var state = appState
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 VStack(alignment: .leading, spacing: 8) {
@@ -1127,7 +1206,19 @@ private struct FieldNotesSettingsView: View {
                 }
                 .padding(.bottom, 8)
 
-                section("Updates") { updatePreferences }
+                section("Audio input") {
+                    HStack(spacing: 12) {
+                        Image(systemName: "mic")
+                            .font(.system(size: 18))
+                            .foregroundStyle(FieldNotes.ColorToken.secondaryText)
+                        Text(appState.inputDevices.first { $0.uid == appState.selectedDeviceUID }?.name ?? "No input device")
+                            .font(FieldNotes.Typography.body(13))
+                            .foregroundStyle(FieldNotes.ColorToken.primaryText)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        FieldNotesButton(title: "Refresh devices", kind: .secondary) { appState.refreshDevices() }
+                    }
+                    helper("The microphone currently selected for recordings.")
+                }
 
                 section("Storage") {
                     HStack(spacing: 12) {
@@ -1157,43 +1248,6 @@ private struct FieldNotesSettingsView: View {
                         : "Audio, transcripts, and Markdown notes are saved here.")
                 }
 
-                section("Categories") {
-                    FieldNotesCategoriesEditor()
-                }
-                section("Processing outputs") { FieldNotesProcessingOutputControls(appState: appState) }
-
-                section("Writing context") {
-                    fieldLabel("Personal context")
-                    FieldNotesTextEditor(text: $state.personalContext,
-                        placeholder: "Your work, interests, and vocabulary.")
-                        .accessibilityLabel("Personal context")
-                    HStack(alignment: .top, spacing: 12) {
-                        helper("Helps CaptainsLog understand your vocabulary during cleanup.")
-                        Spacer(minLength: 0)
-                        Text("\(appState.personalContext.count) characters")
-                            .font(FieldNotes.Typography.metadata(11))
-                            .foregroundStyle(FieldNotes.ColorToken.secondaryText)
-                            .fixedSize()
-                    }
-                    divider.padding(.vertical, 4)
-                    fieldLabel("Name and term corrections")
-                    FieldNotesCorrectionsEditor(text: $state.corrections)
-                    helper("Help cleanup recognize names and terms.")
-                }
-
-                section("Audio input") {
-                    HStack(spacing: 12) {
-                        Image(systemName: "mic")
-                            .font(.system(size: 18))
-                            .foregroundStyle(FieldNotes.ColorToken.secondaryText)
-                        Text(appState.inputDevices.first { $0.uid == appState.selectedDeviceUID }?.name ?? "No input device")
-                            .font(FieldNotes.Typography.body(13))
-                            .foregroundStyle(FieldNotes.ColorToken.primaryText)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                        FieldNotesButton(title: "Refresh devices", kind: .secondary) { appState.refreshDevices() }
-                    }
-                    helper("The microphone currently selected for recordings.")
-                }
                 section("Models") {
                     modelStatus
                     ForEach(ModelStorage.Model.allCases) { model in
@@ -1220,23 +1274,26 @@ private struct FieldNotesSettingsView: View {
                         .frame(height: 36, alignment: .topLeading)
                         .opacity(storageMessage.isEmpty ? 0 : 1)
                 }
-                HStack(spacing: 12) {
-                    Text(appState.versionString)
-                        .font(FieldNotes.Typography.metadata(11))
-                        .foregroundStyle(FieldNotes.ColorToken.secondaryText)
-                    Spacer()
-                    FieldNotesButton(title: "Third-party notices", kind: .secondary) {
-                        showThirdPartyNotices = true
+                section("Updates") { updatePreferences }
+                section("Processing outputs") { FieldNotesProcessingOutputControls(appState: appState) }
+
+                section("About") {
+                    HStack(spacing: 12) {
+                        Text(appState.versionString)
+                            .font(FieldNotes.Typography.metadata(11))
+                            .foregroundStyle(FieldNotes.ColorToken.secondaryText)
+                        Spacer()
+                        FieldNotesButton(title: "Third-party notices", kind: .secondary) {
+                            showThirdPartyNotices = true
+                        }
                     }
                 }
-                .padding(.top, 4)
             }
             .frame(maxWidth: 760, alignment: .leading)
             .padding(24)
             .padding(.bottom, 16)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .onAppear { appState.config.loadContextFilesIfNeeded() }
         .sheet(isPresented: $showThirdPartyNotices) { ThirdPartyNoticesView() }
         .task(id: appState.models.modelsReady) { await refreshModelUsage() }
         .alert("Delete model?", isPresented: Binding(

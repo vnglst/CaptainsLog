@@ -147,7 +147,7 @@ with the current settings.
 
 Intermediate files live under `.pipeline/`; completed entries are saved to `logs/`. Use `make cli ARGS=--help` for other commands, including configuration and individual pipeline stages.
 
-Settings and initial setup let you choose categories for future processing. Removing
+Context and initial setup let you choose categories for future processing. Removing
 one keeps its existing folders and logs. The category menu beside search filters
 Logs and search results; all categories are initially selected. The CLI supports
 the same configuration:
@@ -156,6 +156,8 @@ the same configuration:
 cl config set categories "personal,professional,research"
 cl config set categories unset  # Restore built-in defaults
 ```
+
+Context also contains personal context and name and term corrections for cleanup. Changes save automatically and apply to future processing.
 
 Transcription uses Whisper Large-v2. Cleanup, categorization, filenames, and metadata use Qwen 3.5 9B 4-bit through llama.cpp. Semantic search downloads the multilingual-e5-small embedding model on first use.
 

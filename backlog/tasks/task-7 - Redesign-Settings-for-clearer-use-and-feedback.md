@@ -4,7 +4,7 @@ title: Redesign Settings for clearer use and feedback
 status: Next
 assignee: []
 created_date: '2026-10-04 13:10'
-updated_date: '2026-10-11 16:58'
+updated_date: '2026-10-11 18:11'
 labels:
   - settings
 dependencies: []
@@ -31,7 +31,7 @@ Design reference: [Combined Context and Settings concept](design/logs/screens/09
 <!-- AC:BEGIN -->
 - [x] #1 Before implementation, the image generation skill is used to create four alternative Settings design previews.
 - [x] #2 All four previews are shown to the owner for review and selection.
-- [ ] #3 Implementation begins only after the owner has reviewed the previews and selected an alternative.
+- [x] #3 Implementation begins only after the owner has reviewed the previews and selected an alternative.
 - [ ] #4 Context is a separate navigation item containing all settings that affect the output, without a preview.
 - [ ] #5 The current designs of individual settings, including corrections and categories, are preserved.
 - [ ] #6 Settings follows the order of alternative 1 without a submenu.
