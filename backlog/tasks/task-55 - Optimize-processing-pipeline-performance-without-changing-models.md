@@ -1,9 +1,10 @@
 ---
 id: TASK-55
 title: Optimize processing pipeline performance without changing models
-status: To Do
+status: Next
 assignee: []
 created_date: '2026-10-12 05:41'
+updated_date: '2026-10-12 06:03'
 labels: []
 dependencies: []
 type: enhancement

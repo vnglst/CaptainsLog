@@ -18,6 +18,7 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
+- Move the processing pipeline performance optimization task (TASK-55) to Next at the owner's request.
 - Record a backlog item to optimize processing pipeline performance without changing models, allowing combined steps and checking GPU and other performance optimizations.
 - Move the CoreML Metal prediction crash bug (TASK-54) to Next at the owner's request.
 - Move the selected Context and Settings redesign to owner verification with its existing acceptance criteria checked.
