@@ -308,8 +308,9 @@ or token savings without measurements and comparable timing scopes.
 ## Troubleshooting
 
 Reproduce processing issues through the CLI using synthetic fixtures and isolated
-config/data before debugging the UI. The transcriber currently selects CPU/GPU
-compute; ANE advice may describe an older bundle. Text inference uses in-process
+config/data before debugging the UI. The transcriber runs spectrogram extraction on CPU and selects CPU/Neural Engine
+for the Whisper encoder and decoder, excluding the CoreML Metal prediction path
+that can abort with an MPSGraph tensor shape/stride assertion. Text inference uses in-process
 libllama and all available GPU layers. Check versioned llama/GGML package includes
 and actual bundled library paths for header or library failures. A missing llama-cli
 executable does not diagnose this integration. Stop concurrent compilation/inference

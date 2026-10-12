@@ -87,9 +87,12 @@ public enum Transcriber {
         }
 
         Logger.transcriber.info("Loading WhisperKit from \(folder)...")
+        // CoreML Metal prediction can abort in MPSGraph tensor shape/stride handling.
+        // Exclude GPU from every Whisper component; SIGABRT cannot be caught for retry.
         let computeOptions = ModelComputeOptions(
-            audioEncoderCompute: .cpuAndGPU,
-            textDecoderCompute: .cpuAndGPU
+            melCompute: .cpuOnly,
+            audioEncoderCompute: .cpuAndNeuralEngine,
+            textDecoderCompute: .cpuAndNeuralEngine
         )
         let whisperConfig = WhisperKitConfig(
             modelFolder: folder,

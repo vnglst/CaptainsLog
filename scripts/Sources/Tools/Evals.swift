@@ -124,7 +124,7 @@ final class Evaluator {
             guard let max = tools.match("defaultMaxTokens = ([\\d_]+)", source, group: 1) ?? tools.match("maxTokens: Int = (\\d+)", llm, group: 1), let temp = tools.match("defaultTemperature: Float = ([\\d.]+)", source, group: 1) ?? tools.match("temperature: Float = ([\\d.]+)", llm, group: 1), let k = tools.match("llama_sampler_init_top_k\\((\\d+)\\)", llm, group: 1), let p = tools.match("llama_sampler_init_top_p\\(([\\d.]+),", llm, group: 1) else { throw ToolFailure("Cannot resolve generation defaults") }
             result[stage] = ["max_tokens": Int(max.replacingOccurrences(of: "_", with: ""))!, "temperature": Double(temp)!, "prevent_repetition": stage == "enrich", "top_k": Int(k)!, "top_p": Double(p)!, "dry": stage == "enrich" ? (tools.match("llama_sampler_init_dry\\(vocab, ([^)]+)\\)", llm, group: 1) as Any? ?? NSNull()) : NSNull(), "seed_policy": stage == "enrich" ? "per-case manifest seed; pipeline uses random default" : "LLAMA_DEFAULT_SEED (random per fresh sampler)", "context_policy": "LLM.plannedContextSize; fresh context per call", "parameter_scope": "stage defaults; date/time are per-case manifest values"] as EvalItem
         }
-        result["transcribe"] = ["language": "auto-detect", "skip_special_tokens": true, "audio_encoder_compute": "cpuAndGPU", "text_decoder_compute": "cpuAndGPU"] as EvalItem
+        result["transcribe"] = ["language": "auto-detect", "skip_special_tokens": true, "mel_compute": "cpuOnly", "audio_encoder_compute": "cpuAndNeuralEngine", "text_decoder_compute": "cpuAndNeuralEngine"] as EvalItem
         return result
     }
     func nameOutputs(_ items: inout [EvalItem], _ stamp: String) throws {

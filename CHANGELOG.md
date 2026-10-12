@@ -12,6 +12,10 @@ entry. Git links provide the complete commit history for each release.
 
 ## [Unreleased]
 
+### Fixed
+
+- Avoid the CoreML Metal prediction path that can abort Whisper transcription with an MPSGraph tensor shape/stride assertion: run the spectrogram on CPU and the unchanged Whisper Large-v2 encoder and decoder on CPU/Neural Engine; record all three compute selections in evaluation metadata and move TASK-54 to owner verification.
+
 ### Changed
 
 - Move the CoreML Metal prediction crash bug (TASK-54) to Next at the owner's request.

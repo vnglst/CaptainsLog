@@ -1,10 +1,10 @@
 ---
 id: TASK-54
 title: CaptainsLog 0.5.0 crashes in CoreML Metal prediction
-status: Next
+status: Verify
 assignee: []
 created_date: '2026-10-12 05:05'
-updated_date: '2026-10-12 05:24'
+updated_date: '2026-10-12 05:42'
 labels: []
 dependencies: []
 type: bug
