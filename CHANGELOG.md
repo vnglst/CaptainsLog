@@ -18,6 +18,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
+- Record a Next backlog item to benchmark and optimize app startup and closing during processing, with performance regression test coverage.
+- Record a Next backlog item to explore common app actions and try to find breaks or crashes, including opening, starting processing, closing, and deleting then processing.
 - Move the processing pipeline performance optimization task (TASK-55) to Next at the owner's request.
 - Record a backlog item to optimize processing pipeline performance without changing models, allowing combined steps and checking GPU and other performance optimizations.
 - Move the CoreML Metal prediction crash bug (TASK-54) to Next at the owner's request.
