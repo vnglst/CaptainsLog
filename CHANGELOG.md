@@ -14,6 +14,7 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
+- Move the CoreML Metal prediction crash bug (TASK-54) to Next at the owner's request.
 - Move the selected Context and Settings redesign to owner verification with its existing acceptance criteria checked.
 - Record a backlog bug with the owner-supplied CaptainsLog 0.5.0 crash report showing a CoreML Metal prediction abort on macOS 26.7.1.
 - Move personal context, name and term corrections, and categories into a separate Context destination using their existing editors; reorder Settings to audio input, storage, models, updates, processing outputs, and About without a submenu.
