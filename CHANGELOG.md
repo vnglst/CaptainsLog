@@ -14,6 +14,7 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
+- Record a backlog bug with the owner-supplied CaptainsLog 0.5.0 crash report showing a CoreML Metal prediction abort on macOS 26.7.1.
 - Move personal context, name and term corrections, and categories into a separate Context destination using their existing editors; reorder Settings to audio input, storage, models, updates, processing outputs, and About without a submenu.
 - Remove separate CLI and per-entry UI reprocessing, backup creation and saved batch resume; add confirmed `cl delete-outputs` and use existing pending processing after deletion.
 
