@@ -58,7 +58,7 @@ struct CaptainsLogApp: App {
                     AppPerformanceTrace.mark("view-ready")
                     if ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_PROCESS"] == "1" || ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_STARTUP_ONLY"] == "1" {
                         await appState.bootstrap()
-                        while !appState.models.modelsReady { try? await Task.sleep(for: .milliseconds(20)) }
+                        while !AppPerformanceTrace.hasMarked("bootstrap-ready") || !appState.models.modelsReady { try? await Task.sleep(for: .milliseconds(20)) }
                         AppPerformanceTrace.mark("models-ready")
                         if ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_STARTUP_ONLY"] == "1" {
                             NSApplication.shared.terminate(nil)

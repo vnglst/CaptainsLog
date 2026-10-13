@@ -46,6 +46,7 @@ for mode in modes {
     let handle = try FileHandle(forWritingTo: log); process.standardOutput = handle; process.standardError = handle
     let started = ProcessInfo.processInfo.systemUptime
     try process.run()
+    try String(process.processIdentifier).write(to: run.appendingPathComponent("pid.txt"), atomically: true, encoding: .utf8)
     var markers: [String: Double] = [:]
     var timedOut = false
     while process.isRunning {

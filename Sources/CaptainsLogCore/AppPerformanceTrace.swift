@@ -4,6 +4,8 @@ import Synchronization
 /// Opt-in debug instrumentation for isolated native startup and shutdown checks.
 public enum AppPerformanceTrace {
     private static let lock = NSLock()
+    private static let events = Mutex(Set<String>())
+    public static func hasMarked(_ event: String) -> Bool { events.withLock { $0.contains(event) } }
     private static let decoded = Mutex(false)
 
     public static func firstDecode(_ event: String = "whisper-decode") {
@@ -21,6 +23,7 @@ public enum AppPerformanceTrace {
     public static func mark(_ event: String) {
         #if DEBUG
         guard let path = ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_TRACE"] else { return }
+        events.withLock { _ = $0.insert(event) }
         lock.withLock {
             let line = "\(ProcessInfo.processInfo.systemUptime) \(event)\n"
             if !FileManager.default.fileExists(atPath: path) {
