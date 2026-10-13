@@ -20,7 +20,7 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
-- Move the startup and closing performance task to owner verification with its existing benchmark, optimization and regression criteria checked after CLI and native fixture checks.
+- Keep the startup and closing performance task in Next pending measured startup improvement, retaining verified benchmark and regression criteria after CLI and native fixture checks.
 
 - Document the opt-in Make native app performance regression check, its isolated fixture setup, timing scopes, thresholds, retained binary/model/fixture hashes and watchdog behavior.
 
