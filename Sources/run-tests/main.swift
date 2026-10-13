@@ -3868,11 +3868,7 @@ func runTests() async {
         try expect(transcript.contains("Uh, I shipped it."))
     }
 
-    test("LLM prompt responsiveness: app chunks are bounded and CLI defaults stay unchanged") {
-        LLM.setInteractivePromptDecoding(false)
-        try expect(LLM.promptChunkSize(batchSize: 512) == 512)
-        LLM.setInteractivePromptDecoding(true)
-        defer { LLM.setInteractivePromptDecoding(false) }
+    test("LLM prompt responsiveness: CLI and app share one bounded Core default") {
         try expect(LLM.promptChunkSize(batchSize: 512) == 128)
         try expect(LLM.promptChunkSize(batchSize: 64) == 64)
     }

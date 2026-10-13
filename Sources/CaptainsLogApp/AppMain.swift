@@ -33,11 +33,6 @@ struct CaptainsLogApp: App {
             }
         }
         #endif
-        #if DEBUG
-        LLM.setInteractivePromptDecoding(ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_BASELINE_BATCH"] != "1")
-        #else
-        LLM.setInteractivePromptDecoding(true)
-        #endif
         let state = AppState()
         _appState = CLState(wrappedValue: state)
         appDelegate.prepareForTermination = {

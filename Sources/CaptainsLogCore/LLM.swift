@@ -1,5 +1,4 @@
 import Foundation
-import Synchronization
 import HuggingFace
 import llama
 
@@ -12,16 +11,10 @@ private actor LLMInferenceGate {
 }
 
 public enum LLM {
-    private static let interactivePromptDecoding = Mutex(false)
-
-    /// Native app quit must wait for the active Metal call. Smaller prompt chunks
-    /// bound that wait without changing model, context size or token sampling.
-    public static func setInteractivePromptDecoding(_ enabled: Bool) {
-        interactivePromptDecoding.withLock { $0 = enabled }
-    }
-
+    /// CLI and app share the same prompt execution. Smaller chunks provide a
+    /// cancellation boundary between bounded native Metal calls in both frontends.
     static func promptChunkSize(batchSize: Int) -> Int {
-        interactivePromptDecoding.withLock { min(batchSize, $0 ? 128 : batchSize) }
+        min(batchSize, 128)
     }
 
 

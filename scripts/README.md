@@ -84,9 +84,10 @@ only the owned test process after 180 seconds overall or 60 seconds following qu
 those runs are failures, not successful shutdown measurements. The opt-in
 `CAPTAINSLOG_PERFORMANCE_FINISH_PIPELINE=1` Qwen comparison finishes the real text
 pipeline instead of quitting at decode, retaining output for semantic review.
-`CAPTAINSLOG_PERFORMANCE_BASELINE_BATCH=1` uses the unchanged 512-token prompt
-chunks for that debug comparison; normal native app chunks are 128 and CLI remains
-512. Performance markers and comparison overrides are disabled in release builds.
+Both the CLI and native app use the same Core 128-token prompt chunk bound,
+models, context parameters, prompts, sampling and pipeline checkpoints, following
+[ADR-027](../docs/0027-cli-and-gui-processing-should-work-the-same-way-technically.md).
+Performance markers and comparison completion hooks are disabled in release builds.
 These checks depend on local hardware and cache state; compare matching builds,
 fixtures and model files before making speed claims.
 

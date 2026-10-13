@@ -37,7 +37,7 @@ revisionProcess.arguments = ["rev-parse", "HEAD"]
 let revisionOutput = Pipe(); revisionProcess.standardOutput = revisionOutput
 try revisionProcess.run(); let revisionData = revisionOutput.fileHandleForReading.readDataToEndOfFile(); revisionProcess.waitUntilExit()
 require(revisionProcess.terminationStatus == 0, "Cannot record repository revision")
-let metadata: [String: Any] = ["revision": String(decoding: revisionData, as: UTF8.self).trimmingCharacters(in: .whitespacesAndNewlines), "executable": URL(fileURLWithPath: args[1]).standardizedFileURL.path, "binarySHA256": try sha256(args[1]), "fixtureSHA256": try sha256(fixture.path), "modelSHA256": modelHashes, "operatingSystem": ProcessInfo.processInfo.operatingSystemVersionString, "processorCount": ProcessInfo.processInfo.processorCount, "promptChunkSize": env["CAPTAINSLOG_PERFORMANCE_BASELINE_BATCH"] == "1" ? 512 : 128, "baselineThresholdsDisabled": baseline]
+let metadata: [String: Any] = ["revision": String(decoding: revisionData, as: UTF8.self).trimmingCharacters(in: .whitespacesAndNewlines), "executable": URL(fileURLWithPath: args[1]).standardizedFileURL.path, "binarySHA256": try sha256(args[1]), "fixtureSHA256": try sha256(fixture.path), "modelSHA256": modelHashes, "operatingSystem": ProcessInfo.processInfo.operatingSystemVersionString, "processorCount": ProcessInfo.processInfo.processorCount, "promptChunkSize": 128, "baselineThresholdsDisabled": baseline]
 try JSONSerialization.data(withJSONObject: metadata, options: [.prettyPrinted, .sortedKeys]).write(to: output.appendingPathComponent("metadata.json"))
 var results: [[String: Any]] = []
 let modes = env["CAPTAINSLOG_PERFORMANCE_QWEN"] == "1" ? ["processing-close"] : ["startup-1", "startup-2", "startup-3", "processing-close"]
