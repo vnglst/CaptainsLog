@@ -18,6 +18,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
+- Document the opt-in Make native app performance regression check, its isolated fixture setup, timing scopes, thresholds, retained binary/model/fixture hashes and watchdog behavior.
+
 - Bound native app Qwen prompt chunks to 128 tokens so quit can cancel between shorter Metal calls; keep CLI batching, model/context configuration and sampling unchanged.
 - Skip Whisper metadata recovery scans when prepared models are available at launch; stop Whisper decoding cooperatively during native shutdown, discard canceled partial text, and release CoreML objects before draining shutdown and preserve model configuration when loading is canceled.
 

@@ -292,6 +292,15 @@ sampling defaults. Text cases reuse weights sequentially with fresh contexts and
 samplers. Compile before inference; never edit a running evaluator or start another
 model job concurrently. The retained TNG reference corpus is not an active suite.
 
+For opt-in native startup and quit performance checks, close the installed app,
+provide the prepared `CAPTAINSLOG_WHISPER_MODEL_FOLDER` and
+`CAPTAINSLOG_QWEN_MODEL_FOLDER`, and run
+`make tests-app-performance RUN_DIR=/absolute/new/output`. It uses only eval
+fixtures and fresh isolated config/data, records real native decoding and process
+termination, and does not use the microphone. See the
+[native performance check](scripts/README.md#native-performance-regression-check)
+for timing scopes, hardware-dependent limits, retained evidence and abort behavior.
+
 ### Semantic review
 
 Read each selected case’s input, expected output, generated output and validation

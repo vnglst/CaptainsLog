@@ -1,5 +1,6 @@
 #!/usr/bin/env swift
 import Foundation
+import CryptoKit
 import Darwin
 
 // Opt-in native check: compile the debug app first and supply installed model paths.
@@ -7,6 +8,8 @@ let args = CommandLine.arguments
 let env = ProcessInfo.processInfo.environment
 func require(_ condition: Bool, _ message: String) { if !condition { fputs(message + "\n", stderr); exit(1) } }
 require(args.count == 3 || args.count == 4, "usage: test-app-performance.swift APP_EXECUTABLE OUTPUT_DIR [--baseline]")
+require(!args[2].isEmpty, "A new absolute output directory is required")
+require(args[2].hasPrefix("/"), "Use an absolute output directory")
 let baseline = args.contains("--baseline")
 let output = URL(fileURLWithPath: args[2], isDirectory: true)
 let fm = FileManager.default
@@ -17,6 +20,25 @@ require(fm.fileExists(atPath: qwen), "Missing prepared Qwen folder")
 require(fm.fileExists(atPath: whisper), "Missing prepared Whisper folder")
 let fixture = URL(fileURLWithPath: "eval/transcribe/audio/2025-01-14 side project.m4a")
 require(fm.fileExists(atPath: fixture.path), "Run from the repository root with eval fixtures")
+func sha256(_ path: String) throws -> String {
+    let file = try FileHandle(forReadingFrom: URL(fileURLWithPath: path)); defer { try? file.close() }
+    var hash = SHA256()
+    while let data = try file.read(upToCount: 1024 * 1024), !data.isEmpty { hash.update(data: data) }
+    return hash.finalize().map { String(format: "%02x", $0) }.joined()
+}
+var modelHashes: [String: String] = [:]
+modelHashes["qwen-gguf"] = try sha256(URL(fileURLWithPath: qwen).appendingPathComponent("Qwen_Qwen3.5-9B-Q4_K_M.gguf").path)
+for component in ["AudioEncoder", "MelSpectrogram", "TextDecoder"] {
+    let weight = URL(fileURLWithPath: whisper).appendingPathComponent("\(component).mlmodelc/weights/weight.bin")
+    modelHashes[component] = try sha256(weight.path)
+}
+let revisionProcess = Process(); revisionProcess.executableURL = URL(fileURLWithPath: "/usr/bin/git")
+revisionProcess.arguments = ["rev-parse", "HEAD"]
+let revisionOutput = Pipe(); revisionProcess.standardOutput = revisionOutput
+try revisionProcess.run(); let revisionData = revisionOutput.fileHandleForReading.readDataToEndOfFile(); revisionProcess.waitUntilExit()
+require(revisionProcess.terminationStatus == 0, "Cannot record repository revision")
+let metadata: [String: Any] = ["revision": String(decoding: revisionData, as: UTF8.self).trimmingCharacters(in: .whitespacesAndNewlines), "executable": URL(fileURLWithPath: args[1]).standardizedFileURL.path, "binarySHA256": try sha256(args[1]), "fixtureSHA256": try sha256(fixture.path), "modelSHA256": modelHashes, "operatingSystem": ProcessInfo.processInfo.operatingSystemVersionString, "processorCount": ProcessInfo.processInfo.processorCount, "promptChunkSize": env["CAPTAINSLOG_PERFORMANCE_BASELINE_BATCH"] == "1" ? 512 : 128, "baselineThresholdsDisabled": baseline]
+try JSONSerialization.data(withJSONObject: metadata, options: [.prettyPrinted, .sortedKeys]).write(to: output.appendingPathComponent("metadata.json"))
 var results: [[String: Any]] = []
 let modes = env["CAPTAINSLOG_PERFORMANCE_QWEN"] == "1" ? ["processing-close"] : ["startup-1", "startup-2", "startup-3", "processing-close"]
 for mode in modes {
@@ -102,7 +124,9 @@ for mode in modes {
         require(startup >= 0 && startup < 5, "Startup readiness exceeded 5 seconds")
         if mode == "processing-close" {
             require((markers["whisper-decode"] != nil || markers["qwen-decode"] != nil) && markers["delegate-terminate"] != nil && markers["termination-drained"] != nil && markers["delegate-reply"] != nil, "Quit must occur during actual native decoding and drain teardown")
-            require(close >= 0 && close < 10, "Quit during processing exceeded 10 seconds")
+            let decode = markers["whisper-decode"] ?? markers["qwen-decode"]!
+            require(decode <= markers["quit-request"]! && markers["quit-request"]! <= markers["delegate-terminate"]! && markers["delegate-terminate"]! <= markers["termination-drained"]! && markers["termination-drained"]! <= markers["delegate-reply"]!, "Native shutdown markers are out of order")
+            require(close >= 0 && close < 3, "Quit during processing exceeded 3 seconds")
             if env["CAPTAINSLOG_PERFORMANCE_QWEN"] != "1" { require(!fm.fileExists(atPath: data.appendingPathComponent(".pipeline/01-transcribed/2025-01-14-0730.md").path), "Canceled partial transcript must not be saved") }
         }
     }
