@@ -6,13 +6,13 @@ public enum AppPerformanceTrace {
     private static let lock = NSLock()
     private static let decoded = Mutex(false)
 
-    public static func firstDecode() {
+    public static func firstDecode(_ event: String = "whisper-decode") {
         #if DEBUG
         let first = decoded.withLock { value in
             guard !value else { return false }; value = true; return true
         }
         guard first else { return }
-        mark("whisper-decode")
+        mark(event)
         if ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_QUIT_ON_DECODE"] == "1" {
             NotificationCenter.default.post(name: Notification.Name("CaptainsLogPerformanceDecode"), object: nil)
         }

@@ -18,12 +18,18 @@ require(fm.fileExists(atPath: whisper), "Missing prepared Whisper folder")
 let fixture = URL(fileURLWithPath: "eval/transcribe/audio/2025-01-14 side project.m4a")
 require(fm.fileExists(atPath: fixture.path), "Run from the repository root with eval fixtures")
 var results: [[String: Any]] = []
-for mode in ["startup-1", "startup-2", "startup-3", "processing-close"] {
+let modes = env["CAPTAINSLOG_PERFORMANCE_QWEN"] == "1" ? ["processing-close"] : ["startup-1", "startup-2", "startup-3", "processing-close"]
+for mode in modes {
     let run = output.appendingPathComponent(mode, isDirectory: true)
     require(!fm.fileExists(atPath: run.path), "Output already exists: \(run.path)")
     let data = run.appendingPathComponent("data", isDirectory: true)
     try fm.createDirectory(at: data.appendingPathComponent("audio"), withIntermediateDirectories: true)
     try fm.copyItem(at: fixture, to: data.appendingPathComponent("audio/2025-01-14-0730.m4a"))
+    if env["CAPTAINSLOG_PERFORMANCE_QWEN"] == "1" {
+        let transcript = data.appendingPathComponent(".pipeline/01-transcribed/2025-01-14-0730.md")
+        try fm.createDirectory(at: transcript.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try fm.copyItem(at: URL(fileURLWithPath: "eval/transcribe/expected/2025-01-14 side project.md"), to: transcript)
+    }
     let config: [String: Any] = ["dataDir": data.path, "whisperModel": "openai_whisper-large-v2", "whisperModelFolder": whisper, "qwenModelId": "Qwen3.5-9B-Q4_K_M", "qwenModelFolder": qwen, "automaticUpdates": false, "automaticUpdateChecks": false]
     let configPath = run.appendingPathComponent("config.json")
     try JSONSerialization.data(withJSONObject: config, options: [.prettyPrinted, .sortedKeys]).write(to: configPath)
@@ -76,9 +82,9 @@ for mode in ["startup-1", "startup-2", "startup-3", "processing-close"] {
         require(!timedOut && process.terminationStatus == 0, "Native check did not terminate cleanly")
         require(startup >= 0 && startup < 5, "Startup readiness exceeded 5 seconds")
         if mode == "processing-close" {
-            require(markers["whisper-decode"] != nil && markers["delegate-terminate"] != nil && markers["termination-drained"] != nil, "Quit must occur during actual native decoding and drain teardown")
+            require((markers["whisper-decode"] != nil || markers["qwen-decode"] != nil) && markers["delegate-terminate"] != nil && markers["termination-drained"] != nil, "Quit must occur during actual native decoding and drain teardown")
             require(close >= 0 && close < 10, "Quit during processing exceeded 10 seconds")
-            require(!fm.fileExists(atPath: data.appendingPathComponent(".pipeline/01-transcribed/2025-01-14-0730.md").path), "Canceled partial transcript must not be saved")
+            if env["CAPTAINSLOG_PERFORMANCE_QWEN"] != "1" { require(!fm.fileExists(atPath: data.appendingPathComponent(".pipeline/01-transcribed/2025-01-14-0730.md").path), "Canceled partial transcript must not be saved") }
         }
     }
 }
