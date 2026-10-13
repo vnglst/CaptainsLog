@@ -3,7 +3,7 @@ import Foundation
 extension Tools {
     func bundleRuntime(_ args: [String]) throws {
         try require(args.count >= 3, "usage: bundle-runtime PRODUCTS APP EXECUTABLE...")
-        let products = path(args[0]), app = path(args[1]), framework = products.appendingPathComponent("llama.framework")
+        let products = path(args[0]).resolvingSymlinksInPath(), app = path(args[1]), framework = products.appendingPathComponent("llama.framework")
         try require(fm.fileExists(atPath: framework.path), "Error: pinned SwiftPM runtime missing: \(framework.path)")
         let destination = app.appendingPathComponent("Contents/Frameworks/llama.framework")
         try mkdir(destination.deletingLastPathComponent()); try run(["ditto", framework.path, destination.path])
@@ -13,7 +13,9 @@ extension Tools {
             for line in text.components(separatedBy: .newlines) {
                 if line.contains("cmd LC_RPATH") { inRpath = true }
                 if inRpath, let rpath = match(#"^\s*path (.*?) \(offset"#, line, group: 1) {
-                    if rpath.hasPrefix(products.path + "/") { try run(["install_name_tool", "-delete_rpath", rpath, executable]) }
+                    if rpath.hasPrefix("/"), URL(fileURLWithPath: rpath).resolvingSymlinksInPath().path.hasPrefix(products.path + "/") {
+                        try run(["install_name_tool", "-delete_rpath", rpath, executable])
+                    }
                     inRpath = false
                 }
             }
