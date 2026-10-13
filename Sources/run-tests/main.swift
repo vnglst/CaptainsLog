@@ -3868,6 +3868,81 @@ func runTests() async {
         try expect(transcript.contains("Uh, I shipped it."))
     }
 
+    await testAsync("Whisper load recovery: healthy loads never scan caches") {
+        let calls = LockedValue(0)
+        let value = try await Transcriber.loadWithRecovery(
+            lifecycle: NativeInferenceLifecycle(), load: { 42 },
+            recover: { _ in calls.set(calls.get() + 1) },
+            clearConfig: { calls.set(calls.get() + 1) }
+        )
+        try expect(value == 42 && calls.get() == 0)
+    }
+
+    await testAsync("Whisper load recovery: genuine failure retries once without clearing repaired settings") {
+        let loads = LockedValue(0), repairs = LockedValue(0), clears = LockedValue(0)
+        let value = try await Transcriber.loadWithRecovery(
+            lifecycle: NativeInferenceLifecycle(),
+            load: { loads.set(loads.get() + 1); if loads.get() == 1 { throw NSError(domain: "SyntheticCoreML", code: 1) }; return 42 },
+            recover: { _ in repairs.set(repairs.get() + 1) },
+            clearConfig: { clears.set(clears.get() + 1) }
+        )
+        try expect(value == 42 && loads.get() == 2 && repairs.get() == 1 && clears.get() == 0)
+    }
+
+    await testAsync("Whisper load recovery: cancellation never repairs or clears settings") {
+        let repairs = LockedValue(0), clears = LockedValue(0)
+        for error in [CancellationError() as Error, NSError(domain: NSURLErrorDomain, code: NSURLErrorCancelled)] {
+            var propagated = false
+            do {
+                let _: Int = try await Transcriber.loadWithRecovery(
+                    lifecycle: NativeInferenceLifecycle(), load: { throw error },
+                    recover: { _ in repairs.set(repairs.get() + 1) }, clearConfig: { clears.set(clears.get() + 1) }
+                )
+            } catch { propagated = true }
+            try expect(propagated, "Cancellation must propagate")
+        }
+        try expect(repairs.get() == 0 && clears.get() == 0)
+    }
+
+    await testAsync("Whisper load recovery: failed repair preserves original error and clears stale settings") {
+        let loads = LockedValue(0), repairs = LockedValue(0), clears = LockedValue(0)
+        var reported: NSError?
+        do {
+            let _: Int = try await Transcriber.loadWithRecovery(
+                lifecycle: NativeInferenceLifecycle(),
+                load: { loads.set(loads.get() + 1); throw NSError(domain: "SyntheticCoreML", code: loads.get()) },
+                recover: { _ in repairs.set(repairs.get() + 1) }, clearConfig: { clears.set(clears.get() + 1) }
+            )
+        } catch { reported = error as NSError }
+        try expect(reported?.domain == "SyntheticCoreML" && reported?.code == 1, "Preserve the original initialization failure")
+        try expect(loads.get() == 2 && repairs.get() == 1 && clears.get() == 1)
+    }
+
+    test("Whisper cache recovery: remove only the reported temporary compiled bundle") {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("WhisperRecovery-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: root) }
+        let temporary = root.appendingPathComponent("temp")
+        let target = temporary.appendingPathComponent("reported.mlmodelc")
+        let unrelated = temporary.appendingPathComponent("unrelated.mlmodelc")
+        let outside = root.appendingPathComponent("outside.mlmodelc")
+        for bundle in [target, unrelated, outside] {
+            try FileManager.default.createDirectory(at: bundle, withIntermediateDirectories: true)
+            try Data("synthetic metadata".utf8).write(to: bundle.appendingPathComponent("model.mlmodel.metadata"))
+        }
+        let failure = NSError(domain: "SyntheticCoreML", code: 1, userInfo: [NSFilePathErrorKey: target.appendingPathComponent("model.mlmodel.metadata").path])
+        try WhisperModelRecovery.removeReportedCompiledCache(from: failure, temporaryRoot: temporary)
+        try expect(!FileManager.default.fileExists(atPath: target.path))
+        try expect(FileManager.default.fileExists(atPath: unrelated.path))
+        let outsideFailure = NSError(domain: "SyntheticCoreML", code: 1, userInfo: [NSFilePathErrorKey: outside.appendingPathComponent("model.mlmodel.metadata").path])
+        try WhisperModelRecovery.removeReportedCompiledCache(from: outsideFailure, temporaryRoot: temporary)
+        try expect(FileManager.default.fileExists(atPath: outside.path), "Recovery must not remove a bundle outside the temporary cache")
+    }
+
+    test("LLM prompt responsiveness: CLI and app share one bounded Core default") {
+        try expect(LLM.promptChunkSize(batchSize: 512) == 128)
+        try expect(LLM.promptChunkSize(batchSize: 64) == 64)
+    }
+
     await testAsync("Whisper shutdown: callback stops decoding and discards partial output") {
         let lifecycle = NativeInferenceLifecycle()
         try lifecycle.beginOperation()
@@ -5130,9 +5205,19 @@ func runTests() async {
         try fm.createDirectory(at: qwenFolder, withIntermediateDirectories: true)
         let unrelatedFile = qwenFolder.appendingPathComponent("README.txt")
         try "not a model".write(to: unrelatedFile, atomically: true, encoding: .utf8)
-        try expect(ModelManager.whisperModelIsDownloaded(
-            config: CaptainsLogConfig(whisperModelFolder: whisperFolder.path)
-        ))
+        let whisperConfig = CaptainsLogConfig(whisperModelFolder: whisperFolder.path)
+        try expect(!ModelManager.whisperModelIsDownloaded(config: whisperConfig),
+                   "An empty folder must not bypass incomplete-download recovery")
+        for component in ["MelSpectrogram", "AudioEncoder", "TextDecoder"] {
+            let weight = whisperFolder.appendingPathComponent("\(component).mlmodelc/weights/weight.bin")
+            try fm.createDirectory(at: weight.deletingLastPathComponent(), withIntermediateDirectories: true)
+            if component != "MelSpectrogram" { try Data("synthetic weight marker".utf8).write(to: weight) }
+        }
+        try expect(ModelManager.whisperModelIsDownloaded(config: whisperConfig),
+                   "Mel spectrogram transform may have no learned weight file")
+        try fm.removeItem(at: whisperFolder.appendingPathComponent("TextDecoder.mlmodelc/weights/weight.bin"))
+        try expect(!ModelManager.whisperModelIsDownloaded(config: whisperConfig),
+                   "A missing decoder weight must trigger recovery instead of the launch fast path")
         try expect(!ModelManager.qwenModelIsDownloaded(
             config: CaptainsLogConfig(qwenModelFolder: qwenFolder.path)
         ), "Qwen should remain unavailable until a GGUF model file exists")
@@ -5160,6 +5245,19 @@ func runTests() async {
         try expect(calls.snapshot() == [
             "clear-stale", "clean-metadata", "download-whisper", "download-qwen",
         ])
+    }
+
+    await testAsync("ModelManager: rechecks availability after missing-model recovery") {
+        let repaired = LockedValue(false)
+        let downloaded = LockedValue(false)
+        let manager = ModelManager(dependencies: .init(
+            clearStaleConfig: {}, cleanCorruptedMetadata: { repaired.set(true) },
+            whisperIsDownloaded: { repaired.get() }, qwenIsDownloaded: { true },
+            downloadWhisper: { _ in downloaded.set(true) }, downloadQwen: { _ in }
+        ))
+        await manager.downloadModelsIfNeeded()
+        try expect(repaired.get() && manager.modelsReady)
+        try expect(!downloaded.get(), "Recovery should not redownload a repaired prepared model")
     }
 
     await testAsync("ModelManager: skips downloads when both models are already available") {

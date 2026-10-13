@@ -89,15 +89,6 @@ public enum Transcriber {
         Logger.transcriber.info("Loading WhisperKit from \(folder)...")
         // CoreML Metal prediction can abort in MPSGraph tensor shape/stride handling.
         // Exclude GPU from every Whisper component; SIGABRT cannot be caught for retry.
-        let computeOptions = ModelComputeOptions(
-            melCompute: .cpuOnly,
-            audioEncoderCompute: .cpuAndNeuralEngine,
-            textDecoderCompute: .cpuAndNeuralEngine
-        )
-        let whisperConfig = WhisperKitConfig(
-            modelFolder: folder,
-            computeOptions: computeOptions
-        )
 
         let lifecycle = NativeInferenceLifecycle.shared
         try lifecycle.beginOperation()
@@ -108,18 +99,29 @@ public enum Transcriber {
             lifecycle.endOperation()
         }
         let start = Date()
-        do {
-            pipe = try await WhisperKit(whisperConfig)
-        } catch {
-            // CoreML failed to open the compiled model — likely an incomplete download
-            // (e.g. missing weights/weight.bin). Clear the cached folder so the next
-            // call triggers a fresh download rather than hitting the same corrupt files.
-            try? CaptainsLogConfig.update {
-                $0.whisperModelFolder = nil
-                $0.whisperModel = nil
+        pipe = try await loadWithRecovery(
+            lifecycle: lifecycle,
+            load: {
+                let computeOptions = ModelComputeOptions(
+                    melCompute: .cpuOnly,
+                    audioEncoderCompute: .cpuAndNeuralEngine,
+                    textDecoderCompute: .cpuAndNeuralEngine
+                )
+                let whisperConfig = WhisperKitConfig(
+                    modelFolder: folder,
+                    computeOptions: computeOptions
+                )
+
+                return try await WhisperKit(whisperConfig)
+            },
+            recover: { try WhisperModelRecovery.recover(from: $0) },
+            clearConfig: {
+                try? CaptainsLogConfig.update {
+                    $0.whisperModelFolder = nil
+                    $0.whisperModel = nil
+                }
             }
-            throw error
-        }
+        )
 
         let loadTime = Date().timeIntervalSince(start)
         Logger.transcriber.info("WhisperKit loaded in \(String(format: "%.1f", loadTime))s")
@@ -155,6 +157,38 @@ public enum Transcriber {
         }
 
         return result.map { $0.text }.joined(separator: " ").trimmingCharacters(in: CharacterSet.whitespaces)
+    }
+
+    /// Retry initialization once after targeted cache recovery. Intentional
+    /// cancellation never clears model settings or starts cache repair.
+    static func loadWithRecovery<Value>(
+        lifecycle: NativeInferenceLifecycle,
+        load: @Sendable () async throws -> Value,
+        recover: @Sendable (Error) throws -> Void,
+        clearConfig: @Sendable () -> Void
+    ) async throws -> Value {
+        try lifecycle.checkCancellation()
+        do { return try await load() }
+        catch {
+            let original = error
+            try lifecycle.checkCancellation()
+            guard !isLoadCancellation(original) else { throw original }
+            do {
+                try recover(original)
+                try lifecycle.checkCancellation()
+                return try await load()
+            } catch {
+                try lifecycle.checkCancellation()
+                guard !isLoadCancellation(error) else { throw error }
+                clearConfig()
+                throw original
+            }
+        }
+    }
+
+    private static func isLoadCancellation(_ error: Error) -> Bool {
+        let ns = error as NSError
+        return error is CancellationError || (ns.domain == NSURLErrorDomain && ns.code == NSURLErrorCancelled)
     }
 
     static func shouldContinueDecoding(lifecycle: NativeInferenceLifecycle = .shared) -> Bool {

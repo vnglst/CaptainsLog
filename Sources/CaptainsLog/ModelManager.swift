@@ -141,7 +141,18 @@ public final class ModelManager {
         guard let folder = config.whisperModelFolder,
               (try? URL(fileURLWithPath: folder).resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true
         else { return false }
-        return true
+        // A directory can survive a partial download. The mel transform may have
+        // no learned weights; encoder/decoder weights and all component bundles
+        // are bounded integrity checks before the healthy startup fast path.
+        let root = URL(fileURLWithPath: folder)
+        let bundlesExist = ["MelSpectrogram", "AudioEncoder", "TextDecoder"].allSatisfy { component in
+            (try? root.appendingPathComponent("\(component).mlmodelc")
+                .resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true
+        }
+        return bundlesExist && ["AudioEncoder", "TextDecoder"].allSatisfy { component in
+            FileManager.default.fileExists(atPath: root
+                .appendingPathComponent("\(component).mlmodelc/weights/weight.bin").path)
+        }
     }
 
     nonisolated static func qwenModelIsDownloaded(
@@ -168,73 +179,13 @@ public final class ModelManager {
         }
     }
 
-    /// WhisperKit can leave corrupted Hugging Face download metadata behind. The downloader
-    /// fails before it can recover when it cannot replace that sidecar, so clear it before
-    /// checking or downloading the model.
-    ///
-    /// WhisperKit can also find a corrupted .mlmodel.metadata file in CoreML's temporary cache.
-    /// Delete the entire parent .mlmodelc directory so CoreML can recompile the model cleanly
-    /// on next load.
-    ///
-    /// Also catches incomplete WhisperKit downloads where the pre-compiled .mlmodelc bundle is
-    /// missing its weights/weight.bin — in that case the whole model folder is wiped so the
-    /// next launch triggers a fresh download.
+    /// Recovery is needed only before a missing-model download. Genuine model
+    /// initialization failures recover in shared Core, after a healthy fast path.
     nonisolated private static func cleanCorruptedModelMetadata() {
-        let fm = FileManager.default
-
-        // Pass 1: metadata corruption in CoreML temp cache
-        var mlmodelcDirs: Set<URL> = []
-        let tmpRoot = URL(fileURLWithPath: NSTemporaryDirectory())
-        if let enumerator = fm.enumerator(at: tmpRoot, includingPropertiesForKeys: nil, options: []) {
-            for case let url as URL in enumerator
-                where url.lastPathComponent == "model.mlmodel.metadata" {
-                let parent = url.deletingLastPathComponent()
-                if parent.pathExtension == "mlmodelc" {
-                    mlmodelcDirs.insert(parent)
-                }
-            }
-        }
-        for dir in mlmodelcDirs {
-            try? fm.removeItem(at: dir)
-        }
-
-        // Pass 2: incomplete WhisperKit download — .mlmodelc bundles with missing weight.bin.
-        // WhisperKit downloads pre-compiled CoreML bundles; a partial download leaves the
-        // directory structure intact but omits the binary weight file. Wipe the model config
-        // so the next launch re-downloads cleanly.
-        guard let caches = fm.urls(for: .cachesDirectory, in: .userDomainMask).first else { return }
-        let whisperRoot = caches
-            .appendingPathComponent("CaptainsLog/models/whisper", isDirectory: true)
-
-        removeDownloadMetadata(in: whisperRoot, fileManager: fm)
-
-        guard let enumerator = fm.enumerator(
-            at: whisperRoot,
-            includingPropertiesForKeys: nil,
-            options: [.skipsHiddenFiles]
-        ) else { return }
-        for case let url as URL in enumerator where url.pathExtension == "mlmodelc" {
-            let weightBin = url.appendingPathComponent("weights/weight.bin")
-            if !fm.fileExists(atPath: weightBin.path) {
-                try? CaptainsLogConfig.update {
-                    $0.whisperModelFolder = nil
-                    $0.whisperModel = nil
-                }
-                return
-            }
-        }
+        WhisperModelRecovery.prepareDownload()
     }
 
     nonisolated static func removeDownloadMetadata(in whisperRoot: URL, fileManager: FileManager = .default) {
-        guard let enumerator = fileManager.enumerator(
-            at: whisperRoot,
-            includingPropertiesForKeys: nil,
-            options: []
-        ) else { return }
-
-        for case let url as URL in enumerator
-            where url.lastPathComponent == "config.json.metadata" {
-            try? fileManager.removeItem(at: url)
-        }
+        WhisperModelRecovery.removeDownloadMetadata(in: whisperRoot, fileManager: fileManager)
     }
 }

@@ -12,12 +12,13 @@ BUMP ?= auto
 VERSION ?=
 BASE ?=
 HEAD ?= HEAD
+RUN_DIR ?=
 SHA256 ?=
 
 # Directory timestamps also invalidate the app when source files are added or removed.
 DEV_INPUTS := Package.swift Package.resolved $(shell find Sources -type f -o -type d)
 
-.PHONY: help build dev run cli tests tests-unit tests-coverage tests-updates tests-release tests-evals tests-runtime tests-enrich tests-model tests-recorder ui evals evals-list evals-pipeline evals-suites packaging release release-notes release-check release-cask icons clean
+.PHONY: help build dev run cli tests tests-unit tests-coverage tests-updates tests-release tests-evals tests-runtime tests-enrich tests-model tests-recorder tests-app-performance ui evals evals-list evals-pipeline evals-suites packaging release release-notes release-check release-cask icons clean
 
 help:
 	@printf '%s\n' \
@@ -33,7 +34,7 @@ help:
 	  'Release: BUMP=auto|patch|minor|major|version, ARGS=--dry-run|--publish' \
 	  '' \
 	  'Iteration: cli, tests-unit, tests-coverage, tests-updates, tests-release,' \
-	  'tests-evals, tests-runtime, tests-enrich, tests-model, tests-recorder, ui, evals-list,' \
+	  'tests-evals, tests-runtime, tests-enrich, tests-model, tests-recorder, tests-app-performance, ui, evals-list,' \
 	  'evals-pipeline, evals-suites, release-notes, release-check, release-cask,' \
 	  'icons, clean. See scripts/README.md for options and safety limits.'
 
@@ -78,6 +79,11 @@ tests-enrich:
 
 tests-model:
 	$(SWIFT) scripts/isolated-check.swift $(SWIFT) scripts/test-model-smoke.swift $(ARGS)
+
+tests-app-performance:
+	@test -n "$(RUN_DIR)"
+	$(SWIFT) build -c debug
+	$(SWIFT) scripts/test-app-performance.swift "$$($(SWIFT) build -c debug --show-bin-path)/CaptainsLogApp" "$(RUN_DIR)" $(ARGS)
 
 tests-recorder:
 	$(SWIFT) scripts/isolated-check.swift $(SWIFT) scripts/test-recorder-hardware.swift $(ARGS)

@@ -77,8 +77,14 @@ struct CaptainsLogApp: App {
                         appState.applyDesignFixture(named: designFixture)
                     }
                 }
+                .onChange(of: appState.stage) { _, stage in
+                    if stage == .done && ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_FINISH_PIPELINE"] == "1" {
+                        AppPerformanceTrace.mark("pipeline-complete")
+                        NotificationCenter.default.post(name: Notification.Name("CaptainsLogPerformanceDecode"), object: nil)
+                    }
+                }
                 .onReceive(NotificationCenter.default.publisher(for: Notification.Name("CaptainsLogPerformanceDecode")).receive(on: RunLoop.main)) { _ in
-                    if ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_QUIT_ON_DECODE"] == "1" || ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_STARTUP_ONLY"] == "1" {
+                    if ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_QUIT_ON_DECODE"] == "1" || ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_STARTUP_ONLY"] == "1" || ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_FINISH_PIPELINE"] == "1" {
                         AppPerformanceTrace.mark("quit-request")
                         NSApplication.shared.terminate(nil)
                     }
