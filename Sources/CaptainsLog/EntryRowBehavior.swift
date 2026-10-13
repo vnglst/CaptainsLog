@@ -14,6 +14,7 @@ struct EntryRowBehavior: Equatable {
     let canOpen: Bool
     let canRevealInFinder: Bool
     let canResume: Bool
+    let canReprocess: Bool
     let resumeTitle: String?
     let compactStatusLabel: String
     let isFailure: Bool
@@ -26,6 +27,7 @@ struct EntryRowBehavior: Equatable {
         canOpen = entry.stage == .done
         canRevealInFinder = !entry.path.isEmpty
         canResume = paused || failed
+        canReprocess = entry.stage == .done && !entry.isActive
         resumeTitle = canResume ? (failed ? "Retry processing" : "Resume processing") : nil
 
         if entry.stage == .done {
