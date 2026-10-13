@@ -70,7 +70,7 @@ struct CaptainsLogApp: App {
                         while !AppPerformanceTrace.hasMarked("bootstrap-ready") || !appState.models.modelsReady { try? await Task.sleep(for: .milliseconds(20)) }
                         AppPerformanceTrace.mark("models-ready")
                         if ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_STARTUP_ONLY"] == "1" {
-                            NSApplication.shared.terminate(nil)
+                            NotificationCenter.default.post(name: Notification.Name("CaptainsLogPerformanceDecode"), object: nil)
                         } else { appState.batchResumePending() }
                     }
                     if let designFixture {
@@ -78,7 +78,7 @@ struct CaptainsLogApp: App {
                     }
                 }
                 .onReceive(NotificationCenter.default.publisher(for: Notification.Name("CaptainsLogPerformanceDecode")).receive(on: RunLoop.main)) { _ in
-                    if ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_QUIT_ON_DECODE"] == "1" {
+                    if ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_QUIT_ON_DECODE"] == "1" || ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_STARTUP_ONLY"] == "1" {
                         AppPerformanceTrace.mark("quit-request")
                         NSApplication.shared.terminate(nil)
                     }

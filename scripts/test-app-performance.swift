@@ -92,15 +92,15 @@ for mode in modes {
     }
     let startup = markers["models-ready"].map { $0 - started } ?? -1
     let close = markers["quit-request"].map { finished - $0 } ?? -1
-    let record: [String: Any] = ["mode": mode, "startupSeconds": startup, "closeSeconds": close, "exitStatus": process.terminationStatus, "timedOut": timedOut, "markers": markers]
+    let record: [String: Any] = ["mode": mode, "startupSeconds": startup, "closeSeconds": close, "exitStatus": process.terminationStatus, "normalExit": process.terminationReason == .exit, "timedOut": timedOut, "markers": markers]
     results.append(record)
     try JSONSerialization.data(withJSONObject: results, options: [.prettyPrinted, .sortedKeys]).write(to: output.appendingPathComponent("results.json"))
     print("\(mode): startup \(startup)s, close \(close)s, exit \(process.terminationStatus), timeout \(timedOut)")
     if !baseline {
-        require(!timedOut && process.terminationStatus == 0, "Native check did not terminate cleanly")
+        require(!timedOut && process.terminationStatus == 0 && process.terminationReason == .exit, "Native check did not terminate cleanly")
         require(startup >= 0 && startup < 5, "Startup readiness exceeded 5 seconds")
         if mode == "processing-close" {
-            require((markers["whisper-decode"] != nil || markers["qwen-decode"] != nil) && markers["delegate-terminate"] != nil && markers["termination-drained"] != nil, "Quit must occur during actual native decoding and drain teardown")
+            require((markers["whisper-decode"] != nil || markers["qwen-decode"] != nil) && markers["delegate-terminate"] != nil && markers["termination-drained"] != nil && markers["delegate-reply"] != nil, "Quit must occur during actual native decoding and drain teardown")
             require(close >= 0 && close < 10, "Quit during processing exceeded 10 seconds")
             if env["CAPTAINSLOG_PERFORMANCE_QWEN"] != "1" { require(!fm.fileExists(atPath: data.appendingPathComponent(".pipeline/01-transcribed/2025-01-14-0730.md").path), "Canceled partial transcript must not be saved") }
         }
