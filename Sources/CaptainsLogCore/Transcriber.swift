@@ -89,15 +89,6 @@ public enum Transcriber {
         Logger.transcriber.info("Loading WhisperKit from \(folder)...")
         // CoreML Metal prediction can abort in MPSGraph tensor shape/stride handling.
         // Exclude GPU from every Whisper component; SIGABRT cannot be caught for retry.
-        let computeOptions = ModelComputeOptions(
-            melCompute: .cpuOnly,
-            audioEncoderCompute: .cpuAndNeuralEngine,
-            textDecoderCompute: .cpuAndNeuralEngine
-        )
-        let whisperConfig = WhisperKitConfig(
-            modelFolder: folder,
-            computeOptions: computeOptions
-        )
 
         let lifecycle = NativeInferenceLifecycle.shared
         try lifecycle.beginOperation()
@@ -110,7 +101,19 @@ public enum Transcriber {
         let start = Date()
         pipe = try await loadWithRecovery(
             lifecycle: lifecycle,
-            load: { try await WhisperKit(whisperConfig) },
+            load: {
+                let computeOptions = ModelComputeOptions(
+                    melCompute: .cpuOnly,
+                    audioEncoderCompute: .cpuAndNeuralEngine,
+                    textDecoderCompute: .cpuAndNeuralEngine
+                )
+                let whisperConfig = WhisperKitConfig(
+                    modelFolder: folder,
+                    computeOptions: computeOptions
+                )
+
+                return try await WhisperKit(whisperConfig)
+            },
             recover: { try WhisperModelRecovery.recover(from: $0) },
             clearConfig: {
                 try? CaptainsLogConfig.update {
