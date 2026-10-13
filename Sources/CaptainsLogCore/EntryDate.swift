@@ -1,4 +1,5 @@
 import Foundation
+import Synchronization
 
 /// The shared chronological ordering used by the CLI and Logs view.
 enum EntryDate {
@@ -23,17 +24,26 @@ enum EntryDate {
         return nil
     }
 
-    private static func parse(day: String, time: String) -> Date? {
-        guard day.count == 10 else { return nil }
+    // DateFormatter setup is expensive when restoring a large completed library.
+    // Serialize access and refresh the zone so system time-zone changes retain the
+    // same semantics as constructing a formatter for each entry.
+    private static let formatter = Mutex<DateFormatter>({
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.calendar = Calendar(identifier: .gregorian)
-        formatter.timeZone = .current
         formatter.dateFormat = "yyyy-MM-dd HH:mm"
         formatter.isLenient = false
+        return formatter
+    }())
+
+    static func parse(day: String, time: String, timeZone: TimeZone = .current) -> Date? {
+        guard day.count == 10 else { return nil }
         let value = "\(day) \(time)"
-        guard let date = formatter.date(from: value), formatter.string(from: date) == value else { return nil }
-        return date
+        return formatter.withLock { formatter in
+            if formatter.timeZone != timeZone { formatter.timeZone = timeZone }
+            guard let date = formatter.date(from: value), formatter.string(from: date) == value else { return nil }
+            return date
+        }
     }
 
     private static func validTime(_ value: String) -> String? {
