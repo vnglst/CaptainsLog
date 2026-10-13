@@ -42,6 +42,7 @@ evaluations remain a separate `make evals` command.
 | `make tests-evals` | Model-free evaluation orchestration fixtures. |
 | `make tests-enrich` | Build, then check enrichment validation and CLI seed boundaries without inference. |
 | `make tests-model` | Opt-in installed-model smoke test; requires the four `CAPTAINSLOG_*_MODEL_*` variables in its helper. |
+| `make tests-app-performance RUN_DIR=/absolute/new/output` | Opt-in native startup and quit-during-decoding regression check. Quit the app first; supply prepared `CAPTAINSLOG_WHISPER_MODEL_FOLDER` and `CAPTAINSLOG_QWEN_MODEL_FOLDER`. Debug-only, eval audio and isolated config/data; no microphone. |
 | `make tests-recorder` | Interactive microphone smoke check with explicit confirmation. |
 | `make ui` | Launch temporary eval-backed native UI; optional state selector via `ARGS`. Use `eval-menu`, `eval-menu-recording`, `eval-menu-processing`, or `eval-menu-failed` to inspect the shared menu panel in a labeled synthetic preview window. |
 | `make release-notes VERSION=0.1.2` | Extract release notes. |
@@ -56,6 +57,39 @@ isolated config/data. The UI harness is for presentation inspection; its process
 and recording controls invoke real models or hardware. Checks bypass default demo
 seeding. See the [testing workflow](../README.md#testing) and stage skills in
 [`skills/`](../skills/) for quality gates and semantic review requirements.
+
+### Native performance regression check
+
+`make tests-app-performance RUN_DIR=/absolute/new/output` builds the debug app and CLI,
+then performs three separate process launches and one real Whisper decoding/quit check.
+The two prepared model-folder environment variables are mandatory; model downloads
+are not part of the timing. Set `CAPTAINSLOG_PERFORMANCE_QWEN=1` for a Qwen check
+starting from the repository's expected transcript. Run all checks sequentially,
+with the installed app closed and no other inference running.
+
+Each launch creates fresh eval-backed data and a schema-valid isolated config. The
+CLI must confirm the exact loaded data/model paths before the app starts; the app
+also rejects invalid benchmark configs before constructing app state. Results retain
+binary/model/fixture SHA-256 identities, logs, marker timestamps, process exit status and fixture outputs under `RUN_DIR`.
+Startup measures process launch to completed entry/device bootstrap and model
+readiness; it includes process startup rather than only first window rendering.
+Closing measures the actual AppKit quit request to process exit after a native decode
+callback. The native check requires decode, delegate entry, drain and reply markers,
+normal exit, startup below five seconds and close below three seconds. Canceled Whisper
+partial text must not be saved. A debug-marker absence or native failure fails the
+check; an idle/simulated processing state cannot satisfy it.
+
+`ARGS=--baseline` records timings without enforcing thresholds. A watchdog stops
+only the owned test process after 180 seconds overall or 60 seconds following quit;
+those runs are failures, not successful shutdown measurements. The opt-in
+`CAPTAINSLOG_PERFORMANCE_FINISH_PIPELINE=1` Qwen comparison finishes the real text
+pipeline instead of quitting at decode, retaining output for semantic review.
+Both the CLI and native app use the same Core 128-token prompt chunk bound,
+models, context parameters, prompts, sampling and pipeline checkpoints, following
+[ADR-027](../docs/0027-cli-and-gui-processing-should-work-the-same-way-technically.md).
+Performance markers and comparison completion hooks are disabled in release builds.
+These checks depend on local hardware and cache state; compare matching builds,
+fixtures and model files before making speed claims.
 
 ## Implementation map
 
