@@ -13,6 +13,7 @@ struct CaptainsLogApp: App {
     #endif
 
     init() {
+        AppPerformanceTrace.mark("app-init")
         #if DEBUG
         // Configure the isolated demo before AppState reads any saved configuration.
         if ProcessInfo.processInfo.environment["CAPTAINS_LOG_CONFIG_PATH"] == nil {
@@ -26,10 +27,12 @@ struct CaptainsLogApp: App {
         let state = AppState()
         _appState = CLState(wrappedValue: state)
         appDelegate.prepareForTermination = {
+            AppPerformanceTrace.mark("termination-preparing")
             async let processing: Void = state.processing.stopForTermination()
             async let recording: Void = state.recording.stopForTermination()
             async let native: Void = NativeInferenceLifecycle.shared.stopAndWait()
             _ = await (processing, recording, native)
+            AppPerformanceTrace.mark("termination-drained")
         }
         // Required: SwiftPM executables have no .app bundle, so without this macOS won't let windows become key and keystrokes leak to the Finder.
         NSApplication.shared.setActivationPolicy(.regular)
@@ -52,8 +55,21 @@ struct CaptainsLogApp: App {
                 #if DEBUG
                 .background(MenuBarFixtureLauncher(enabled: designFixture?.hasPrefix("eval-menu") == true))
                 .task {
+                    AppPerformanceTrace.mark("view-ready")
+                    if ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_PROCESS"] == "1" {
+                        await appState.bootstrap()
+                        while !appState.models.modelsReady { try? await Task.sleep(for: .milliseconds(20)) }
+                        AppPerformanceTrace.mark("models-ready")
+                        appState.batchResumePending()
+                    }
                     if let designFixture {
                         appState.applyDesignFixture(named: designFixture)
+                    }
+                }
+                .onReceive(NotificationCenter.default.publisher(for: Notification.Name("CaptainsLogPerformanceDecode"))) { _ in
+                    if ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_QUIT_ON_DECODE"] == "1" {
+                        AppPerformanceTrace.mark("quit-request")
+                        NSApplication.shared.terminate(nil)
                     }
                 }
                 #endif
@@ -110,11 +126,13 @@ private final class CaptainsLogAppDelegate: NSObject, NSApplicationDelegate {
     private var isTerminating = false
 
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        AppPerformanceTrace.mark("delegate-terminate")
         guard !isTerminating else { return .terminateLater }
         isTerminating = true
         Task { @MainActor in
             await prepareForTermination?()
             // Native contexts have unwound before AppKit frees global Metal state.
+            AppPerformanceTrace.mark("delegate-reply")
             sender.reply(toApplicationShouldTerminate: true)
         }
         return .terminateLater

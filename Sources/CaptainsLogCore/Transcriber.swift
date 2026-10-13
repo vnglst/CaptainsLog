@@ -126,7 +126,16 @@ public enum Transcriber {
                 language: language,
                 detectLanguage: language == nil ? true : nil,
                 skipSpecialTokens: true
-            )
+            ),
+            callback: { _ in
+                #if DEBUG
+                AppPerformanceTrace.mark("whisper-decode")
+                if ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_QUIT_ON_DECODE"] == "1" {
+                    NotificationCenter.default.post(name: Notification.Name("CaptainsLogPerformanceDecode"), object: nil)
+                }
+                #endif
+                return nil
+            }
         )
 
         let transcribeTime = Date().timeIntervalSince(transcribeStart)

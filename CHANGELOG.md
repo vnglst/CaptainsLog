@@ -18,6 +18,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
+- Add opt-in debug native startup and quit-during-decoding timing markers for isolated performance verification.
+
 - Record a Next backlog item to benchmark and optimize app startup and closing during processing, with performance regression test coverage.
 - Record a Next backlog item to explore common app actions and try to find breaks or crashes, including opening, starting processing, closing, and deleting then processing.
 - Allow dragging and dropping category rows in Context and initial setup to reorder them; save the chosen order for future processing.
