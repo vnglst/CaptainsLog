@@ -381,6 +381,7 @@ public final class AppState {
         entries = await entryLoadingTask.value
         await deviceRefresh
         configureDirectoryWatcher()
+        AppPerformanceTrace.mark("bootstrap-ready")
     }
 
     public func loadEntries() {
