@@ -7,7 +7,18 @@ import Darwin
 let args = CommandLine.arguments
 let env = ProcessInfo.processInfo.environment
 func require(_ condition: Bool, _ message: String) { if !condition { fputs(message + "\n", stderr); exit(1) } }
-require(args.count == 3 || args.count == 4, "usage: test-app-performance.swift APP_EXECUTABLE OUTPUT_DIR [--baseline]")
+require(args.count >= 3, "usage: test-app-performance.swift APP_EXECUTABLE OUTPUT_DIR [--baseline] [--startup-only] [--startup-entries=1000] [--startup-max-seconds=5] [--startup-runs=3]")
+let startupOnly = args.contains("--startup-only")
+let entriesOption = args.dropFirst(3).first { $0.hasPrefix("--startup-entries=") }
+let runsOption = args.dropFirst(3).first { $0.hasPrefix("--startup-runs=") }
+let startupRuns = runsOption.flatMap { Int($0.split(separator: "=").last ?? "") } ?? 3
+require(runsOption == nil || (startupRuns > 0 && startupRuns <= 20), "Startup runs must be 1...20")
+let limitOption = args.dropFirst(3).first { $0.hasPrefix("--startup-max-seconds=") }
+let startupLimit = limitOption.flatMap { Double($0.split(separator: "=").last ?? "") } ?? 5
+require((limitOption == nil || Double(limitOption!.split(separator: "=").last ?? "") != nil) && startupLimit > 0 && startupLimit.isFinite, "Startup limit must be positive and finite")
+let startupEntries = entriesOption.flatMap { Int($0.split(separator: "=").last ?? "") } ?? 0
+require(entriesOption == nil || (startupEntries > 0 && startupEntries <= 10000), "Startup fixture count must be 1...10000")
+require(args.dropFirst(3).allSatisfy { $0 == "--baseline" || $0 == "--startup-only" || $0 == entriesOption || $0 == limitOption || $0 == runsOption }, "Unknown performance option")
 require(!args[2].isEmpty, "A new absolute output directory is required")
 require(args[2].hasPrefix("/"), "Use an absolute output directory")
 let baseline = args.contains("--baseline")
@@ -37,16 +48,42 @@ revisionProcess.arguments = ["rev-parse", "HEAD"]
 let revisionOutput = Pipe(); revisionProcess.standardOutput = revisionOutput
 try revisionProcess.run(); let revisionData = revisionOutput.fileHandleForReading.readDataToEndOfFile(); revisionProcess.waitUntilExit()
 require(revisionProcess.terminationStatus == 0, "Cannot record repository revision")
-let metadata: [String: Any] = ["revision": String(decoding: revisionData, as: UTF8.self).trimmingCharacters(in: .whitespacesAndNewlines), "executable": URL(fileURLWithPath: args[1]).standardizedFileURL.path, "binarySHA256": try sha256(args[1]), "fixtureSHA256": try sha256(fixture.path), "modelSHA256": modelHashes, "operatingSystem": ProcessInfo.processInfo.operatingSystemVersionString, "processorCount": ProcessInfo.processInfo.processorCount, "promptChunkSize": 128, "baselineThresholdsDisabled": baseline]
+var startupFixtureHashes: [String: String] = [:]
+if startupEntries > 0 {
+    for path in ["eval/transcribe/expected/2025-01-14 side project.md", "eval/cleanup/expected/2025-01-14 side project.md", "eval/enrich/expected/2025-01-14 side project.md"] {
+        startupFixtureHashes[path] = try sha256(path)
+    }
+}
+let metadata: [String: Any] = ["revision": String(decoding: revisionData, as: UTF8.self).trimmingCharacters(in: .whitespacesAndNewlines), "executable": URL(fileURLWithPath: args[1]).standardizedFileURL.path, "binarySHA256": try sha256(args[1]), "fixtureSHA256": try sha256(fixture.path), "modelSHA256": modelHashes, "operatingSystem": ProcessInfo.processInfo.operatingSystemVersionString, "processorCount": ProcessInfo.processInfo.processorCount, "promptChunkSize": 128, "baselineThresholdsDisabled": baseline, "startupFixtureEntries": startupEntries, "startupFixtureSHA256": startupFixtureHashes, "startupLimitSeconds": startupLimit, "startupOnlyControlledStop": startupOnly, "startupRuns": startupRuns]
 try JSONSerialization.data(withJSONObject: metadata, options: [.prettyPrinted, .sortedKeys]).write(to: output.appendingPathComponent("metadata.json"))
 var results: [[String: Any]] = []
-let modes = env["CAPTAINSLOG_PERFORMANCE_QWEN"] == "1" ? ["processing-close"] : ["startup-1", "startup-2", "startup-3", "processing-close"]
+let startupModes = (1...startupRuns).map { "startup-\($0)" }
+let modes = startupOnly ? startupModes : env["CAPTAINSLOG_PERFORMANCE_QWEN"] == "1" ? ["processing-close"] : startupModes + ["processing-close"]
 for mode in modes {
     let run = output.appendingPathComponent(mode, isDirectory: true)
     require(!fm.fileExists(atPath: run.path), "Output already exists: \(run.path)")
     let data = run.appendingPathComponent("data", isDirectory: true)
     try fm.createDirectory(at: data.appendingPathComponent("audio"), withIntermediateDirectories: true)
-    try fm.copyItem(at: fixture, to: data.appendingPathComponent("audio/2025-01-14-0730.m4a"))
+    if mode.hasPrefix("startup") && startupEntries > 0 {
+        let transcript = try Data(contentsOf: URL(fileURLWithPath: "eval/transcribe/expected/2025-01-14 side project.md"))
+        let cleaned = try Data(contentsOf: URL(fileURLWithPath: "eval/cleanup/expected/2025-01-14 side project.md"))
+        let enriched = try Data(contentsOf: URL(fileURLWithPath: "eval/enrich/expected/2025-01-14 side project.md"))
+        for directory in [".pipeline/01-transcribed", ".pipeline/02-logs", ".pipeline/03-category", ".pipeline/04-rename", "logs/side-project"] {
+            try fm.createDirectory(at: data.appendingPathComponent(directory), withIntermediateDirectories: true)
+        }
+        for index in 0..<startupEntries {
+            let stem = String(format: "2025-01-14 fixture-%04d", index)
+            let slug = String(format: "2025-01-14-fixture-%04d", index)
+            try transcript.write(to: data.appendingPathComponent(".pipeline/01-transcribed/\(stem).md"))
+            try cleaned.write(to: data.appendingPathComponent(".pipeline/02-logs/\(stem).md"))
+            try JSONSerialization.data(withJSONObject: ["sourceStem": stem, "category": "side_project"]).write(to: data.appendingPathComponent(".pipeline/03-category/\(stem).json"))
+            try slug.write(to: data.appendingPathComponent(".pipeline/04-rename/\(stem).slug.txt"), atomically: true, encoding: .utf8)
+            try cleaned.write(to: data.appendingPathComponent(".pipeline/04-rename/\(slug).md"))
+            try enriched.write(to: data.appendingPathComponent("logs/side-project/\(slug).md"))
+        }
+    } else {
+        try fm.copyItem(at: fixture, to: data.appendingPathComponent("audio/2025-01-14-0730.m4a"))
+    }
     if env["CAPTAINSLOG_PERFORMANCE_QWEN"] == "1" {
         let transcript = data.appendingPathComponent(".pipeline/01-transcribed/2025-01-14-0730.md")
         try fm.createDirectory(at: transcript.deletingLastPathComponent(), withIntermediateDirectories: true)
@@ -74,6 +111,7 @@ for mode in modes {
     require(settings["dataDir"] == data.path && settings["whisperModelFolder"] == whisper && settings["qwenModelFolder"] == qwen, "Loaded config does not match isolated data/model paths")
     let trace = run.appendingPathComponent("trace.txt")
     let process = Process(); process.executableURL = URL(fileURLWithPath: args[1])
+    process.arguments = ["-CaptainsLogHasLaunched", "YES"]
     var child = env; child["CAPTAINS_LOG_CONFIG_PATH"] = configPath.path
     child["CAPTAINSLOG_PERFORMANCE_TRACE"] = trace.path
     if mode == "processing-close" {
@@ -89,12 +127,22 @@ for mode in modes {
     try String(process.processIdentifier).write(to: run.appendingPathComponent("pid.txt"), atomically: true, encoding: .utf8)
     var markers: [String: Double] = [:]
     var timedOut = false
+    var stoppedAfterReadiness = false
     while process.isRunning {
         if let text = try? String(contentsOf: trace, encoding: .utf8) {
             for line in text.split(separator: "\n") {
                 let fields = line.split(separator: " ", maxSplits: 1)
                 if fields.count == 2, let time = Double(fields[0]) { markers[String(fields[1])] = time }
             }
+        }
+        if startupOnly && markers["models-ready"].map({ ProcessInfo.processInfo.systemUptime - $0 > 1 }) == true && markers["bootstrap-ready"] != nil {
+            // This mode measures startup only. Stop the owned idle process after
+            // readiness instead of treating an AppKit quit as part of startup.
+            stoppedAfterReadiness = true
+            kill(process.processIdentifier, SIGTERM)
+            Thread.sleep(forTimeInterval: 0.1)
+            if process.isRunning { kill(process.processIdentifier, SIGKILL) }
+            break
         }
         let now = ProcessInfo.processInfo.systemUptime
         if now - started > 180 || markers["quit-request"].map({ now - $0 > 60 }) == true {
@@ -114,14 +162,18 @@ for mode in modes {
         }
     }
     let startup = markers["models-ready"].map { $0 - started } ?? -1
-    let close = markers["quit-request"].map { finished - $0 } ?? -1
-    let record: [String: Any] = ["mode": mode, "startupSeconds": startup, "closeSeconds": close, "exitStatus": process.terminationStatus, "normalExit": process.terminationReason == .exit, "processingSeconds": markers["pipeline-complete"].map { $0 - (markers["models-ready"] ?? started) } ?? -1, "timedOut": timedOut, "markers": markers]
+    let close = startupOnly ? -1 : markers["quit-request"].map { finished - $0 } ?? -1
+    let record: [String: Any] = ["mode": mode, "startupSeconds": startup, "closeSeconds": close, "exitStatus": process.terminationStatus, "normalExit": process.terminationReason == .exit, "processingSeconds": markers["pipeline-complete"].map { $0 - (markers["models-ready"] ?? started) } ?? -1, "timedOut": timedOut, "stoppedAfterReadiness": stoppedAfterReadiness, "markers": markers]
     results.append(record)
     try JSONSerialization.data(withJSONObject: results, options: [.prettyPrinted, .sortedKeys]).write(to: output.appendingPathComponent("results.json"))
     print("\(mode): startup \(startup)s, close \(close)s, exit \(process.terminationStatus), timeout \(timedOut)")
     if !baseline {
-        require(!timedOut && process.terminationStatus == 0 && process.terminationReason == .exit, "Native check did not terminate cleanly")
-        require(startup >= 0 && startup < 5, "Startup readiness exceeded 5 seconds")
+        if startupOnly {
+            require(!timedOut && (stoppedAfterReadiness || (process.terminationStatus == 0 && process.terminationReason == .exit)) && markers["view-ready"] != nil && markers["bootstrap-ready"] != nil, "Startup check did not reach native readiness")
+        } else {
+            require(!timedOut && process.terminationStatus == 0 && process.terminationReason == .exit, "Native check did not terminate cleanly")
+        }
+        require(startup >= 0 && startup < startupLimit, "Startup readiness exceeded \(startupLimit) seconds")
         if mode == "processing-close" {
             require((markers["whisper-decode"] != nil || markers["qwen-decode"] != nil) && markers["delegate-terminate"] != nil && markers["termination-drained"] != nil && markers["delegate-reply"] != nil, "Quit must occur during actual native decoding and drain teardown")
             let decode = markers["whisper-decode"] ?? markers["qwen-decode"]!

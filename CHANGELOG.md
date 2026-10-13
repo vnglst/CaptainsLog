@@ -26,6 +26,9 @@ entry. Git links provide the complete commit history for each release.
 - Record a Next backlog item to update all dependencies to their newest versions and verify that everything continues to work as expected.
 
 - Record a Next backlog item to restore reprocessing for an individual processed log.
+- Reuse the shared chronological date formatter under a lock instead of rebuilding it for every restored entry, preserving strict date validation and current time-zone semantics in both CLI and Logs startup. Add repeated-date regression coverage and an eval-only completed-library native startup probe.
+
+- Move the startup and closing performance task to owner verification after measured loaded-library startup improvement and the earlier verified native processing-close improvement.
 
 - Document the opt-in Make native app performance regression check, its isolated fixture setup, timing scopes, thresholds, retained binary/model/fixture hashes and watchdog behavior.
 

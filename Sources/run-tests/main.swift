@@ -1684,6 +1684,38 @@ func runCoreCoverageTests() {
                    "Body text must not be treated as metadata")
     }
 
+    test("Logs: repeated startup sorting preserves canonical dates and current time zone") {
+        let root = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let fixture = try String(contentsOfFile: "eval/enrich/expected/2025-01-14 side project.md", encoding: .utf8)
+        let note = try makeCompletedSearchEntry(root: root, stem: "2024-01-01-0900", slug: "dated", category: .sideProject, content: fixture)
+        for offset in [0, 3600, -18000] {
+            let zone = TimeZone(secondsFromGMT: offset)!
+            for _ in 0..<20 {
+                let entries = Pipeline.listEntries(dataDir: root.path)
+                let date = EntryDate.parse(day: "2025-01-14", time: "12:00", timeZone: zone)!
+                var calendar = Calendar(identifier: .gregorian)
+                calendar.timeZone = zone
+                let components = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: date)
+                try expect(components.year == 2025 && components.month == 1 && components.day == 14 && components.hour == 12 && components.minute == 0)
+                let reference = DateFormatter()
+                reference.locale = Locale(identifier: "en_US_POSIX")
+                reference.calendar = Calendar(identifier: .gregorian)
+                reference.timeZone = zone
+                reference.dateFormat = "yyyy-MM-dd HH:mm"
+                reference.isLenient = false
+                try expect(date == reference.date(from: "2025-01-14 12:00"), "Cached parsing must match a fresh formatter after changing time zones")
+                reference.timeZone = .current
+                try expect(entries[0].sortDate == reference.date(from: "2025-01-14 12:00"), "Sorting must resolve dates in the current time zone")
+            }
+        }
+        for invalid in ["2025-2-014", "2025-02-30", "2025-13-14", "2025-01-00"] {
+            try fixture.replacingOccurrences(of: "2025-01-14", with: invalid).write(to: note, atomically: true, encoding: .utf8)
+            let date = Pipeline.listEntries(dataDir: root.path)[0].sortDate!
+            try expect(Calendar.current.component(.year, from: date) == 2024, "Noncanonical metadata must retain recording-date fallback")
+        }
+    }
+
     test("AppState: LogEntry parses completed-entry frontmatter") {
         let root = try makeTemporaryDirectory()
         defer { try? FileManager.default.removeItem(at: root) }
