@@ -111,6 +111,8 @@ public enum Transcriber {
         do {
             pipe = try await WhisperKit(whisperConfig)
         } catch {
+            // Intentional shutdown while loading is not evidence of corruption.
+            try lifecycle.checkCancellation()
             // CoreML failed to open the compiled model — likely an incomplete download
             // (e.g. missing weights/weight.bin). Clear the cached folder so the next
             // call triggers a fresh download rather than hitting the same corrupt files.
