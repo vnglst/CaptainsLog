@@ -24,6 +24,7 @@ entry. Git links provide the complete commit history for each release.
 
 - Record a Next backlog item to benchmark and optimize app startup and closing during processing, with performance regression test coverage.
 - Record a Next backlog item to explore common app actions and try to find breaks or crashes, including opening, starting processing, closing, and deleting then processing.
+- Record a Next backlog bug for an app-close abort in 0.5.0 on macOS 26.7.1: llama.cpp Metal resource-set/device cleanup aborted during C++ static finalization while a background resource-set initializer was still running; the report suggests, but does not prove, an initialization/teardown race.
 - Allow dragging and dropping category rows in Context and initial setup to reorder them; save the chosen order for future processing.
 
 - Reduce Qwen inference graph memory by reserving logits for only the final token of each batch; keep the same models, prompts, generation limits, GPU offload and batch sizes.
