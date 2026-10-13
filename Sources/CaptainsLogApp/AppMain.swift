@@ -52,8 +52,9 @@ struct CaptainsLogApp: App {
             AppPerformanceTrace.mark("termination-preparing")
             async let processing: Void = state.processing.stopForTermination()
             async let recording: Void = state.recording.stopForTermination()
+            async let search: Void = state.search.stopForTermination()
             async let native: Void = NativeInferenceLifecycle.shared.stopAndWait()
-            _ = await (processing, recording, native)
+            _ = await (processing, recording, search, native)
             AppPerformanceTrace.mark("termination-drained")
         }
         // Required: SwiftPM executables have no .app bundle, so without this macOS won't let windows become key and keystrokes leak to the Finder.
