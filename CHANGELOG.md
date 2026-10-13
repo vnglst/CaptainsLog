@@ -20,6 +20,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
+- Move the startup and closing performance task to owner verification with its existing benchmark, optimization and regression criteria checked after CLI and native fixture checks.
+
 - Document the opt-in Make native app performance regression check, its isolated fixture setup, timing scopes, thresholds, retained binary/model/fixture hashes and watchdog behavior.
 
 - Bound shared Core Qwen prompt chunks to 128 tokens so the CLI and native app use identical inference execution and can cancel between shorter Metal calls, with model/context configuration and sampling unchanged.

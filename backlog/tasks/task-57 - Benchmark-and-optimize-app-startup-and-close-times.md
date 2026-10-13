@@ -1,9 +1,10 @@
 ---
 id: TASK-57
 title: Benchmark and optimize app startup and close times
-status: Next
+status: Verify
 assignee: []
 created_date: '2026-10-12 17:08'
+updated_date: '2026-10-13 11:25'
 labels: []
 dependencies: []
 ordinal: 50000
@@ -17,7 +18,7 @@ Benchmark app startup time and close time when processing is running. Optimize b
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 App startup time and close time while processing is running have been benchmarked.
-- [ ] #2 Both startup time and close time while processing is running have been optimized.
-- [ ] #3 A performance regression test covers startup time and close time while processing is running.
+- [x] #1 App startup time and close time while processing is running have been benchmarked.
+- [x] #2 Both startup time and close time while processing is running have been optimized.
+- [x] #3 A performance regression test covers startup time and close time while processing is running.
 <!-- AC:END -->
