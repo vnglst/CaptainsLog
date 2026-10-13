@@ -18,6 +18,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
+- Record a Next backlog item to restore reprocessing for an individual processed log.
+
 - Record the owner requirement that CLI and GUI processing work the same way technically in ADR-027.
 
 - Record a Next backlog item to benchmark and optimize app startup and closing during processing, with performance regression test coverage.
