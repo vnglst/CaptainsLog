@@ -18,6 +18,7 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
+- Bound native app Qwen prompt chunks to 128 tokens so quit can cancel between shorter Metal calls; keep CLI batching, model/context configuration and sampling unchanged.
 - Skip Whisper metadata recovery scans when prepared models are available at launch; stop Whisper decoding cooperatively during native shutdown, discard canceled partial text, and release CoreML objects before draining shutdown.
 
 - Add opt-in debug native startup and quit-during-Whisper/Qwen-decoding timing markers and a fixture-backed performance check for isolated performance verification; wait for bootstrap completion before timing model readiness and reject malformed benchmark configurations before loading app state; confirm CLI-loaded data and model paths before each probe and schedule probe quit through the main run loop.

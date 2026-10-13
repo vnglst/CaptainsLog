@@ -1,4 +1,5 @@
 import Foundation
+import Synchronization
 import HuggingFace
 import llama
 
@@ -11,6 +12,18 @@ private actor LLMInferenceGate {
 }
 
 public enum LLM {
+    private static let interactivePromptDecoding = Mutex(false)
+
+    /// Native app quit must wait for the active Metal call. Smaller prompt chunks
+    /// bound that wait without changing model, context size or token sampling.
+    public static func setInteractivePromptDecoding(_ enabled: Bool) {
+        interactivePromptDecoding.withLock { $0 = enabled }
+    }
+
+    static func promptChunkSize(batchSize: Int) -> Int {
+        interactivePromptDecoding.withLock { min(batchSize, $0 ? 128 : batchSize) }
+    }
+
 
     enum LLMError: LocalizedError, Equatable {
         case invalidModelContextSize(Int)
@@ -419,7 +432,7 @@ public enum LLM {
         var offset = 0
         while offset < tokens.count {
             try NativeInferenceLifecycle.shared.checkCancellation()
-            let count = min(batchSize, tokens.count - offset)
+            let count = min(promptChunkSize(batchSize: batchSize), tokens.count - offset)
             var chunk = Array(tokens[offset..<(offset + count)])
             let result = chunk.withUnsafeMutableBufferPointer { buffer in
                 let batch = llama_batch_get_one(buffer.baseAddress, Int32(buffer.count))

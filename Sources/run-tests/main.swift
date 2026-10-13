@@ -3868,6 +3868,15 @@ func runTests() async {
         try expect(transcript.contains("Uh, I shipped it."))
     }
 
+    test("LLM prompt responsiveness: app chunks are bounded and CLI defaults stay unchanged") {
+        LLM.setInteractivePromptDecoding(false)
+        try expect(LLM.promptChunkSize(batchSize: 512) == 512)
+        LLM.setInteractivePromptDecoding(true)
+        defer { LLM.setInteractivePromptDecoding(false) }
+        try expect(LLM.promptChunkSize(batchSize: 512) == 128)
+        try expect(LLM.promptChunkSize(batchSize: 64) == 64)
+    }
+
     await testAsync("Whisper shutdown: callback stops decoding and discards partial output") {
         let lifecycle = NativeInferenceLifecycle()
         try lifecycle.beginOperation()

@@ -55,7 +55,8 @@ for mode in modes {
     var child = env; child["CAPTAINS_LOG_CONFIG_PATH"] = configPath.path
     child["CAPTAINSLOG_PERFORMANCE_TRACE"] = trace.path
     if mode == "processing-close" {
-        child["CAPTAINSLOG_PERFORMANCE_PROCESS"] = "1"; child["CAPTAINSLOG_PERFORMANCE_QUIT_ON_DECODE"] = "1"
+        child["CAPTAINSLOG_PERFORMANCE_PROCESS"] = "1"
+        if env["CAPTAINSLOG_PERFORMANCE_FINISH_PIPELINE"] != "1" { child["CAPTAINSLOG_PERFORMANCE_QUIT_ON_DECODE"] = "1" }
     } else { child["CAPTAINSLOG_PERFORMANCE_STARTUP_ONLY"] = "1" }
     child.removeValue(forKey: "CAPTAINSLOG_UI_FIXTURE")
     process.environment = child
@@ -92,7 +93,7 @@ for mode in modes {
     }
     let startup = markers["models-ready"].map { $0 - started } ?? -1
     let close = markers["quit-request"].map { finished - $0 } ?? -1
-    let record: [String: Any] = ["mode": mode, "startupSeconds": startup, "closeSeconds": close, "exitStatus": process.terminationStatus, "normalExit": process.terminationReason == .exit, "timedOut": timedOut, "markers": markers]
+    let record: [String: Any] = ["mode": mode, "startupSeconds": startup, "closeSeconds": close, "exitStatus": process.terminationStatus, "normalExit": process.terminationReason == .exit, "processingSeconds": markers["pipeline-complete"].map { $0 - (markers["models-ready"] ?? started) } ?? -1, "timedOut": timedOut, "markers": markers]
     results.append(record)
     try JSONSerialization.data(withJSONObject: results, options: [.prettyPrinted, .sortedKeys]).write(to: output.appendingPathComponent("results.json"))
     print("\(mode): startup \(startup)s, close \(close)s, exit \(process.terminationStatus), timeout \(timedOut)")
