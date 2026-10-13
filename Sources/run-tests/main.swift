@@ -5135,9 +5135,18 @@ func runTests() async {
         try fm.createDirectory(at: qwenFolder, withIntermediateDirectories: true)
         let unrelatedFile = qwenFolder.appendingPathComponent("README.txt")
         try "not a model".write(to: unrelatedFile, atomically: true, encoding: .utf8)
-        try expect(ModelManager.whisperModelIsDownloaded(
-            config: CaptainsLogConfig(whisperModelFolder: whisperFolder.path)
-        ))
+        let whisperConfig = CaptainsLogConfig(whisperModelFolder: whisperFolder.path)
+        try expect(!ModelManager.whisperModelIsDownloaded(config: whisperConfig),
+                   "An empty folder must not bypass incomplete-download recovery")
+        for component in ["MelSpectrogram", "AudioEncoder", "TextDecoder"] {
+            let weight = whisperFolder.appendingPathComponent("\(component).mlmodelc/weights/weight.bin")
+            try fm.createDirectory(at: weight.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try Data("synthetic weight marker".utf8).write(to: weight)
+        }
+        try expect(ModelManager.whisperModelIsDownloaded(config: whisperConfig))
+        try fm.removeItem(at: whisperFolder.appendingPathComponent("TextDecoder.mlmodelc/weights/weight.bin"))
+        try expect(!ModelManager.whisperModelIsDownloaded(config: whisperConfig),
+                   "A missing decoder weight must trigger recovery instead of the launch fast path")
         try expect(!ModelManager.qwenModelIsDownloaded(
             config: CaptainsLogConfig(qwenModelFolder: qwenFolder.path)
         ), "Qwen should remain unavailable until a GGUF model file exists")
@@ -5165,6 +5174,19 @@ func runTests() async {
         try expect(calls.snapshot() == [
             "clear-stale", "clean-metadata", "download-whisper", "download-qwen",
         ])
+    }
+
+    await testAsync("ModelManager: rechecks availability after missing-model recovery") {
+        let repaired = LockedValue(false)
+        let downloaded = LockedValue(false)
+        let manager = ModelManager(dependencies: .init(
+            clearStaleConfig: {}, cleanCorruptedMetadata: { repaired.set(true) },
+            whisperIsDownloaded: { repaired.get() }, qwenIsDownloaded: { true },
+            downloadWhisper: { _ in downloaded.set(true) }, downloadQwen: { _ in }
+        ))
+        await manager.downloadModelsIfNeeded()
+        try expect(repaired.get() && manager.modelsReady)
+        try expect(!downloaded.get(), "Recovery should not redownload a repaired prepared model")
     }
 
     await testAsync("ModelManager: skips downloads when both models are already available") {

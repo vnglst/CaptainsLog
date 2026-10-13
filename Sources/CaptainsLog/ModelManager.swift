@@ -141,7 +141,12 @@ public final class ModelManager {
         guard let folder = config.whisperModelFolder,
               (try? URL(fileURLWithPath: folder).resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true
         else { return false }
-        return true
+        // A directory can survive a partial download. Check the three prepared
+        // component weight files without traversing unrelated caches on launch.
+        return ["MelSpectrogram", "AudioEncoder", "TextDecoder"].allSatisfy { component in
+            FileManager.default.fileExists(atPath: URL(fileURLWithPath: folder)
+                .appendingPathComponent("\(component).mlmodelc/weights/weight.bin").path)
+        }
     }
 
     nonisolated static func qwenModelIsDownloaded(
