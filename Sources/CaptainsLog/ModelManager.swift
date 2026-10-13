@@ -72,11 +72,15 @@ public final class ModelManager {
         let dependencies = dependencies
         let availability = await Task.detached(priority: .utility) {
             dependencies.clearStaleConfig()
-            dependencies.cleanCorruptedMetadata()
-            return (
-                whisper: dependencies.whisperIsDownloaded(),
-                qwen: dependencies.qwenIsDownloaded()
-            )
+            // Recovery scans CoreML's temporary cache and download sidecars. A
+            // prepared model needs only its availability check on normal launch.
+            var whisper = dependencies.whisperIsDownloaded()
+            let qwen = dependencies.qwenIsDownloaded()
+            if !whisper {
+                dependencies.cleanCorruptedMetadata()
+                whisper = dependencies.whisperIsDownloaded()
+            }
+            return (whisper: whisper, qwen: qwen)
         }.value
 
         if availability.whisper && availability.qwen {

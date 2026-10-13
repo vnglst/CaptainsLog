@@ -99,8 +99,15 @@ public enum Transcriber {
             computeOptions: computeOptions
         )
 
+        let lifecycle = NativeInferenceLifecycle.shared
+        try lifecycle.beginOperation()
+        var pipe: WhisperKit?
+        defer {
+            // Release CoreML objects before reporting the native operation drained.
+            pipe = nil
+            lifecycle.endOperation()
+        }
         let start = Date()
-        let pipe: WhisperKit
         do {
             pipe = try await WhisperKit(whisperConfig)
         } catch {
@@ -120,7 +127,7 @@ public enum Transcriber {
         Logger.transcriber.info("Transcribing \(audioPath)...")
         let transcribeStart = Date()
 
-        let result = try await pipe.transcribe(
+        let result = try await pipe!.transcribe(
             audioPath: readableURL.path,
             decodeOptions: DecodingOptions(
                 language: language,
@@ -131,9 +138,12 @@ public enum Transcriber {
                 #if DEBUG
                 AppPerformanceTrace.firstDecode()
                 #endif
-                return nil
+                return shouldContinueDecoding()
             }
         )
+        // Whisper's early stop returns partial text, which must never become a
+        // completed transcription or advance the remaining pipeline stages.
+        try lifecycle.checkCancellation()
 
         let transcribeTime = Date().timeIntervalSince(transcribeStart)
         Logger.transcriber.info("Transcribed in \(String(format: "%.1f", transcribeTime))s")
@@ -145,6 +155,11 @@ public enum Transcriber {
         }
 
         return result.map { $0.text }.joined(separator: " ").trimmingCharacters(in: CharacterSet.whitespaces)
+    }
+
+    static func shouldContinueDecoding(lifecycle: NativeInferenceLifecycle = .shared) -> Bool {
+        do { try lifecycle.checkCancellation(); return true }
+        catch { return false }
     }
 
     /// WhisperKit reads through AVAudioFile, which cannot open QuickTime containers.

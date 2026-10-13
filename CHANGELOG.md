@@ -18,6 +18,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
+- Skip Whisper metadata recovery scans when prepared models are available at launch; stop Whisper decoding cooperatively during native shutdown, discard canceled partial text, and release CoreML objects before draining shutdown.
+
 - Add opt-in debug native startup and quit-during-Whisper/Qwen-decoding timing markers and a fixture-backed performance check for isolated performance verification; wait for bootstrap completion before timing model readiness and reject malformed benchmark configurations before loading app state; confirm CLI-loaded data and model paths before each probe and schedule probe quit through the main run loop.
 
 - Record a Next backlog item to benchmark and optimize app startup and closing during processing, with performance regression test coverage.
