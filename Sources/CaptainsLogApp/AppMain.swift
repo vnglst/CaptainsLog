@@ -86,6 +86,20 @@ struct CaptainsLogApp: App {
                             NotificationCenter.default.post(name: Notification.Name("CaptainsLogPerformanceDecode"), object: nil)
                         } else { appState.batchResumePending() }
                     }
+                    if ProcessInfo.processInfo.environment["CAPTAINSLOG_SEARCH_QUIT_CHECK"] == "1" {
+                        await appState.bootstrap()
+                        while !AppPerformanceTrace.hasMarked("bootstrap-ready") || !appState.models.modelsReady {
+                            try? await Task.sleep(for: .milliseconds(20))
+                        }
+                        appState.search.updateQuery("side project", dataDir: appState.config.dataDir)
+                        while appState.search.state != .ready {
+                            if case .error = appState.search.state { AppPerformanceTrace.mark("search-error"); return }
+                            try? await Task.sleep(for: .milliseconds(20))
+                        }
+                        AppPerformanceTrace.mark("cached-search-ready")
+                        try? await Task.sleep(for: .milliseconds(200))
+                        NotificationCenter.default.post(name: Notification.Name("CaptainsLogPerformanceDecode"), object: nil)
+                    }
                     if let designFixture {
                         appState.applyDesignFixture(named: designFixture)
                     }
@@ -97,7 +111,7 @@ struct CaptainsLogApp: App {
                     }
                 }
                 .onReceive(NotificationCenter.default.publisher(for: Notification.Name("CaptainsLogPerformanceDecode")).receive(on: RunLoop.main)) { _ in
-                    if ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_QUIT_ON_DECODE"] == "1" || ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_STARTUP_ONLY"] == "1" || ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_FINISH_PIPELINE"] == "1" {
+                    if ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_QUIT_ON_DECODE"] == "1" || ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_STARTUP_ONLY"] == "1" || ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_FINISH_PIPELINE"] == "1" || ProcessInfo.processInfo.environment["CAPTAINSLOG_SEARCH_QUIT_CHECK"] == "1" {
                         AppPerformanceTrace.mark("quit-request")
                         NSApplication.shared.terminate(nil)
                     }

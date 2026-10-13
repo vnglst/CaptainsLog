@@ -23,6 +23,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
+- Add an opt-in eval-backed native cached-search/quit reproduction check, retaining process identity, model/binary hashes and shutdown markers.
+
 - Record a Next backlog item to update all dependencies to their newest versions and verify that everything continues to work as expected.
 
 - Record a Next backlog item to restore reprocessing for an individual processed log.
