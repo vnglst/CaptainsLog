@@ -3868,6 +3868,19 @@ func runTests() async {
         try expect(transcript.contains("Uh, I shipped it."))
     }
 
+    await testAsync("Whisper shutdown: callback stops decoding and discards partial output") {
+        let lifecycle = NativeInferenceLifecycle()
+        try lifecycle.beginOperation()
+        try expect(Transcriber.shouldContinueDecoding(lifecycle: lifecycle))
+        let stopping = Task { await lifecycle.stopAndWait() }
+        while Transcriber.shouldContinueDecoding(lifecycle: lifecycle) { await Task.yield() }
+        do { try lifecycle.checkCancellation(); try expect(false, "Partial transcription must be rejected") }
+        catch is CancellationError {}
+        lifecycle.endOperation()
+        await stopping.value
+        try expect(!Transcriber.shouldContinueDecoding(lifecycle: lifecycle))
+    }
+
     await testAsync("Native shutdown: reject new operations and wait for active teardown") {
         let lifecycle = NativeInferenceLifecycle()
         try lifecycle.beginOperation()
@@ -5163,7 +5176,23 @@ func runTests() async {
         await manager.downloadModelsIfNeeded()
 
         try expect(manager.modelState == .ready)
-        try expect(calls.snapshot() == ["clear-stale", "clean-metadata", "whisper-ready", "qwen-ready"])
+        try expect(calls.snapshot() == ["clear-stale", "whisper-ready", "qwen-ready"])
+    }
+
+    await testAsync("ModelManager startup: prepared models bypass slow recovery scan") {
+        let recovery = LockedValue(false)
+        let manager = ModelManager(dependencies: .init(
+            clearStaleConfig: {},
+            cleanCorruptedMetadata: { recovery.set(true); Thread.sleep(forTimeInterval: 0.2) },
+            whisperIsDownloaded: { true }, qwenIsDownloaded: { true },
+            downloadWhisper: { _ in throw CancellationError() },
+            downloadQwen: { _ in throw CancellationError() }
+        ))
+        let start = ContinuousClock.now
+        await manager.downloadModelsIfNeeded()
+        try expect(!recovery.get(), "Normal startup must not traverse cache recovery directories")
+        try expect(start.duration(to: .now) < .milliseconds(100), "Prepared model readiness regressed to recovery-scan latency")
+        try expect(manager.modelsReady)
     }
 
     await testAsync("ModelManager: downloads only Qwen when Whisper is already available") {

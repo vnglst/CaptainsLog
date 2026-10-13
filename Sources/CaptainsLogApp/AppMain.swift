@@ -13,7 +13,17 @@ struct CaptainsLogApp: App {
     #endif
 
     init() {
+        AppPerformanceTrace.mark("app-init")
         #if DEBUG
+        if ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_TRACE"] != nil {
+            guard let configPath = ProcessInfo.processInfo.environment["CAPTAINS_LOG_CONFIG_PATH"],
+                  let data = try? Data(contentsOf: URL(fileURLWithPath: configPath)),
+                  let config = try? JSONDecoder().decode(CaptainsLogConfig.self, from: data),
+                  let dataDir = config.dataDir, !dataDir.isEmpty,
+                  config.whisperModelFolder != nil, config.qwenModelFolder != nil else {
+                fatalError("Performance checks require a valid isolated config and prepared model paths")
+            }
+        }
         // Configure the isolated demo before AppState reads any saved configuration.
         if ProcessInfo.processInfo.environment["CAPTAINS_LOG_CONFIG_PATH"] == nil {
             do {
@@ -26,10 +36,12 @@ struct CaptainsLogApp: App {
         let state = AppState()
         _appState = CLState(wrappedValue: state)
         appDelegate.prepareForTermination = {
+            AppPerformanceTrace.mark("termination-preparing")
             async let processing: Void = state.processing.stopForTermination()
             async let recording: Void = state.recording.stopForTermination()
             async let native: Void = NativeInferenceLifecycle.shared.stopAndWait()
             _ = await (processing, recording, native)
+            AppPerformanceTrace.mark("termination-drained")
         }
         // Required: SwiftPM executables have no .app bundle, so without this macOS won't let windows become key and keystrokes leak to the Finder.
         NSApplication.shared.setActivationPolicy(.regular)
@@ -52,8 +64,23 @@ struct CaptainsLogApp: App {
                 #if DEBUG
                 .background(MenuBarFixtureLauncher(enabled: designFixture?.hasPrefix("eval-menu") == true))
                 .task {
+                    AppPerformanceTrace.mark("view-ready")
+                    if ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_PROCESS"] == "1" || ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_STARTUP_ONLY"] == "1" {
+                        await appState.bootstrap()
+                        while !AppPerformanceTrace.hasMarked("bootstrap-ready") || !appState.models.modelsReady { try? await Task.sleep(for: .milliseconds(20)) }
+                        AppPerformanceTrace.mark("models-ready")
+                        if ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_STARTUP_ONLY"] == "1" {
+                            NotificationCenter.default.post(name: Notification.Name("CaptainsLogPerformanceDecode"), object: nil)
+                        } else { appState.batchResumePending() }
+                    }
                     if let designFixture {
                         appState.applyDesignFixture(named: designFixture)
+                    }
+                }
+                .onReceive(NotificationCenter.default.publisher(for: Notification.Name("CaptainsLogPerformanceDecode")).receive(on: RunLoop.main)) { _ in
+                    if ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_QUIT_ON_DECODE"] == "1" || ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_STARTUP_ONLY"] == "1" {
+                        AppPerformanceTrace.mark("quit-request")
+                        NSApplication.shared.terminate(nil)
                     }
                 }
                 #endif
@@ -110,11 +137,13 @@ private final class CaptainsLogAppDelegate: NSObject, NSApplicationDelegate {
     private var isTerminating = false
 
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        AppPerformanceTrace.mark("delegate-terminate")
         guard !isTerminating else { return .terminateLater }
         isTerminating = true
         Task { @MainActor in
             await prepareForTermination?()
             // Native contexts have unwound before AppKit frees global Metal state.
+            AppPerformanceTrace.mark("delegate-reply")
             sender.reply(toApplicationShouldTerminate: true)
         }
         return .terminateLater

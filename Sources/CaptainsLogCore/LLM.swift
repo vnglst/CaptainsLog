@@ -428,6 +428,9 @@ public enum LLM {
             guard result == 0 else {
                 throw NSError(domain: "LLM", code: Int(result), userInfo: [NSLocalizedDescriptionKey: "llama_decode failed with code \(result)"])
             }
+            #if DEBUG
+            if ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_QWEN"] == "1" { AppPerformanceTrace.firstDecode("qwen-decode") }
+            #endif
             offset += count
         }
     }
