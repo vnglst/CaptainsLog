@@ -14,6 +14,9 @@ entry. Git links provide the complete commit history for each release.
 
 ### Fixed
 
+- Reject isolated test-bundle launches without a valid explicit configuration and data directory before app state can fall back to normal user settings, including release fixture bundles relaunched by automation.
+- Bundle pipeline prompts in the isolated native UI harness so fixture processing can resolve cleanup, categorization, naming and enrichment instructions outside the repository working directory.
+- Resolve SwiftPM product-directory symlinks when bundling the native runtime so app bundles do not retain absolute framework search paths into build output.
 - Recover genuine Whisper initialization failures once in shared Core by repairing download sidecars and only the reported temporary compiled-model cache; preserve settings on cancellation and the original failure if recovery fails, with sendable recovery boundaries and per-attempt native model factories and synthetic failure/cancellation checks. Healthy launches no longer scan unrelated temporary files.
 
 - Avoid the CoreML Metal prediction path that can abort Whisper transcription with an MPSGraph tensor shape/stride assertion: run the spectrogram on CPU and the unchanged Whisper Large-v2 encoder and decoder on CPU/Neural Engine; record all three compute selections in evaluation metadata and move TASK-54 to owner verification.

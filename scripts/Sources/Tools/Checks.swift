@@ -114,6 +114,9 @@ extension Tools {
         let executable = app.appendingPathComponent("Contents/MacOS/CaptainsLogUITest")
         try copy(bin.appendingPathComponent("CaptainsLogApp"), executable)
         try bundleRuntime([bin.path, app.path, executable.path])
+        // Match the packaged app: launch working directories are not guaranteed
+        // to contain the repository's relative prompt paths.
+        try run(["ditto", path("prompts").path, app.appendingPathComponent("Contents/Resources/prompts").path])
         let plist: [String: String] = ["CFBundleExecutable": "CaptainsLogUITest", "CFBundleIdentifier": identifier, "CFBundleName": "CaptainsLog UI Eval", "CFBundlePackageType": "APPL", "LSMinimumSystemVersion": "26.0"]
         try PropertyListSerialization.data(fromPropertyList: plist, format: .xml, options: 0).write(to: app.appendingPathComponent("Contents/Info.plist"))
         try run(["codesign", "--force", "--deep", "--sign", "-", app.path]); try run(["codesign", "--verify", "--deep", "--strict", app.path])
