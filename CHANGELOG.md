@@ -14,6 +14,7 @@ entry. Git links provide the complete commit history for each release.
 
 ### Fixed
 
+- Bundle pipeline prompts in the isolated native UI harness so fixture processing can resolve cleanup, categorization, naming and enrichment instructions outside the repository working directory.
 - Avoid the CoreML Metal prediction path that can abort Whisper transcription with an MPSGraph tensor shape/stride assertion: run the spectrogram on CPU and the unchanged Whisper Large-v2 encoder and decoder on CPU/Neural Engine; record all three compute selections in evaluation metadata and move TASK-54 to owner verification.
 
 ### Changed
