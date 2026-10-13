@@ -33,6 +33,23 @@ for mode in modes {
     let config: [String: Any] = ["schemaVersion": 1, "dataDir": data.path, "whisperModel": "openai_whisper-large-v2", "whisperModelFolder": whisper, "qwenModelId": "Qwen3.5-9B-Q4_K_M", "qwenModelFolder": qwen, "automaticUpdates": false, "automaticUpdateChecks": false]
     let configPath = run.appendingPathComponent("config.json")
     try JSONSerialization.data(withJSONObject: config, options: [.prettyPrinted, .sortedKeys]).write(to: configPath)
+    let checker = Process()
+    checker.executableURL = URL(fileURLWithPath: args[1]).deletingLastPathComponent().appendingPathComponent("cl")
+    checker.arguments = ["config", "show"]
+    var isolatedEnv = env; isolatedEnv["CAPTAINS_LOG_CONFIG_PATH"] = configPath.path
+    checker.environment = isolatedEnv
+    let configOutput = Pipe(); checker.standardOutput = configOutput; checker.standardError = configOutput
+    try checker.run()
+    let checkedData = configOutput.fileHandleForReading.readDataToEndOfFile(); checker.waitUntilExit()
+    let checked = String(decoding: checkedData, as: UTF8.self)
+    try checkedData.write(to: run.appendingPathComponent("config-show.txt"))
+    require(checker.terminationStatus == 0, "Isolated configuration check failed")
+    var settings: [String: String] = [:]
+    for line in checked.split(separator: "\n") {
+        let fields = line.split(separator: ":", maxSplits: 1)
+        if fields.count == 2 { settings[fields[0].trimmingCharacters(in: .whitespaces)] = fields[1].trimmingCharacters(in: .whitespaces) }
+    }
+    require(settings["dataDir"] == data.path && settings["whisperModelFolder"] == whisper && settings["qwenModelFolder"] == qwen, "Loaded config does not match isolated data/model paths")
     let trace = run.appendingPathComponent("trace.txt")
     let process = Process(); process.executableURL = URL(fileURLWithPath: args[1])
     var child = env; child["CAPTAINS_LOG_CONFIG_PATH"] = configPath.path
