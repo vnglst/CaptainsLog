@@ -22,6 +22,7 @@ entry. Git links provide the complete commit history for each release.
 - Record a Next backlog item to explore common app actions and try to find breaks or crashes, including opening, starting processing, closing, and deleting then processing.
 - Allow dragging and dropping category rows in Context and initial setup to reorder them; save the chosen order for future processing.
 
+- Reduce Qwen inference graph memory by reserving logits for only the final token of each batch; keep the same models, prompts, generation limits, GPU offload and batch sizes.
 - Move the processing pipeline performance optimization task (TASK-55) to Next at the owner's request.
 - Record a backlog item to optimize processing pipeline performance without changing models, allowing combined steps and checking GPU and other performance optimizations.
 - Move the CoreML Metal prediction crash bug (TASK-54) to Next at the owner's request.

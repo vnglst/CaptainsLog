@@ -247,6 +247,9 @@ public enum LLM {
         contextParams.n_ctx = UInt32(contextSize)
         contextParams.n_batch = 512
         contextParams.n_ubatch = 512
+        // Each decode requests only its final token's logits. Avoid reserving a
+        // vocabulary-sized output graph for every token in the prompt batch.
+        contextParams.n_outputs_max = 1
         contextParams.n_threads = Int32(max(1, ProcessInfo.processInfo.activeProcessorCount - 1))
         contextParams.n_threads_batch = contextParams.n_threads
         contextParams.flash_attn_type = LLAMA_FLASH_ATTN_TYPE_AUTO
