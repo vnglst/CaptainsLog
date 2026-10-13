@@ -1,10 +1,10 @@
 ---
 id: TASK-53
 title: Reorder categories with drag and drop
-status: Next
+status: Verify
 assignee: []
 created_date: '2026-10-11 16:46'
-updated_date: '2026-10-12 06:38'
+updated_date: '2026-10-13 05:12'
 labels: []
 dependencies: []
 ordinal: 48000
@@ -18,5 +18,5 @@ Allow users to drag and drop categories to change their order.
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Categories can be reordered by dragging and dropping.
+- [x] #1 Categories can be reordered by dragging and dropping.
 <!-- AC:END -->
