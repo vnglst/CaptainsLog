@@ -59,6 +59,23 @@ and recording controls invoke real models or hardware. Checks bypass default dem
 seeding. See the [testing workflow](../README.md#testing) and stage skills in
 [`skills/`](../skills/) for quality gates and semantic review requirements.
 
+### Cached native search shutdown check
+
+`make tests-search-shutdown RUN_DIR=/absolute/new/output` loads the checksum-pinned
+E5 model, indexes/searches only copied eval content, leaves the real search engine
+cached in the UI, and requests app quit. Supply prepared
+`CAPTAINSLOG_WHISPER_MODEL_FOLDER` and `CAPTAINSLOG_QWEN_MODEL_FOLDER` for isolated
+bootstrap; prepare E5 before running. No microphone or personal data is used, and
+all other inference and app checks must be stopped first.
+
+The helper verifies schema-valid isolated data/model paths through the CLI before
+launching the app. It records source revision, executable/model/fixture SHA-256,
+PID, logs, actual search-ready/quit/delegate markers and exit status. Success
+requires real cached search, normal exit and no timeout. `ARGS=--baseline` records
+a failing native exit for comparison; it still requires the actual search and
+termination markers. A 180-second watchdog signals only the owned test process.
+A simulated search fixture cannot establish this shutdown regression.
+
 ### Native performance regression check
 
 `make tests-app-performance RUN_DIR=/absolute/new/output` builds the debug app and CLI,

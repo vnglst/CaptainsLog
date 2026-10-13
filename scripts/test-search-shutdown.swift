@@ -48,7 +48,12 @@ let checked = String(decoding: checkedData, as: UTF8.self)
 try checkedData.write(to: root.appendingPathComponent("config-show.txt"))
 require(cli.terminationStatus == 0 && checked.contains("dataDir:             " + data.path) && checked.contains("whisperModelFolder:  " + whisper) && checked.contains("qwenModelFolder:     " + qwen), "Loaded config must match exact isolated data and model paths")
 let executable = URL(fileURLWithPath: args[1])
-let metadata: [String: Any] = ["binarySHA256": try sha256(executable), "embeddingSHA256": embeddingHash, "headerSHA256": try sha256(header), "bodySHA256": try sha256(body), "executable": executable.standardizedFileURL.path, "operatingSystem": ProcessInfo.processInfo.operatingSystemVersionString]
+let revision = Process(); revision.executableURL = URL(fileURLWithPath: "/usr/bin/git")
+revision.arguments = ["rev-parse", "HEAD"]
+let revisionPipe = Pipe(); revision.standardOutput = revisionPipe
+try revision.run(); let revisionData = revisionPipe.fileHandleForReading.readDataToEndOfFile(); revision.waitUntilExit()
+require(revision.terminationStatus == 0, "Cannot record source revision")
+let metadata: [String: Any] = ["sourceRevision": String(decoding: revisionData, as: UTF8.self).trimmingCharacters(in: .whitespacesAndNewlines), "binarySHA256": try sha256(executable), "embeddingSHA256": embeddingHash, "headerSHA256": try sha256(header), "bodySHA256": try sha256(body), "executable": executable.standardizedFileURL.path, "operatingSystem": ProcessInfo.processInfo.operatingSystemVersionString]
 try JSONSerialization.data(withJSONObject: metadata, options: [.prettyPrinted, .sortedKeys]).write(to: root.appendingPathComponent("metadata.json"))
 let trace = root.appendingPathComponent("trace.txt")
 childEnv["CAPTAINSLOG_PERFORMANCE_TRACE"] = trace.path

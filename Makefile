@@ -34,7 +34,7 @@ help:
 	  'Release: BUMP=auto|patch|minor|major|version, ARGS=--dry-run|--publish' \
 	  '' \
 	  'Iteration: cli, tests-unit, tests-coverage, tests-updates, tests-release,' \
-	  'tests-evals, tests-runtime, tests-enrich, tests-model, tests-recorder, tests-app-performance, ui, evals-list,' \
+	  'tests-evals, tests-runtime, tests-enrich, tests-model, tests-recorder, tests-app-performance, tests-search-shutdown, ui, evals-list,' \
 	  'evals-pipeline, evals-suites, release-notes, release-check, release-cask,' \
 	  'icons, clean. See scripts/README.md for options and safety limits.'
 
