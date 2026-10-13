@@ -15,6 +15,15 @@ struct CaptainsLogApp: App {
     init() {
         AppPerformanceTrace.mark("app-init")
         #if DEBUG
+        if ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_TRACE"] != nil {
+            guard let configPath = ProcessInfo.processInfo.environment["CAPTAINS_LOG_CONFIG_PATH"],
+                  let data = try? Data(contentsOf: URL(fileURLWithPath: configPath)),
+                  let config = try? JSONDecoder().decode(CaptainsLogConfig.self, from: data),
+                  let dataDir = config.dataDir, !dataDir.isEmpty,
+                  config.whisperModelFolder != nil, config.qwenModelFolder != nil else {
+                fatalError("Performance checks require a valid isolated config and prepared model paths")
+            }
+        }
         // Configure the isolated demo before AppState reads any saved configuration.
         if ProcessInfo.processInfo.environment["CAPTAINS_LOG_CONFIG_PATH"] == nil {
             do {

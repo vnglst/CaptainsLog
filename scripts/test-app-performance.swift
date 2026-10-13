@@ -30,7 +30,7 @@ for mode in modes {
         try fm.createDirectory(at: transcript.deletingLastPathComponent(), withIntermediateDirectories: true)
         try fm.copyItem(at: URL(fileURLWithPath: "eval/transcribe/expected/2025-01-14 side project.md"), to: transcript)
     }
-    let config: [String: Any] = ["dataDir": data.path, "whisperModel": "openai_whisper-large-v2", "whisperModelFolder": whisper, "qwenModelId": "Qwen3.5-9B-Q4_K_M", "qwenModelFolder": qwen, "automaticUpdates": false, "automaticUpdateChecks": false]
+    let config: [String: Any] = ["schemaVersion": 1, "dataDir": data.path, "whisperModel": "openai_whisper-large-v2", "whisperModelFolder": whisper, "qwenModelId": "Qwen3.5-9B-Q4_K_M", "qwenModelFolder": qwen, "automaticUpdates": false, "automaticUpdateChecks": false]
     let configPath = run.appendingPathComponent("config.json")
     try JSONSerialization.data(withJSONObject: config, options: [.prettyPrinted, .sortedKeys]).write(to: configPath)
     let trace = run.appendingPathComponent("trace.txt")

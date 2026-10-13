@@ -18,7 +18,7 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
-- Add opt-in debug native startup and quit-during-Whisper/Qwen-decoding timing markers and a fixture-backed performance check for isolated performance verification; wait for bootstrap completion before timing model readiness.
+- Add opt-in debug native startup and quit-during-Whisper/Qwen-decoding timing markers and a fixture-backed performance check for isolated performance verification; wait for bootstrap completion before timing model readiness and reject malformed benchmark configurations before loading app state.
 
 - Record a Next backlog item to benchmark and optimize app startup and closing during processing, with performance regression test coverage.
 - Record a Next backlog item to explore common app actions and try to find breaks or crashes, including opening, starting processing, closing, and deleting then processing.
