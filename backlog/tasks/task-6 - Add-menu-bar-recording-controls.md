@@ -1,14 +1,14 @@
 ---
 id: TASK-6
 title: Add menu bar recording controls
-status: Verify
+status: Complete
 assignee: []
 created_date: '2026-10-04 13:10'
-updated_date: '2026-10-10 12:48'
+updated_date: '2026-10-13 13:57'
 labels:
   - logs
 dependencies: []
-ordinal: 2500
+ordinal: 0.2899169921875
 ---
 
 ## Description

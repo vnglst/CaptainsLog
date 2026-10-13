@@ -1,13 +1,13 @@
 ---
 id: TASK-49
 title: Reprocess all audio files with updated settings
-status: Verify
+status: Complete
 assignee: []
 created_date: '2026-10-09 19:22'
-updated_date: '2026-10-10 12:48'
+updated_date: '2026-10-13 13:57'
 labels: []
 dependencies: []
-ordinal: 4000
+ordinal: 0.072479248046875
 ---
 
 ## Description

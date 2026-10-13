@@ -1,14 +1,14 @@
 ---
 id: TASK-4
 title: Add category filters in Logs
-status: Verify
+status: Complete
 assignee: []
 created_date: '2026-10-04 13:10'
-updated_date: '2026-10-10 12:48'
+updated_date: '2026-10-13 13:57'
 labels:
   - logs
 dependencies: []
-ordinal: 3000
+ordinal: 0.14495849609375
 ---
 
 ## Description
