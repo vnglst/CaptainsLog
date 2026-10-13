@@ -14,6 +14,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Fixed
 
+- Recover genuine Whisper initialization failures once in shared Core by repairing download sidecars and only the reported temporary compiled-model cache; preserve settings on cancellation and the original failure if recovery fails, with sendable recovery boundaries and per-attempt native model factories and synthetic failure/cancellation checks. Healthy launches no longer scan unrelated temporary files.
+
 - Avoid the CoreML Metal prediction path that can abort Whisper transcription with an MPSGraph tensor shape/stride assertion: run the spectrogram on CPU and the unchanged Whisper Large-v2 encoder and decoder on CPU/Neural Engine; record all three compute selections in evaluation metadata and move TASK-54 to owner verification.
 
 ### Changed
@@ -23,6 +25,14 @@ entry. Git links provide the complete commit history for each release.
 - Record a Next backlog item to restore reprocessing for an individual processed log.
 
 - Record the owner requirement that CLI and GUI processing work the same way technically in ADR-027.
+- Keep the startup and closing performance task in Next pending measured startup improvement, retaining verified benchmark and regression criteria after CLI and native fixture checks.
+
+- Document the opt-in Make native app performance regression check, its isolated fixture setup, timing scopes, thresholds, retained binary/model/fixture hashes and watchdog behavior.
+
+- Bound shared Core Qwen prompt chunks to 128 tokens so the CLI and native app use identical inference execution and can cancel between shorter Metal calls, with model/context configuration and sampling unchanged.
+- Validate prepared Whisper bundles and encoder/decoder weight files with bounded checks before skipping metadata recovery scans at launch; stop Whisper decoding cooperatively during native shutdown, discard canceled partial text, and release CoreML objects before draining shutdown and preserve model configuration when loading is canceled.
+
+- Add opt-in debug native startup and quit-during-Whisper/Qwen-decoding timing markers and a fixture-backed performance check for isolated performance verification; wait for bootstrap completion before timing model readiness and reject malformed benchmark configurations before loading app state; confirm CLI-loaded data and model paths before each probe and schedule probe quit through the main run loop.
 
 - Record a Next backlog item to benchmark and optimize app startup and closing during processing, with performance regression test coverage.
 - Record a Next backlog item to explore common app actions and try to find breaks or crashes, including opening, starting processing, closing, and deleting then processing.

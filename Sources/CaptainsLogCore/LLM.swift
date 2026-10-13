@@ -11,6 +11,12 @@ private actor LLMInferenceGate {
 }
 
 public enum LLM {
+    /// CLI and app share the same prompt execution. Smaller chunks provide a
+    /// cancellation boundary between bounded native Metal calls in both frontends.
+    static func promptChunkSize(batchSize: Int) -> Int {
+        min(batchSize, 128)
+    }
+
 
     enum LLMError: LocalizedError, Equatable {
         case invalidModelContextSize(Int)
@@ -419,7 +425,7 @@ public enum LLM {
         var offset = 0
         while offset < tokens.count {
             try NativeInferenceLifecycle.shared.checkCancellation()
-            let count = min(batchSize, tokens.count - offset)
+            let count = min(promptChunkSize(batchSize: batchSize), tokens.count - offset)
             var chunk = Array(tokens[offset..<(offset + count)])
             let result = chunk.withUnsafeMutableBufferPointer { buffer in
                 let batch = llama_batch_get_one(buffer.baseAddress, Int32(buffer.count))
@@ -428,6 +434,9 @@ public enum LLM {
             guard result == 0 else {
                 throw NSError(domain: "LLM", code: Int(result), userInfo: [NSLocalizedDescriptionKey: "llama_decode failed with code \(result)"])
             }
+            #if DEBUG
+            if ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_QWEN"] == "1" { AppPerformanceTrace.firstDecode("qwen-decode") }
+            #endif
             offset += count
         }
     }
