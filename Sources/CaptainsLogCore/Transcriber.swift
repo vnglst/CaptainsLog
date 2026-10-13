@@ -160,9 +160,9 @@ public enum Transcriber {
     /// cancellation never clears model settings or starts cache repair.
     static func loadWithRecovery<Value>(
         lifecycle: NativeInferenceLifecycle,
-        load: () async throws -> Value,
-        recover: (Error) throws -> Void,
-        clearConfig: () -> Void
+        load: @Sendable () async throws -> Value,
+        recover: @Sendable (Error) throws -> Void,
+        clearConfig: @Sendable () -> Void
     ) async throws -> Value {
         try lifecycle.checkCancellation()
         do { return try await load() }

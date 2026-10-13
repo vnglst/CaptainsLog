@@ -3892,27 +3892,29 @@ func runTests() async {
     await testAsync("Whisper load recovery: cancellation never repairs or clears settings") {
         let repairs = LockedValue(0), clears = LockedValue(0)
         for error in [CancellationError() as Error, NSError(domain: NSURLErrorDomain, code: NSURLErrorCancelled)] {
+            var propagated = false
             do {
                 let _: Int = try await Transcriber.loadWithRecovery(
                     lifecycle: NativeInferenceLifecycle(), load: { throw error },
                     recover: { _ in repairs.set(repairs.get() + 1) }, clearConfig: { clears.set(clears.get() + 1) }
                 )
-                try expect(false, "Cancellation must propagate")
-            } catch {}
+            } catch { propagated = true }
+            try expect(propagated, "Cancellation must propagate")
         }
         try expect(repairs.get() == 0 && clears.get() == 0)
     }
 
     await testAsync("Whisper load recovery: failed repair preserves original error and clears stale settings") {
         let loads = LockedValue(0), repairs = LockedValue(0), clears = LockedValue(0)
+        var reported: NSError?
         do {
             let _: Int = try await Transcriber.loadWithRecovery(
                 lifecycle: NativeInferenceLifecycle(),
                 load: { loads.set(loads.get() + 1); throw NSError(domain: "SyntheticCoreML", code: loads.get()) },
                 recover: { _ in repairs.set(repairs.get() + 1) }, clearConfig: { clears.set(clears.get() + 1) }
             )
-            try expect(false, "The second failed load must throw")
-        } catch { try expect((error as NSError).code == 1, "Preserve the original initialization failure") }
+        } catch { reported = error as NSError }
+        try expect(reported?.domain == "SyntheticCoreML" && reported?.code == 1, "Preserve the original initialization failure")
         try expect(loads.get() == 2 && repairs.get() == 1 && clears.get() == 1)
     }
 

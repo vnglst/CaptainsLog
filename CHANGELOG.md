@@ -14,7 +14,7 @@ entry. Git links provide the complete commit history for each release.
 
 ### Fixed
 
-- Recover genuine Whisper initialization failures once in shared Core by repairing download sidecars and only the reported temporary compiled-model cache; preserve settings on cancellation and the original failure if recovery fails. Healthy launches no longer scan unrelated temporary files.
+- Recover genuine Whisper initialization failures once in shared Core by repairing download sidecars and only the reported temporary compiled-model cache; preserve settings on cancellation and the original failure if recovery fails, with sendable recovery boundaries and synthetic failure/cancellation checks. Healthy launches no longer scan unrelated temporary files.
 
 - Avoid the CoreML Metal prediction path that can abort Whisper transcription with an MPSGraph tensor shape/stride assertion: run the spectrogram on CPU and the unchanged Whisper Large-v2 encoder and decoder on CPU/Neural Engine; record all three compute selections in evaluation metadata and move TASK-54 to owner verification.
 
