@@ -1,6 +1,7 @@
 import AppKit
 import CaptainsLog
 import CaptainsLogCore
+import Darwin
 import SwiftUI
 
 @main
@@ -13,6 +14,18 @@ struct CaptainsLogApp: App {
     #endif
 
     init() {
+        // Test bundles may be relaunched by automation or LaunchServices without
+        // their inherited environment. Reject that launch before reading app state.
+        if Bundle.main.bundleIdentifier?.hasPrefix("local.captainslog.") == true {
+            guard let configPath = ProcessInfo.processInfo.environment["CAPTAINS_LOG_CONFIG_PATH"],
+                  let data = try? Data(contentsOf: URL(fileURLWithPath: configPath)),
+                  let config = try? JSONDecoder().decode(CaptainsLogConfig.self, from: data),
+                  config.schemaVersion == CaptainsLogConfig.currentSchemaVersion,
+                  let dataDir = config.dataDir, !dataDir.isEmpty else {
+                fputs("Isolated test bundles require a valid explicit CaptainsLog config and data directory.\n", stderr)
+                exit(EX_CONFIG)
+            }
+        }
         AppPerformanceTrace.mark("app-init")
         #if DEBUG
         if ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_TRACE"] != nil {

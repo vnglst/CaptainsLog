@@ -1,9 +1,10 @@
 ---
 id: TASK-56
 title: Explore common app actions to find breaks and crashes
-status: Next
+status: Verify
 assignee: []
 created_date: '2026-10-12 17:07'
+updated_date: '2026-10-13 17:37'
 labels: []
 dependencies: []
 ordinal: 49000
@@ -17,6 +18,6 @@ Explore the app and try to break or crash it by executing common things users mi
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Explore opening the app, starting processing, and closing it to try to break or crash it.
-- [ ] #2 Explore deleting and then starting processing to try to break or crash the app.
+- [x] #1 Explore opening the app, starting processing, and closing it to try to break or crash it.
+- [x] #2 Explore deleting and then starting processing to try to break or crash the app.
 <!-- AC:END -->
