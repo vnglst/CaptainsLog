@@ -129,10 +129,7 @@ public enum Transcriber {
             ),
             callback: { _ in
                 #if DEBUG
-                AppPerformanceTrace.mark("whisper-decode")
-                if ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_QUIT_ON_DECODE"] == "1" {
-                    NotificationCenter.default.post(name: Notification.Name("CaptainsLogPerformanceDecode"), object: nil)
-                }
+                AppPerformanceTrace.firstDecode()
                 #endif
                 return nil
             }

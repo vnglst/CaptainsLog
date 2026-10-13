@@ -1,8 +1,23 @@
 import Foundation
+import Synchronization
 
 /// Opt-in debug instrumentation for isolated native startup and shutdown checks.
 public enum AppPerformanceTrace {
     private static let lock = NSLock()
+    private static let decoded = Mutex(false)
+
+    public static func firstDecode() {
+        #if DEBUG
+        let first = decoded.withLock { value in
+            guard !value else { return false }; value = true; return true
+        }
+        guard first else { return }
+        mark("whisper-decode")
+        if ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_QUIT_ON_DECODE"] == "1" {
+            NotificationCenter.default.post(name: Notification.Name("CaptainsLogPerformanceDecode"), object: nil)
+        }
+        #endif
+    }
     public static func mark(_ event: String) {
         #if DEBUG
         guard let path = ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_TRACE"] else { return }

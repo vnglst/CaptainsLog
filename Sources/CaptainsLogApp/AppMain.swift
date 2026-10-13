@@ -56,17 +56,19 @@ struct CaptainsLogApp: App {
                 .background(MenuBarFixtureLauncher(enabled: designFixture?.hasPrefix("eval-menu") == true))
                 .task {
                     AppPerformanceTrace.mark("view-ready")
-                    if ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_PROCESS"] == "1" {
+                    if ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_PROCESS"] == "1" || ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_STARTUP_ONLY"] == "1" {
                         await appState.bootstrap()
                         while !appState.models.modelsReady { try? await Task.sleep(for: .milliseconds(20)) }
                         AppPerformanceTrace.mark("models-ready")
-                        appState.batchResumePending()
+                        if ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_STARTUP_ONLY"] == "1" {
+                            NSApplication.shared.terminate(nil)
+                        } else { appState.batchResumePending() }
                     }
                     if let designFixture {
                         appState.applyDesignFixture(named: designFixture)
                     }
                 }
-                .onReceive(NotificationCenter.default.publisher(for: Notification.Name("CaptainsLogPerformanceDecode"))) { _ in
+                .onReceive(NotificationCenter.default.publisher(for: Notification.Name("CaptainsLogPerformanceDecode")).receive(on: RunLoop.main)) { _ in
                     if ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_QUIT_ON_DECODE"] == "1" {
                         AppPerformanceTrace.mark("quit-request")
                         NSApplication.shared.terminate(nil)
