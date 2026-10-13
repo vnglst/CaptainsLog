@@ -579,6 +579,34 @@ func runSearchCoverageTests() async {
                    "Late progress must not restore preparing/indexing state after shutdown")
     }
 
+    await testAsync("Search shutdown: drain superseded canceled model factories as well as the latest query") {
+        let root = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let lifecycle = LockedStringArray()
+        let factories = LockedValue(0)
+        let oldFactory = AsyncTestGate()
+        let manager = SearchManager(debounceInterval: .zero) { dataDir, _ in
+            factories.set(factories.get() + 1)
+            let first = factories.get() == 1
+            let search = try SemanticSearch(dataDir: dataDir, model: LifetimeEmbeddingModel(lifecycle: lifecycle))
+            if first { await oldFactory.wait() }
+            return search
+        }
+        manager.updateQuery("first query", dataDir: root.path)
+        for _ in 0..<100 where factories.get() == 0 { try await Task.sleep(for: .milliseconds(10)) }
+        manager.updateQuery("replacement query", dataDir: root.path)
+        for _ in 0..<100 where manager.state != .ready { try await Task.sleep(for: .milliseconds(10)) }
+        try expect(manager.state == .ready && factories.get() == 2)
+        let drained = LockedValue(false)
+        let shutdown = Task { await manager.stopForTermination(); drained.set(true) }
+        try await Task.sleep(for: .milliseconds(20))
+        try expect(!drained.get(), "A finished latest query must not conceal a canceled factory that still owns native resources")
+        await oldFactory.open()
+        await shutdown.value
+        try expect(lifecycle.snapshot().filter { $0 == "released" }.count == 2)
+        try expect(drained.get() && manager.state == .idle)
+    }
+
     await testAsync("Search shutdown: cancel debounced work before loading native resources") {
         let root = try makeTemporaryDirectory()
         defer { try? FileManager.default.removeItem(at: root) }

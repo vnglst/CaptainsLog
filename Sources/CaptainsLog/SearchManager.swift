@@ -28,6 +28,7 @@ public final class SearchManager {
     private var excludedCategoryFolders = Set<String>()
     private var isStopping = false
     private var searchTask: Task<Void, Never>?
+    private var activeSearchTasks: [UUID: Task<Void, Never>] = [:]
     private var engine: SemanticSearch?
     private var engineDataDir: String?
     private let debounceInterval: Duration
@@ -77,11 +78,15 @@ public final class SearchManager {
             return
         }
         let debounceInterval = self.debounceInterval
-        searchTask = Task { [weak self] in
+        let taskID = UUID()
+        let task = Task { [weak self] in
+            defer { self?.activeSearchTasks.removeValue(forKey: taskID) }
             try? await Task.sleep(for: debounceInterval)
             guard !Task.isCancelled, let self else { return }
             await self.performSearch(dataDir: dataDir)
         }
+        searchTask = task
+        activeSearchTasks[taskID] = task
     }
 
     func updateCategoryFilter(_ excluded: Set<String>, dataDir: String) {
@@ -100,9 +105,12 @@ public final class SearchManager {
     /// Canceling alone leaves both a cached engine and an in-flight factory alive.
     public func stopForTermination() async {
         isStopping = true
-        let task = searchTask
-        task?.cancel()
-        await task?.value
+        // A superseded canceled query may still own a model while its native
+        // factory unwinds. Drain every lease, not only the newest task handle.
+        let tasks = Array(activeSearchTasks.values)
+        tasks.forEach { $0.cancel() }
+        for task in tasks { await task.value }
+        activeSearchTasks.removeAll()
         searchTask = nil
         engine = nil
         engineDataDir = nil

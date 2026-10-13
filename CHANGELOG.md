@@ -14,7 +14,7 @@ entry. Git links provide the complete commit history for each release.
 
 ### Fixed
 
-- Cancel and drain search work, release the cached embedding model, and ignore late search callbacks before app termination so native Metal allocations are freed before backend static teardown; keep CLI and GUI inference on the same Core model lifecycle.
+- Cancel and drain all current and superseded search work, release the cached embedding model, and ignore late search callbacks before app termination so native Metal allocations are freed before backend static teardown; keep CLI and GUI inference on the same Core model lifecycle.
 
 - Reject isolated test-bundle launches without a valid explicit configuration and data directory before app state can fall back to normal user settings, including release fixture bundles relaunched by automation.
 - Bundle pipeline prompts in the isolated native UI harness so fixture processing can resolve cleanup, categorization, naming and enrichment instructions outside the repository working directory.
