@@ -25,6 +25,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
+- Create isolated temporary directories locally in the search shutdown regression tests so the tests compile independently of other test groups.
+
 - Skip onboarding with process-local launch arguments during the isolated cached-search shutdown check, without modifying saved user defaults.
 
 - Add a documented opt-in eval-backed native cached-search/quit reproduction check, retaining source/process identity, model/binary/fixture hashes and shutdown markers.

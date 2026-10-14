@@ -290,6 +290,12 @@ func makeCompletedSearchEntry(
 
 @MainActor
 func runSearchCoverageTests() async {
+    func makeTemporaryDirectory() throws -> URL {
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent("CaptainsLogSearchTests-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
+        return url
+    }
     await testAsync("Semantic search: indexes, ranks, updates, and removes completed entries") {
         let root = FileManager.default.temporaryDirectory
             .appendingPathComponent("SemanticSearchTests-\(UUID().uuidString)", isDirectory: true)
