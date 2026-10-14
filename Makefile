@@ -16,7 +16,7 @@ RUN_DIR ?=
 SHA256 ?=
 
 # Directory timestamps also invalidate the app when source files are added or removed.
-DEV_INPUTS := Package.swift Package.resolved $(shell find Sources -type f -o -type d)
+DEV_INPUTS := Package.swift Package.resolved $(shell find Sources Vendor -type f -o -type d)
 
 .PHONY: help build dev run cli tests tests-unit tests-coverage tests-updates tests-release tests-evals tests-runtime tests-enrich tests-model tests-recorder tests-app-performance ui evals evals-list evals-pipeline evals-suites packaging release release-notes release-check release-cask icons clean
 

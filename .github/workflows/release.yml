@@ -18,7 +18,7 @@ jobs:
     runs-on: macos-26
     steps:
       - name: Check out tagged source
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0
 
@@ -123,7 +123,7 @@ jobs:
           git push origin "$DEFAULT_BRANCH"
 
       - name: Check out Homebrew tap
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
         with:
           repository: vnglst/homebrew-captainslog
           token: ${{ secrets.HOMEBREW_TAP_TOKEN || github.token }}

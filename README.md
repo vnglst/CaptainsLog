@@ -86,9 +86,9 @@ open dist/CaptainsLog.app
 ```
 
 The development and release configurations both use the checksum-verified upstream
-`llama-b11512-xcframework.zip` (llama.cpp revision
-`a11f57ba93797579a5d1855ee216a31f10242676`). SwiftPM verifies SHA-256
-`3f6a7d0fecbf49781445bba900dc0a4a7e76303482765f5912a4a959d5fa2c38`
+`llama-b11597-xcframework.zip` (llama.cpp revision
+`cb55ffe6e2147eb15f4bede1f60d11246715754f`). SwiftPM verifies SHA-256
+`4e757338d5a49158b8e608f91e02d35b16b257b361cc22601d0fec70f6976788`
 before resolving the matching llama/GGML headers and framework. The universal
 macOS slice contains arm64 and x86_64 code; CaptainsLog builds arm64 with deployment
 target macOS 26.0. Upstream built the framework for macOS 13.3 with SDK 26.4
@@ -104,6 +104,10 @@ ZIP timestamps or a byte-identical rebuild of upstream's compiler output. Run
 `make tests-runtime` to independently download, verify and compare two
 clean unsigned framework extractions. Packaging runs `scripts/check-runtime.swift`
 to reject external runtime paths and verify the app/CLI deployment target.
+
+Two upstream Swift packages are retained in `Vendor/` with only dependency
+constraint patches, allowing the newest Swift Crypto and yyjson releases.
+See [vendored package provenance](Vendor/README.md) before refreshing them.
 
 To upgrade the runtime, select an immutable upstream release and source commit,
 verify the release asset's SHA-256 independently, update the URL/checksum/revision

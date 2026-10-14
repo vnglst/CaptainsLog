@@ -94,11 +94,12 @@ extension Tools {
         for name in ["LICENSE", "THIRD-PARTY-NOTICES.md"] { try copy(path(name), resources.appendingPathComponent(name)) }
         for name in ["LICENSE-MIT", "LICENSE-APACHE"] { try copy(path("Sources/CSQLiteVec/\(name)"), notices.appendingPathComponent("sqlite-vec/\(name)")) }
         for name in ["LICENSE", "THIRD-PARTY-LICENSES.txt"] { try copy(path("Sources/NativeRuntime/\(name)"), notices.appendingPathComponent("llama.cpp/\(name)")) }
-        let checkouts = path(".build/checkouts")
-        for file in files(checkouts, recursive: true) {
-            let name = file.lastPathComponent.uppercased()
-            if name == "LICENSE" || name.hasPrefix("LICENSE.") || name == "NOTICE" || name.hasPrefix("NOTICE.") || name == "NOTICES" || name.hasPrefix("COPYING") {
-                let relative = String(file.path.dropFirst(checkouts.path.count + 1)); try copy(file, notices.appendingPathComponent("SwiftPackages/\(relative)"))
+        for checkouts in [path(".build/checkouts"), path("Vendor")] {
+            for file in files(checkouts, recursive: true) {
+                let name = file.lastPathComponent.uppercased()
+                if name == "LICENSE" || name.hasPrefix("LICENSE.") || name == "NOTICE" || name.hasPrefix("NOTICE.") || name == "NOTICES" || name.hasPrefix("COPYING") {
+                    let relative = String(file.path.dropFirst(checkouts.path.count + 1)); try copy(file, notices.appendingPathComponent("SwiftPackages/\(relative)"))
+                }
             }
         }
         let revision = (try? capture(["git", "rev-parse", "--short", "HEAD"])) ?? "unknown"

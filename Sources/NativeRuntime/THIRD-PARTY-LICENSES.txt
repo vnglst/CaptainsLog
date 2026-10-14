@@ -1,4 +1,4 @@
-Native helper notices from llama.cpp revision a11f57ba93797579a5d1855ee216a31f10242676.
+Native helper notices from llama.cpp revision cb55ffe6e2147eb15f4bede1f60d11246715754f.
 These helpers are included by the upstream XCFramework mtmd build.
 
 

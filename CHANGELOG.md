@@ -23,6 +23,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
+- Update WhisperKit to 1.1.1, Transformers to 1.3.5, Hugging Face to 1.0.0, all resolved Swift transitive dependencies to their newest stable releases, the checksum-pinned llama.cpp framework to b11597, and sqlite-vec to the newest published 0.1.10-alpha.4 amalgamation. Retain complete upstream Transformers/Hugging Face sources with dependency-constraint patches for Swift Crypto 5.0.1 and yyjson 0.13.0; include their licenses when packaging. Pin the release workflow checkout action to the newest 7.0.1 release.
+
 - Record a Next backlog item to update all dependencies to their newest versions and verify that everything continues to work as expected.
 
 - Record a Next backlog item to restore reprocessing for an individual processed log.
