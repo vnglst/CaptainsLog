@@ -59,6 +59,8 @@ let trace = root.appendingPathComponent("trace.txt")
 childEnv["CAPTAINSLOG_PERFORMANCE_TRACE"] = trace.path
 childEnv["CAPTAINSLOG_SEARCH_QUIT_CHECK"] = "1"
 let process = Process(); process.executableURL = executable; process.environment = childEnv
+// Process-local defaults skip onboarding without changing the user's saved defaults.
+process.arguments = ["-CaptainsLogHasLaunched", "YES"]
 let log = root.appendingPathComponent("app.log"); fm.createFile(atPath: log.path, contents: nil)
 let output = try FileHandle(forWritingTo: log); process.standardOutput = output; process.standardError = output
 let start = ProcessInfo.processInfo.systemUptime

@@ -25,6 +25,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
+- Skip onboarding with process-local launch arguments during the isolated cached-search shutdown check, without modifying saved user defaults.
+
 - Add a documented opt-in eval-backed native cached-search/quit reproduction check, retaining source/process identity, model/binary/fixture hashes and shutdown markers.
 
 - Record a Next backlog item to update all dependencies to their newest versions and verify that everything continues to work as expected.
