@@ -19,6 +19,7 @@ struct FieldNotesCorrectionsEditor: View {
                     } label: {
                         Image(systemName: "trash")
                             .frame(width: 32, height: 36)
+                            .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel("Remove correction for \(entry.misspelling)")

@@ -523,6 +523,7 @@ private struct FieldNotesSearchField: View {
                 Image(systemName: "xmark.circle.fill")
                     .foregroundStyle(FieldNotes.ColorToken.tertiaryText)
                     .frame(width: 20, height: 20)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             .opacity(text.isEmpty ? 0 : 1)
@@ -798,6 +799,9 @@ private struct FieldNotesEntryDetailView: View {
                     Label("All entries", systemImage: "chevron.left")
                         .font(FieldNotes.Typography.body(13, weight: .medium))
                         .foregroundStyle(FieldNotes.ColorToken.secondaryText)
+                        .padding(.horizontal, FieldNotes.Spacing.s)
+                        .frame(minHeight: 34)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .keyboardShortcut("[", modifiers: .command)
@@ -810,6 +814,9 @@ private struct FieldNotesEntryDetailView: View {
                     copied = NSPasteboard.general.setString(transcription, forType: .string)
                 } label: {
                     Label(copied ? "Copied" : "Copy transcription", systemImage: copied ? "checkmark" : "doc.on.doc")
+                        .padding(.horizontal, FieldNotes.Spacing.s)
+                        .frame(minHeight: 34)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .font(FieldNotes.Typography.body(12, weight: .medium))
@@ -818,8 +825,13 @@ private struct FieldNotesEntryDetailView: View {
                 .accessibilityHint("Copies the complete cleaned transcription without summary or metadata")
 
                 if !entry.path.isEmpty {
-                    Button("Reveal in Finder") {
+                    Button {
                         NSWorkspace.shared.selectFile(entry.path, inFileViewerRootedAtPath: "")
+                    } label: {
+                        Text("Reveal in Finder")
+                            .padding(.horizontal, FieldNotes.Spacing.s)
+                            .frame(minHeight: 34)
+                            .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
                     .font(FieldNotes.Typography.body(12, weight: .medium))

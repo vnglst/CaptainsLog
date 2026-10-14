@@ -46,6 +46,8 @@ struct FieldNotesCategoriesEditor: View {
                                 appState.config.categories.removeAll { $0 == raw }
                             } label: {
                                 Image(systemName: "minus.circle")
+                                    .frame(width: 24, height: 24)
+                                    .contentShape(Rectangle())
                             }
                             .buttonStyle(.plain)
                             .accessibilityLabel("Remove \(Categorize.Category(rawValue: raw)?.displayName ?? raw) category")

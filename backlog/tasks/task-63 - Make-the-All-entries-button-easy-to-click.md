@@ -1,10 +1,10 @@
 ---
 id: TASK-63
 title: Make the All entries button easy to click
-status: Next
+status: Verify
 assignee: []
 created_date: '2026-10-14 17:23'
-updated_date: '2026-10-14 17:26'
+updated_date: '2026-10-14 18:09'
 labels: []
 dependencies: []
 type: bug
@@ -19,7 +19,7 @@ For the "< All entries" button, I cannot click the "<". Clicking buttons should 
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Clicking the "<" in the "< All entries" button activates the button.
-- [ ] #2 The "< All entries" button is easy to click and hard to miss.
-- [ ] #3 All buttons have been checked for similar click-target problems.
+- [x] #1 Clicking the "<" in the "< All entries" button activates the button.
+- [x] #2 The "< All entries" button is easy to click and hard to miss.
+- [x] #3 All buttons have been checked for similar click-target problems.
 <!-- AC:END -->

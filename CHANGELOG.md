@@ -23,6 +23,7 @@ entry. Git links provide the complete commit history for each release.
 ### Fixed
 
 - Restore microphone selection in Settings with a device picker shared with the recording dock's selected input.
+- Make the All entries chevron, label and surrounding padding clickable; give log detail actions and icon-only search, correction and category controls explicit click targets.
 
 - Move the Metal shutdown crash fix to owner verification after reproducing the original native assertion, passing 241 deterministic tests, repeated cached-search quit checks and a recorded real UI search/open/quit check.
 
