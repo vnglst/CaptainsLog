@@ -79,6 +79,18 @@ normal exit, startup below five seconds and close below three seconds. Canceled 
 partial text must not be saved. A debug-marker absence or native failure fails the
 check; an idle/simulated processing state cannot satisfy it.
 
+`ARGS="--startup-only --startup-entries=1000"` runs three launches without inference,
+restoring 1,000 completed entries generated only from repository transcription,
+cleanup and enrichment fixtures. Each launch copies the same fixture bytes into
+fresh isolated data; the count is retained in metadata. Use the same count and
+binary build configuration for before/after comparisons. Set
+`--startup-max-seconds=1.2` to enforce a tighter loaded-library regression limit;
+`--startup-runs=7` increases repetitions.
+Startup-only mode allows one second for normal quit, then stops only its owned
+idle process if needed after readiness and records this
+controlled stop separately; it provides no closing measurement. The default
+combined check still requires normal AppKit shutdown during native processing.
+
 `ARGS=--baseline` records timings without enforcing thresholds. A watchdog stops
 only the owned test process after 180 seconds overall or 60 seconds following quit;
 those runs are failures, not successful shutdown measurements. The opt-in

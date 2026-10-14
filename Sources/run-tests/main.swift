@@ -1684,6 +1684,38 @@ func runCoreCoverageTests() {
                    "Body text must not be treated as metadata")
     }
 
+    test("Logs: repeated startup sorting preserves canonical dates and current time zone") {
+        let root = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let fixture = try String(contentsOfFile: "eval/enrich/expected/2025-01-14 side project.md", encoding: .utf8)
+        let note = try makeCompletedSearchEntry(root: root, stem: "2024-01-01-0900", slug: "dated", category: .sideProject, content: fixture)
+        for offset in [0, 3600, -18000] {
+            let zone = TimeZone(secondsFromGMT: offset)!
+            for _ in 0..<20 {
+                let entries = Pipeline.listEntries(dataDir: root.path)
+                let date = EntryDate.parse(day: "2025-01-14", time: "12:00", timeZone: zone)!
+                var calendar = Calendar(identifier: .gregorian)
+                calendar.timeZone = zone
+                let components = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: date)
+                try expect(components.year == 2025 && components.month == 1 && components.day == 14 && components.hour == 12 && components.minute == 0)
+                let reference = DateFormatter()
+                reference.locale = Locale(identifier: "en_US_POSIX")
+                reference.calendar = Calendar(identifier: .gregorian)
+                reference.timeZone = zone
+                reference.dateFormat = "yyyy-MM-dd HH:mm"
+                reference.isLenient = false
+                try expect(date == reference.date(from: "2025-01-14 12:00"), "Cached parsing must match a fresh formatter after changing time zones")
+                reference.timeZone = .current
+                try expect(entries[0].sortDate == reference.date(from: "2025-01-14 12:00"), "Sorting must resolve dates in the current time zone")
+            }
+        }
+        for invalid in ["2025-2-014", "2025-02-30", "2025-13-14", "2025-01-00"] {
+            try fixture.replacingOccurrences(of: "2025-01-14", with: invalid).write(to: note, atomically: true, encoding: .utf8)
+            let date = Pipeline.listEntries(dataDir: root.path)[0].sortDate!
+            try expect(Calendar.current.component(.year, from: date) == 2024, "Noncanonical metadata must retain recording-date fallback")
+        }
+    }
+
     test("AppState: LogEntry parses completed-entry frontmatter") {
         let root = try makeTemporaryDirectory()
         defer { try? FileManager.default.removeItem(at: root) }
@@ -1838,6 +1870,7 @@ func runCoreCoverageTests() {
         let completed = EntryRowBehavior(entry: entry(stage: .done))
         try expect(completed.status == .processed, "done entries should be processed")
         try expect(completed.canOpen, "done entries should open")
+        try expect(completed.canReprocess && !active.canReprocess && !paused.canReprocess && !failed.canReprocess)
         try expect(!completed.canResume && completed.resumeTitle == nil, "done entries should not resume")
         try expect(completed.canRevealInFinder, "non-empty path should be revealable")
 
@@ -2449,6 +2482,54 @@ func runCoordinatorCoverageTests() async {
 
 @MainActor
 func runPipelineOrchestrationCoverageTests() async {
+    await testAsync("Reprocess: replaces every stage for one recording and preserves other entries and audio") {
+        let fm = FileManager.default
+        let root = fm.temporaryDirectory.appendingPathComponent("Reprocess-\(UUID().uuidString)")
+        defer { try? fm.removeItem(at: root) }
+        let fixture = URL(fileURLWithPath: fm.currentDirectoryPath)
+            .appendingPathComponent("eval/transcribe/audio/2025-01-14 side project.m4a")
+        let calls = LockedStringArray()
+        let operations = Pipeline.Operations(
+            transcribe: { _, _ in calls.append("transcribe"); return "fixture transcript" },
+            cleanup: { _, _ in calls.append("cleanup"); return "cleaned fixture" },
+            categorize: { _, _, _ in
+                calls.append("categorize")
+                return calls.snapshot().count <= 5 ? .sideProject : .personal
+            },
+            filename: { _, _ in
+                calls.append("filename")
+                return calls.snapshot().count <= 5 ? "2025-01-14-old-name.md" : "2025-01-14-new-name.md"
+            },
+            enrich: { _, _, _, _ in calls.append("enrich"); return "---\nsummary: fixture\n---\nnew result" }
+        )
+        let result = try await Pipeline.runCommand(audioInput: fixture.path, dataDir: root.path, operations: operations)
+        let stem = "2025-01-14 side project"
+        let originalAudio = try Data(contentsOf: URL(fileURLWithPath: result.audioPath))
+        let other = root.appendingPathComponent("logs/personal/unrelated.md")
+        try fm.createDirectory(at: other.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try Data("unrelated fixture".utf8).write(to: other)
+        try Pipeline.prepareReprocessing(stem: stem, dataDir: root.path)
+        try expect(Pipeline.detectNextStage(stem: stem, dataDir: root.path) == .transcribing)
+        for path in [result.transcriptPath, result.cleanedPath, result.renamedPath, result.enrichedPath] {
+            try expect(!fm.fileExists(atPath: path))
+        }
+        let regenerated = try await Pipeline.resumeCommand(stem: stem, dataDir: root.path,
+            fromStage: .transcribing, operations: operations)
+        try expect(calls.snapshot() == Array(repeating: ["transcribe", "cleanup", "categorize", "filename", "enrich"], count: 2).flatMap { $0 })
+        try expect(Pipeline.detectNextStage(stem: stem, dataDir: root.path) == .done)
+        try expect(regenerated.category == .personal && regenerated.enrichedPath != result.enrichedPath)
+        try expect(!fm.fileExists(atPath: result.enrichedPath) && !fm.fileExists(atPath: result.renamedPath))
+        try expect(try Data(contentsOf: URL(fileURLWithPath: regenerated.audioPath)) == originalAudio)
+        try expect(try Data(contentsOf: other) == Data("unrelated fixture".utf8))
+        try fm.removeItem(atPath: regenerated.audioPath)
+        let finalBytes = try Data(contentsOf: URL(fileURLWithPath: regenerated.enrichedPath))
+        do {
+            try Pipeline.prepareReprocessing(stem: stem, dataDir: root.path)
+            try expect(false, "Missing source audio must reject reprocessing before deleting outputs")
+        } catch is CocoaError { }
+        try expect(try Data(contentsOf: URL(fileURLWithPath: regenerated.enrichedPath)) == finalBytes)
+    }
+
     func makeRoot(stem: String) throws -> URL {
         let root = FileManager.default.temporaryDirectory
             .appendingPathComponent("PipelineOperationsTests-\(UUID().uuidString)", isDirectory: true)

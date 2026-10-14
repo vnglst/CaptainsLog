@@ -484,6 +484,18 @@ public enum Pipeline {
         artifactCandidatePaths(stem: stem, slug: slug, dataDir: dataDir, includeAudio: true)
     }
 
+    /// Clear only this recording's derived artifacts before running the shared pipeline again.
+    public static func prepareReprocessing(stem: String, dataDir: String) throws {
+        let root = URL(fileURLWithPath: dataDir)
+        guard !sourceAudioURLs(stem: stem, dataDirURL: root).isEmpty else {
+            throw CocoaError(.fileNoSuchFile)
+        }
+        let fm = FileManager.default
+        for path in artifactCandidatePaths(stem: stem, slug: nil, dataDir: dataDir, includeAudio: false) {
+            if fm.fileExists(atPath: path) { try fm.removeItem(atPath: path) }
+        }
+    }
+
     private static func artifactCandidatePaths(
         stem: String,
         slug: String?,
