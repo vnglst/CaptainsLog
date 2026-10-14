@@ -33,6 +33,18 @@ require(fm.fileExists(atPath: header.path) && fm.fileExists(atPath: body.path), 
 let data = root.appendingPathComponent("data")
 let logs = data.appendingPathComponent("logs/side-project")
 try fm.createDirectory(at: logs, withIntermediateDirectories: true)
+let stem = "2025-01-14-0730"
+let slug = "2025-01-14-side-project-star-trek-voice-log"
+for relative in [".pipeline/01-transcribed", ".pipeline/02-logs", ".pipeline/03-category", ".pipeline/04-rename"] {
+    try fm.createDirectory(at: data.appendingPathComponent(relative), withIntermediateDirectories: true)
+}
+try fm.copyItem(at: URL(fileURLWithPath: "eval/transcribe/expected/2025-01-14 side project.md"),
+                to: data.appendingPathComponent(".pipeline/01-transcribed/\(stem).md"))
+try fm.copyItem(at: body, to: data.appendingPathComponent(".pipeline/02-logs/\(stem).md"))
+try fm.copyItem(at: body, to: data.appendingPathComponent(".pipeline/04-rename/\(slug).md"))
+try JSONSerialization.data(withJSONObject: ["sourceStem": stem, "category": "side_project"], options: [.sortedKeys])
+    .write(to: data.appendingPathComponent(".pipeline/03-category/\(stem).json"))
+try slug.write(to: data.appendingPathComponent(".pipeline/04-rename/\(stem).slug.txt"), atomically: true, encoding: .utf8)
 try (String(contentsOf: header, encoding: .utf8) + "\n" + String(contentsOf: body, encoding: .utf8))
     .write(to: logs.appendingPathComponent("2025-01-14-side-project-star-trek-voice-log.md"), atomically: true, encoding: .utf8)
 let config: [String: Any] = ["schemaVersion": 1, "dataDir": data.path, "whisperModel": "openai_whisper-large-v2", "whisperModelFolder": whisper, "qwenModelId": "Qwen3.5-9B-Q4_K_M", "qwenModelFolder": qwen, "automaticUpdates": false, "automaticUpdateChecks": false]
@@ -47,13 +59,31 @@ try cli.run(); let checkedData = pipe.fileHandleForReading.readDataToEndOfFile()
 let checked = String(decoding: checkedData, as: UTF8.self)
 try checkedData.write(to: root.appendingPathComponent("config-show.txt"))
 require(cli.terminationStatus == 0 && checked.contains("dataDir:             " + data.path) && checked.contains("whisperModelFolder:  " + whisper) && checked.contains("qwenModelFolder:     " + qwen), "Loaded config must match exact isolated data and model paths")
+let listing = Process(); listing.executableURL = cli.executableURL
+listing.arguments = ["list"]; listing.environment = childEnv
+let listingPipe = Pipe(); listing.standardOutput = listingPipe; listing.standardError = listingPipe
+try listing.run(); let listingData = listingPipe.fileHandleForReading.readDataToEndOfFile(); listing.waitUntilExit()
+try listingData.write(to: root.appendingPathComponent("list-before-search.txt"))
+let listed = String(decoding: listingData, as: UTF8.self)
+require(listing.terminationStatus == 0 && listed.contains(slug) && listed.contains("done"), "Synthetic checkpoints must expose one completed entry before native search")
 let executable = URL(fileURLWithPath: args[1])
 let revision = Process(); revision.executableURL = URL(fileURLWithPath: "/usr/bin/git")
 revision.arguments = ["rev-parse", "HEAD"]
 let revisionPipe = Pipe(); revision.standardOutput = revisionPipe
 try revision.run(); let revisionData = revisionPipe.fileHandleForReading.readDataToEndOfFile(); revision.waitUntilExit()
 require(revision.terminationStatus == 0, "Cannot record source revision")
-let metadata: [String: Any] = ["sourceRevision": String(decoding: revisionData, as: UTF8.self).trimmingCharacters(in: .whitespacesAndNewlines), "binarySHA256": try sha256(executable), "embeddingSHA256": embeddingHash, "headerSHA256": try sha256(header), "bodySHA256": try sha256(body), "executable": executable.standardizedFileURL.path, "operatingSystem": ProcessInfo.processInfo.operatingSystemVersionString]
+let repositoryRevision = String(decoding: revisionData, as: UTF8.self).trimmingCharacters(in: .whitespacesAndNewlines)
+var sourceRevision = repositoryRevision
+let identityURL = executable.deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent().appendingPathComponent("bundle-identity.json")
+let binaryHash = try sha256(executable)
+if fm.fileExists(atPath: identityURL.path) {
+    let identity = try JSONSerialization.jsonObject(with: Data(contentsOf: identityURL)) as? [String: Any]
+    let hashes = identity?["hashes"] as? [String: String]
+    require(hashes?[executable.lastPathComponent] == binaryHash, "Preserved bundle identity must match the actual executable")
+    guard let savedRevision = identity?["sourceRevision"] as? String else { fatalError("Missing preserved source revision") }
+    sourceRevision = savedRevision
+}
+let metadata: [String: Any] = ["sourceRevision": sourceRevision, "helperRepositoryRevision": repositoryRevision, "binarySHA256": binaryHash, "embeddingSHA256": embeddingHash, "headerSHA256": try sha256(header), "bodySHA256": try sha256(body), "executable": executable.standardizedFileURL.path, "operatingSystem": ProcessInfo.processInfo.operatingSystemVersionString]
 try JSONSerialization.data(withJSONObject: metadata, options: [.prettyPrinted, .sortedKeys]).write(to: root.appendingPathComponent("metadata.json"))
 let trace = root.appendingPathComponent("trace.txt")
 childEnv["CAPTAINSLOG_PERFORMANCE_TRACE"] = trace.path
@@ -82,4 +112,11 @@ let result: [String: Any] = ["pid": process.processIdentifier, "exitStatus": pro
 try JSONSerialization.data(withJSONObject: result, options: [.prettyPrinted, .sortedKeys]).write(to: root.appendingPathComponent("result.json"))
 print("Cached-search quit: exit \(process.terminationStatus), normal \(process.terminationReason == .exit), timeout \(timedOut). Evidence: \(root.path)")
 require(text.contains("cached-search-ready") && text.contains("quit-request") && text.contains("delegate-reply"), "Check must load/search/cache a real model and enter native app termination")
+let database = Process(); database.executableURL = URL(fileURLWithPath: "/usr/bin/sqlite3")
+database.arguments = [data.appendingPathComponent(".search/search.sqlite").path, "SELECT count(*) FROM documents; SELECT count(*) FROM chunks;"]
+let databasePipe = Pipe(); database.standardOutput = databasePipe; database.standardError = databasePipe
+try database.run(); let databaseData = databasePipe.fileHandleForReading.readDataToEndOfFile(); database.waitUntilExit()
+try databaseData.write(to: root.appendingPathComponent("index-counts.txt"))
+let counts = String(decoding: databaseData, as: UTF8.self).split(separator: "\n").compactMap { Int($0) }
+require(database.terminationStatus == 0 && counts.count == 2 && counts[0] == 1 && counts[1] > 0, "Native search must have indexed the evaluation document and embedded its passages")
 if !baseline { require(!timedOut && process.terminationReason == .exit && process.terminationStatus == 0, "Cached-search app quit crashed or did not terminate normally") }

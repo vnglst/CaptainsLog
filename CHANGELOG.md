@@ -25,6 +25,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
+- Require the isolated shutdown reproduction to expose a complete eval-backed pipeline entry, verify indexed document and embedded passage counts after native search, and distinguish preserved executable source identity from the helper's current revision.
+
 - Create isolated temporary directories locally in the search shutdown regression tests so the tests compile independently of other test groups.
 
 - Skip onboarding with process-local launch arguments during the isolated cached-search shutdown check, without modifying saved user defaults.
