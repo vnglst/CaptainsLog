@@ -10,3 +10,7 @@ The downloaded `sqlite-vec-0.1.10-alpha.4-amalgamation.tar.gz` archive SHA-256 i
 It is compiled statically with SQLite and NEON enabled for the Apple Silicon-only app.
 
 Upstream is dual-licensed under MIT or Apache-2.0; both license texts are included.
+
+The upstream archive omits its included DiskANN, IVF and rescore split sources.
+The four matching `sqlite-vec-*.c` files are copied verbatim from release commit
+`04d28bd21773981e2d266bbf6aa4efbd011eb4f6`; the amalgamation and header remain unchanged.

@@ -30,7 +30,7 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
-- Update WhisperKit to 1.1.1, Transformers to 1.3.5, Hugging Face to 1.0.0, all resolved Swift transitive dependencies to their newest stable releases, the checksum-pinned llama.cpp framework to b11609, and sqlite-vec to the newest published 0.1.10-alpha.4 amalgamation. Retain complete upstream Transformers/Hugging Face sources with dependency-constraint patches for Swift Crypto 5.0.1 and yyjson 0.13.0; include their licenses when packaging. Pin the release workflow checkout action to the newest 7.0.1 release.
+- Update WhisperKit to 1.1.1, Transformers to 1.3.5, Hugging Face to 1.0.0, all resolved Swift transitive dependencies to their newest stable releases, the checksum-pinned llama.cpp framework to b11609, and sqlite-vec to the newest published 0.1.10-alpha.4 amalgamation with the matching split sources omitted from its upstream archive. Retain complete upstream Transformers/Hugging Face sources with dependency-constraint patches for Swift Crypto 5.0.1 and yyjson 0.13.0; include their licenses when packaging. Pin the release workflow checkout action to the newest 7.0.1 release.
 - Require the isolated shutdown reproduction to expose a complete eval-backed pipeline entry, verify indexed document and embedded passage counts after native search, and distinguish preserved executable source identity from the helper's current revision.
 
 - Create isolated temporary directories locally in the search shutdown regression tests so the tests compile independently of other test groups.
