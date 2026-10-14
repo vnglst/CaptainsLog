@@ -1195,6 +1195,7 @@ private struct FieldNotesSettingsView: View {
     @CLState private var deletingModel = false
 
     var body: some View {
+        @Bindable var state = appState
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 VStack(alignment: .leading, spacing: 8) {
@@ -1212,10 +1213,21 @@ private struct FieldNotesSettingsView: View {
                         Image(systemName: "mic")
                             .font(.system(size: 18))
                             .foregroundStyle(FieldNotes.ColorToken.secondaryText)
-                        Text(appState.inputDevices.first { $0.uid == appState.selectedDeviceUID }?.name ?? "No input device")
-                            .font(FieldNotes.Typography.body(13))
-                            .foregroundStyle(FieldNotes.ColorToken.primaryText)
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                        Picker("Microphone", selection: $state.selectedDeviceUID) {
+                            if appState.selectedDeviceUID == nil {
+                                Text("No input device").tag(nil as String?)
+                            }
+                            ForEach(appState.inputDevices) { device in
+                                Text(device.name).tag(Optional(device.uid))
+                            }
+                        }
+                        .pickerStyle(.menu)
+                        .labelsHidden()
+                        .font(FieldNotes.Typography.body(13))
+                        .foregroundStyle(FieldNotes.ColorToken.primaryText)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .disabled(appState.inputDevices.isEmpty)
+                        .accessibilityLabel("Microphone")
                         FieldNotesButton(title: "Refresh devices", kind: .secondary) { appState.refreshDevices() }
                     }
                     helper("The microphone currently selected for recordings.")

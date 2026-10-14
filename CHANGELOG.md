@@ -22,6 +22,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Fixed
 
+- Restore microphone selection in Settings with a device picker shared with the recording dock's selected input.
+
 - Move the Metal shutdown crash fix to owner verification after reproducing the original native assertion, passing 241 deterministic tests, repeated cached-search quit checks and a recorded real UI search/open/quit check.
 
 - Cancel and drain all current and superseded search work, release the cached embedding model, and ignore late search callbacks before app termination so native Metal allocations are freed before backend static teardown; keep CLI and GUI inference on the same Core model lifecycle.
