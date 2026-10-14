@@ -35,6 +35,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
+- Remove the duplicate Reprocess button from the individual log header while retaining Reprocess in the log row menu.
+
 - Trace upstream Whisper model-loading diagnostics during opt-in debug performance checks to locate initialization stalls without changing CLI or GUI compute settings; allow an explicitly recorded longer cold CoreML setup watchdog while retaining native decoding and three-second quit checks; record pipeline preflight failures and stop those probes promptly instead of misreporting them as model-loading timeouts.
 
 - Update WhisperKit to 1.1.1, Transformers to 1.3.5, Hugging Face to 1.0.0, all resolved Swift transitive dependencies to their newest stable releases, the checksum-pinned llama.cpp framework to b11609, and sqlite-vec to the newest published 0.1.10-alpha.4 amalgamation with the matching split sources omitted from its upstream archive. Retain complete upstream Transformers/Hugging Face sources with dependency-constraint patches for Swift Crypto 5.0.1 and yyjson 0.13.0; include their licenses when packaging and resolve their shared Hugging Face dependency through one local package identity. Pin the release workflow checkout action to the newest 7.0.1 release.

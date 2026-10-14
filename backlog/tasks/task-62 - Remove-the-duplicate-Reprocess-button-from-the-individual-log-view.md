@@ -1,10 +1,10 @@
 ---
 id: TASK-62
 title: Remove the duplicate Reprocess button from the individual log view
-status: Next
+status: Verify
 assignee: []
 created_date: '2026-10-14 17:22'
-updated_date: '2026-10-14 17:26'
+updated_date: '2026-10-14 18:08'
 labels: []
 dependencies: []
 type: task
@@ -19,6 +19,6 @@ The individual log view has a duplicate Reprocess action. Remove only the Reproc
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 The individual log view no longer shows a Reprocess button in its header.
-- [ ] #2 Reprocess remains available in the log row menu.
+- [x] #1 The individual log view no longer shows a Reprocess button in its header.
+- [x] #2 Reprocess remains available in the log row menu.
 <!-- AC:END -->

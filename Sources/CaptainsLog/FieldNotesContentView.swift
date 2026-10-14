@@ -805,15 +805,6 @@ private struct FieldNotesEntryDetailView: View {
 
                 Spacer()
 
-                Button("Reprocess") {
-                    appState.reprocessEntry(stem: entry.stem)
-                    onBack()
-                }
-                .buttonStyle(.plain)
-                .font(FieldNotes.Typography.body(12, weight: .medium))
-                .foregroundStyle(FieldNotes.ColorToken.secondaryText)
-                .disabled(!appState.canDeleteProcessingOutputs)
-
                 Button {
                     NSPasteboard.general.clearContents()
                     copied = NSPasteboard.general.setString(transcription, forType: .string)
