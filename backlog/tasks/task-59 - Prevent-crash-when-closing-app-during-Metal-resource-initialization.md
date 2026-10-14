@@ -1,10 +1,10 @@
 ---
 id: TASK-59
 title: Prevent crash when closing app during Metal resource initialization
-status: Next
+status: Verify
 assignee: []
 created_date: '2026-10-13 13:44'
-updated_date: '2026-10-13 13:46'
+updated_date: '2026-10-14 06:04'
 labels: []
 dependencies: []
 type: bug
@@ -21,5 +21,5 @@ The main-thread stack enters AppKit application termination, then C++ static fin
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Closing the app in a similar situation does not crash.
+- [x] #1 Closing the app in a similar situation does not crash.
 <!-- AC:END -->

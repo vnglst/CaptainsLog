@@ -19,6 +19,10 @@ entry. Git links provide the complete commit history for each release.
 
 ### Fixed
 
+- Move the Metal shutdown crash fix to owner verification after reproducing the original native assertion, passing 241 deterministic tests, repeated cached-search quit checks and a recorded real UI search/open/quit check.
+
+- Cancel and drain all current and superseded search work, release the cached embedding model, and ignore late search callbacks before app termination so native Metal allocations are freed before backend static teardown; keep CLI and GUI inference on the same Core model lifecycle.
+
 - Reject isolated test-bundle launches without a valid explicit configuration and data directory before app state can fall back to normal user settings, including release fixture bundles relaunched by automation.
 - Bundle pipeline prompts in the isolated native UI harness so fixture processing can resolve cleanup, categorization, naming and enrichment instructions outside the repository working directory.
 - Resolve SwiftPM product-directory symlinks when bundling the native runtime so app bundles do not retain absolute framework search paths into build output.
@@ -27,6 +31,14 @@ entry. Git links provide the complete commit history for each release.
 - Avoid the CoreML Metal prediction path that can abort Whisper transcription with an MPSGraph tensor shape/stride assertion: run the spectrogram on CPU and the unchanged Whisper Large-v2 encoder and decoder on CPU/Neural Engine; record all three compute selections in evaluation metadata and move TASK-54 to owner verification.
 
 ### Changed
+
+- Require the isolated shutdown reproduction to expose a complete eval-backed pipeline entry, verify indexed document and embedded passage counts after native search, and distinguish preserved executable source identity from the helper's current revision.
+
+- Create isolated temporary directories locally in the search shutdown regression tests so the tests compile independently of other test groups.
+
+- Skip onboarding with process-local launch arguments during the isolated cached-search shutdown check, without modifying saved user defaults.
+
+- Add a documented opt-in eval-backed native cached-search/quit reproduction check, retaining source/process identity, model/binary/fixture hashes and shutdown markers.
 
 - Record a Next backlog item to update all dependencies to their newest versions and verify that everything continues to work as expected.
 
@@ -41,7 +53,6 @@ entry. Git links provide the complete commit history for each release.
 - Validate prepared Whisper bundles and encoder/decoder weight files with bounded checks before skipping metadata recovery scans at launch; stop Whisper decoding cooperatively during native shutdown, discard canceled partial text, and release CoreML objects before draining shutdown and preserve model configuration when loading is canceled.
 
 - Add opt-in debug native startup and quit-during-Whisper/Qwen-decoding timing markers and a fixture-backed performance check for isolated performance verification; wait for bootstrap completion before timing model readiness and reject malformed benchmark configurations before loading app state; confirm CLI-loaded data and model paths before each probe and schedule probe quit through the main run loop.
-- Record the owner requirement that CLI and GUI processing work the same way technically in ADR-027.
 
 - Record a Next backlog item to benchmark and optimize app startup and closing during processing, with performance regression test coverage.
 - Record a Next backlog item to explore common app actions and try to find breaks or crashes, including opening, starting processing, closing, and deleting then processing.

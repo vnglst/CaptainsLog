@@ -43,6 +43,7 @@ evaluations remain a separate `make evals` command.
 | `make tests-enrich` | Build, then check enrichment validation and CLI seed boundaries without inference. |
 | `make tests-model` | Opt-in installed-model smoke test; requires the four `CAPTAINSLOG_*_MODEL_*` variables in its helper. |
 | `make tests-app-performance RUN_DIR=/absolute/new/output` | Opt-in native startup and quit-during-decoding regression check. Quit the app first; supply prepared `CAPTAINSLOG_WHISPER_MODEL_FOLDER` and `CAPTAINSLOG_QWEN_MODEL_FOLDER`. Debug-only, eval audio and isolated config/data; no microphone. |
+| `make tests-search-shutdown RUN_DIR=/absolute/new/output` | Opt-in native cached-search/quit regression check using eval content, isolated config and prepared E5/Qwen/Whisper models. Keep all other native work stopped; `ARGS=--baseline` retains a failing exit for comparison. |
 | `make tests-recorder` | Interactive microphone smoke check with explicit confirmation. |
 | `make ui` | Launch temporary eval-backed native UI; optional state selector via `ARGS`. Use `eval-menu`, `eval-menu-recording`, `eval-menu-processing`, or `eval-menu-failed` to inspect the shared menu panel in a labeled synthetic preview window. |
 | `make release-notes VERSION=0.1.2` | Extract release notes. |
@@ -57,6 +58,23 @@ isolated config/data. The UI harness is for presentation inspection; its process
 and recording controls invoke real models or hardware. Checks bypass default demo
 seeding. See the [testing workflow](../README.md#testing) and stage skills in
 [`skills/`](../skills/) for quality gates and semantic review requirements.
+
+### Cached native search shutdown check
+
+`make tests-search-shutdown RUN_DIR=/absolute/new/output` loads the checksum-pinned
+E5 model, indexes/searches only copied eval content, leaves the real search engine
+cached in the UI, and requests app quit. Supply prepared
+`CAPTAINSLOG_WHISPER_MODEL_FOLDER` and `CAPTAINSLOG_QWEN_MODEL_FOLDER` for isolated
+bootstrap; prepare E5 before running. No microphone or personal data is used, and
+all other inference and app checks must be stopped first.
+
+The helper verifies schema-valid isolated data/model paths through the CLI before
+launching the app. It records source revision, executable/model/fixture SHA-256,
+PID, logs, actual search-ready/quit/delegate markers and exit status. Success
+requires real cached search, normal exit and no timeout. `ARGS=--baseline` records
+a failing native exit for comparison; it still requires the actual search and
+termination markers. A 180-second watchdog signals only the owned test process.
+A simulated search fixture cannot establish this shutdown regression.
 
 ### Native performance regression check
 

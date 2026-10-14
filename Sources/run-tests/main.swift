@@ -187,6 +187,28 @@ actor FakeEmbeddingModel: TextEmbeddingModel {
     }
 }
 
+actor LifetimeEmbeddingModel: TextEmbeddingModel {
+    nonisolated let identity = "lifetime-search-model"
+    private let lifecycle: LockedStringArray
+
+    init(lifecycle: LockedStringArray) {
+        self.lifecycle = lifecycle
+        lifecycle.append("created")
+    }
+
+    deinit { lifecycle.append("released") }
+
+    func embed(_ text: String, as kind: EmbeddingInputKind) -> [Float] {
+        var vector = [Float](repeating: 0, count: E5EmbeddingModel.dimension)
+        vector[0] = 1
+        return vector
+    }
+
+    func chunks(for text: String, maxTokens: Int, overlap: Int) -> [String] {
+        text.isEmpty ? [] : [text]
+    }
+}
+
 actor AsyncTestGate {
     private var isOpen = false
     private var waiters: [CheckedContinuation<Void, Never>] = []
@@ -268,6 +290,12 @@ func makeCompletedSearchEntry(
 
 @MainActor
 func runSearchCoverageTests() async {
+    func makeTemporaryDirectory() throws -> URL {
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent("CaptainsLogSearchTests-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
+        return url
+    }
     await testAsync("Semantic search: indexes, ranks, updates, and removes completed entries") {
         let root = FileManager.default.temporaryDirectory
             .appendingPathComponent("SemanticSearchTests-\(UUID().uuidString)", isDirectory: true)
@@ -504,6 +532,98 @@ func runSearchCoverageTests() async {
         try await Task.sleep(for: .milliseconds(450))
         let finalEmbedCount = await model.embedCallCount
         try expect(finalEmbedCount == 3, "Clearing the query should cancel pending work")
+    }
+
+    await testAsync("Search shutdown: release a cached model before returning and reject new queries") {
+        let root = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let lifecycle = LockedStringArray()
+        let factories = LockedValue(0)
+        let manager = SearchManager(debounceInterval: .zero) { dataDir, _ in
+            factories.set(factories.get() + 1)
+            return try SemanticSearch(dataDir: dataDir, model: LifetimeEmbeddingModel(lifecycle: lifecycle))
+        }
+        manager.updateQuery("side project", dataDir: root.path)
+        for _ in 0..<100 where manager.state != .ready { try await Task.sleep(for: .milliseconds(10)) }
+        try expect(manager.state == .ready)
+        try expect(lifecycle.snapshot() == ["created"], "A successful search retains the model while the UI is open")
+        await manager.stopForTermination()
+        try expect(lifecycle.snapshot() == ["created", "released"], "Cached native model ownership must end before shutdown returns")
+        manager.updateQuery("late query", dataDir: root.path)
+        manager.invalidateIndex(dataDir: root.path)
+        manager.retry(dataDir: root.path)
+        try await Task.sleep(for: .milliseconds(20))
+        try expect(factories.get() == 1, "Shutdown must not allow a new model load")
+        try expect(manager.query == "side project" && manager.state == .idle && manager.results.isEmpty)
+        await manager.stopForTermination()
+        try expect(lifecycle.snapshot() == ["created", "released"], "Repeated shutdown must not double release")
+    }
+
+    await testAsync("Search shutdown: drain an in-flight factory and suppress its late progress") {
+        let root = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let lifecycle = LockedStringArray()
+        let gate = AsyncTestGate()
+        let manager = SearchManager(debounceInterval: .zero) { dataDir, progress in
+            let search = try SemanticSearch(dataDir: dataDir, model: LifetimeEmbeddingModel(lifecycle: lifecycle))
+            await gate.wait() // A noncooperative native/model factory must still be awaited.
+            progress(Progress(totalUnitCount: 1))
+            return search
+        }
+        manager.updateQuery("side project", dataDir: root.path)
+        for _ in 0..<100 where lifecycle.snapshot().isEmpty { try await Task.sleep(for: .milliseconds(10)) }
+        try expect(lifecycle.snapshot() == ["created"])
+        let drained = LockedValue(false)
+        let shutdown = Task { await manager.stopForTermination(); drained.set(true) }
+        try await Task.sleep(for: .milliseconds(20))
+        try expect(!drained.get(), "Termination must not return while the model factory still owns resources")
+        await gate.open()
+        await shutdown.value
+        try await Task.sleep(for: .milliseconds(20))
+        try expect(lifecycle.snapshot() == ["created", "released"])
+        try expect(drained.get() && manager.state == .idle && manager.results.isEmpty,
+                   "Late progress must not restore preparing/indexing state after shutdown")
+    }
+
+    await testAsync("Search shutdown: drain superseded canceled model factories as well as the latest query") {
+        let root = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let lifecycle = LockedStringArray()
+        let factories = LockedValue(0)
+        let oldFactory = AsyncTestGate()
+        let manager = SearchManager(debounceInterval: .zero) { dataDir, _ in
+            factories.set(factories.get() + 1)
+            let first = factories.get() == 1
+            let search = try SemanticSearch(dataDir: dataDir, model: LifetimeEmbeddingModel(lifecycle: lifecycle))
+            if first { await oldFactory.wait() }
+            return search
+        }
+        manager.updateQuery("first query", dataDir: root.path)
+        for _ in 0..<100 where factories.get() == 0 { try await Task.sleep(for: .milliseconds(10)) }
+        manager.updateQuery("replacement query", dataDir: root.path)
+        for _ in 0..<100 where manager.state != .ready { try await Task.sleep(for: .milliseconds(10)) }
+        try expect(manager.state == .ready && factories.get() == 2)
+        let drained = LockedValue(false)
+        let shutdown = Task { await manager.stopForTermination(); drained.set(true) }
+        try await Task.sleep(for: .milliseconds(20))
+        try expect(!drained.get(), "A finished latest query must not conceal a canceled factory that still owns native resources")
+        await oldFactory.open()
+        await shutdown.value
+        try expect(lifecycle.snapshot().filter { $0 == "released" }.count == 2)
+        try expect(drained.get() && manager.state == .idle)
+    }
+
+    await testAsync("Search shutdown: cancel debounced work before loading native resources") {
+        let root = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let factories = LockedValue(0)
+        let manager = SearchManager(debounceInterval: .milliseconds(200)) { dataDir, _ in
+            factories.set(factories.get() + 1)
+            return try SemanticSearch(dataDir: dataDir, model: FakeEmbeddingModel())
+        }
+        manager.updateQuery("side project", dataDir: root.path)
+        await manager.stopForTermination()
+        try expect(factories.get() == 0 && manager.state == .idle)
     }
 
     await testAsync("Semantic search: in-flight canceled query cannot replace the newer result") {
