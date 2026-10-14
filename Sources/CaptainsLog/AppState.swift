@@ -293,6 +293,23 @@ public final class AppState {
             && !processing.hasScheduledWork && !updates.isInstalling && !updates.needsRestart
     }
 
+    func reprocessEntry(stem: String) {
+        guard canDeleteProcessingOutputs else { return }
+        if models.needsDownload {
+            models.ensureModelsDownloaded { [weak self] in self?.reprocessEntry(stem: stem) }
+            return
+        }
+        do {
+            try Pipeline.prepareReprocessing(stem: stem, dataDir: dataDir)
+            search.invalidateIndex(dataDir: dataDir)
+            loadEntries()
+            resumeProcessing(stem: stem, fromStage: .transcribing)
+        } catch {
+            processing.recordPreparationFailure(error, for: stem)
+            loadEntries()
+        }
+    }
+
     func deleteProcessingOutputs() {
         guard canDeleteProcessingOutputs else { return }
         do {

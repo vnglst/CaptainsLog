@@ -1,9 +1,10 @@
 ---
 id: TASK-58
 title: Reprocess an individual processed log
-status: Next
+status: Verify
 assignee: []
 created_date: '2026-10-13 13:44'
+updated_date: '2026-10-14 05:26'
 labels: []
 dependencies: []
 type: feature
@@ -18,6 +19,6 @@ There used to be a feature where you could click on a processed log and select R
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 The user can click on a processed log and select Reprocess.
-- [ ] #2 Selecting Reprocess processes that log again.
+- [x] #1 The user can click on a processed log and select Reprocess.
+- [x] #2 Selecting Reprocess processes that log again.
 <!-- AC:END -->

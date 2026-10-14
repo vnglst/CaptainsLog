@@ -686,6 +686,10 @@ private struct FieldNotesEntryRow: View {
                                 appState.resumeProcessing(stem: entry.stem, fromStage: entry.stage)
                             }
                         }
+                        if behavior.canReprocess {
+                            Button("Reprocess") { appState.reprocessEntry(stem: entry.stem) }
+                                .disabled(!appState.canDeleteProcessingOutputs)
+                        }
                         Divider()
                         Button("Move to Trash", role: .destructive) { deleteTarget = entry }
                     } label: {
@@ -800,6 +804,15 @@ private struct FieldNotesEntryDetailView: View {
                 .accessibilityHint("Returns to the list of entries")
 
                 Spacer()
+
+                Button("Reprocess") {
+                    appState.reprocessEntry(stem: entry.stem)
+                    onBack()
+                }
+                .buttonStyle(.plain)
+                .font(FieldNotes.Typography.body(12, weight: .medium))
+                .foregroundStyle(FieldNotes.ColorToken.secondaryText)
+                .disabled(!appState.canDeleteProcessingOutputs)
 
                 Button {
                     NSPasteboard.general.clearContents()

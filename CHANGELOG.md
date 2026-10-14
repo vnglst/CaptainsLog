@@ -12,6 +12,11 @@ entry. Git links provide the complete commit history for each release.
 
 ## [Unreleased]
 
+### Added
+
+- Restore Reprocess in processed log actions and the log detail view; rerun every stage for that recording through the shared pipeline while preserving its audio and other entries.
+- Refresh the log's retry state if clearing its old outputs fails during reprocessing.
+
 ### Fixed
 
 - Reject isolated test-bundle launches without a valid explicit configuration and data directory before app state can fall back to normal user settings, including release fixture bundles relaunched by automation.
