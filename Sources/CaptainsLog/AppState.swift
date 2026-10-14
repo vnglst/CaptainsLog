@@ -306,6 +306,7 @@ public final class AppState {
             resumeProcessing(stem: stem, fromStage: .transcribing)
         } catch {
             processing.recordPreparationFailure(error, for: stem)
+            loadEntries()
         }
     }
 

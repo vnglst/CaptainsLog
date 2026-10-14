@@ -15,6 +15,7 @@ entry. Git links provide the complete commit history for each release.
 ### Added
 
 - Restore Reprocess in processed log actions and the log detail view; rerun every stage for that recording through the shared pipeline while preserving its audio and other entries.
+- Refresh the log's retry state if clearing its old outputs fails during reprocessing.
 
 ### Fixed
 
