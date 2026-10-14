@@ -598,9 +598,12 @@ public enum Pipeline {
             , label: "category"
         )
         await categoryDiagnostics.log("Pipeline processing began from \(fromStage.rawValue). Trace: \(categoryDiagnostics.path)")
+        AppPerformanceTrace.mark("pipeline-diagnostics-ready")
         let date = extractDate(from: stem)
         let recordingTime = extractRecordingTime(stem: stem, dataDirURL: dataDirURL)
+        AppPerformanceTrace.mark("pipeline-date-ready")
         let promptConfig = CaptainsLogConfig.load().withDataDir(dataDir)
+        AppPerformanceTrace.mark("pipeline-config-ready")
 
         let transcribeOperation: TranscribeOperation
         if let operations {
@@ -704,6 +707,7 @@ public enum Pipeline {
         guard stageOrder(fromStage) <= stageOrder(.transcribing) else {
             return try String(contentsOfFile: transcriptPath, encoding: .utf8)
         }
+        AppPerformanceTrace.mark("pipeline-transcribe-entered")
         progress?(Progress(stem: stem, stage: .transcribing))
         print("[2/6] Transcribing...")
         let audioPath = sourceAudioPath(stem: stem, dataDirURL: dataDirURL)
@@ -712,6 +716,7 @@ public enum Pipeline {
             CaptainsLogConfig.configURL.path,
             NSTemporaryDirectory(),
         ])
+        AppPerformanceTrace.mark("pipeline-disk-ready")
         let transcript = try await operation(audioPath, language)
         try Task.checkCancellation()
         try FileSystemGuard.writeText(transcript, to: transcriptPath)

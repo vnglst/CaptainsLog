@@ -27,8 +27,7 @@ let package = Package(
         // Work around SwiftPM trait resolution issue for transitive Xet dependency.
         .package(url: "https://github.com/huggingface/swift-xet.git", "0.2.0"..<"2.0.0"),
         .package(
-            url: "https://github.com/huggingface/swift-huggingface.git",
-            "0.9.0"..<"2.0.0",
+            path: "../swift-huggingface",
             traits: [
                 .defaults,
                 .trait(name: "Xet", condition: .when(traits: ["Xet"])),

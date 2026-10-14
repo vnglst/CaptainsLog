@@ -278,6 +278,10 @@ public final class ProcessingCoordinator {
             stage = .idle
             statusMessage = "Paused"
         } else {
+            #if DEBUG
+            AppPerformanceTrace.mark("pipeline-failed")
+            AppPerformanceTrace.mark("pipeline-error " + error.localizedDescription.replacingOccurrences(of: "\n", with: " "))
+            #endif
             failedEntries[stem] = error.localizedDescription
             errorMessage = error.localizedDescription
             stage = .idle

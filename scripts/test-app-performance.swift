@@ -21,6 +21,9 @@ require(entriesOption == nil || (startupEntries > 0 && startupEntries <= 10000),
 require(args.dropFirst(3).allSatisfy { $0 == "--baseline" || $0 == "--startup-only" || $0 == entriesOption || $0 == limitOption || $0 == runsOption }, "Unknown performance option")
 require(!args[2].isEmpty, "A new absolute output directory is required")
 require(args[2].hasPrefix("/"), "Use an absolute output directory")
+let processTimeoutValue = env["CAPTAINSLOG_PERFORMANCE_PROCESS_TIMEOUT"]
+let processTimeout = processTimeoutValue.flatMap(Double.init) ?? 180
+require((processTimeoutValue == nil || Double(processTimeoutValue!) != nil) && processTimeout.isFinite && processTimeout >= 180 && processTimeout <= 600, "Processing watchdog must be 180...600 seconds")
 let baseline = args.contains("--baseline")
 let output = URL(fileURLWithPath: args[2], isDirectory: true)
 let fm = FileManager.default
@@ -54,7 +57,7 @@ if startupEntries > 0 {
         startupFixtureHashes[path] = try sha256(path)
     }
 }
-let metadata: [String: Any] = ["revision": String(decoding: revisionData, as: UTF8.self).trimmingCharacters(in: .whitespacesAndNewlines), "executable": URL(fileURLWithPath: args[1]).standardizedFileURL.path, "binarySHA256": try sha256(args[1]), "fixtureSHA256": try sha256(fixture.path), "modelSHA256": modelHashes, "operatingSystem": ProcessInfo.processInfo.operatingSystemVersionString, "processorCount": ProcessInfo.processInfo.processorCount, "promptChunkSize": 128, "baselineThresholdsDisabled": baseline, "startupFixtureEntries": startupEntries, "startupFixtureSHA256": startupFixtureHashes, "startupLimitSeconds": startupLimit, "startupOnlyControlledStop": startupOnly, "startupRuns": startupRuns]
+let metadata: [String: Any] = ["revision": String(decoding: revisionData, as: UTF8.self).trimmingCharacters(in: .whitespacesAndNewlines), "executable": URL(fileURLWithPath: args[1]).standardizedFileURL.path, "binarySHA256": try sha256(args[1]), "fixtureSHA256": try sha256(fixture.path), "modelSHA256": modelHashes, "operatingSystem": ProcessInfo.processInfo.operatingSystemVersionString, "processorCount": ProcessInfo.processInfo.processorCount, "promptChunkSize": 128, "baselineThresholdsDisabled": baseline, "startupFixtureEntries": startupEntries, "startupFixtureSHA256": startupFixtureHashes, "startupLimitSeconds": startupLimit, "startupOnlyControlledStop": startupOnly, "startupRuns": startupRuns, "processingWatchdogSeconds": processTimeout]
 try JSONSerialization.data(withJSONObject: metadata, options: [.prettyPrinted, .sortedKeys]).write(to: output.appendingPathComponent("metadata.json"))
 var results: [[String: Any]] = []
 let startupModes = (1...startupRuns).map { "startup-\($0)" }
@@ -144,8 +147,14 @@ for mode in modes {
             if process.isRunning { kill(process.processIdentifier, SIGKILL) }
             break
         }
+        if markers["pipeline-failed"] != nil {
+            kill(process.processIdentifier, SIGTERM)
+            Thread.sleep(forTimeInterval: 0.1)
+            if process.isRunning { kill(process.processIdentifier, SIGKILL) }
+            break
+        }
         let now = ProcessInfo.processInfo.systemUptime
-        if now - started > 180 || markers["quit-request"].map({ now - $0 > 60 }) == true {
+        if now - started > (mode == "processing-close" ? processTimeout : 180) || markers["quit-request"].map({ now - $0 > 60 }) == true {
             timedOut = true; kill(process.processIdentifier, SIGTERM)
             Thread.sleep(forTimeInterval: 0.5)
             if process.isRunning { kill(process.processIdentifier, SIGKILL) }
@@ -163,7 +172,7 @@ for mode in modes {
     }
     let startup = markers["models-ready"].map { $0 - started } ?? -1
     let close = startupOnly ? -1 : markers["quit-request"].map { finished - $0 } ?? -1
-    let record: [String: Any] = ["mode": mode, "startupSeconds": startup, "closeSeconds": close, "exitStatus": process.terminationStatus, "normalExit": process.terminationReason == .exit, "processingSeconds": markers["pipeline-complete"].map { $0 - (markers["models-ready"] ?? started) } ?? -1, "timedOut": timedOut, "stoppedAfterReadiness": stoppedAfterReadiness, "markers": markers]
+    let record: [String: Any] = ["mode": mode, "startupSeconds": startup, "closeSeconds": close, "exitStatus": process.terminationStatus, "normalExit": process.terminationReason == .exit, "processingSeconds": markers["pipeline-complete"].map { $0 - (markers["models-ready"] ?? started) } ?? -1, "timedOut": timedOut, "pipelineFailed": markers["pipeline-failed"] != nil, "stoppedAfterReadiness": stoppedAfterReadiness, "markers": markers]
     results.append(record)
     try JSONSerialization.data(withJSONObject: results, options: [.prettyPrinted, .sortedKeys]).write(to: output.appendingPathComponent("results.json"))
     print("\(mode): startup \(startup)s, close \(close)s, exit \(process.terminationStatus), timeout \(timedOut)")

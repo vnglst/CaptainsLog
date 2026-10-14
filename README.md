@@ -106,7 +106,7 @@ clean unsigned framework extractions. Packaging runs `scripts/check-runtime.swif
 to reject external runtime paths and verify the app/CLI deployment target.
 
 Two upstream Swift packages are retained in `Vendor/` with only dependency
-constraint patches, allowing the newest Swift Crypto and yyjson releases.
+manifest patches, allowing the newest Swift Crypto and yyjson releases.
 See [vendored package provenance](Vendor/README.md) before refreshing them.
 
 To upgrade the runtime, select an immutable upstream release and source commit,
