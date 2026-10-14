@@ -19,6 +19,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Fixed
 
+- Cancel and drain all current and superseded search work, release the cached embedding model, and ignore late search callbacks before app termination so native Metal allocations are freed before backend static teardown; keep CLI and GUI inference on the same Core model lifecycle.
+
 - Reject isolated test-bundle launches without a valid explicit configuration and data directory before app state can fall back to normal user settings, including release fixture bundles relaunched by automation.
 - Bundle pipeline prompts in the isolated native UI harness so fixture processing can resolve cleanup, categorization, naming and enrichment instructions outside the repository working directory.
 - Resolve SwiftPM product-directory symlinks when bundling the native runtime so app bundles do not retain absolute framework search paths into build output.
@@ -28,7 +30,14 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
-- Update WhisperKit to 1.1.1, Transformers to 1.3.5, Hugging Face to 1.0.0, all resolved Swift transitive dependencies to their newest stable releases, the checksum-pinned llama.cpp framework to b11597, and sqlite-vec to the newest published 0.1.10-alpha.4 amalgamation. Retain complete upstream Transformers/Hugging Face sources with dependency-constraint patches for Swift Crypto 5.0.1 and yyjson 0.13.0; include their licenses when packaging. Pin the release workflow checkout action to the newest 7.0.1 release.
+- Update WhisperKit to 1.1.1, Transformers to 1.3.5, Hugging Face to 1.0.0, all resolved Swift transitive dependencies to their newest stable releases, the checksum-pinned llama.cpp framework to b11609, and sqlite-vec to the newest published 0.1.10-alpha.4 amalgamation. Retain complete upstream Transformers/Hugging Face sources with dependency-constraint patches for Swift Crypto 5.0.1 and yyjson 0.13.0; include their licenses when packaging. Pin the release workflow checkout action to the newest 7.0.1 release.
+- Require the isolated shutdown reproduction to expose a complete eval-backed pipeline entry, verify indexed document and embedded passage counts after native search, and distinguish preserved executable source identity from the helper's current revision.
+
+- Create isolated temporary directories locally in the search shutdown regression tests so the tests compile independently of other test groups.
+
+- Skip onboarding with process-local launch arguments during the isolated cached-search shutdown check, without modifying saved user defaults.
+
+- Add a documented opt-in eval-backed native cached-search/quit reproduction check, retaining source/process identity, model/binary/fixture hashes and shutdown markers.
 
 - Record a Next backlog item to update all dependencies to their newest versions and verify that everything continues to work as expected.
 
@@ -37,13 +46,14 @@ entry. Git links provide the complete commit history for each release.
 
 - Move the startup and closing performance task to owner verification after measured loaded-library startup improvement and the earlier verified native processing-close improvement.
 
+- Record the owner requirement that CLI and GUI processing work the same way technically in ADR-027.
+
 - Document the opt-in Make native app performance regression check, its isolated fixture setup, timing scopes, thresholds, retained binary/model/fixture hashes and watchdog behavior.
 
 - Bound shared Core Qwen prompt chunks to 128 tokens so the CLI and native app use identical inference execution and can cancel between shorter Metal calls, with model/context configuration and sampling unchanged.
 - Validate prepared Whisper bundles and encoder/decoder weight files with bounded checks before skipping metadata recovery scans at launch; stop Whisper decoding cooperatively during native shutdown, discard canceled partial text, and release CoreML objects before draining shutdown and preserve model configuration when loading is canceled.
 
 - Add opt-in debug native startup and quit-during-Whisper/Qwen-decoding timing markers and a fixture-backed performance check for isolated performance verification; wait for bootstrap completion before timing model readiness and reject malformed benchmark configurations before loading app state; confirm CLI-loaded data and model paths before each probe and schedule probe quit through the main run loop.
-- Record the owner requirement that CLI and GUI processing work the same way technically in ADR-027.
 
 - Record a Next backlog item to benchmark and optimize app startup and closing during processing, with performance regression test coverage.
 - Record a Next backlog item to explore common app actions and try to find breaks or crashes, including opening, starting processing, closing, and deleting then processing.

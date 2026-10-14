@@ -26,7 +26,9 @@ public final class SearchManager {
     }
 
     private var excludedCategoryFolders = Set<String>()
+    private var isStopping = false
     private var searchTask: Task<Void, Never>?
+    private var activeSearchTasks: [UUID: Task<Void, Never>] = [:]
     private var engine: SemanticSearch?
     private var engineDataDir: String?
     private let debounceInterval: Duration
@@ -48,6 +50,7 @@ public final class SearchManager {
 
     #if DEBUG
     func applyFixture(query: String, results: [SearchResult], state: SearchViewState = .ready) {
+        guard !isStopping else { return }
         searchTask?.cancel()
         isFixtureMode = true
         self.query = query
@@ -57,6 +60,7 @@ public final class SearchManager {
     #endif
 
     public func updateQuery(_ value: String, dataDir: String) {
+        guard !isStopping else { return }
         query = value
         searchTask?.cancel()
         #if DEBUG
@@ -74,11 +78,15 @@ public final class SearchManager {
             return
         }
         let debounceInterval = self.debounceInterval
-        searchTask = Task { [weak self] in
+        let taskID = UUID()
+        let task = Task { [weak self] in
+            defer { self?.activeSearchTasks.removeValue(forKey: taskID) }
             try? await Task.sleep(for: debounceInterval)
             guard !Task.isCancelled, let self else { return }
             await self.performSearch(dataDir: dataDir)
         }
+        searchTask = task
+        activeSearchTasks[taskID] = task
     }
 
     func updateCategoryFilter(_ excluded: Set<String>, dataDir: String) {
@@ -93,7 +101,25 @@ public final class SearchManager {
         engineDataDir = nil
     }
 
+    /// End the UI's search-engine ownership before native backend static teardown.
+    /// Canceling alone leaves both a cached engine and an in-flight factory alive.
+    public func stopForTermination() async {
+        isStopping = true
+        // A superseded canceled query may still own a model while its native
+        // factory unwinds. Drain every lease, not only the newest task handle.
+        let tasks = Array(activeSearchTasks.values)
+        tasks.forEach { $0.cancel() }
+        for task in tasks { await task.value }
+        activeSearchTasks.removeAll()
+        searchTask = nil
+        engine = nil
+        engineDataDir = nil
+        results = []
+        state = .idle
+    }
+
     public func retry(dataDir: String) {
+        guard !isStopping else { return }
         engine = nil
         engineDataDir = nil
         updateQuery(query, dataDir: dataDir)
@@ -112,16 +138,19 @@ public final class SearchManager {
             } else {
                 state = .preparingModel
                 search = try await searchFactory(dataDir) { [weak self] _ in
-                    Task { @MainActor in self?.state = .preparingModel }
+                    Task { @MainActor in
+                        guard let self, !self.isStopping else { return }
+                        self.state = .preparingModel
+                    }
                 }
-                guard !Task.isCancelled else { return }
+                guard !Task.isCancelled, !isStopping else { return }
                 engine = search
                 engineDataDir = dataDir
             }
 
             let matches = try await search.search(query, limit: 20, excludedCategoryFolders: excludedCategoryFolders) { [weak self] progress in
                 Task { @MainActor in
-                    guard let self else { return }
+                    guard let self, !self.isStopping else { return }
                     switch progress.phase {
                     case .preparingModel: self.state = .preparingModel
                     case .scanning:
@@ -140,13 +169,13 @@ public final class SearchManager {
                     }
                 }
             }
-            guard !Task.isCancelled else { return }
+            guard !Task.isCancelled, !isStopping else { return }
             results = matches
             state = .ready
         } catch is CancellationError {
             return
         } catch {
-            guard !Task.isCancelled else { return }
+            guard !Task.isCancelled, !isStopping else { return }
             results = []
             state = .error(error.localizedDescription)
         }
