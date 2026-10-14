@@ -66,11 +66,13 @@ public enum Transcriber {
         model: String? = nil,
         language: String? = nil
     ) async throws -> String {
+        AppPerformanceTrace.mark("whisper-input-ready")
         let inputURL = URL(fileURLWithPath: audioPath)
         let readableURL = try await prepareAudio(inputURL)
         defer {
             if readableURL != inputURL { try? FileManager.default.removeItem(at: readableURL) }
         }
+        AppPerformanceTrace.mark("whisper-audio-ready")
         var cfg = CaptainsLogConfig.load()
         let requestedModel = resolveModel(model, config: cfg)
         var cachedFolder = Self.cachedFolder(for: requestedModel, config: cfg)
@@ -112,6 +114,17 @@ public enum Transcriber {
                     computeOptions: computeOptions
                 )
 
+                #if DEBUG
+                let traceLoading = ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_TRACE"] != nil
+                if traceLoading {
+                    whisperConfig.verbose = true
+                    whisperConfig.logLevel = .debug
+                    Logging.updateCallback { message in
+                        AppPerformanceTrace.mark("whisper-loader " + message.replacingOccurrences(of: "\n", with: " "))
+                    }
+                }
+                defer { if traceLoading { Logging.updateCallback(nil) } }
+                #endif
                 return try await WhisperKit(whisperConfig)
             },
             recover: { try WhisperModelRecovery.recover(from: $0) },

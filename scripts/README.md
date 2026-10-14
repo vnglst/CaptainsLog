@@ -159,3 +159,9 @@ Direct helper usage is `swift scripts/NAME.swift [arguments]` or the executable
 `./scripts/NAME.swift`. Helpers use only `.swift` filenames.
 For example, `swift scripts/run-evals.swift --stage filename --list` lists
 fixtures without loading a model.
+
+For an isolated native performance check on a cold CoreML specialization cache,
+`CAPTAINSLOG_PERFORMANCE_PROCESS_TIMEOUT=300` extends only the overall processing
+setup watchdog (default 180 seconds; accepted range 180–600). Metadata records
+the selected value. Actual native decoding readiness, ordered shutdown markers
+and the three-second processing quit limit remain required.

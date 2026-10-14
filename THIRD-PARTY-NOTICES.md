@@ -6,19 +6,18 @@ CaptainsLog includes or downloads third-party software and model weights. Captai
 
 | Component | License | Source |
 | --- | --- | --- |
-| sqlite-vec v0.1.9 | MIT or Apache-2.0 | [sqlite-vec](https://github.com/asg017/sqlite-vec) |
+| sqlite-vec v0.1.10-alpha.4 | MIT or Apache-2.0 | [sqlite-vec](https://github.com/asg017/sqlite-vec) |
 | llama.cpp / ggml runtime | MIT | [llama.cpp](https://github.com/ggml-org/llama.cpp) |
-| XCFramework mtmd helpers: stb_image, miniaudio, xxHash, SHA-1/SHA-256, subprocess.h | MIT / MIT No Attribution / BSD-2-Clause / public domain; exact notices bundled with the runtime | [Pinned upstream native helpers](https://github.com/ggml-org/llama.cpp/tree/a11f57ba93797579a5d1855ee216a31f10242676/vendor) |
+| XCFramework mtmd helpers: stb_image, miniaudio, xxHash, SHA-1/SHA-256, subprocess.h | MIT / MIT No Attribution / BSD-2-Clause / public domain; exact notices bundled with the runtime | [Pinned upstream native helpers](https://github.com/ggml-org/llama.cpp/tree/fcac19079f3f2985fe74ed845f0880e7e9a8030a/vendor) |
 | Swift Argument Parser | Apache-2.0 | [swift-argument-parser](https://github.com/apple/swift-argument-parser) |
 | WhisperKit / argmax-oss-swift | MIT | [argmax-oss-swift](https://github.com/argmaxinc/argmax-oss-swift) |
 | Swift Transformers | Apache-2.0 | [swift-transformers](https://github.com/huggingface/swift-transformers) |
 | Swift Hugging Face | Apache-2.0 | [swift-huggingface](https://github.com/huggingface/swift-huggingface) |
-| SwiftNIO, Swift Crypto, Swift ASN.1, Swift Atomics, Swift Collections, Swift System, Swift Jinja | Apache-2.0 | See pinned revisions in [`Package.resolved`](Package.resolved) |
-| llhttp parser bundled with SwiftNIO | MIT | [llhttp](https://github.com/nodejs/llhttp) |
+| Swift Crypto, Swift ASN.1, Swift Collections, Swift Jinja | Apache-2.0 | See pinned revisions in [`Package.resolved`](Package.resolved) |
 | EventSource | MIT | [EventSource](https://github.com/mattt/EventSource) |
 | yyjson | MIT | [yyjson](https://github.com/ibireme/yyjson) |
 
-The app bundle includes the upstream `LICENSE` and `NOTICE` files available for resolved Swift packages and the bundled llama.cpp/GGML runtime. `sqlite-vec` license texts are included in this repository under `Sources/CSQLiteVec/`.
+The app bundle includes the upstream `LICENSE` and `NOTICE` files available for resolved and vendored Swift packages and the bundled llama.cpp/GGML runtime. `sqlite-vec` license texts are included in this repository under `Sources/CSQLiteVec/`.
 
 ## Development tooling
 

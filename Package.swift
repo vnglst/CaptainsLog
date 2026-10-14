@@ -12,9 +12,9 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser", from: "1.8.2"),
-        .package(url: "https://github.com/argmaxinc/argmax-oss-swift.git", from: "1.0.0"),
-        .package(url: "https://github.com/huggingface/swift-transformers", from: "1.3.3"),
-        .package(url: "https://github.com/huggingface/swift-huggingface", from: "0.9.0"),
+        .package(url: "https://github.com/argmaxinc/argmax-oss-swift.git", from: "1.1.1"),
+        .package(path: "Vendor/swift-transformers"),
+        .package(path: "Vendor/swift-huggingface"),
     ],
     targets: [
         .target(
@@ -28,16 +28,17 @@ let package = Package(
                 .product(name: "HuggingFace", package: "swift-huggingface"),
             ]
         ),
-        // Upstream b11512, source a11f57ba93797579a5d1855ee216a31f10242676.
+        // Upstream b11609, source fcac19079f3f2985fe74ed845f0880e7e9a8030a.
         // SwiftPM verifies this digest before using matching llama/GGML headers and code.
         .binaryTarget(
             name: "llama",
-            url: "https://github.com/ggml-org/llama.cpp/releases/download/b11512/llama-b11512-xcframework.zip",
-            checksum: "3f6a7d0fecbf49781445bba900dc0a4a7e76303482765f5912a4a959d5fa2c38"
+            url: "https://github.com/ggml-org/llama.cpp/releases/download/b11609/llama-b11609-xcframework.zip",
+            checksum: "e802079e8fe7b5523f272e8a6fc15344572229a5ea6a6292b12184c1f45103b0"
         ),
         .target(
             name: "CSQLiteVec",
             path: "Sources/CSQLiteVec",
+            sources: ["sqlite-vec.c"],
             publicHeadersPath: "include",
             cSettings: [
                 .define("SQLITE_CORE"),
