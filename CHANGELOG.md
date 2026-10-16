@@ -14,6 +14,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Added
 
+- Add a draft to explore starting transcription during recording and TASK-65 to remember the default recording device with a fallback when unavailable.
+
 - Extend TASK-64 to benchmark both small and larger audio files on the owner’s current Mac.
 
 - Add TASK-64 to benchmark end-to-end audio processing and evaluate combining metadata, renaming and categorization while keeping transcription separate and comparing evaluation quality and overall processing time.
