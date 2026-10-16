@@ -1,10 +1,10 @@
 ---
 id: TASK-64
 title: Benchmark the processing pipeline
-status: To Do
+status: Next
 assignee: []
 created_date: '2026-10-16 06:18'
-updated_date: '2026-10-16 06:23'
+updated_date: '2026-10-16 06:27'
 labels: []
 dependencies: []
 type: enhancement

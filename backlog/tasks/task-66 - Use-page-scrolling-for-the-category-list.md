@@ -1,10 +1,10 @@
 ---
 id: TASK-66
 title: Category scroll bar
-status: To Do
+status: Next
 assignee: []
 created_date: '2026-10-16 06:20'
-updated_date: '2026-10-16 06:23'
+updated_date: '2026-10-16 06:27'
 labels: []
 dependencies: []
 type: enhancement
