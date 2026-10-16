@@ -46,6 +46,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
+- Clarify TASK-65 to remember the last selected microphone across app restarts, preselect it when available and fall back to another available input when unavailable.
+
 - Remove the duplicate Reprocess button from the individual log header while retaining Reprocess in the log row menu.
 
 - Trace upstream Whisper model-loading diagnostics during opt-in debug performance checks to locate initialization stalls without changing CLI or GUI compute settings; allow an explicitly recorded longer cold CoreML setup watchdog while retaining native decoding and three-second quit checks; record pipeline preflight failures and stop those probes promptly instead of misreporting them as model-loading timeouts.
