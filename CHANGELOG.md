@@ -46,7 +46,7 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
-- Shorten the four newly added backlog items to the owner's wording and remove their acceptance criteria.
+- Shorten the four newly added backlog items to the owner's wording, condense the benchmark description and remove repeated acceptance criteria.
 
 - Clarify TASK-65 to remember the last selected microphone across app restarts, preselect it when available and fall back to another available input when unavailable.
 
