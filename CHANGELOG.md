@@ -14,6 +14,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Added
 
+- Add TASK-64 to benchmark end-to-end audio processing and evaluate combining metadata, renaming and categorization while keeping transcription separate and comparing evaluation quality and overall processing time.
+
 - Add TASK-63 to track the unclickable All entries chevron, improve the button's click target and check all buttons for similar problems.
 - Add TASK-62 to track removal of the duplicate Reprocess header button while retaining the log row menu action.
 - Add TASK-61 in Next to track the bug preventing microphone input device changes in Settings.
