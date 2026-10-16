@@ -4,6 +4,7 @@ title: Start transcription during recording?
 status: Draft
 assignee: []
 created_date: '2026-10-16 06:19'
+updated_date: '2026-10-16 06:23'
 labels: []
 dependencies: []
 ---
@@ -11,5 +12,5 @@ dependencies: []
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-Explore whether transcription can start while a recording is still in progress.
+Start transcription during recording?
 <!-- SECTION:DESCRIPTION:END -->
