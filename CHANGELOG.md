@@ -46,6 +46,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
+- Refine the recording-time transcription draft with the owner's first-version scope and stability, existing transcription and CPU availability checks.
+
 - Require very short backlog text in the owner's wording and acceptance criteria that do not repeat the description in the repository instructions and README.
 
 - Shorten the four newly added backlog items to the owner's wording, condense the benchmark description and remove repeated acceptance criteria.
