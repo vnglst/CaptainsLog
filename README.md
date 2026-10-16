@@ -236,18 +236,17 @@ backlog task edit TASK-1 --status "Verify"  # After checking existing criteria
 backlog task edit TASK-1 --status "Complete"  # After your review
 ```
 
-Each task should explain the problem, why it matters, what should change, and
-how completion will be checked in clear, complete sentences. It must make sense
-on its own in the Backlog app, where linked repository files may not be visible.
-Include essential scope, context, current findings and review limits in the task.
-Do not link to other repository files or add file paths to task reference or
-documentation fields. There is no fixed word limit.
+Keep task text very short and use the owner’s sentences and wording. Do not
+expand it with additional explanation. Acceptance criteria must not repeat the
+description; omit them when the owner has not supplied distinct checks. Do not
+link to repository files or put file paths in reference/documentation fields,
+because those files are not visible in the Backlog app.
 Keep one task per coherent outcome, with research, implementation and verification
 as phases or acceptance checks inside it. Split work only when it delivers
 independently useful outcomes. Archive superseded tasks after preserving their
 scope and findings in the consolidated task.
-Condense outdated session notes while preserving the explanation, dependencies,
-status and checked acceptance criteria.
+When condensing existing tasks, preserve owner-supplied scope, dependencies,
+status and checked criteria.
 
 ## Testing
 
