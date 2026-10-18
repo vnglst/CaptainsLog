@@ -4,9 +4,9 @@ import Darwin
 extension Tools {
     func nonempty(_ url: URL) -> Bool { ((try? fm.attributesOfItem(atPath: url.path)[.size] as? NSNumber)?.intValue ?? 0) > 0 }
     func evalPipeline(_ args: [String]) throws {
-        try require(args.count == 2, "Usage: eval-pipeline RUN_DIR CL", status: 2)
+        try require(args.count == 2 || (args.count == 3 && args[2] == "--combined-metadata"), "Usage: eval-pipeline RUN_DIR CL [--combined-metadata]", status: 2)
         let dir = path(args[0]), cl = args[1], data = dir.appendingPathComponent("data")
-        try run([cl, "pipeline", "--input", "eval/transcribe/audio/2025-01-14 side project.m4a", "--data-dir", data.path], log: dir.appendingPathComponent("pipeline.log"))
+        try run([cl, "pipeline", "--input", "eval/transcribe/audio/2025-01-14 side project.m4a", "--data-dir", data.path] + (args.count == 3 ? [args[2]] : []), log: dir.appendingPathComponent("pipeline.log"))
         for relative in ["01-transcribed/2025-01-14 side project.md", "02-logs/2025-01-14 side project.md", "03-category/2025-01-14 side project.json"] {
             try require(nonempty(data.appendingPathComponent(".pipeline/" + relative)), "Pipeline artifact assertion failed: \(relative)")
         }

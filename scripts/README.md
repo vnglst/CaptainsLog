@@ -20,6 +20,8 @@ intermediate results, finished logs and legacy backups while retaining audio and
 settings. This does not start processing; `make cli ARGS="resume"` processes
 pending recordings afterwards. Checks must use isolated config/data and eval fixtures.
 
+Use `ARGS="--combined-metadata"` to evaluate category, filename and enrichment fixtures through experimental combined metadata generation, validating the complete metadata schema for every combined response and retaining raw/parsed responses in the semantic review bundles. Combined metadata fixtures default to seed42 while preserving explicit case seeds; standalone stages and production keep their existing defaults.
+
 Additional flags use `ARGS="..."`, passed to the underlying command. Quote paths
 and stems with spaces inside ARGS as shell arguments. Existing `CAPTAINS_LOG_EVAL_*`
 model/run-directory environment overrides continue to work. Packaging always
@@ -44,6 +46,7 @@ evaluations remain a separate `make evals` command.
 | `make tests-model` | Opt-in installed-model smoke test; requires the four `CAPTAINSLOG_*_MODEL_*` variables in its helper. |
 | `make tests-app-performance RUN_DIR=/absolute/new/output` | Opt-in native startup and quit-during-decoding regression check. Quit the app first; supply prepared `CAPTAINSLOG_WHISPER_MODEL_FOLDER` and `CAPTAINSLOG_QWEN_MODEL_FOLDER`. Debug-only, eval audio and isolated config/data; no microphone. |
 | `make tests-search-shutdown RUN_DIR=/absolute/new/output` | Opt-in native cached-search/quit regression check using eval content, isolated config and prepared E5/Qwen/Whisper models. Keep all other native work stopped; `ARGS=--baseline` retains a failing exit for comparison. |
+| Debug `run-tests --native-recording-busy` (invoke built binary directly) | Opt-in Core-only busy-admission check with real cached Whisper and eval audio; run from repository root with `CAPTAINS_LOG_CONFIG_PATH` under repository `tmp` or system temporary storage. Preserves CPU/model gates, creates its own isolated data, and requires the exclusive native slot. No GUI or microphone. |
 | `make tests-recorder` | Interactive microphone smoke check with explicit confirmation. |
 | `make ui` | Launch temporary eval-backed native UI; optional state selector via `ARGS`. Use `eval-menu`, `eval-menu-recording`, `eval-menu-processing`, or `eval-menu-failed` to inspect the shared menu panel in a labeled synthetic preview window. |
 | `make release-notes VERSION=0.1.2` | Extract release notes. |

@@ -4,16 +4,22 @@ import Foundation
 /// rejects new work and drains the current native call, without finishing a pipeline.
 public final class NativeInferenceLifecycle: @unchecked Sendable {
     public static let shared = NativeInferenceLifecycle()
-    private let lock = NSLock()
+    private let lock = NSCondition()
     private var stopping = false
     private var activeOperations = 0
+    private var retainedResources = 0
     private var waiters: [CheckedContinuation<Void, Never>] = []
 
     init() {}
 
-    func beginOperation() throws {
+    func beginOperation(onlyIfIdle: Bool = false) throws {
         try Task.checkCancellation()
         try lock.withLock {
+            while activeOperations > 0 && !stopping {
+                if onlyIfIdle { throw NativeInferenceBusy() }
+                _ = lock.wait(until: Date().addingTimeInterval(0.1))
+                try Task.checkCancellation()
+            }
             guard !stopping else { throw CancellationError() }
             activeOperations += 1
         }
@@ -22,7 +28,26 @@ public final class NativeInferenceLifecycle: @unchecked Sendable {
     func endOperation() {
         let ready = lock.withLock {
             activeOperations -= 1
-            guard activeOperations == 0 else { return [CheckedContinuation<Void, Never>]() }
+            lock.broadcast()
+            guard activeOperations == 0, retainedResources == 0 else { return [CheckedContinuation<Void, Never>]() }
+            let ready = waiters
+            waiters.removeAll()
+            return ready
+        }
+        for waiter in ready { waiter.resume() }
+    }
+
+    func beginResource() throws {
+        try lock.withLock {
+            guard !stopping else { throw CancellationError() }
+            retainedResources += 1
+        }
+    }
+
+    func endResource() {
+        let ready = lock.withLock {
+            retainedResources -= 1
+            guard activeOperations == 0, retainedResources == 0 else { return [CheckedContinuation<Void, Never>]() }
             let ready = waiters
             waiters.removeAll()
             return ready
@@ -41,7 +66,8 @@ public final class NativeInferenceLifecycle: @unchecked Sendable {
         await withCheckedContinuation { continuation in
             let idle = lock.withLock {
                 stopping = true
-                if activeOperations == 0 { return true }
+                lock.broadcast()
+                if activeOperations == 0, retainedResources == 0 { return true }
                 waiters.append(continuation)
                 return false
             }
@@ -49,3 +75,5 @@ public final class NativeInferenceLifecycle: @unchecked Sendable {
         }
     }
 }
+
+struct NativeInferenceBusy: Error {}

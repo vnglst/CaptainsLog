@@ -22,7 +22,18 @@ public final class RecordingState {
 
     public var recordingDuration: TimeInterval = 0
     public var inputDevices: [AudioDevice] = []
-    public var selectedDeviceUID: String?
+    private var effectiveDeviceUID: String?
+    private var preferredDeviceUID: String?
+    private let saveDevicePreference: (String?) throws -> Void
+    public var selectedDeviceUID: String? {
+        get { effectiveDeviceUID }
+        set {
+            effectiveDeviceUID = newValue
+            preferredDeviceUID = newValue
+            do { try saveDevicePreference(newValue) }
+            catch { fputs("Warning: Failed to save recording device: \(error.localizedDescription)\n", stderr) }
+        }
+    }
     public var errorMessage: String?
     /// UI-facing pause state — drives SwiftUI redraws.
     public var isRecordingPaused: Bool = false
@@ -65,6 +76,12 @@ public final class RecordingState {
     #endif
 
     public init() {
+        let savedPreference = CaptainsLogConfig.load().preferredRecordingDeviceUID
+        preferredDeviceUID = savedPreference
+        effectiveDeviceUID = savedPreference
+        saveDevicePreference = { uid in
+            try CaptainsLogConfig.update { $0.preferredRecordingDeviceUID = uid }
+        }
         self.dependencies = Dependencies(
             listInputDevices: { Recorder.listInputDevices() },
             defaultInputDevice: { Recorder.defaultInputDevice() },
@@ -74,21 +91,34 @@ public final class RecordingState {
                     deviceUID: deviceUID,
                     stopTrigger: stopTrigger,
                     levelCallback: levelCallback,
-                    isPaused: isPaused
+                    isPaused: isPaused,
+                    earlyTranscription: true
                 )
             }
         )
     }
 
-    init(dependencies: Dependencies) {
+    init(
+        dependencies: Dependencies,
+        preferredDeviceUID: String? = nil,
+        saveDevicePreference: @escaping (String?) throws -> Void = { _ in }
+    ) {
         self.dependencies = dependencies
+        self.preferredDeviceUID = preferredDeviceUID
+        self.effectiveDeviceUID = preferredDeviceUID
+        self.saveDevicePreference = saveDevicePreference
+    }
+
+    private func applyDevices(_ devices: [AudioDevice], defaultUID: String?) {
+        inputDevices = devices
+        effectiveDeviceUID = [preferredDeviceUID, defaultUID]
+            .compactMap { $0 }
+            .first { uid in devices.contains { $0.uid == uid } }
+            ?? devices.first?.uid
     }
 
     func refreshDevices() {
-        inputDevices = dependencies.listInputDevices()
-        if selectedDeviceUID == nil || !inputDevices.contains(where: { $0.uid == selectedDeviceUID }) {
-            selectedDeviceUID = dependencies.defaultInputDevice()?.uid
-        }
+        applyDevices(dependencies.listInputDevices(), defaultUID: dependencies.defaultInputDevice()?.uid)
     }
 
     func refreshDevicesInBackground() async {
@@ -97,10 +127,7 @@ public final class RecordingState {
             let devices = dependencies.listInputDevices()
             return (devices, dependencies.defaultInputDevice()?.uid)
         }.value
-        inputDevices = result.0
-        if selectedDeviceUID == nil || !result.0.contains(where: { $0.uid == selectedDeviceUID }) {
-            selectedDeviceUID = result.1
-        }
+        applyDevices(result.0, defaultUID: result.1)
     }
 
     func startRecording(

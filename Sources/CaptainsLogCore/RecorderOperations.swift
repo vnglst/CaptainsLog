@@ -31,13 +31,17 @@ protocol RecorderAudioEngine: AnyObject, Sendable {
 
 protocol RecorderAudioWriter: AnyObject, Sendable {
     func write(from buffer: RecorderAudioBuffer) throws
+    func finish()
 }
+
+extension RecorderAudioWriter { func finish() {} }
 
 struct RecorderOperations: Sendable {
     var listInputDevices: @Sendable () -> [AudioDevice]
     var makeEngine: @Sendable (AudioDevice?) throws -> any RecorderAudioEngine
     var makeWriter: @Sendable (URL, RecorderAudioFormat) throws -> any RecorderAudioWriter
     var waitForManualStop: @Sendable (TimeInterval?) async -> Void
+    var makeEarlyTranscription: @Sendable () -> RecordingTranscription? = { try? RecordingTranscription() }
 }
 
 private final class RecorderErrorBox: @unchecked Sendable {
@@ -58,6 +62,7 @@ extension Recorder {
         stopTrigger: AsyncStream<Void>?,
         levelCallback: (@Sendable (Float) -> Void)?,
         isPaused: @Sendable @escaping () -> Bool,
+        earlyTranscription: Bool = false,
         operations: RecorderOperations
     ) async throws {
         let dir = url.deletingLastPathComponent()
@@ -67,14 +72,21 @@ extension Recorder {
             operations.listInputDevices().first { $0.uid == uid }
         }
         let engine = try operations.makeEngine(selectedDevice)
+        await RecordingTranscription.discard(url.path)
         let writer = try operations.makeWriter(url, engine.inputFormat)
+        // Only a caller that owns follow-up processing may retain native work
+        // after capture stops. Standalone recording must remain audio-only.
+        let early = earlyTranscription ? operations.makeEarlyTranscription() : nil
 
         // The audio callback is finished after stopping the engine and removing the tap.
         let tapError = RecorderErrorBox()
         do {
             try engine.installTap(bufferSize: 4096) { buffer in
                 guard !isPaused() else { return }
-                do { try writer.write(from: buffer) }
+                do {
+                    try writer.write(from: buffer)
+                    early?.append(buffer)
+                }
                 catch { tapError.value = error }
 
                 if let levelCallback, let rms = buffer.rootMeanSquare {
@@ -84,6 +96,7 @@ extension Recorder {
         } catch {
             engine.stop()
             engine.removeTap()
+            await early?.finish(audioPath: url.path, cancelled: true)
             throw error
         }
 
@@ -92,6 +105,7 @@ extension Recorder {
         } catch {
             engine.stop()
             engine.removeTap()
+            await early?.finish(audioPath: url.path, cancelled: true)
             throw Recorder.RecorderError.engineStartFailed(error)
         }
 
@@ -120,6 +134,10 @@ extension Recorder {
         engine.stop()
         engine.removeTap()
 
+        AppPerformanceTrace.mark("recording-capture-stopped")
+        writer.finish()
+        await early?.finish(audioPath: url.path, cancelled: Task.isCancelled || tapError.value != nil)
+        AppPerformanceTrace.mark("recording-tail-handed-off")
         if let error = tapError.value { throw error }
         if stopTrigger == nil { print("Saved to \(url.path)") }
     }

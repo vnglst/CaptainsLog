@@ -35,12 +35,29 @@ final class Evaluator {
         }
         return result
     }
+    func seedCombinedCases(_ items: inout [EvalItem]) {
+        for i in items.indices where ["categorize", "filename", "enrich"].contains(string(items[i], "stage")) && items[i]["seed"] == nil {
+            items[i]["seed"] = 42
+        }
+    }
     func validate(_ item: EvalItem) -> String {
         do {
             let bytes = try Data(contentsOf: file(item, "output"))
             guard let text = String(data: bytes, encoding: .utf8) else { throw ToolFailure("invalid UTF-8") }
             try tools.require(!text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, "empty output")
             try tools.require(tools.match("[\\x00-\\x08\\x0b\\x0c\\x0e-\\x1f\\x7f]", text) == nil, "NUL/control bytes in output")
+            // Every combined call produces all three fields, even when this suite
+            // selects only a filename or filing category for its primary assertion.
+            let combinedURL = URL(fileURLWithPath: file(item, "output").path + ".combined.json")
+            if tools.fm.fileExists(atPath: combinedURL.path) {
+                guard let combined = try tools.json(combinedURL) as? EvalItem,
+                      let yaml = combined["yaml"] as? String else { throw ToolFailure("invalid combined metadata evidence") }
+                let source = try tools.read(file(item, "input"))
+                let enriched = "---\n" + yaml + "\n---\n\n" + source
+                // Filename/category fixtures do not declare a language expectation.
+                // Validate schema and source preservation; language grounding is reviewed.
+                try tools.validateEnrich(source, enriched, ["date": string(item, "date", date), "recording_time": string(item, "recording_time", time)], checkLanguage: false)
+            }
             switch string(item, "stage") {
             case "filename":
                 var name = text.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -87,6 +104,10 @@ final class Evaluator {
             let relative = "review/\(string(item, "scope", "suites"))/\(string(item, "stage"))/\(string(item, "name"))", folder = run.appendingPathComponent(relative)
             try tools.mkdir(folder)
             for key in ["input", "expected", "output"] { let url = file(item, key); if tools.fm.fileExists(atPath: url.path) { try tools.copy(url, folder.appendingPathComponent(key + "." + url.pathExtension)) } }
+            for suffix in [".response.txt", ".combined.json"] {
+                let artifact = URL(fileURLWithPath: file(item, "output").path + suffix)
+                if tools.fm.fileExists(atPath: artifact.path) { try tools.copy(artifact, folder.appendingPathComponent("output" + suffix)) }
+            }
             let status = validate(item); if status != "PASS" { failures += 1 }
             print("\(string(item, "stage"))/\(string(item, "name")): \(status)")
             try tools.write(folder.appendingPathComponent("validation.txt"), status + "\n")
@@ -193,7 +214,7 @@ final class Evaluator {
             guard let separator = arg.firstIndex(of: "="), valued.contains(String(arg[..<separator])) else { return [arg] }
             return [String(arg[..<separator]), String(arg[arg.index(after: separator)...])]
         }
-        var mode = "--all", explicit = false, stage: String?, selected: String?, baselinePath: String?, validation: String?, legacy: String?, list = false, i = 0
+        var mode = "--all", explicit = false, stage: String?, selected: String?, baselinePath: String?, validation: String?, legacy: String?, list = false, combinedMetadata = false, i = 0
         func value(_ flag: String) throws -> String { i += 1; try tools.require(i < args.count, "Missing value for \(flag)", status: 2); return args[i] }
         while i < args.count {
             let arg = args[i]
@@ -203,8 +224,9 @@ final class Evaluator {
             case "--case": selected = try value(arg)
             case "--baseline": baselinePath = tools.path(try value(arg)).standardizedFileURL.path
             case "--validate-run", "--validate-enrich", "--validate-categorize": validation = try value(arg); if arg != "--validate-run" { legacy = arg == "--validate-enrich" ? "enrich" : "categorize" }
+            case "--combined-metadata": combinedMetadata = true
             case "--list": list = true
-            case "-h", "--help": print("Usage: make evals ARGS=\"[--all|--pipeline|--suites|--categorize|--enrich|--stage STAGE [--case STEM]] [--baseline RUN_DIR] [--validate-run RUN_DIR_OR_STAMP] [--list]\""); return
+            case "-h", "--help": print("Usage: make evals ARGS=\"[--all|--pipeline|--suites|--categorize|--enrich|--stage STAGE [--case STEM]] [--combined-metadata] [--baseline RUN_DIR] [--validate-run RUN_DIR_OR_STAMP] [--list]\""); return
             default: throw ToolFailure("Unexpected arguments: \(args[i...].joined(separator: " "))", status: 2)
             }
             i += 1
@@ -212,7 +234,7 @@ final class Evaluator {
         try tools.require(selected == nil || stage != nil, "--case requires --stage", status: 2)
         let chosen = stage.map { [$0] } ?? (["--categorize", "--enrich"].contains(mode) ? [String(mode.dropFirst(2))] : stages)
         if let validation {
-            try tools.require(!explicit && selected == nil && !list, "Validation cannot be combined with execution options", status: 2)
+            try tools.require(!explicit && selected == nil && !list && !combinedMetadata, "Validation cannot be combined with execution options", status: 2)
             let saved = tools.path(validation).standardizedFileURL
             var items: [EvalItem], run: URL
             if tools.fm.fileExists(atPath: saved.appendingPathComponent("manifest.json").path) { run = saved; items = try tools.json(run.appendingPathComponent("manifest.json")) as? [EvalItem] ?? [] }
@@ -228,6 +250,7 @@ final class Evaluator {
             if try !evidence(run, items, baselineItems(baselinePath ?? recorded?["baseline"] as? String)) { throw ToolFailure("Saved evaluation failed validation") }; return
         }
         var items = mode == "--pipeline" ? [] : try cases(chosen, selected)
+        if combinedMetadata { seedCombinedCases(&items) }
         if list { for item in items { print("\(string(item, "stage"))/\(string(item, "name"))") }; return }
         let baseline = try baselineItems(baselinePath)
         let formatter = DateFormatter(); formatter.dateFormat = "yyyy-MM-dd_HH-mm-ss"
@@ -237,6 +260,14 @@ final class Evaluator {
         try nameOutputs(&items, stamp); try tools.mkdir(run)
         let started = ProcessInfo.processInfo.systemUptime
         var metadata: EvalItem = ["stamp": stamp, "started_at": ISO8601DateFormatter().string(from: Date()), "mode": mode, "revision": try tools.capture(["git", "rev-parse", "HEAD"]), "dirty_status": try tools.run(["git", "status", "--porcelain"], quiet: true).output, "generation": try settings(), "baseline": baselinePath as Any? ?? NSNull(), "status": "preparing"]
+        if combinedMetadata {
+            var combined = (try settings())["enrich"] as? EvalItem ?? [:]
+            combined["prompt"] = "prompts/metadata.md"
+            combined["stages"] = ["categorize", "filename", "enrich"]
+            combined["scope"] = combinedMetadata ? "selected metadata suites and fresh pipeline entries" : "fresh pipeline entries only"
+            combined["seed_policy"] = combinedMetadata ? "metadata fixtures use per-case manifest seed, default42; production/pipeline defaults remain random" : "production/pipeline defaults remain random"
+            metadata["combined_metadata"] = combined
+        }
         errorStatus = 1
         do {
             if items.contains(where: { string($0, "stage") == "enrich" }) {
@@ -275,10 +306,10 @@ final class Evaluator {
             metadata["runtime_manifest_sha256"] = try tools.hash(tools.path("Package.swift")); metadata["runtime_hashes"] = try tools.hashes(libraries)
             try tools.json(run.appendingPathComponent("metadata.json"), metadata)
             if items.contains(where: { string($0, "stage") == "enrich" }) { try tools.run([CommandLine.arguments[0], "test-enrich-eval"], log: run.appendingPathComponent("enrich-checks.log"), environment: ["CAPTAINS_LOG_EVAL_CL": cl]) }
-            if ["--all", "--pipeline"].contains(mode) { try tools.run([CommandLine.arguments[0], "eval-pipeline", run.path, cl], log: run.appendingPathComponent("pipeline-checks.log")) }
+            if ["--all", "--pipeline"].contains(mode) { try tools.run([CommandLine.arguments[0], "eval-pipeline", run.path, cl] + (combinedMetadata ? ["--combined-metadata"] : []), log: run.appendingPathComponent("pipeline-checks.log")) }
             for item in items where string(item, "stage") == "transcribe" && string(item, "scope") != "pipeline" { try tools.run([cl, "transcribe", string(item, "input"), "--output", string(item, "output")], log: run.appendingPathComponent("transcribe-\(string(item, "name")).log")) }
             let text = items.filter { string($0, "stage") != "transcribe" && string($0, "scope") != "pipeline" }
-            if !text.isEmpty { try tools.json(run.appendingPathComponent("batch.json"), text); try tools.run([cl, "eval-batch", "--manifest", run.appendingPathComponent("batch.json").path], log: run.appendingPathComponent("batch.log")) }
+            if !text.isEmpty { try tools.json(run.appendingPathComponent("batch.json"), text); try tools.run([cl, "eval-batch", "--manifest", run.appendingPathComponent("batch.json").path] + (combinedMetadata ? ["--combined-metadata"] : []), log: run.appendingPathComponent("batch.log")) }
             metadata["status"] = "generated"
         } catch { metadata["status"] = "failed"; metadata["error"] = String(describing: error); FileHandle.standardError.write(Data(("\(error)\n").utf8)) }
         try refresh(run, &items); try recordPipeline(run, &items, &metadata); try tools.json(run.appendingPathComponent("manifest.json"), items)

@@ -1,6 +1,6 @@
 import Foundation
 
-public struct CaptainsLogConfig: Codable {
+public struct CaptainsLogConfig: Codable, Sendable {
     public static let defaultDataDirName = "Documents/CaptainsLog"
     public static let currentSchemaVersion = 1
 
@@ -22,6 +22,7 @@ public struct CaptainsLogConfig: Codable {
         let unique = parsed.filter { seen.insert($0).inserted }
         return unique
     }
+    public var preferredRecordingDeviceUID: String?
     public var dataDir: String?
     public var whisperModelFolder: String?
     public var whisperModel: String?
@@ -32,6 +33,7 @@ public struct CaptainsLogConfig: Codable {
         automaticUpdateChecks: Bool? = nil,
         automaticUpdates: Bool? = nil,
         dataDir: String? = nil,
+        preferredRecordingDeviceUID: String? = nil,
         categories: [String]? = nil,
         whisperModelFolder: String? = nil,
         whisperModel: String? = nil,
@@ -41,6 +43,7 @@ public struct CaptainsLogConfig: Codable {
         self.automaticUpdates = automaticUpdates
         self.automaticUpdateChecks = automaticUpdateChecks
         self.schemaVersion = schemaVersion
+        self.preferredRecordingDeviceUID = preferredRecordingDeviceUID
         self.dataDir = dataDir
         self.categories = categories
         self.whisperModelFolder = whisperModelFolder

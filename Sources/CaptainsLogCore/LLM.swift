@@ -19,6 +19,7 @@ public enum LLM {
 
 
     enum LLMError: LocalizedError, Equatable {
+        case invalidGrammar
         case invalidModelContextSize(Int)
         case promptTooLarge(promptTokens: Int, modelContextTokens: Int)
         case requestedOutputTooLarge(promptTokens: Int, requestedTokens: Int, modelContextTokens: Int)
@@ -27,6 +28,8 @@ public enum LLM {
 
         var errorDescription: String? {
             switch self {
+            case .invalidGrammar:
+                return "The output grammar is invalid."
             case .invalidModelContextSize(let tokens):
                 return "The model reported an invalid context size of \(tokens) tokens."
             case .promptTooLarge(let promptTokens, let modelContextTokens):
@@ -182,6 +185,7 @@ public enum LLM {
         temperature: Float = 0.6,
         preventRepetition: Bool = false,
         seed: UInt32? = nil,
+        grammar: String? = nil,
         diagnostic: (@Sendable (String) -> Void)? = nil
     ) async throws -> String {
         Logger.llm.info("Running inference...")
@@ -197,6 +201,7 @@ public enum LLM {
                 temperature: temperature,
                 preventRepetition: preventRepetition,
                 seed: seed,
+                grammar: grammar,
                 diagnostic: diagnostic
             )
         }
@@ -235,6 +240,7 @@ public enum LLM {
         temperature: Float,
         preventRepetition: Bool = false,
         seed: UInt32? = nil,
+        grammar: String? = nil,
         diagnostic: (@Sendable (String) -> Void)? = nil
     ) throws -> String {
         try NativeInferenceLifecycle.shared.beginOperation()
@@ -281,8 +287,8 @@ public enum LLM {
         try decode(tokens: promptTokens, context: context, batchSize: Int(contextParams.n_batch))
         diagnostic?("Prompt decoded; token generation started.")
 
-        let sampler = makeSampler(temperature: temperature, vocab: vocab,
-                                  preventRepetition: preventRepetition, seed: seed)
+        let sampler = try makeSampler(temperature: temperature, vocab: vocab,
+                                      preventRepetition: preventRepetition, seed: seed, grammar: grammar)
         defer { llama_sampler_free(sampler) }
 
         return try generateTokens(
@@ -445,9 +451,19 @@ public enum LLM {
         temperature: Float,
         vocab: OpaquePointer?,
         preventRepetition: Bool,
-        seed: UInt32?
-    ) -> UnsafeMutablePointer<llama_sampler> {
+        seed: UInt32?,
+        grammar: String?
+    ) throws -> UnsafeMutablePointer<llama_sampler> {
         let chain = llama_sampler_chain_init(llama_sampler_chain_default_params())!
+        if let grammar {
+            guard !grammar.isEmpty,
+                  let constraint = grammar.withCString({ llama_sampler_init_grammar(vocab, $0, "root") }) else {
+                llama_sampler_free(chain)
+                throw LLMError.invalidGrammar
+            }
+            // Restrict candidates before top-k/top-p can remove every valid token.
+            llama_sampler_chain_add(chain, constraint)
+        }
         if preventRepetition {
             // DRY penalizes repeated sequences rather than every reused token.
             // Allow short YAML syntax to recur; keep newlines in the history so

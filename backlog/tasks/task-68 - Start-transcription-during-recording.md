@@ -1,10 +1,10 @@
 ---
 id: TASK-68
 title: Start transcription during recording?
-status: Next
+status: Verify
 assignee: []
 created_date: '2026-10-16 06:19'
-updated_date: '2026-10-16 06:28'
+updated_date: '2026-10-18 21:55'
 labels: []
 dependencies: []
 ordinal: 63000

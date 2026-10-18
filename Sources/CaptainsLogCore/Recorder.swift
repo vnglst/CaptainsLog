@@ -53,7 +53,7 @@ private final class AVRecorderAudioEngine: RecorderAudioEngine, @unchecked Senda
 }
 
 private final class AVRecorderAudioWriter: RecorderAudioWriter, @unchecked Sendable {
-    private let file: AVAudioFile
+    private var file: AVAudioFile?
 
     init(file: AVAudioFile) { self.file = file }
 
@@ -61,14 +61,19 @@ private final class AVRecorderAudioWriter: RecorderAudioWriter, @unchecked Senda
         guard let nativeBuffer = buffer.nativeBuffer else {
             throw Recorder.RecorderError.missingNativeAudioBuffer
         }
-        try file.write(from: nativeBuffer)
+        try file?.write(from: nativeBuffer)
     }
+
+    func finish() { file = nil }
 }
 
 extension RecorderOperations {
     static let live = RecorderOperations(
         listInputDevices: { Recorder.listInputDevices() },
         makeEngine: { selectedDevice in
+            #if DEBUG
+            if let fixture = try FixtureRecordingEngine.configured() { return fixture }
+            #endif
             let engine = AVAudioEngine()
             if let selectedDevice, let audioUnit = engine.inputNode.audioUnit {
                 var deviceID = selectedDevice.id
@@ -191,7 +196,8 @@ public enum Recorder {
         deviceUID: String? = nil,
         stopTrigger: AsyncStream<Void>? = nil,
         levelCallback: (@Sendable (Float) -> Void)? = nil,
-        isPaused: @Sendable @escaping () -> Bool = { false }
+        isPaused: @Sendable @escaping () -> Bool = { false },
+        earlyTranscription: Bool = false
     ) async throws {
         try await record(
             to: url,
@@ -200,6 +206,7 @@ public enum Recorder {
             stopTrigger: stopTrigger,
             levelCallback: levelCallback,
             isPaused: isPaused,
+            earlyTranscription: earlyTranscription,
             operations: .live
         )
     }

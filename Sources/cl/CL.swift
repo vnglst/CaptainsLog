@@ -298,6 +298,9 @@ struct PipelineCommand: AsyncParsableCommand {
     @Option(help: "ISO-639-1 language code to pin (e.g. 'nl'). Default: auto-detect.")
     var language: String?
 
+    @Flag(help: "Experimental: generate category, filename and metadata together. Default keeps stages separate.")
+    var combinedMetadata = false
+
     func validate() throws {
         if let duration, duration <= 0 {
             throw ValidationError("--duration must be greater than zero.")
@@ -312,6 +315,7 @@ struct PipelineCommand: AsyncParsableCommand {
             language: language,
             recordDuration: duration.map { TimeInterval($0) },
             modelId: model,
+            combinedMetadata: combinedMetadata,
             progress: { p in
                 print("[stage:\(p.stage.rawValue)] \(p.stem)")
             }

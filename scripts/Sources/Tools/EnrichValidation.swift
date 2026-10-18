@@ -52,7 +52,7 @@ extension Tools {
         try require(cases.keys.sorted() == names, "case manifest differs from enrichment inputs")
         for name in names { try validateCaseInput(input.appendingPathComponent(name + ".md"), cases[name]!) }
     }
-    @discardableResult func validateEnrich(_ input: String, _ output: String, _ expected: [String: Any]) throws -> [String: Any] {
+    @discardableResult func validateEnrich(_ input: String, _ output: String, _ expected: [String: Any], checkLanguage: Bool = true) throws -> [String: Any] {
         let (yaml, body) = try frontmatter(output)
         try require(body.utf8.elementsEqual(input.utf8), "source body changed")
         try require(yaml.utf8.count <= 12000, "metadata exceeds 12000 bytes")
@@ -71,7 +71,7 @@ extension Tools {
             lists[key] = normalized
         }
         try require(!lists["categories"]!.isEmpty && Set(lists["categories"]!).isSubset(of: ["personal", "work", "side-project"]), "invalid categories")
-        try require((value["language"] as! String).lowercased() == (expected["language"] as? String)?.lowercased(), "language differs from fixture expectation")
+        if checkLanguage { try require((value["language"] as! String).lowercased() == (expected["language"] as? String)?.lowercased(), "language differs from fixture expectation") }
         try require((3...8).contains(lists["tags"]!.count), "expected 3 to 8 tags")
         let named = Set(["persons", "projects", "companies"].flatMap { lists[$0]! })
         try require(named.isDisjoint(with: lists["entities"]!), "entity duplicates a person, project or company")
@@ -97,6 +97,7 @@ extension Tools {
         try check("empty summary", "summary must be nonempty") { d, _ in d["summary"] = " "; return nil }
         try check("repeated summary", "summary exceeds") { d, _ in d["summary"] = String(repeating: "Repeated sentence. ", count: 200); return nil }
         try check("unquoted colon becomes mapping", "entities must contain strings") { d, _ in d["entities"] = [["Star Trek": "The Next Generation"]]; return nil }
+        try check("nested empty list", "persons must contain strings") { d, _ in d["persons"] = [Array<String>()]; return nil }
         try check("scalar list", "projects must contain strings") { d, _ in d["projects"] = "FinanceHub"; return nil }
         try check("duplicate list item", "duplicate projects") { d, _ in d["projects"] = (d["projects"] as! [String]) + ["financehub"]; return nil }
         try check("cross-field duplicate", "entity duplicates") { d, _ in d["entities"] = (d["entities"] as! [String]) + ["FinanceHub"]; return nil }

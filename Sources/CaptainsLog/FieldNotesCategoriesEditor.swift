@@ -19,62 +19,59 @@ struct FieldNotesCategoriesEditor: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            ScrollView {
-                VStack(spacing: 6) {
-                    ForEach(appState.config.categories, id: \.self) { raw in
+            VStack(spacing: 6) {
+                ForEach(appState.config.categories, id: \.self) { raw in
+                    HStack {
                         HStack {
-                            HStack {
-                                Image(systemName: "line.3.horizontal")
-                                    .foregroundStyle(FieldNotes.ColorToken.secondaryText)
-                                    .accessibilityHidden(true)
-                                Text(Categorize.Category(rawValue: raw)?.displayName ?? raw)
-                                    .font(FieldNotes.Typography.body(13))
-                                Spacer()
-                            }
-                            .contentShape(Rectangle())
-                            .highPriorityGesture(
-                                DragGesture(minimumDistance: 3, coordinateSpace: .named(categorySpace))
-                                    .updating($drag) { value, drag, _ in
-                                        drag = (raw, value.location)
-                                    }
-                                    .onEnded { value in
-                                        moveCategory(raw, to: category(at: value.location))
-                                    }
+                            Image(systemName: "line.3.horizontal")
+                                .foregroundStyle(FieldNotes.ColorToken.secondaryText)
+                                .accessibilityHidden(true)
+                            Text(Categorize.Category(rawValue: raw)?.displayName ?? raw)
+                                .font(FieldNotes.Typography.body(13))
+                            Spacer()
+                        }
+                        .contentShape(Rectangle())
+                        .highPriorityGesture(
+                            DragGesture(minimumDistance: 3, coordinateSpace: .named(categorySpace))
+                                .updating($drag) { value, drag, _ in
+                                    drag = (raw, value.location)
+                                }
+                                .onEnded { value in
+                                    moveCategory(raw, to: category(at: value.location))
+                                }
+                        )
+                        .help("Drag to reorder categories")
+                        Button {
+                            appState.config.categories.removeAll { $0 == raw }
+                        } label: {
+                            Image(systemName: "minus.circle")
+                                .frame(width: 24, height: 24)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("Remove \(Categorize.Category(rawValue: raw)?.displayName ?? raw) category")
+                    }
+                    .padding(8)
+                    .background(FieldNotes.ColorToken.canvas, in: RoundedRectangle(cornerRadius: 6))
+                    .contentShape(RoundedRectangle(cornerRadius: 6))
+                    .opacity(drag?.category == raw ? 0.65 : 1)
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 6)
+                            .stroke(dropTarget == raw ? FieldNotes.ColorToken.secondaryText : .clear, lineWidth: 1)
+                            .allowsHitTesting(false)
+                    }
+                    .background {
+                        GeometryReader { geometry in
+                            Color.clear.preference(
+                                key: CategoryFramesKey.self,
+                                value: [raw: geometry.frame(in: .named(categorySpace))]
                             )
-                            .help("Drag to reorder categories")
-                            Button {
-                                appState.config.categories.removeAll { $0 == raw }
-                            } label: {
-                                Image(systemName: "minus.circle")
-                                    .frame(width: 24, height: 24)
-                                    .contentShape(Rectangle())
-                            }
-                            .buttonStyle(.plain)
-                            .accessibilityLabel("Remove \(Categorize.Category(rawValue: raw)?.displayName ?? raw) category")
-                        }
-                        .padding(8)
-                        .background(FieldNotes.ColorToken.canvas, in: RoundedRectangle(cornerRadius: 6))
-                        .contentShape(RoundedRectangle(cornerRadius: 6))
-                        .opacity(drag?.category == raw ? 0.65 : 1)
-                        .overlay {
-                            RoundedRectangle(cornerRadius: 6)
-                                .stroke(dropTarget == raw ? FieldNotes.ColorToken.secondaryText : .clear, lineWidth: 1)
-                                .allowsHitTesting(false)
-                        }
-                        .background {
-                            GeometryReader { geometry in
-                                Color.clear.preference(
-                                    key: CategoryFramesKey.self,
-                                    value: [raw: geometry.frame(in: .named(categorySpace))]
-                                )
-                            }
                         }
                     }
                 }
-                .coordinateSpace(name: categorySpace)
-                .onPreferenceChange(CategoryFramesKey.self) { categoryFrames = $0 }
             }
-            .frame(height: min(CGFloat(appState.config.categories.count) * 39, 156))
+            .coordinateSpace(name: categorySpace)
+            .onPreferenceChange(CategoryFramesKey.self) { categoryFrames = $0 }
             HStack {
                 TextField("New category", text: $newCategory)
                     .textFieldStyle(.roundedBorder)

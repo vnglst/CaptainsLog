@@ -208,7 +208,7 @@ evaluator flags are passed with `ARGS="..."`.
 
 Revalidate a saved bundle with `make evals ARGS="--validate-run RUN_DIR"`; legacy
 timestamped outputs support `ARGS="--validate-categorize STAMP"` and
-`ARGS="--validate-enrich STAMP"`. Use `ARGS="--baseline RUN_DIR"` for comparison evidence. Missing models, malformed
+`ARGS="--validate-enrich STAMP"`. Use `ARGS="--baseline RUN_DIR"` for comparison evidence. `ARGS="--combined-metadata"` evaluates experimental combined generation with fixture seeds defaulting to42. `cl pipeline --combined-metadata` opts a fresh pipeline into the experiment; default processing keeps separate stages because semantic equivalence is not established. Individual stage commands retain their separate prompts. Missing models, malformed
 outputs and existing run directories fail explicitly. `make tests-evals`
 checks orchestration without inference.
 

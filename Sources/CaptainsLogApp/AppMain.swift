@@ -121,6 +121,7 @@ struct CaptainsLogApp: App {
         }
         .windowStyle(.hiddenTitleBar)
         .defaultSize(width: 840, height: 780)
+        .windowResizability(.contentMinSize)
         .commands {
             CommandGroup(after: .windowArrangement) {
                 Button("Minimize to Menu Bar") {

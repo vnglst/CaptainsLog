@@ -33,6 +33,7 @@ extension Tools {
             let name = URL(fileURLWithPath: args[1]).deletingPathExtension().lastPathComponent
             try write(path(value("--output")), source("transcribe/expected/\(name).md"))
         case "pipeline":
+            if let trace = environment["EVAL_FIXTURE_PIPELINE_ARGS"] { try json(path(trace), args) }
             let data = path(environment["CAPTAINS_LOG_DATA_DIR"]!), stem = "2025-01-14 side project", slug = "2025-01-14-side-project-star-trek-voice-log"
             let transcript = try source("transcribe/expected/\(stem).md"), cleaned = try source("cleanup/expected/\(stem).md")
             var frontmatter = try expectedFrontmatter(root.appendingPathComponent("eval/enrich/expected/\(stem).md")); frontmatter["date"] = "2025-01-14"
@@ -104,15 +105,25 @@ extension Tools {
         let regression = manifest.first { eval.string($0, "name") == "04_fictional_name_loop" }!
         try assert(eval.string(regression, "date") == "2025-02-18" && eval.string(regression, "recording_time") == "20:30" && regression["seed"] as? Int == 42, "enrichment case settings lost")
         try assert(read(suite.appendingPathComponent("enrich-cases.json")) == read(path("eval/enrich/cases.json")), "enrichment manifest not snapshotted")
+        var seeded: [EvalItem] = [["stage": "filename"], ["stage": "categorize", "seed": 2026], ["stage": "enrich", "seed": 1], ["stage": "cleanup"], ["stage": "transcribe"]]
+        eval.seedCombinedCases(&seeded)
+        try assert(seeded[0]["seed"] as? Int == 42 && seeded[1]["seed"] as? Int == 2026 && seeded[2]["seed"] as? Int == 1, "combined fixture seeds must default42 and preserve explicit seeds")
+        try assert(seeded[3]["seed"] == nil && seeded[4]["seed"] == nil, "combined fixture seed policy must not change other stages")
+        try assert(try eval.cases(["filename"]).allSatisfy { $0["seed"] == nil }, "standalone filename fixtures must retain random defaults")
         try write(eval.file(regression, "input"), read(eval.file(regression, "input")) + "Changed fixture."); try assert(eval.validate(regression).hasPrefix("FAIL:"), "changed saved regression source accepted"); try copy(path("eval/enrich/input/04_fictional_name_loop.md"), eval.file(regression, "input"))
         let (focused, focusedResult) = try runFixture("focused", ["--stage", "filename", "--case", "04_short_entry", "--baseline", suite.path], ["CAPTAINS_LOG_EVAL_WHISPER_FOLDER": "/missing-whisper"]); savedRuns.append(focused); try assert(focusedResult.status == 0, "focused fixture required unrelated model: \(focusedResult.output)"); try assert((try json(focused.appendingPathComponent("manifest.json")) as? [EvalItem])?.count == 1, "focused run included other cases")
         response = try cli(["--stage", "filename"], env.merging(["CAPTAINS_LOG_EVAL_RUN_DIR": focused.path]) { _, n in n }); try assert(response.status == 2 && response.output.contains("already exists"), "run overwrite accepted")
         let (enrich, enrichResult) = try runFixture("enrich-only", ["--enrich"], ["CAPTAINS_LOG_EVAL_WHISPER_FOLDER": "/missing-whisper"]); savedRuns.append(enrich); try assert(enrichResult.status == 0 && (try json(enrich.appendingPathComponent("manifest.json")) as? [EvalItem])?.count == 5, "enrichment alias failed: \(enrichResult.output)")
         let (failed, failedResult) = try runFixture("missing-model", ["--stage", "filename", "--case", "04_short_entry"], ["CAPTAINS_LOG_EVAL_QWEN_FOLDER": "/missing-qwen"]); try assert(failedResult.status == 1 && (try json(failed.appendingPathComponent("metadata.json")) as? EvalItem)?["status"] as? String == "failed", "missing model failure was not retained")
         let (pipeline, pipelineResult) = try runFixture("pipeline", ["--pipeline"]); try assert(pipelineResult.status == 0, "pipeline fixture failed: \(pipelineResult.output)"); try assert((try json(pipeline.appendingPathComponent("manifest.json")) as? [EvalItem])?.count == 5, "pipeline review did not include every stage"); try assert(read(pipeline.appendingPathComponent("before-resume.sha256")) == read(pipeline.appendingPathComponent("after-resume.sha256")), "resume immutability check lost")
+        try assert((try json(pipeline.appendingPathComponent("metadata.json")) as? EvalItem)?["combined_metadata"] == nil, "default pipeline must not claim combined generation")
+        let trace = dir.appendingPathComponent("combined-pipeline-args.json")
+        let (combinedPipeline, experimentalResult) = try runFixture("combined-pipeline", ["--pipeline", "--combined-metadata"], ["EVAL_FIXTURE_PIPELINE_ARGS": trace.path])
+        try assert(experimentalResult.status == 0 && (try json(combinedPipeline.appendingPathComponent("metadata.json")) as? EvalItem)?["combined_metadata"] != nil, "explicit pipeline experiment was not recorded")
+        try assert((try json(trace) as? [String])?.contains("--combined-metadata") == true, "explicit experiment flag did not reach pipeline CLI")
         let (omitted, omittedResult) = try runFixture("omitted-pipeline-artifact", ["--pipeline"], ["EVAL_FIXTURE_OMIT_ENRICH": "1"]); try assert(omittedResult.status == 1 && omittedResult.output.contains("Missing renamed/enriched artifacts"), "pipeline assertion did not stop for missing output"); try assert(!fm.fileExists(atPath: omitted.appendingPathComponent("resume.log").path), "pipeline continued after failed artifact assertion")
         let (combined, combinedResult) = try runFixture("all", ["--all"]); savedRuns.append(combined); try assert(combinedResult.status == 0, "combined release gate fixture failed: \(combinedResult.output)"); try assert((try json(combined.appendingPathComponent("manifest.json")) as? [EvalItem])?.count == 29, "combined gate dropped pipeline or suite cases")
-        try require(checks == 66, "Expected 66 evaluation tooling checks, got \(checks)")
+        try require(checks == 72, "Expected 72 evaluation tooling checks, got \(checks)")
         print("PASS: \(checks) evaluation tooling checks")
         let aliasYAML = "---\ndate: \"2025-01-15\"\nrecording_time: \"12:00\"\nlanguage: English\ncategories: [work]\ntags: &names [work, planning, meetings]\npersons: []\nprojects: []\ncompanies: []\nentities: *names\nsummary: A work week.\n---\n\n"
         try write(eval.file(item, "output"), aliasYAML + body)

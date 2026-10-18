@@ -61,10 +61,36 @@ public enum Transcriber {
         }
     }
 
+    final class RecordingSession: @unchecked Sendable {
+        var pipe: WhisperKit?
+        var model: String?
+        var language: String?
+        init() throws { try NativeInferenceLifecycle.shared.beginResource() }
+        deinit {
+            pipe = nil
+            NativeInferenceLifecycle.shared.endResource()
+        }
+    }
+
     public static func transcribe(
         audioPath: String,
         model: String? = nil,
         language: String? = nil
+    ) async throws -> String {
+        if let prepared = await RecordingTranscription.take(audioPath, model: model, language: language) {
+            AppPerformanceTrace.mark("recording-transcript-reused")
+            return prepared
+        }
+        try Task.checkCancellation()
+        return try await transcribe(audioPath: audioPath, model: model, language: language, onlyIfIdle: false)
+    }
+
+    static func transcribe(
+        audioPath: String,
+        model: String? = nil,
+        language: String? = nil,
+        onlyIfIdle: Bool,
+        session: RecordingSession? = nil
     ) async throws -> String {
         AppPerformanceTrace.mark("whisper-input-ready")
         let inputURL = URL(fileURLWithPath: audioPath)
@@ -78,6 +104,7 @@ public enum Transcriber {
         var cachedFolder = Self.cachedFolder(for: requestedModel, config: cfg)
 
         if cachedFolder == nil {
+            if onlyIfIdle { throw TranscriberError.noModelFolder }
             Logger.transcriber.info("No cached Whisper model for \(requestedModel) — downloading once to populate cache...")
             try await download(model: requestedModel)
             cfg = CaptainsLogConfig.load()
@@ -93,49 +120,54 @@ public enum Transcriber {
         // Exclude GPU from every Whisper component; SIGABRT cannot be caught for retry.
 
         let lifecycle = NativeInferenceLifecycle.shared
-        try lifecycle.beginOperation()
-        var pipe: WhisperKit?
+        try lifecycle.beginOperation(onlyIfIdle: onlyIfIdle)
+        var pipe: WhisperKit? = session?.model == requestedModel ? session?.pipe : nil
         defer {
-            // Release CoreML objects before reporting the native operation drained.
+            // Recording sessions retain their model between chunks; the recorder drains
+            // and releases the session before termination can complete.
             pipe = nil
             lifecycle.endOperation()
         }
         let start = Date()
-        pipe = try await loadWithRecovery(
-            lifecycle: lifecycle,
-            load: {
-                let computeOptions = ModelComputeOptions(
-                    melCompute: .cpuOnly,
-                    audioEncoderCompute: .cpuAndNeuralEngine,
-                    textDecoderCompute: .cpuAndNeuralEngine
-                )
-                let whisperConfig = WhisperKitConfig(
-                    modelFolder: folder,
-                    computeOptions: computeOptions
-                )
+        if pipe == nil {
+            pipe = try await loadWithRecovery(
+                lifecycle: lifecycle,
+                load: {
+                    let computeOptions = ModelComputeOptions(
+                        melCompute: .cpuOnly,
+                        audioEncoderCompute: .cpuAndNeuralEngine,
+                        textDecoderCompute: .cpuAndNeuralEngine
+                    )
+                    let whisperConfig = WhisperKitConfig(
+                        modelFolder: folder,
+                        computeOptions: computeOptions
+                    )
 
-                #if DEBUG
-                let traceLoading = ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_TRACE"] != nil
-                if traceLoading {
-                    whisperConfig.verbose = true
-                    whisperConfig.logLevel = .debug
-                    Logging.updateCallback { message in
-                        AppPerformanceTrace.mark("whisper-loader " + message.replacingOccurrences(of: "\n", with: " "))
+                    #if DEBUG
+                    let traceLoading = ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_TRACE"] != nil
+                    if traceLoading {
+                        whisperConfig.verbose = true
+                        whisperConfig.logLevel = .debug
+                        Logging.updateCallback { message in
+                            AppPerformanceTrace.mark("whisper-loader " + message.replacingOccurrences(of: "\n", with: " "))
+                        }
+                    }
+                    defer { if traceLoading { Logging.updateCallback(nil) } }
+                    #endif
+                    return try await WhisperKit(whisperConfig)
+                },
+                recover: { try WhisperModelRecovery.recover(from: $0) },
+                clearConfig: {
+                    try? CaptainsLogConfig.update {
+                        $0.whisperModelFolder = nil
+                        $0.whisperModel = nil
                     }
                 }
-                defer { if traceLoading { Logging.updateCallback(nil) } }
-                #endif
-                return try await WhisperKit(whisperConfig)
-            },
-            recover: { try WhisperModelRecovery.recover(from: $0) },
-            clearConfig: {
-                try? CaptainsLogConfig.update {
-                    $0.whisperModelFolder = nil
-                    $0.whisperModel = nil
-                }
-            }
-        )
+            )
 
+            session?.pipe = pipe
+            session?.model = requestedModel
+        }
         let loadTime = Date().timeIntervalSince(start)
         Logger.transcriber.info("WhisperKit loaded in \(String(format: "%.1f", loadTime))s")
 
@@ -145,8 +177,8 @@ public enum Transcriber {
         let result = try await pipe!.transcribe(
             audioPath: readableURL.path,
             decodeOptions: DecodingOptions(
-                language: language,
-                detectLanguage: language == nil ? true : nil,
+                language: language ?? session?.language,
+                detectLanguage: language == nil && session?.language == nil ? true : nil,
                 skipSpecialTokens: true
             ),
             callback: { _ in
@@ -156,6 +188,7 @@ public enum Transcriber {
                 return shouldContinueDecoding()
             }
         )
+        if session?.language == nil { session?.language = result.first?.language }
         // Whisper's early stop returns partial text, which must never become a
         // completed transcription or advance the remaining pipeline stages.
         try lifecycle.checkCancellation()
@@ -163,8 +196,8 @@ public enum Transcriber {
         let transcribeTime = Date().timeIntervalSince(transcribeStart)
         Logger.transcriber.info("Transcribed in \(String(format: "%.1f", transcribeTime))s")
 
-        // `pipe` goes out of scope here, releasing WhisperKit's internal AVAudioEngine
-        // so subsequent recordings can acquire the audio session cleanly.
+        // Ordinary calls release Whisper here. Recording sessions reuse it until
+        // their worker finishes; audio capture always belongs to Recorder.
         guard !result.isEmpty else {
             throw TranscriberError.noOutput
         }

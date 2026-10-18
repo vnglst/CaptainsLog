@@ -55,6 +55,7 @@ public struct FieldNotesContentView: View {
 
                 if section == .entries && selectedEntry == nil {
                     FieldNotesRecordDock()
+                        .frame(maxWidth: 1040)
                         .padding(.horizontal, FieldNotes.Spacing.xl)
                         .padding(.bottom, FieldNotes.Spacing.l)
                         .transition(
@@ -268,6 +269,8 @@ private struct FieldNotesEntriesView: View {
                 }
             }
         }
+        .frame(maxWidth: 1040)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .onChange(of: categoryFilter.excluded) { _, excluded in
             appState.search.updateCategoryFilter(excluded, dataDir: appState.dataDir)
         }
@@ -1165,7 +1168,7 @@ private struct FieldNotesContextView: View {
             .frame(maxWidth: 760, alignment: .leading)
             .padding(24)
             .padding(.bottom, 16)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(maxWidth: .infinity)
         }
         .onAppear { appState.config.loadContextFilesIfNeeded() }
     }
@@ -1317,7 +1320,7 @@ private struct FieldNotesSettingsView: View {
             .frame(maxWidth: 760, alignment: .leading)
             .padding(24)
             .padding(.bottom, 16)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(maxWidth: .infinity)
         }
         .sheet(isPresented: $showThirdPartyNotices) { ThirdPartyNoticesView() }
         .task(id: appState.models.modelsReady) { await refreshModelUsage() }
@@ -1561,22 +1564,24 @@ private struct FieldNotesOnboardingView: View {
                 Text("2  Categories").font(FieldNotes.Typography.metadata()).foregroundStyle(FieldNotes.ColorToken.secondaryText)
             }
             .padding(FieldNotes.Spacing.xxl).frame(width: 230, alignment: .leading).background(FieldNotes.ColorToken.surface)
-            VStack(alignment: .leading, spacing: FieldNotes.Spacing.xl) {
-                Text("Your thoughts. Kept private.").font(FieldNotes.Typography.title(32)).foregroundStyle(FieldNotes.ColorToken.primaryText)
-                Text("Turn your recordings into clear, organized notes. Choose where to save your recordings and notes.").font(FieldNotes.Typography.body(15)).foregroundStyle(FieldNotes.ColorToken.secondaryText).fixedSize(horizontal: false, vertical: true)
-                VStack(alignment: .leading, spacing: FieldNotes.Spacing.s) {
-                    Text("Storage location").font(FieldNotes.Typography.title(18)).foregroundStyle(FieldNotes.ColorToken.primaryText)
-                    Text(shortenedPath(appState.dataDir)).font(FieldNotes.Typography.metadata(12)).foregroundStyle(FieldNotes.ColorToken.primaryText)
-                    FieldNotesButton(title: "Choose folder") { appState.pickDataDirectory() }
-                }.padding(FieldNotes.Spacing.m).fieldNotesSurface()
-                VStack(alignment: .leading, spacing: FieldNotes.Spacing.s) {
-                    Text("Categories").font(FieldNotes.Typography.title(18))
-                    FieldNotesCategoriesEditor()
-                }.padding(FieldNotes.Spacing.m).fieldNotesSurface()
-                Spacer()
-                HStack { Text("Your recordings and notes aren’t uploaded").font(FieldNotes.Typography.body(13)).foregroundStyle(FieldNotes.ColorToken.secondaryText); Spacer(); FieldNotesButton(title: "Set up CaptainsLog") { appState.completeFirstRun(); dismiss() } }
+            ScrollView {
+                VStack(alignment: .leading, spacing: FieldNotes.Spacing.xl) {
+                    Text("Your thoughts. Kept private.").font(FieldNotes.Typography.title(32)).foregroundStyle(FieldNotes.ColorToken.primaryText)
+                    Text("Turn your recordings into clear, organized notes. Choose where to save your recordings and notes.").font(FieldNotes.Typography.body(15)).foregroundStyle(FieldNotes.ColorToken.secondaryText).fixedSize(horizontal: false, vertical: true)
+                    VStack(alignment: .leading, spacing: FieldNotes.Spacing.s) {
+                        Text("Storage location").font(FieldNotes.Typography.title(18)).foregroundStyle(FieldNotes.ColorToken.primaryText)
+                        Text(shortenedPath(appState.dataDir)).font(FieldNotes.Typography.metadata(12)).foregroundStyle(FieldNotes.ColorToken.primaryText)
+                        FieldNotesButton(title: "Choose folder") { appState.pickDataDirectory() }
+                    }.padding(FieldNotes.Spacing.m).fieldNotesSurface()
+                    VStack(alignment: .leading, spacing: FieldNotes.Spacing.s) {
+                        Text("Categories").font(FieldNotes.Typography.title(18))
+                        FieldNotesCategoriesEditor()
+                    }.padding(FieldNotes.Spacing.m).fieldNotesSurface()
+                    Spacer()
+                    HStack { Text("Your recordings and notes aren’t uploaded").font(FieldNotes.Typography.body(13)).foregroundStyle(FieldNotes.ColorToken.secondaryText); Spacer(); FieldNotesButton(title: "Set up CaptainsLog") { appState.completeFirstRun(); dismiss() } }
+                }
+                .padding(FieldNotes.Spacing.xxl)
             }
-            .padding(FieldNotes.Spacing.xxl)
         }
         .frame(width: 720, height: 680)
         .background(FieldNotes.ColorToken.canvas)

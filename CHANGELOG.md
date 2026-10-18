@@ -1,8 +1,8 @@
 # Changelog
 
-Every repository change is recorded here, including code, prompts, dependencies,
-fixtures, tests, documentation, and release tooling. Entries describe actual
-changes; planned features stay in the plans. New work goes under **Unreleased**.
+Concise changes to the app, CLI and development tools are recorded here. Related
+work is combined; backlog updates and planned work stay out of the changelog and
+release notes. New work goes under **Unreleased**.
 Released sections use `## [MAJOR.MINOR.PATCH] - YYYY-MM-DD`, newest first.
 
 The history below was reconstructed from Git commits and release tags. The
@@ -14,100 +14,54 @@ entry. Git links provide the complete commit history for each release.
 
 ### Added
 
-- Add TASK-70 in Next to update all dependencies.
+- Transcribe app and pipeline recording chunks while capacity is available to reduce processing after stop, with full-file fallback when another inference job is active or background transcription is unsafe or fails, and a bounded chunk queue that accommodates slow initial model loading.
 
-- Add TASK-66 to show categories as a long list using page scrolling, like corrections, without an internal scrollbar.
+- Remember the selected microphone across app restarts and fall back to an available input when disconnected.
 
-- Add a draft to explore starting transcription during recording and TASK-65 to remember the default recording device with a fallback when unavailable.
-
-- Extend TASK-64 to benchmark both small and larger audio files on the owner’s current Mac.
-
-- Add TASK-64 to benchmark end-to-end audio processing and evaluate combining metadata, renaming and categorization while keeping transcription separate and comparing evaluation quality and overall processing time.
-
-- Add TASK-63 to track the unclickable All entries chevron, improve the button's click target and check all buttons for similar problems.
-- Add TASK-62 to track removal of the duplicate Reprocess header button while retaining the log row menu action.
-- Add TASK-61 in Next to track the bug preventing microphone input device changes in Settings.
 - Restore Reprocess in processed log actions and the log detail view; rerun every stage for that recording through the shared pipeline while preserving its audio and other entries.
 - Refresh the log's retry state if clearing its old outputs fails during reprocessing.
 
 ### Fixed
 
+- Keep Logs, recording controls, Context and Settings at readable widths in large and full-screen windows.
+
 - Restore microphone selection in Settings with a device picker shared with the recording dock's selected input.
 - Make the All entries chevron, label and surrounding padding clickable; give log detail actions and icon-only search, correction and category controls explicit click targets.
-
-- Move the Metal shutdown crash fix to owner verification after reproducing the original native assertion, passing 241 deterministic tests, repeated cached-search quit checks and a recorded real UI search/open/quit check.
 
 - Cancel and drain all current and superseded search work, release the cached embedding model, and ignore late search callbacks before app termination so native Metal allocations are freed before backend static teardown; keep CLI and GUI inference on the same Core model lifecycle.
 
 - Reject isolated test-bundle launches without a valid explicit configuration and data directory before app state can fall back to normal user settings, including release fixture bundles relaunched by automation.
 - Bundle pipeline prompts in the isolated native UI harness so fixture processing can resolve cleanup, categorization, naming and enrichment instructions outside the repository working directory.
 - Resolve SwiftPM product-directory symlinks when bundling the native runtime so app bundles do not retain absolute framework search paths into build output.
-- Recover genuine Whisper initialization failures once in shared Core by repairing download sidecars and only the reported temporary compiled-model cache; preserve settings on cancellation and the original failure if recovery fails, with sendable recovery boundaries and per-attempt native model factories and synthetic failure/cancellation checks. Healthy launches no longer scan unrelated temporary files.
+- Recover genuine Whisper initialization failures once by repairing download sidecars and the reported temporary compiled-model cache. Validate prepared model weights without scanning unrelated files; preserve settings on cancellation, discard canceled output and drain CoreML work before shutdown.
 
-- Avoid the CoreML Metal prediction path that can abort Whisper transcription with an MPSGraph tensor shape/stride assertion: run the spectrogram on CPU and the unchanged Whisper Large-v2 encoder and decoder on CPU/Neural Engine; record all three compute selections in evaluation metadata and move TASK-54 to owner verification.
+- Avoid the CoreML Metal prediction path that can abort Whisper transcription with an MPSGraph tensor shape/stride assertion: run the spectrogram on CPU and the unchanged Whisper Large-v2 encoder and decoder on CPU/Neural Engine; record all three compute selections in evaluation metadata.
 
 ### Changed
 
-- Move repository navigation and agent workflow guidance from README.md into AGENTS.md while keeping technical usage, build, testing and release documentation in the README.
+- Add an experimental CLI option to generate filing categories, filenames and searchable metadata together.
+- Keep backlog-only updates out of changelog coverage and release notes; remove backlog noise and duplicate context from the existing history.
+- Let the category list scroll with the whole Context or setup page instead of inside a fixed-height panel.
+- Introduce CaptainsLog through its uses and privacy in the README, sidebar, Logs, setup and search screens.
 
-- Introduce CaptainsLog in the README through its uses and privacy while retaining technical details.
 
-- Reword the sidebar, Logs, setup and search screens around private recordings and organized notes instead of local AI terminology.
-
-- Refine the recording-time transcription draft with the owner's first-version scope and stability, existing transcription and CPU availability checks.
-
-- Require very short backlog text in the owner's wording and acceptance criteria that do not repeat the description in the repository instructions and README.
-
-- Shorten the four newly added backlog items to the owner's wording, condense the benchmark description and remove repeated acceptance criteria.
-
-- Clarify TASK-65 to remember the last selected microphone across app restarts, preselect it when available and fall back to another available input when unavailable.
 
 - Remove the duplicate Reprocess button from the individual log header while retaining Reprocess in the log row menu.
 
-- Trace upstream Whisper model-loading diagnostics during opt-in debug performance checks to locate initialization stalls without changing CLI or GUI compute settings; allow an explicitly recorded longer cold CoreML setup watchdog while retaining native decoding and three-second quit checks; record pipeline preflight failures and stop those probes promptly instead of misreporting them as model-loading timeouts.
+- Add isolated native startup and quit-during-decoding checks with optional Whisper loading diagnostics, recorded model/binary/fixture identities, validated configuration, watchdogs and shutdown markers.
 
 - Update WhisperKit to 1.1.1, Transformers to 1.3.5, Hugging Face to 1.0.0, all resolved Swift transitive dependencies to their newest stable releases, the checksum-pinned llama.cpp framework to b11609, and sqlite-vec to the newest published 0.1.10-alpha.4 amalgamation with the matching split sources omitted from its upstream archive. Retain complete upstream Transformers/Hugging Face sources with dependency-constraint patches for Swift Crypto 5.0.1 and yyjson 0.13.0; include their licenses when packaging and resolve their shared Hugging Face dependency through one local package identity. Pin the release workflow checkout action to the newest 7.0.1 release.
-- Require the isolated shutdown reproduction to expose a complete eval-backed pipeline entry, verify indexed document and embedded passage counts after native search, and distinguish preserved executable source identity from the helper's current revision.
+- Add isolated native cached-search/quit checks with eval-backed pipeline entries, verified search indexes and explicit source/process identity; bypass onboarding without changing saved defaults.
 
-- Create isolated temporary directories locally in the search shutdown regression tests so the tests compile independently of other test groups.
+- Reuse the chronological date formatter when restoring entries to improve CLI and Logs startup, preserving strict date validation and time-zone semantics.
 
-- Skip onboarding with process-local launch arguments during the isolated cached-search shutdown check, without modifying saved user defaults.
+- Use the same 128-token Qwen prompt chunks in CLI and app processing so cancellation can interrupt between shorter Metal calls, with models, context and sampling unchanged.
 
-- Add a documented opt-in eval-backed native cached-search/quit reproduction check, retaining source/process identity, model/binary/fixture hashes and shutdown markers.
-
-- Record a Next backlog item to update all dependencies to their newest versions and verify that everything continues to work as expected.
-
-- Record a Next backlog item to restore reprocessing for an individual processed log.
-- Reuse the shared chronological date formatter under a lock instead of rebuilding it for every restored entry, preserving strict date validation and current time-zone semantics in both CLI and Logs startup. Add repeated-date regression coverage and an eval-only completed-library native startup probe.
-
-- Move the startup and closing performance task to owner verification after measured loaded-library startup improvement and the earlier verified native processing-close improvement.
-
-- Record the owner requirement that CLI and GUI processing work the same way technically in ADR-027.
-
-- Document the opt-in Make native app performance regression check, its isolated fixture setup, timing scopes, thresholds, retained binary/model/fixture hashes and watchdog behavior.
-
-- Bound shared Core Qwen prompt chunks to 128 tokens so the CLI and native app use identical inference execution and can cancel between shorter Metal calls, with model/context configuration and sampling unchanged.
-- Validate prepared Whisper bundles and encoder/decoder weight files with bounded checks before skipping metadata recovery scans at launch; stop Whisper decoding cooperatively during native shutdown, discard canceled partial text, and release CoreML objects before draining shutdown and preserve model configuration when loading is canceled.
-
-- Add opt-in debug native startup and quit-during-Whisper/Qwen-decoding timing markers and a fixture-backed performance check for isolated performance verification; wait for bootstrap completion before timing model readiness and reject malformed benchmark configurations before loading app state; confirm CLI-loaded data and model paths before each probe and schedule probe quit through the main run loop.
-
-- Record a Next backlog item to benchmark and optimize app startup and closing during processing, with performance regression test coverage.
-- Record a Next backlog item to explore common app actions and try to find breaks or crashes, including opening, starting processing, closing, and deleting then processing.
-- Record a Next backlog bug for an app-close abort in 0.5.0 on macOS 26.7.1: llama.cpp Metal resource-set/device cleanup aborted during C++ static finalization while a background resource-set initializer was still running; the report suggests, but does not prove, an initialization/teardown race.
 - Allow dragging and dropping category rows in Context and initial setup to reorder them; save the chosen order for future processing.
 
 - Reduce Qwen inference graph memory by reserving logits for only the final token of each batch; keep the same models, prompts, generation limits, GPU offload and batch sizes.
-- Move the processing pipeline performance optimization task (TASK-55) to Next at the owner's request.
-- Record a backlog item to optimize processing pipeline performance without changing models, allowing combined steps and checking GPU and other performance optimizations.
-- Move the CoreML Metal prediction crash bug (TASK-54) to Next at the owner's request.
-- Move the selected Context and Settings redesign to owner verification with its existing acceptance criteria checked.
-- Record a backlog bug with the owner-supplied CaptainsLog 0.5.0 crash report showing a CoreML Metal prediction abort on macOS 26.7.1.
 - Move personal context, name and term corrections, and categories into a separate Context destination using their existing editors; reorder Settings to audio input, storage, models, updates, processing outputs, and About without a submenu.
 - Remove separate CLI and per-entry UI reprocessing, backup creation and saved batch resume; add confirmed `cl delete-outputs` and use existing pending processing after deletion. Remove the public `Reprocessing`, `Pipeline.resetForReprocessing` and `Pipeline.reprocessingCandidatePaths` interfaces; clients can delete outputs and use the existing pipeline resume APIs.
-
-- Document Context as the selected output-settings menu label and save the combined Context and Settings concept with the design references, linked from TASK-7.
-- Record the owner's Settings redesign selection: a separate Writing destination for output settings, no preview, existing controls preserved, and reordered Settings without a submenu; track category drag-and-drop ordering separately.
-- Clarify TASK-51 with the owner's requirement to remove separate CLI reprocessing and backups, use output deletion followed by existing CLI or UI processing, and return the task to Next.
 
 ## [0.5.0] - 2026-10-11
 
@@ -119,11 +73,6 @@ entry. Git links provide the complete commit history for each release.
 ### Changed
 
 - Replace Settings bulk reprocessing with confirmed deletion of intermediate results, finished logs and reprocessing backups while keeping source audio and settings; use the existing Logs processing controls to regenerate recordings.
-
-- Refine the three processing backlog items with owner clarifications and concise descriptions without duplicate acceptance criteria, and move them to Next at the owner’s request.
-- Record a backlog bug to stop active work and quit promptly without crashing, including a summary of the owner-supplied crash report with identifying details omitted.
-- Record a backlog item to delete all processing outputs, including intermediate results and finished logs, in Settings while retaining original source audio, and use existing main-screen processing for unprocessed files.
-- Record a high-priority backlog item for reliable system sleep prevention during any processing, including while the screen is locked, allowing display sleep and restoring normal system sleep after completion.
 
 ### Release
 
@@ -147,19 +96,13 @@ entry. Git links provide the complete commit history for each release.
 
 - `Categorize.Category` is now a string-backed value supporting configured categories; downstream Swift clients with exhaustive switches over the three built-in enum cases must add a fallback branch. Legacy category manifest values remain compatible.
 
-- Add ADRs 021–026 superseding obsolete runtime, verification, release, demo and documentation guidance in ADRs 005, 006, 007, 010, 013 and 020; preserve all original records.
-
-- Make existing ADRs immutable: document changes through new superseding records that link to the original, without editing original content, dates or statuses.
-
 - Refresh evaluation, updater, demo and website documentation, isolate the manual updater example, document `.qta` Voice Memos imports, and distinguish historical verification from current commands and runtime evidence.
-
-- Consolidate agent-specific README instructions in AGENTS.md while retaining human-facing development, backlog, architecture and review guidance in README.md.
 
 - Use fictional character names in correction tests.
 
 ### Removed
 
-- Remove the explanatory category-removal text from Settings and onboarding; leave all five implemented tasks in Verify with acceptance checklists for the owner.
+- Remove the explanatory category-removal text from Settings and onboarding.
 
 - Remove legacy `.sh` and `.rb` automation aliases; use Make commands or the `.swift` helpers directly.
 
@@ -185,7 +128,7 @@ entry. Git links provide the complete commit history for each release.
 
 - Make release preparation use only Git, version and changelog checks. Streamline the GitHub release workflow to validate, build the release app and CLI, verify packaging and publish; keep tooling, runtime reproducibility and deterministic test suites as explicit development commands.
 
-- Add source and tooling implementation maps to the repository entry points, align README task and ADR instructions with owner-only content rules, correct the Settings preview command and evaluation skills' release guidance, and document updater test prerequisites and current-versus-historical runtime guidance.
+- Add source and tooling implementation maps, correct the Settings preview command and evaluation release guidance, and document updater test prerequisites and current runtime setup.
 
 ### Release
 
@@ -195,31 +138,13 @@ entry. Git links provide the complete commit history for each release.
 
 ### Added
 
-- Record the owner-defined PBI for deliberately reprocessing all audio files with updated settings in a run that can continue overnight.
-
-- Record the owner-defined PBI for local behavior review with mandatory demo videos, brief check steps, easy worktree access, changed files, approval and feedback returned to the working agent. Keep agent-generated review material local to avoid sensitive-data leaks through automated GitHub publishing.
-
 - Pick up QuickTime audio exports (`.mov` and `.qt`) alongside M4A recordings in the app, preserving source extensions through CLI import, processing, reprocessing and deletion. Convert QuickTime audio to a temporary M4A for transcription while keeping the original recording.
 
 ### Removed
 
-- Remove the category-management separation sentence from the reprocessing PBI at the owner's request.
-
 - Remove the legacy correction notes section from Settings and discard free-text notes from saved corrections when the app loads them. Keep structured spelling pairs and their CLI-readable format.
 
 ### Changed
-
-- Record the owner's content-writing prerequisite before the landing-page verification PBI can be picked up.
-
-- Refine the Settings redesign PBI with the owner's requirement for four image-generated design previews and owner review and selection before implementation.
-
-- Refine the menu bar PBI with the owner's requirements for minimizing the app, quick recording controls, processing status, quitting and a minimal interface, plus approved recording indication, elapsed time, reopening the main window and brief error feedback.
-
-- Refine the category-filter PBI with the owner's requirements for a control near search, multiple selected categories, all categories selected by default and a recognizable UI pattern.
-
-- Clarify the playback backlog item with the owner's requirement for a sticky audio player at the bottom of a saved entry, with play, pause and seek controls.
-
-- Refine the category backlog item with owner-defined Settings controls, non-destructive removal and folder placement on subsequent processing; keep bulk reprocessing outside its scope.
 
 ### Release
 
@@ -249,11 +174,10 @@ entry. Git links provide the complete commit history for each release.
 
 ### Removed
 
-- Remove the unused legacy LCARS interface, onboarding and common controls, along with their Antonio font and resource bundle; retain active Field Notes UI, shared state/color helpers and debug fixtures. Update packaging, native UI harness and coverage inputs for the removed resources. Keep the task's owner-provided text and verified checkboxes, removing agent-authored plans, notes and summaries.
+- Remove the unused legacy LCARS interface, onboarding and common controls, along with their Antonio font and resource bundle; retain active Field Notes UI, shared state/color helpers and debug fixtures. Update packaging, native UI harness and coverage inputs for the removed resources.
 
 - Remove the rejected enrichment fixture and its presentation-related references; replace it with an unrelated, wholly fictional lantern-festival diary and reassess native behavior without transferring the old reproduction claim.
 
-- Remove the keyboard, VoiceOver, reduced-motion and layout-stability acceptance item from the Logs plan and its backlog summary; retain clean-machine packaged-app checks.
 - Remove the obsolete startup benchmark and its debug recording hooks; document the retained build and verification scripts in `scripts/README.md`.
 
 ### Changed
@@ -262,49 +186,14 @@ entry. Git links provide the complete commit history for each release.
 
 - Implement repository automation helpers in Swift, preserving Make workflows, fixture validation, packaging and release checks with executable compatibility aliases; update the documented helper commands. Verify the full audio fixture pipeline, completed-artifact resume and search readback through the Swift helpers.
 
-- Require all task and ADR content to come from the owner, including plans, notes and summaries. Permit agents to edit supplied wording, update workflow status and check off verified existing items; report agent findings in chat or PRs.
-
-- Pin development and release inference to one checksum-verified llama.cpp/GGML XCFramework, remove Homebrew/OpenMP runtime resolution, verify packaged linkage and repeatable native artifact extraction, preserve the isolated UI launcher, and record framework identity in evaluation evidence. Keep the task's owner-provided text and verified checkboxes, removing agent-authored plans, notes, summaries and the runtime ADR.
+- Pin development and release inference to one checksum-verified llama.cpp/GGML XCFramework, remove Homebrew/OpenMP runtime resolution, verify packaged linkage and repeatable native artifact extraction, preserve the isolated UI launcher, and record framework identity in evaluation evidence.
 
 - Settings now edits name and term corrections as spelling pairs with add and remove controls. Preserve existing corrections and legacy notes in the same CLI-readable Markdown file.
 
 - Make now drives building, development launch, tests, fixture evaluations, packaging and releases, with standard variable options and supporting iteration targets. Plain `make` launches the development app; release checks and CI use the same commands, and test commands isolate configuration and data. Remove the unused legacy evaluation-validation wrapper.
 
-- Require minimal PR text, a quick review tip and concise verification, with short UI videos or suitable examples; keep detailed evidence optional or in task notes.
-
-- Record owner backlog refinement: archive the unclear public-documentation review, choose MIT with third-party notices, require the same reproducible pinned native runtime for development and releases, and authorize unused UI component removal without external compatibility constraints. Replace agent-generated Make requirements with the owner's build, run, tests, evals, packaging and release commands, default development launch, standard options and verification by running the commands; retain scripts only as needed helpers.
-
-- Require owner-provided backlog scope, requirements and acceptance criteria; allow agents to clarify and rewrite supplied content, and require missing input to come from the owner rather than agent invention.
-
-- Explain the collections navigation task with a concrete browsing example, define its unresolved grouping decisions and empty-state behavior, and add acceptance criteria without choosing a new data model.
-
-- Consolidate seven Kev tasks into one phased evaluation and conditional integration task, four publication privacy reviews into one audit, and seven release tasks into one verification and publication checklist. Preserve scope and historical findings, archive 15 superseded tasks, and document consolidation guidance.
-
-- Restrict docs to numbered ADRs; migrate plan scope and important verification findings into self-contained backlog tasks, preserve search decisions in ADR-019, and record the documentation policy in ADR-020. Remove superseded guides/reports and update inbound guidance. Move all 13 unused TNG reference scripts and their ground truth to eval/tng-reference without changing active fixtures or demo assets.
-
-- Remove file-reference fields from the revised backlog tasks and require task explanations without links to repository files.
-
-- Restore self-contained explanations and readable acceptance criteria in the nine shortened backlog tasks. Remove the task word cap and require essential scope, context and review limits to be readable in the Backlog app without opening repository links.
-
-- Update TASK-42’s handoff with its main-branch integration and final validation evidence; retain Verify for owner review.
-
-- Shorten nine backlog tasks to under 150 words of prose while preserving scope, dependencies, statuses and checked acceptance criteria; retain detailed runner rationale and packaging evidence in linked history. Set a 150-word task limit and restore concurrent runner verification entries in the supporting testing history.
-
-- Shorten seven oversized ADRs to under 300 words, preserve detailed evaluations and verification history in linked supporting documents, and set a 300-word ADR limit with a 500-word exception for essential rationale. Redirect testing guidance and evidence links so new reports do not expand ADR-007.
-
-- Require owner-requested work for agent-created backlog tasks and drafts; report newly discovered work without automatically adding board items, and allow small mechanical edits without a task.
-- Move TASK-28 to Next and define acceptance checks for pinned native dependencies, clean builds independent of Homebrew runtimes, recorded toolchain/options, repeatability and packaged-runtime verification.
-
-- Record the unsuccessful fixture-only reproduction of recurring enrichment exhaustion: six long-input trials, four standard enrichment cases and the installed CLI’s shared-model pipeline completed; document semantic errors and keep TASK-41 open without claiming a fix.
-- Explain the `adrs` workflow for contributors and agents, including how to find and create records, keep templates factual, and supersede historical decisions.
-- Configure `adrs` for Markdown decisions in `docs/`, migrate the five architecture rules from agent instructions into individual minimal ADRs, give existing ADRs unique tool-compatible filenames, and document supersession and the distinction from Backlog.md.
-- Use To Do, Next, Verify, and Complete backlog columns, with owner-selected agent work and a separate owner review step; update the CLI guidance and migrate the completed setup task.
-- Move the open plan items into Backlog.md task files, make the CLI the single task workflow for Codex, and point existing guidance at the new backlog while retaining detailed procedures and decisions.
-- Record combined-main model-storage verification and the updater fixture tests’ dependency on whether the installed app is running in ADR-007.
+- Move unused TNG reference scripts and fixtures to eval/tng-reference, separate from active evaluations and demo assets.
 - Run GitHub Actions only for release tag pushes; remove branch-push and pull-request CI, move release-tooling checks into the release workflow, and document local testing and changelog coverage checks.
-
-- Clarify the existing transcript-copy backlog item as quick buttons for copying the complete cleaned transcription to the clipboard, and remove the general hardware, installed-model, native UI and search-quality acceptance backlog items and Developer ID/Mac App Store exploration.
-- Consolidate open product, Kev evaluation, publication, runtime maintenance and release acceptance work in `docs/PLAN.md`; keep implementation procedures and historical evidence in linked detail files and ADRs, remove duplicate status lists, and update contributor/documentation links. Track landing-page deployment verification after its implementation.
 
 ### Added
 
@@ -315,29 +204,22 @@ entry. Git links provide the complete commit history for each release.
 - Add a compact, wholly fictional bedtime-story fixture that triggers native pre-fix context exhaustion while copying an invented name; record independent provenance, source fingerprint, runtime settings and verification limits.
 
 - Add repeatable enrichment evaluation controls (`cl enrich --seed` and `--diagnostics`), per-case settings, an enrichment-only sequential suite, and saved-output checks for schema, duplicate names, metadata bounds, supplied date/time and exact transcript preservation. Include model-free validator and seed-boundary checks.
-- Preserve historical native reproduction setup and strict enrichment output gates. The first attempted fixture was rejected for presentation-related content and removed; replacement coverage and limitations are recorded in ADR-007.
-- Add a backlog item for Make-based repository script entry points, including an ADR explaining the choice and checks for sequential inference, argument forwarding and fixture isolation.
-- Record a separate investigation draft for the Whisper Metal assertion encountered during the enrichment fix's fixture pipeline check.
-- Add TASK-42 to prioritize reducing agent navigation and evaluation overhead, with acceptance criteria and explicitly unmeasured time/token savings estimates.
-- Add a Settings backlog item for structured misspelling/correct-spelling fields, entry management and migration of existing corrections.
-- Add a Settings redesign backlog item focused on visual polish, organization, clear controls and user feedback.
-- Document a staged Kev decision-model evaluation and integration plan, including Dutch fixtures, 16 GB M4 memory checks, CLI/config support, and acceptance gates; link it from planned features.
-- Show Whisper, Qwen, and smart-search model disk usage in Settings, with confirmed deletion while idle and automatic downloads on next use. Add `cl models` and `cl models --delete <whisper|qwen|embeddings>`; preserve unrelated files in custom model folders and configured model identifiers. Cover deletion/download behavior with deterministic and isolated CLI fixtures, and record native Settings and full pipeline verification in ADR-007.
+- Show Whisper, Qwen, and smart-search model disk usage in Settings, with confirmed deletion while idle and automatic downloads on next use. Add `cl models` and `cl models --delete <whisper|qwen|embeddings>`; preserve unrelated files in custom model folders and configured model identifiers.
 - Add a static CaptainsLog website with an app-matched dark design, a documentation-based voice-journal description, local processing and Markdown/search details, install instructions, and a placeholder ready for owner-recorded app footage. Include ImageGen design references and synthetic fixture-backed illustrative logs.
-- Add this Git-backed changelog, contributor instructions, and a release checklist; update publication guidance and record the release process in ADR-010. CI requires changelog updates for repository changes; releases validate and publish the matching dated entry as GitHub release notes, including on reruns.
+- Add the Git-backed changelog and release checklist; validate and publish matching dated entries as GitHub release notes, including on reruns.
 - Add a release command that infers the highest version bump from Conventional Commits since the latest release (fix/perf → patch, feat → minor, breaking → major or minor on 0.x), skips maintenance-only releases, supports manual overrides, rolls over notes and Git links, runs sequential checks, creates a commit/tag, and optionally publishes through an atomic Git push. Require Conventional Commits for new work and use `chore(release)` for generated release/cask commits. Implement release tooling in one standalone Swift script with Bash/Git fixture tests and document its commands; no additional runtime or package dependencies.
 
 ### Fixed
 
 - Resolve llama.cpp and GGML headers through their versioned pkg-config include paths instead of the mutable global Homebrew header alias, preventing release builds from reusing a module compiled against an older header after an upgrade. Declare the existing GGML dependency explicitly because Homebrew's llama package metadata omits its include path.
 
-- Prevent the reproduced enrichment entity-list loop with enrichment-only sequence repetition protection and a 4,096-token metadata budget. Reject unfinished output at explicit token limits, accept end-of-generation immediately after the budget, and remove duplicate sampler acceptance. Clarify work categories and unique metadata names; add budget-boundary regressions and record native reproduction, fixture semantics and verification in ADR-007 (TASK-41).
+- Prevent the reproduced enrichment entity-list loop with enrichment-only sequence repetition protection and a 4,096-token metadata budget. Reject unfinished output at explicit token limits, accept end-of-generation immediately after the budget, and remove duplicate sampler acceptance. Clarify work categories and unique metadata names; add budget-boundary regressions.
 
 - Correct generation-exhaustion errors to report the actual allocated context rather than the model’s larger maximum. Tighten enrichment instructions to return one YAML mapping and stop after the summary; retain existing sampling settings after evaluation trials introduced metadata errors. Add deterministic generation-loop tests for the reported 8,115-input/8,269-output exhaustion and normal end-of-generation.
 
-- Deliver app pipeline progress in order and finish consuming it before reporting completion, preventing delayed status updates from outliving a finished or cancelled recording. Preserve a new retry when an earlier cancelled attempt exits; add fixture-backed completion and cancelled-retry regressions and record verification limits in ADR-007.
+- Deliver app pipeline progress in order and finish consuming it before reporting completion, preventing delayed updates after completion or cancellation. Preserve a new retry when an earlier cancelled attempt exits.
 
-- Route Homebrew updater Git calls for the public CaptainsLog tap through HTTPS with a temporary wrapper, avoiding SSH authentication failures without changing saved remotes or global Git configuration. Extend the updater fixture and document the transport correction and verification limits (`fed98bd`).
+- Route Homebrew updater Git calls for the public CaptainsLog tap through HTTPS with a temporary wrapper, avoiding SSH authentication failures without changing saved remotes or global Git configuration.
 
 ### Release
 
@@ -354,7 +236,6 @@ entry. Git links provide the complete commit history for each release.
 ### Changed
 
 - Refine Settings controls and their design references; store update preferences in configuration and disable automatic checks in source builds and demos.
-- Consolidate verification reports and legacy-code findings in ADR-007, remove completed plans, and refresh documentation links and remaining product work, including category settings/filtering plans. Remove the obsolete history-reset ADR.
 - Update `VERSION` to 0.1.2; release packaging publishes a versioned archive and updates Homebrew cask metadata.
 
 ### Fixed
@@ -367,7 +248,7 @@ entry. Git links provide the complete commit history for each release.
 
 - Publish through the separate `vnglst/homebrew-captainslog` tap, allowing direct qualified Homebrew installs.
 - Add opt-in managed-model cleanup through `brew uninstall --cask --zap captainslog`, keeping logs, configuration, and custom model folders; record install and uninstall verification.
-- Document distribution, tag-driven releases, model cleanup, and isolated demo decisions in ADRs; record transcript-copy and menu-bar feature plans.
+- Document Homebrew distribution, tag-driven releases, managed-model cleanup and isolated demos.
 
 ### Changed
 

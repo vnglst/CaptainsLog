@@ -1,9 +1,10 @@
 ---
 id: TASK-67
 title: Reduce noise in the changelog and release notes
-status: Next
+status: Verify
 assignee: []
 created_date: '2026-10-16 06:28'
+updated_date: '2026-10-16 16:54'
 labels: []
 dependencies: []
 ordinal: 60000

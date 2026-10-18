@@ -136,7 +136,7 @@ func checkRange(_ requestedBase: String, _ head: String) throws {
     let base = !requestedBase.isEmpty && requestedBase.allSatisfy { $0 == "0" }
         ? try git("hash-object", "-t", "tree", "/dev/null") : requestedBase
     let changed = Set(try git("diff", "--name-only", "-z", base, head).split(separator: "\0").map(String.init))
-    if changed.isEmpty { return }
+    if changed.isEmpty || changed.allSatisfy({ $0.hasPrefix("backlog/") }) { return }
     if changed == ["Casks/captainslog.rb"] {
         let diff = try git("diff", "--no-ext-diff", "--no-color", "--unified=0", base, head, "--", "Casks/captainslog.rb")
         let edits = diff.components(separatedBy: "\n").filter {
@@ -149,7 +149,7 @@ func checkRange(_ requestedBase: String, _ head: String) throws {
             return
         }
     }
-    try require(changed.contains("CHANGELOG.md"), "Update CHANGELOG.md for these Git changes (including docs/tests)")
+    try require(changed.contains("CHANGELOG.md"), "Update CHANGELOG.md for changes outside backlog/ (including docs/tests)")
     try require(try git("show", "\(head):CHANGELOG.md").components(separatedBy: "\n").contains("## [Unreleased]"), "Keep an Unreleased section")
 }
 func updateCask(_ version: String, _ checksum: String) throws {

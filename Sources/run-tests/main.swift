@@ -2602,6 +2602,37 @@ func runCoordinatorCoverageTests() async {
 
 @MainActor
 func runPipelineOrchestrationCoverageTests() async {
+    test("Pipeline: legacy public function references remain source compatible") {
+        typealias ProgressCallback = @Sendable (Pipeline.Progress) -> Void
+        let legacyRun: (String?, String, String?, TimeInterval?, String?, ProgressCallback?) async throws -> Pipeline.Result = Pipeline.run
+        let legacyCommand: (String?, String, String?, TimeInterval?, String?, Pipeline.Operations?, ProgressCallback?) async throws -> Pipeline.Result = Pipeline.runCommand
+        _ = legacyRun
+        _ = legacyCommand
+    }
+
+    await testAsync("Pipeline: explicit experiment flag preserves injected command routing and checkpoints") {
+        let fm = FileManager.default
+        let root = fm.temporaryDirectory.appendingPathComponent("PipelineOptIn-\(UUID().uuidString)")
+        defer { try? fm.removeItem(at: root) }
+        let fixture = URL(fileURLWithPath: fm.currentDirectoryPath).appendingPathComponent("eval/transcribe/audio/2025-01-14 side project.m4a")
+        for enabled in [false, true] {
+            let calls = LockedStringArray()
+            let operations = Pipeline.Operations(
+                transcribe: { _, _ in calls.append("transcribe"); return "fixture transcript" },
+                cleanup: { _, _ in calls.append("cleanup"); return "fixture cleanup" },
+                categorize: { _, _, _ in calls.append("categorize"); return .personal },
+                filename: { _, date in calls.append("filename"); return "\(date)-flag-routing-fixture.md" },
+                enrich: { _, _, _, _ in calls.append("enrich"); return "fixture enriched" }
+            )
+            let result = try await Pipeline.runCommand(audioInput: fixture.path,
+                dataDir: root.appendingPathComponent(String(enabled)).path,
+                combinedMetadata: enabled, operations: operations)
+            try expect(calls.snapshot() == ["transcribe", "cleanup", "categorize", "filename", "enrich"])
+            try expect(try String(contentsOfFile: result.enrichedPath, encoding: .utf8) == "fixture enriched")
+            try expect(result.category == .personal)
+        }
+    }
+
     await testAsync("Reprocess: replaces every stage for one recording and preserves other entries and audio") {
         let fm = FileManager.default
         let root = fm.temporaryDirectory.appendingPathComponent("Reprocess-\(UUID().uuidString)")
@@ -4144,6 +4175,130 @@ func runTests() async {
         try expect(LLM.promptChunkSize(batchSize: 64) == 64)
     }
 
+    test("Recording transcription: admission protects CPU and thermal headroom") {
+        try expect(RecordingTranscription.hasCapacity(load: 1, cores: 8, thermal: .nominal))
+        try expect(!RecordingTranscription.hasCapacity(load: 7, cores: 8, thermal: .nominal))
+        try expect(!RecordingTranscription.hasCapacity(load: 0, cores: 8, thermal: .serious))
+        try expect(!RecordingTranscription.hasCapacity(load: 0, cores: 1, thermal: .nominal))
+    }
+
+    test("Recording transcription: idle admission cannot overlap another native model") {
+        let lifecycle = NativeInferenceLifecycle()
+        try lifecycle.beginOperation()
+        do {
+            try lifecycle.beginOperation(onlyIfIdle: true)
+            try expect(false, "Speculative Whisper must not overlap Qwen or transcription")
+        } catch is NativeInferenceBusy {}
+        lifecycle.endOperation()
+        try lifecycle.beginOperation(onlyIfIdle: true)
+        lifecycle.endOperation()
+    }
+
+    await testAsync("Recording transcription: finalized fixture audio is reused once; unsafe work falls back") {
+        let fixture = URL(fileURLWithPath: "eval/transcribe/audio/world-war-z.m4a")
+        let audio = try AVAudioFile(forReading: fixture)
+        let pcm = AVAudioPCMBuffer(pcmFormat: audio.processingFormat, frameCapacity: 4096)!
+        try audio.read(into: pcm)
+        let calls = LockedValue(0)
+        let expectedFrames = Int64(pcm.frameLength)
+        let early = try RecordingTranscription(requireCachedModel: false, capacity: { true }) { path in
+            let chunk = try AVAudioFile(forReading: URL(fileURLWithPath: path))
+            try expect(chunk.length == expectedFrames, "Only finalized audio reaches inference")
+            calls.set(calls.get() + 1)
+            return "Synthetic fixture transcript"
+        }
+        early.append(RecorderAudioBuffer(frameLength: Int(pcm.frameLength), rootMeanSquare: 0, nativeBuffer: pcm))
+        await early.finish(audioPath: fixture.path, cancelled: false)
+        let prepared = await RecordingTranscription.take(fixture.path)
+        try expect(prepared == "Synthetic fixture transcript" && calls.get() == 1)
+        let consumed = await RecordingTranscription.take(fixture.path)
+        try expect(consumed == nil)
+        let busy = try RecordingTranscription(requireCachedModel: false, capacity: { false }) { _ in
+            try expect(false, "No inference without headroom")
+            return "wrong"
+        }
+        busy.append(RecorderAudioBuffer(frameLength: Int(pcm.frameLength), rootMeanSquare: 0, nativeBuffer: pcm))
+        await busy.finish(audioPath: fixture.path, cancelled: false)
+        let skipped = await RecordingTranscription.take(fixture.path)
+        try expect(skipped == nil, "Unavailable speculation must leave the full-file fallback intact")
+        let cancelled = try RecordingTranscription(requireCachedModel: false, capacity: { true }) { _ in "partial" }
+        cancelled.append(RecorderAudioBuffer(frameLength: Int(pcm.frameLength), rootMeanSquare: 0, nativeBuffer: pcm))
+        await cancelled.finish(audioPath: fixture.path, cancelled: true)
+        let partial = await RecordingTranscription.take(fixture.path)
+        try expect(partial == nil, "Cancelled recording cannot publish partial text")
+        let changedModel = try RecordingTranscription(requireCachedModel: false, capacity: { true }) { _ in "cached" }
+        changedModel.append(RecorderAudioBuffer(frameLength: Int(pcm.frameLength), rootMeanSquare: 0, nativeBuffer: pcm))
+        await changedModel.finish(audioPath: fixture.path, cancelled: false)
+        let wrongModel = await RecordingTranscription.take(fixture.path, model: "different-model")
+        try expect(wrongModel == nil, "A changed model must force ordinary transcription")
+
+    }
+
+    await testAsync("Recording transcription: Stop hands pending tail to processing without waiting") {
+        let fixture = URL(fileURLWithPath: "eval/transcribe/audio/world-war-z.m4a")
+        let audio = try AVAudioFile(forReading: fixture)
+        let pcm = AVAudioPCMBuffer(pcmFormat: audio.processingFormat, frameCapacity: 4096)!
+        try audio.read(into: pcm)
+        let started = LockedValue(false)
+        let release = LockedValue(false)
+        let early = try RecordingTranscription(requireCachedModel: false, capacity: { true }) { _ in
+            started.set(true)
+            while !release.get() { try await Task.sleep(for: .milliseconds(1)) }
+            return "completed tail"
+        }
+        early.append(RecorderAudioBuffer(frameLength: Int(pcm.frameLength), rootMeanSquare: 0, nativeBuffer: pcm))
+        await early.finish(audioPath: fixture.path, cancelled: false)
+        // This point must be reachable while inference still awaits release.
+        while !started.get() { await Task.yield() }
+        release.set(true)
+        let text = await RecordingTranscription.take(fixture.path)
+        try expect(text == "completed tail")
+    }
+
+    await testAsync("Recording transcription: bounded queue absorbs a delayed cold model load") {
+        let fixture = URL(fileURLWithPath: "eval/transcribe/audio/world-war-z.m4a")
+        let audio = try AVAudioFile(forReading: fixture)
+        let pcm = AVAudioPCMBuffer(pcmFormat: audio.processingFormat, frameCapacity: 4096)!
+        try audio.read(into: pcm)
+        let started = LockedValue(false)
+        let release = LockedValue(false)
+        let calls = LockedValue(0)
+        let early = try RecordingTranscription(requireCachedModel: false, capacity: { true }) { _ in
+            calls.set(calls.get() + 1)
+            started.set(true)
+            while !release.get() { try await Task.sleep(for: .milliseconds(1)) }
+            return "chunk"
+        }
+        let buffersPerChunk = Int(ceil(40 * pcm.format.sampleRate / Double(pcm.frameLength)))
+        func appendChunk() {
+            for _ in 0..<buffersPerChunk {
+                early.append(RecorderAudioBuffer(frameLength: Int(pcm.frameLength), rootMeanSquare: 1, nativeBuffer: pcm))
+            }
+        }
+        appendChunk()
+        while !started.get() { await Task.yield() }
+        // Simulate capture continuing while the first native load is suspended:
+        // one active chunk plus four queued chunks must survive until Stop.
+        for _ in 0..<4 { appendChunk() }
+        await early.finish(audioPath: fixture.path, cancelled: false)
+        release.set(true)
+        let text = await RecordingTranscription.take(fixture.path)
+        try expect(text == "chunk chunk chunk chunk chunk" && calls.get() == 5,
+                   "A slow initial model load must not discard the bounded recording backlog")
+    }
+
+    await testAsync("Native shutdown: retained recording model drains before termination") {
+        let lifecycle = NativeInferenceLifecycle()
+        try lifecycle.beginResource()
+        let finished = LockedValue(false)
+        let shutdown = Task { await lifecycle.stopAndWait(); finished.set(true) }
+        while Transcriber.shouldContinueDecoding(lifecycle: lifecycle) { await Task.yield() }
+        try expect(!finished.get())
+        lifecycle.endResource()
+        await shutdown.value
+        try expect(finished.get())
+    }
+
     await testAsync("Whisper shutdown: callback stops decoding and discards partial output") {
         let lifecycle = NativeInferenceLifecycle()
         try lifecycle.beginOperation()
@@ -4329,6 +4484,69 @@ func runTests() async {
         try expect(LLM.configuredModelFile(in: root.appendingPathComponent("missing").path) == nil)
     }
 
+    test("Combined metadata: grammar uses the supplied date and exact custom category identifiers") {
+        let categories = CaptainsLogConfig(categories: ["Research", "Travel"]).configuredCategories
+        let grammar = try Metadata.grammar(date: "2026-10-17", categories: categories)
+        try expect(grammar.contains(#""2026-10-17-""#))
+        try expect(grammar.contains(#"category ::= "research" | "travel""#))
+        let filingRule = grammar.components(separatedBy: .newlines).first { $0.hasPrefix("category ::=") }!
+        try expect(!filingRule.contains(#""professional""#) && !filingRule.contains(#""work""#))
+        let metadataRule = grammar.components(separatedBy: .newlines).first { $0.hasPrefix("metadata-categories ::=") }!
+        try expect(metadataRule.components(separatedBy: " | ").count == 15, "Every distinct 1–3 category permutation must be available")
+        try expect(grammar.contains(#"list ::= " []\n" | "\n" item{1,64}"#), "Named lists must be empty arrays or scalar string block lists")
+        try expect(grammar.contains(#"item ::= "  - " string "\n""#), "Nested arrays and mappings must be excluded from list items")
+        try expect(grammar.contains(#"tags:\n" item{3,8}"#), "Tags must contain exactly 3–8 scalar strings")
+        for key in ["language", "categories", "tags", "persons", "projects", "companies", "entities", "summary"] {
+            try expect(grammar.components(separatedBy: key + ":").count == 2, "Every schema key must occur exactly once")
+        }
+        try expect(!metadataRule.contains("professional") && !metadataRule.contains("side_project"))
+        try expect(metadataRule.contains("side-project") && metadataRule.contains("personal") && metadataRule.contains("work"))
+        do {
+            _ = try Metadata.grammar(date: "2026-10-17", categories: [])
+            throw NSError(domain: "EmptyGrammarCategoriesAccepted", code: 1)
+        } catch Categorize.CategorizeError.noCategories { }
+    }
+
+    await testAsync("Combined metadata: category, filename and enrichment share one generation") {
+        let calls = LockedValue(0)
+        let combined = PipelineMetadata { _, _ in
+            calls.set(calls.get() + 1)
+            return try Metadata.parse(
+                "<category>personal</category><filename>2026-10-16-garden-bulb-planting.md</filename><metadata>summary: Planted bulbs.</metadata>",
+                date: "2026-10-16", recordingTime: "09:30", categories: [.personal]
+            )
+        }
+        let config = CaptainsLogConfig()
+        let category = try await combined.result(logText: "Planted bulbs.", config: config).category
+        let filename = try await combined.result(logText: "Planted bulbs.", config: config).filename
+        let enriched = try await combined.result(logText: "Planted bulbs.", config: config).enriched(logText: "Planted bulbs.")
+        try expect(calls.get() == 1)
+        try expect(category == .personal && filename.hasSuffix(".md") && enriched.hasSuffix("Planted bulbs."))
+    }
+
+    test("Combined metadata: preserves memo and supplies date and recording time without inference") {
+        let yaml = "summary: \"Planted bulbs.\""
+        let valid = "<category>personal</category><filename>2026-10-16-planting-garden-bulbs.md</filename><metadata>\n\(yaml)\n</metadata>"
+        let parsed = try Metadata.parse(valid, date: "2026-10-16", recordingTime: "09:30", categories: [.personal])
+        try expect(parsed.category == .personal)
+        try expect(parsed.filename == "2026-10-16-planting-garden-bulbs.md")
+        try expect(parsed.enriched(logText: "Memo unchanged.\n") == "---\ndate: \"2026-10-16\"\nrecording_time: \"09:30\"\n\(yaml)\n---\n\nMemo unchanged.\n")
+        for invalid in [
+            valid.replacingOccurrences(of: "planting-garden-bulbs", with: "../outside"),
+            valid.replacingOccurrences(of: "2026-10-16-planting", with: "2025-01-01-planting"),
+            valid.replacingOccurrences(of: "<category>personal</category>", with: "<category>unknown</category>"),
+            valid + "<filename>2026-10-16-another-file.md</filename>",
+            valid.replacingOccurrences(of: "</metadata>", with: ""),
+            valid.replacingOccurrences(of: "summary:", with: "date: 2026-10-17\nsummary:"),
+            valid.replacingOccurrences(of: "summary:", with: "recording_time: 14:30\nsummary:"),
+        ] {
+            do {
+                _ = try Metadata.parse(invalid, date: "2026-10-16", recordingTime: "09:30", categories: [.personal])
+                throw NSError(domain: "InvalidMetadataAccepted", code: 1)
+            } catch is Metadata.MetadataError { }
+        }
+    }
+
     test("Filename and Enrich: user messages wrap log entries in XML tags") {
         let filenameMessage = Filename.userMessage(logText: "Shipped a feature.")
         let enrichMessage = Enrich.userMessage(logText: "Shipped a feature.")
@@ -4416,6 +4634,30 @@ func runTests() async {
     }
 
     // MARK: - RecordingState Tests
+
+    await testAsync("Recorder: standalone capture never starts background inference") {
+        let events = LockedStringArray()
+        let created = LockedValue(0)
+        let operations = RecorderOperations(
+            listInputDevices: { [] },
+            makeEngine: { _ in TestRecorderAudioEngine(events: events) },
+            makeWriter: { _, _ in TestRecorderAudioWriter(events: events) },
+            waitForManualStop: { _ in },
+            makeEarlyTranscription: { created.set(created.get() + 1); return nil }
+        )
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("CaptainsLogStandalone-\(UUID())")
+        defer { try? FileManager.default.removeItem(at: root) }
+        try await Recorder.record(
+            to: root.appendingPathComponent("standalone.m4a"), duration: nil, deviceUID: nil,
+            stopTrigger: nil, levelCallback: nil, isPaused: { false }, operations: operations
+        )
+        try expect(created.get() == 0, "Standalone cl record must exit without a background native model")
+        try await Recorder.record(
+            to: root.appendingPathComponent("pipeline.m4a"), duration: nil, deviceUID: nil,
+            stopTrigger: nil, levelCallback: nil, isPaused: { false }, earlyTranscription: true, operations: operations
+        )
+        try expect(created.get() == 1, "App and record-and-process clients can explicitly own early work")
+    }
 
     await testAsync("Recorder: selected device, tap writes, pause gating, and session release use injected audio operations") {
         let device = AudioDevice(id: 42, name: "Test microphone", uid: "test-mic")
@@ -4850,6 +5092,56 @@ func runTests() async {
             recording.selectedDeviceUID == available.uid,
             "A disconnected selection should fall back to the current default input"
         )
+    }
+
+    await testAsync("RecordingState: microphone preference survives restart and temporary fallbacks") {
+        // The runner sets CAPTAINS_LOG_CONFIG_PATH to its temporary fixture directory.
+        let previous = CaptainsLogConfig.load()
+        defer { try? previous.save() }
+        let preferred = AudioDevice(id: 42, name: "Fixture USB input", uid: "fixture-usb-input")
+        let fallback = AudioDevice(id: 43, name: "Fixture built-in input", uid: "fixture-built-in-input")
+        let original = RecordingState()
+        original.selectedDeviceUID = preferred.uid
+        try expect(CaptainsLogConfig.load().preferredRecordingDeviceUID == preferred.uid)
+        try expect(RecordingState().selectedDeviceUID == preferred.uid,
+                   "A new app recording state must load the saved microphone")
+
+        @MainActor
+        func state(devices: [AudioDevice], defaultDevice: AudioDevice?) -> RecordingState {
+            RecordingState(
+                dependencies: .init(
+                    listInputDevices: { devices }, defaultInputDevice: { defaultDevice },
+                    record: { _, _, _, _, _ in }
+                ),
+                preferredDeviceUID: CaptainsLogConfig.load().preferredRecordingDeviceUID,
+                saveDevicePreference: { uid in
+                    try CaptainsLogConfig.update { $0.preferredRecordingDeviceUID = uid }
+                }
+            )
+        }
+        let reconnected = state(devices: [fallback, preferred], defaultDevice: fallback)
+        await reconnected.refreshDevicesInBackground()
+        try expect(reconnected.selectedDeviceUID == preferred.uid)
+        reconnected.refreshDevices()
+        try expect(reconnected.selectedDeviceUID == preferred.uid)
+
+        let disconnected = state(devices: [fallback], defaultDevice: fallback)
+        await disconnected.refreshDevicesInBackground()
+        try expect(disconnected.selectedDeviceUID == fallback.uid)
+        try expect(CaptainsLogConfig.load().preferredRecordingDeviceUID == preferred.uid,
+                   "An automatic fallback must not replace the user's saved preference")
+        let staleDefault = state(devices: [fallback], defaultDevice: preferred)
+        staleDefault.refreshDevices()
+        try expect(staleDefault.selectedDeviceUID == fallback.uid,
+                   "A missing system default must fall back to an enumerated input")
+        let noInputs = state(devices: [], defaultDevice: preferred)
+        await noInputs.refreshDevicesInBackground()
+        try expect(noInputs.selectedDeviceUID == nil)
+        try expect(CaptainsLogConfig.load().preferredRecordingDeviceUID == preferred.uid)
+
+        disconnected.selectedDeviceUID = fallback.uid
+        try expect(RecordingState().selectedDeviceUID == fallback.uid,
+                   "Explicitly choosing the fallback should replace the preference")
     }
 
     test("RecordingState: stop recording when not recording does not crash") {
@@ -6491,10 +6783,166 @@ func runUpdateTests() async {
 
 }
 
+#if DEBUG
+/// Explicit native regression; never part of the default or --unit suite.
+@MainActor
+func runNativeRecordingBusyCheck() async throws {
+    let fm = FileManager.default
+    let repository = URL(fileURLWithPath: fm.currentDirectoryPath).resolvingSymlinksInPath()
+    func failure(_ message: String) -> NSError {
+        NSError(domain: "NativeRecordingBusyCheck", code: 1, userInfo: [NSLocalizedDescriptionKey: message])
+    }
+    func isWithin(_ url: URL, _ root: URL) -> Bool { url.path.hasPrefix(root.path + "/") }
+    guard fm.fileExists(atPath: repository.appendingPathComponent("Package.swift").path),
+          let suppliedConfig = ProcessInfo.processInfo.environment["CAPTAINS_LOG_CONFIG_PATH"] else {
+        throw failure("Run from the repository with an explicit isolated config; default config is forbidden.")
+    }
+    let callerConfig = URL(fileURLWithPath: suppliedConfig).resolvingSymlinksInPath()
+    let permittedRoots = [repository.appendingPathComponent("tmp").resolvingSymlinksInPath(),
+                          URL(fileURLWithPath: "/private/tmp").resolvingSymlinksInPath(), fm.temporaryDirectory.resolvingSymlinksInPath()]
+    guard permittedRoots.contains(where: { isWithin(callerConfig, $0) }) else {
+        throw failure("Caller config must be inside repository tmp or system temporary storage.")
+    }
+    let supplied = try JSONDecoder().decode(CaptainsLogConfig.self, from: Data(contentsOf: callerConfig))
+    guard supplied.schemaVersion == CaptainsLogConfig.currentSchemaVersion,
+          let model = supplied.whisperModel, !model.isEmpty,
+          let folder = supplied.whisperModelFolder else {
+        throw failure("Precondition failed: explicit current-schema cached Whisper model fields are required.")
+    }
+    var directory: ObjCBool = false
+    guard fm.fileExists(atPath: folder, isDirectory: &directory), directory.boolValue else {
+        throw failure("Precondition failed: cached Whisper model folder is unavailable.")
+    }
+    let fixture = repository.appendingPathComponent("eval/transcribe/audio/durins-volk.m4a").resolvingSymlinksInPath()
+    guard isWithin(fixture, repository.appendingPathComponent("eval/transcribe/audio").resolvingSymlinksInPath()) else {
+        throw failure("Fixture must resolve inside the repository evaluation directory.")
+    }
+    let owned = fm.temporaryDirectory.appendingPathComponent("CaptainsLogNativeBusy-\(UUID())")
+    let evidence = callerConfig.deletingLastPathComponent().appendingPathComponent("native-busy-\(UUID())")
+    try fm.createDirectory(at: owned.appendingPathComponent("data"), withIntermediateDirectories: true)
+    try fm.createDirectory(at: evidence, withIntermediateDirectories: true)
+    let priorTrace = ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_TRACE"]
+    let trace = evidence.appendingPathComponent("trace.txt")
+    defer {
+        setenv("CAPTAINS_LOG_CONFIG_PATH", suppliedConfig, 1)
+        if let priorTrace { setenv("CAPTAINSLOG_PERFORMANCE_TRACE", priorTrace, 1) }
+        else { unsetenv("CAPTAINSLOG_PERFORMANCE_TRACE") }
+        try? fm.removeItem(at: owned)
+    }
+    // Never copy caller categories, data paths, update preferences, or text-model fields.
+    let config = CaptainsLogConfig(dataDir: owned.appendingPathComponent("data").path,
+                                  whisperModelFolder: folder, whisperModel: model)
+    setenv("CAPTAINS_LOG_CONFIG_PATH", owned.appendingPathComponent("config.json").path, 1)
+    setenv("CAPTAINSLOG_PERFORMANCE_TRACE", trace.path, 1)
+    try config.save()
+    let audio = try AVAudioFile(forReading: fixture)
+    let frameCount = AVAudioFrameCount(ceil(40 * audio.processingFormat.sampleRate))
+    guard let pcm = AVAudioPCMBuffer(pcmFormat: audio.processingFormat, frameCapacity: frameCount) else {
+        throw failure("Unable to allocate the fixture PCM buffer.")
+    }
+    try audio.read(into: pcm, frameCount: frameCount)
+    guard pcm.frameLength == frameCount, let channel = pcm.floatChannelData?[0] else {
+        throw failure("Fixture must supply forty seconds of readable PCM.")
+    }
+    let rms = AudioLevel.rootMeanSquare(of: UnsafeBufferPointer(start: channel, count: Int(pcm.frameLength)))
+    let recorded = owned.appendingPathComponent("fixture-recording.caf")
+    var writer: AVAudioFile? = try AVAudioFile(forWriting: recorded, settings: pcm.format.settings)
+    try writer?.write(from: pcm)
+    writer = nil
+    var early: RecordingTranscription?
+    var native: Task<String, Error>?
+    var taking: Task<String?, Never>?
+    func waitFor(_ label: String, seconds: TimeInterval, until ready: @Sendable () -> Bool) async throws {
+        let deadline = ContinuousClock.now.advanced(by: .seconds(seconds))
+        while !ready() {
+            try Task.checkCancellation()
+            guard ContinuousClock.now < deadline else { throw failure("Timed out waiting for " + label) }
+            try await Task.sleep(for: .milliseconds(10))
+        }
+    }
+    do {
+        // Real CPU, thermal, and cached-model checks: no test admission overrides.
+        early = try RecordingTranscription()
+        let nativeFinished = LockedValue(false)
+        let job = Task.detached {
+            defer { nativeFinished.set(true) }
+            return try await Transcriber.transcribe(audioPath: fixture.path)
+        }
+        native = job
+        try await waitFor("ordinary Whisper admission", seconds: 120) {
+            AppPerformanceTrace.hasMarked("whisper-loader Loading models...") || nativeFinished.get()
+        }
+        guard !nativeFinished.get() else {
+            throw failure("Inconclusive: ordinary Whisper ended before the busy request could be submitted.")
+        }
+        // A forty-second buffer finalizes one real PCM chunk immediately. It
+        // goes through the normal worker and native onlyIfIdle path.
+        early!.append(RecorderAudioBuffer(frameLength: Int(pcm.frameLength), rootMeanSquare: rms, nativeBuffer: pcm))
+        try await waitFor("recording-time busy refusal", seconds: 30) {
+            ["recording-chunk-refused-busy", "recording-chunk-refused-capacity", "recording-chunk-refused-model-changed",
+             "recording-chunk-refused-model", "recording-chunk-refused-error", "recording-chunk-refused-cancelled",
+             "recording-chunk-complete"].contains(where: AppPerformanceTrace.hasMarked)
+        }
+        guard AppPerformanceTrace.hasMarked("recording-chunk-refused-busy"),
+              !AppPerformanceTrace.hasMarked("recording-chunk-complete") else {
+            throw failure("Recording-time busy refusal was not established before Stop; precondition refusal or completion is inconclusive.")
+        }
+        AppPerformanceTrace.mark("native-busy-check-before-stop-confirmed")
+        await early!.finish(audioPath: recorded.path, cancelled: false)
+        let takeFinished = LockedValue(false)
+        let pending = Task {
+            defer { takeFinished.set(true) }
+            return await RecordingTranscription.take(recorded.path)
+        }
+        taking = pending
+        try await waitFor("speculative busy refusal", seconds: 30) { takeFinished.get() }
+        let speculative = await pending.value
+        guard speculative == nil,
+              AppPerformanceTrace.hasMarked("recording-chunk-refused-busy"),
+              !AppPerformanceTrace.hasMarked("recording-chunk-complete"),
+              !AppPerformanceTrace.hasMarked("recording-transcript-reused") else {
+            throw failure("Busy admission was not established; capacity/model refusal or speculative completion is inconclusive. Inspect " + trace.path)
+        }
+        try await waitFor("ordinary native fixture completion", seconds: 600) { nativeFinished.get() }
+        let transcript = try await job.value
+        guard !transcript.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            throw failure("Ordinary native Whisper returned no transcript.")
+        }
+        try transcript.write(to: evidence.appendingPathComponent("ordinary-whisper.md"), atomically: true, encoding: .utf8)
+        try "Passed: real Whisper completed; recording chunk refused busy; no speculative output.\n".write(
+            to: evidence.appendingPathComponent("result.txt"), atomically: true, encoding: .utf8)
+        print("Native recording busy check passed. Evidence: \(evidence.path)")
+    } catch {
+        taking?.cancel()
+        native?.cancel()
+        if let early { await early.finish(audioPath: recorded.path, cancelled: true) }
+        await RecordingTranscription.discard(recorded.path)
+        _ = await taking?.value
+        if let native { _ = await native.result }
+        let reason = AppPerformanceTrace.hasMarked("recording-admission-refused-capacity") ||
+                     AppPerformanceTrace.hasMarked("recording-chunk-refused-capacity")
+            ? "CPU/thermal precondition refused; inconclusive, no bypass.\n" : "Failed/inconclusive: \(error.localizedDescription)\n"
+        try? reason.write(to: evidence.appendingPathComponent("result.txt"), atomically: true, encoding: .utf8)
+        print("Native busy check did not pass. Evidence: \(evidence.path)")
+        throw error
+    }
+}
+#endif
+
 @main
 struct TestRunner {
     @MainActor
     static func main() async {
+        if CommandLine.arguments.contains("--native-recording-busy") {
+            #if DEBUG
+            do { try await runNativeRecordingBusyCheck() }
+            catch { fputs("Native recording busy check failed: \(error.localizedDescription)\n", stderr); exit(1) }
+            #else
+            fputs("Native recording busy check requires a DEBUG build.\n", stderr)
+            exit(64)
+            #endif
+            return
+        }
         lightweightUnitOnly = CommandLine.arguments.contains("--unit")
         let testRoot = configureIsolatedTestEnvironment()
         defer {

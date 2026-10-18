@@ -144,6 +144,20 @@ public enum Pipeline {
         modelId: String? = nil,
         progress: (@Sendable (Progress) -> Void)? = nil
     ) async throws -> Result {
+        try await run(audioInput: audioInput, dataDir: dataDir, language: language,
+                      recordDuration: recordDuration, modelId: modelId,
+                      combinedMetadata: false, progress: progress)
+    }
+
+    public static func run(
+        audioInput: String? = nil,
+        dataDir: String,
+        language: String? = nil,
+        recordDuration: TimeInterval? = nil,
+        modelId: String? = nil,
+        combinedMetadata: Bool,
+        progress: (@Sendable (Progress) -> Void)? = nil
+    ) async throws -> Result {
         let dataDirURL = URL(fileURLWithPath: dataDir)
 
         try ensurePipelineDirectories(dataDirURL: dataDirURL)
@@ -158,7 +172,7 @@ public enum Pipeline {
             audioPath = try copyAudioInput(audioInput, dataDirURL: dataDirURL)
         } else {
             print("[1/6] Recording...")
-            try await Recorder.record(to: audioDestURL, duration: recordDuration)
+            try await Recorder.record(to: audioDestURL, duration: recordDuration, earlyTranscription: language == nil)
             audioPath = audioDestURL.path
         }
 
@@ -169,6 +183,7 @@ public enum Pipeline {
             fromStage: .transcribing,
             language: language,
             modelId: modelId,
+            combinedMetadata: combinedMetadata,
             progress: progress
         )
     }
@@ -207,6 +222,21 @@ public enum Pipeline {
         operations: Operations? = nil,
         progress: (@Sendable (Progress) -> Void)? = nil
     ) async throws -> Result {
+        try await runCommand(audioInput: audioInput, dataDir: dataDir, language: language,
+                             recordDuration: recordDuration, modelId: modelId,
+                             combinedMetadata: false, operations: operations, progress: progress)
+    }
+
+    public static func runCommand(
+        audioInput: String? = nil,
+        dataDir: String,
+        language: String? = nil,
+        recordDuration: TimeInterval? = nil,
+        modelId: String? = nil,
+        combinedMetadata: Bool,
+        operations: Operations? = nil,
+        progress: (@Sendable (Progress) -> Void)? = nil
+    ) async throws -> Result {
         if let operations {
             guard let audioInput else { throw PipelineError.injectedOperationsRequireAudioInput }
             return try await run(
@@ -223,6 +253,7 @@ public enum Pipeline {
             language: language,
             recordDuration: recordDuration,
             modelId: modelId,
+            combinedMetadata: combinedMetadata,
             progress: progress
         )
     }
@@ -577,6 +608,7 @@ public enum Pipeline {
         fromStage: Stage,
         language: String?,
         modelId: String? = nil,
+        combinedMetadata: Bool = false,
         progress: (@Sendable (Progress) -> Void)?,
         operations: Operations? = nil
     ) async throws -> Result {
@@ -625,13 +657,24 @@ public enum Pipeline {
         } else {
             try Task.checkCancellation()
             let container = try await LLM.loadModel(modelId: modelId)
+            // Older partially processed entries keep their existing category/name and
+            // resume individual stages. Combining fresh metadata requires explicit CLI opt-in.
+            let combined: PipelineMetadata? = combinedMetadata && (try? Categorize.loadManifest(stem: stem, dataDirURL: dataDirURL)) == nil
+                ? PipelineMetadata(container: container, date: date, recordingTime: recordingTime) : nil
             textOperations = Operations(
                 transcribe: { _, _ in "" },
                 cleanup: { transcript, config in
                     try await Cleanup.cleanup(transcript: transcript, container: container, config: config)
                 },
                 categorize: { cleaned, config, diagnostic in
-                    try await Categorize.categorize(
+                    if let combined {
+                        await diagnostic("Generating category, filename and metadata together.")
+                        let started = Date()
+                        let metadata = try await combined.result(logText: cleaned, config: config)
+                        await diagnostic("Combined metadata completed in \(String(format: "%.1f", Date().timeIntervalSince(started)))s.")
+                        return metadata.category
+                    }
+                    return try await Categorize.categorize(
                         logText: cleaned,
                         container: container,
                         config: config,
@@ -639,10 +682,12 @@ public enum Pipeline {
                     )
                 },
                 filename: { cleaned, date in
-                    try await Filename.generateFilename(logText: cleaned, date: date, container: container)
+                    if let combined { return try await combined.result(logText: cleaned, config: promptConfig).filename }
+                    return try await Filename.generateFilename(logText: cleaned, date: date, container: container)
                 },
                 enrich: { cleaned, date, recordingTime, config in
-                    try await Enrich.enrich(
+                    if let combined { return try await combined.result(logText: cleaned, config: config).enriched(logText: cleaned) }
+                    return try await Enrich.enrich(
                         logText: cleaned,
                         date: date,
                         recordingTime: recordingTime,
@@ -682,6 +727,7 @@ public enum Pipeline {
         let enrichedPath = dataDirURL.appendingPathComponent(Directory.enriched.path).appendingPathComponent(category.folderName).appendingPathComponent("\(slugStem).md").path
 
         try Task.checkCancellation()
+        AppPerformanceTrace.mark("pipeline-completed")
         progress?(Progress(stem: stem, stage: .done))
         print("Pipeline complete!")
         return Result(
@@ -720,6 +766,7 @@ public enum Pipeline {
         let transcript = try await operation(audioPath, language)
         try Task.checkCancellation()
         try FileSystemGuard.writeText(transcript, to: transcriptPath)
+        AppPerformanceTrace.mark("pipeline-transcription-saved")
         return transcript
     }
 

@@ -126,7 +126,7 @@ public enum Categorize {
         )
     }
 
-    private static func categoryInstructions(_ categories: [Category]) -> String {
+    static func categoryInstructions(_ categories: [Category]) -> String {
         let descriptions: [Category: String] = [
             .personal: "family, friends, health, home, hobbies, travel, private reflection, and non-work life.",
             .professional: "paid work, colleagues, management, teams, companies, career, planning, meetings, delivery, and work-adjacent professional development.",
