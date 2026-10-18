@@ -172,7 +172,7 @@ private struct FieldNotesSidebar: View {
             }
 
             Spacer()
-            Text("LOCAL-FIRST NOTES")
+            Text("PRIVATE VOICE NOTES")
                 .font(FieldNotes.Typography.metadata(10))
                 .foregroundStyle(FieldNotes.ColorToken.tertiaryText)
         }
@@ -280,7 +280,7 @@ private struct FieldNotesEntriesView: View {
                     Text("Logs")
                         .font(FieldNotes.Typography.title(28))
                         .foregroundStyle(FieldNotes.ColorToken.primaryText)
-                    Text("Your recorded thoughts, processed on this Mac")
+                    Text("Your thoughts, captured and organized")
                         .font(FieldNotes.Typography.body(13))
                         .foregroundStyle(FieldNotes.ColorToken.secondaryText)
                 }
@@ -333,13 +333,13 @@ private struct FieldNotesEntriesView: View {
         switch appState.search.state {
         case .idle, .preparingModel:
             searchStatus(icon: "arrow.down.circle", title: "Preparing smart search",
-                         detail: "The multilingual search model stays on this Mac.")
+                         detail: "Find related thoughts, even when you use different words.")
         case .indexing(let message, let completed, let total):
-            searchStatus(icon: "text.magnifyingglass", title: "Indexing logs",
+            searchStatus(icon: "text.magnifyingglass", title: "Preparing your logs for search",
                          detail: total > 0 ? "\(message) · \(completed) of \(total)" : message)
         case .searching:
-            searchStatus(icon: "waveform.path.ecg", title: "Following the signal",
-                         detail: "Comparing your words with the local note index.")
+            searchStatus(icon: "waveform.path.ecg", title: "Finding related logs",
+                         detail: "Looking for logs related to your search.")
         case .ready:
             if visibleSearchResults.isEmpty {
                 searchStatus(icon: "scope", title: "No matching logs",
@@ -456,7 +456,7 @@ private struct FieldNotesEntriesView: View {
             Text("Capture your first thought")
                 .font(FieldNotes.Typography.title(20))
                 .foregroundStyle(FieldNotes.ColorToken.primaryText)
-            Text("Use the record control below. Your audio and Markdown notes remain on this Mac.")
+            Text("Record a thought below. CaptainsLog turns it into a note, without uploading your recording.")
                 .font(FieldNotes.Typography.body())
                 .foregroundStyle(FieldNotes.ColorToken.secondaryText)
         }
@@ -1562,8 +1562,8 @@ private struct FieldNotesOnboardingView: View {
             }
             .padding(FieldNotes.Spacing.xxl).frame(width: 230, alignment: .leading).background(FieldNotes.ColorToken.surface)
             VStack(alignment: .leading, spacing: FieldNotes.Spacing.xl) {
-                Text("Your voice, kept local.").font(FieldNotes.Typography.title(32)).foregroundStyle(FieldNotes.ColorToken.primaryText)
-                Text("CaptainsLog transcribes, cleans, titles, and organizes recordings on this Mac. Choose where your audio and Markdown notes should live.").font(FieldNotes.Typography.body(15)).foregroundStyle(FieldNotes.ColorToken.secondaryText).fixedSize(horizontal: false, vertical: true)
+                Text("Your thoughts. Kept private.").font(FieldNotes.Typography.title(32)).foregroundStyle(FieldNotes.ColorToken.primaryText)
+                Text("Turn your recordings into clear, organized notes. Choose where to save your recordings and notes.").font(FieldNotes.Typography.body(15)).foregroundStyle(FieldNotes.ColorToken.secondaryText).fixedSize(horizontal: false, vertical: true)
                 VStack(alignment: .leading, spacing: FieldNotes.Spacing.s) {
                     Text("Storage location").font(FieldNotes.Typography.title(18)).foregroundStyle(FieldNotes.ColorToken.primaryText)
                     Text(shortenedPath(appState.dataDir)).font(FieldNotes.Typography.metadata(12)).foregroundStyle(FieldNotes.ColorToken.primaryText)
@@ -1574,7 +1574,7 @@ private struct FieldNotesOnboardingView: View {
                     FieldNotesCategoriesEditor()
                 }.padding(FieldNotes.Spacing.m).fieldNotesSurface()
                 Spacer()
-                HStack { Text("Nothing leaves your Mac").font(FieldNotes.Typography.body(13)).foregroundStyle(FieldNotes.ColorToken.secondaryText); Spacer(); FieldNotesButton(title: "Set up CaptainsLog") { appState.completeFirstRun(); dismiss() } }
+                HStack { Text("Your recordings and notes aren’t uploaded").font(FieldNotes.Typography.body(13)).foregroundStyle(FieldNotes.ColorToken.secondaryText); Spacer(); FieldNotesButton(title: "Set up CaptainsLog") { appState.completeFirstRun(); dismiss() } }
             }
             .padding(FieldNotes.Spacing.xxl)
         }

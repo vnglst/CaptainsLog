@@ -1,6 +1,30 @@
 # Repository Instructions
 
-Read `README.md` before working here. Follow its product requirements, build instructions, and design decisions. Use its [repository navigation map](README.md#repository-navigation) to find source entry points and the [tool implementation map](scripts/README.md#implementation-map) for development helpers.
+Read `README.md` before working here. Follow its product requirements, build instructions, and design decisions. Use its [repository navigation map](#repository-navigation) to find source entry points and the [tool implementation map](scripts/README.md#implementation-map) for development helpers.
+
+## Repository navigation
+
+For development commands, start with `make help` and [the command guide](./scripts/README.md).
+For code changes, use the entry points below.
+
+| Area | Start here |
+|---|---|
+| App launch and demo setup | [AppMain.swift](./Sources/CaptainsLogApp/AppMain.swift), [DemoMode.swift](./Sources/CaptainsLogApp/DemoMode.swift) |
+| Logs UI and Settings | [FieldNotesContentView.swift](./Sources/CaptainsLog/FieldNotesContentView.swift); spelling editor: [FieldNotesCorrectionsEditor.swift](./Sources/CaptainsLog/FieldNotesCorrectionsEditor.swift) |
+| App processing and audio discovery | [ProcessingCoordinator.swift](./Sources/CaptainsLog/ProcessingCoordinator.swift), [DirectoryWatcher.swift](./Sources/CaptainsLog/DirectoryWatcher.swift), [Pipeline.swift](./Sources/CaptainsLogCore/Pipeline.swift) |
+| Pipeline stages and native inference | [CaptainsLogCore](./Sources/CaptainsLogCore/): `Transcriber.swift`, `Cleanup.swift`, `Categorize.swift`, `Filename.swift`, `Enrich.swift`, `LLM.swift` |
+| Prompts and prompt loading | [prompts/](./prompts/), [PromptLoader.swift](./Sources/CaptainsLogCore/PromptLoader.swift), [PromptResolver.swift](./Sources/CaptainsLogCore/PromptResolver.swift) |
+| Configuration and corrections | [Config.swift](./Sources/CaptainsLogCore/Config.swift), [ConfigManager.swift](./Sources/CaptainsLog/ConfigManager.swift), [CorrectionDocument.swift](./Sources/CaptainsLog/CorrectionDocument.swift) |
+| CLI commands and evaluation batches | [CL.swift](./Sources/cl/CL.swift), [EvalBatch.swift](./Sources/cl/EvalBatch.swift) |
+| Updates | [AppUpdater.swift](./Sources/CaptainsLogCore/AppUpdater.swift), [UpdateManager.swift](./Sources/CaptainsLog/UpdateManager.swift) |
+| Tests and synthetic fixtures | [run-tests/main.swift](./Sources/run-tests/main.swift), [eval/](./eval/), [stage review skills](./skills/) |
+| Build, packaging, runtime checks and releases | [Tool implementation map](./scripts/README.md#implementation-map), [Package.swift](./Package.swift), [release workflow](./.github/workflows/release.yml) |
+
+Use `rg --files Sources scripts` to locate files before reading them. CLI command
+types share `CL.swift`, tests share `run-tests/main.swift`, and tooling entrypoint
+names do not necessarily match their implementation filenames. Current commands
+and runtime setup live in README.md and the command guide; ADRs preserve dated
+decisions and may describe older implementation details.
 
 ## Backlog
 
@@ -11,6 +35,20 @@ Read `README.md` before working here. Follow its product requirements, build ins
 - Keep task text very short and use the owner’s sentences and wording. Do not expand it with additional explanation. Acceptance criteria must not repeat the description; omit them when the owner has not supplied distinct checks. Do not link to repository files or put file paths in reference/documentation fields, because those files are not visible in the Backlog app. Preserve owner-supplied scope, dependencies, status and checked criteria when condensing existing tasks.
 - Keep a task in `Next` while implementing. After relevant checks, check off supported existing acceptance criteria and move it to `Verify`, without adding agent-authored plans, notes or summaries. Leave `Complete` for the owner's verification or an explicit user instruction. If the owner requests changes, return the task to `Next`; any review-note content must come from the owner. Keep authorized backlog changes with the related code and changelog in the same commit.
 - When the owner requests a new backlog item, use a draft for an idea that is not yet agreed work and a `To Do` task for agreed work. Include only content supplied by the owner; ask for missing input. Explain the supplied content without linking to other files. Keep the active task focused; report newly discovered work without silently expanding scope or adding backlog items.
+
+Backlog CLI reference:
+
+```sh
+backlog board                         # Review work by status
+backlog task list                     # List tasks
+backlog task view TASK-1              # Read a task
+backlog draft create "Possible idea"  # Capture an idea not yet agreed as work
+backlog draft promote DRAFT-1         # Promote an agreed idea to a task
+backlog task create "Task title"      # Create an agreed task
+backlog task edit TASK-1 --status "Next"    # Select it for implementation
+backlog task edit TASK-1 --status "Verify"  # After checking existing criteria
+backlog task edit TASK-1 --status "Complete"  # After your review
+```
 
 ## Development
 
@@ -33,6 +71,19 @@ Stage-specific evaluation workflows live in `skills/<stage>-eval/SKILL.md` for t
 
 - Report dated evaluation results, semantic findings and limitations in chat or PRs, without adding agent-authored content to tasks.
 
+### Semantic review
+
+Read each selected case’s input, expected output, generated output and validation
+in the printed review bundle. Fill its preserved report with concrete omissions,
+changed meaning, added or hallucinated content, baseline improvements/regressions,
+stage observations and remaining limits. Explain why each difference matters.
+Metadata records model/runtime identity, source/prompt/fixture hashes, settings,
+revision and timings; validation success cannot prove grounding or completeness.
+Expected wording is a reference rather than the only valid wording. Baseline diffs
+and heuristic scores help navigation but do not replace human review. Report dated
+findings in chat or PRs. Do not claim speed
+or token savings without measurements and comparable timing scopes.
+
 ## Documentation
 
 - Minimize PR review effort and text. State the change, give one quick review action or tip, and summarize checks and material limits. Keep detailed evidence in optional expandable PR sections, not agent-authored task notes. Proactively include a short video for UI changes, or a concise example, screenshot or sample output suited to other changes. Use synthetic fixtures and isolated data for media. Never imply an unperformed check or recording. Help the owner assess behavior without reconstructing it from code or logs.
@@ -41,3 +92,28 @@ Stage-specific evaluation workflows live in `skills/<stage>-eval/SKILL.md` for t
 - Existing ADRs are immutable. Never edit, shorten, rename, delete or change the status or date of an existing record. Document changes in a new numbered ADR that links to the record it supersedes; leave the original untouched. ALL content for a new ADR must come from the owner, including decisions, context, rationale, alternatives and consequences. Agents may edit or rewrite owner-supplied wording for the new record but must never originate ADR content. Create an ADR, including a superseding record, only when the owner explicitly requests it and supplies its content; ask for anything missing. Read relevant ADRs before architectural changes. For an authorized new ADR, use `adrs` and keep it within 300 words (up to 500 for essential owner-supplied rationale). This rule overrides conflicting architecture-documentation guidance.
 - Keep `docs/` exclusively for numbered ADRs, with no plans, reports, guides or subfolders. Use the CLI for authorized owner-supplied task content, status changes and checking existing items. Keep synthetic reference data under `eval/` or `demo/`, separate from active suites when unused.
 - Keep current commands and isolation rules in README and the existing script/skill instructions. Report evaluation evidence, native UI limits and legacy-code review in chat or PRs; do not add them to tasks or ADRs yourself. Do not add new evidence to ADR-007. Check downstream SwiftPM clients, previews, debug flags and resource dependencies before deleting apparently unused public symbols or vendored headers.
+
+## Architecture decision tools
+
+From the repository root, install the separate
+[`adrs` CLI](https://joshrotenberg.com/adrs/) with `brew install adrs`, then use:
+
+```sh
+adrs list                       # Browse existing decisions
+adrs search "inference"         # Find decisions by subject
+adrs new --no-edit "Decision title"
+adrs doctor                     # Check numbering and links
+```
+
+Read each file for its status; `adrs list -l` does not parse every legacy
+status line correctly.
+
+## Native UI investigation
+
+The active UI and Settings are embedded in FieldNotesContentView; the launcher is
+AppMain. Core stage implementations and the sequential inference gate live in
+CaptainsLogCore, while command types live in cl. Framework-free tests are in the
+run-tests executable. For isolated native UI inspection use the existing UI harness;
+packaged development executables must be launched directly to inherit their isolated
+configuration. Record the bundle revision, dirty state, signatures and binary checksums
+when comparing builds. A rollback restores binaries/resources, not data migrations.

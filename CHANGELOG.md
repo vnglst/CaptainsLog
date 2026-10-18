@@ -46,6 +46,12 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
+- Move repository navigation and agent workflow guidance from README.md into AGENTS.md while keeping technical usage, build, testing and release documentation in the README.
+
+- Introduce CaptainsLog in the README through its uses and privacy while retaining technical details.
+
+- Reword the sidebar, Logs, setup and search screens around private recordings and organized notes instead of local AI terminology.
+
 - Refine the recording-time transcription draft with the owner's first-version scope and stability, existing transcription and CPU availability checks.
 
 - Require very short backlog text in the owner's wording and acceptance criteria that do not repeat the description in the repository instructions and README.
