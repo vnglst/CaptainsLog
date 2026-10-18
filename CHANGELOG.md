@@ -14,6 +14,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Added
 
+- Add TASK-70 in Next to update all dependencies.
+
 - Add TASK-66 to show categories as a long list using page scrolling, like corrections, without an internal scrollbar.
 
 - Add a draft to explore starting transcription during recording and TASK-65 to remember the default recording device with a fallback when unavailable.
