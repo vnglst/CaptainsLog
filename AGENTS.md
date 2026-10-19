@@ -59,6 +59,16 @@ backlog task edit TASK-1 --status "Complete"  # After your review
 - After dependency upgrades, new features, or significant refactors, run `make build`, `make tests`, and `make evals-pipeline` on a fixture. Evaluation suites are the quality gate; run them sequentially. For a quick LLM smoke check, run `make evals STAGE=filename`.
 - Never run multiple inference tasks in parallel. WhisperKit and llama.cpp share limited on-device GPU memory. Load Qwen once per pipeline run and reuse it across stages.
 
+## Efficient execution
+
+- Read repository guidance once per session; revisit only changed or relevant sections. Use the navigation maps and bounded searches instead of dumping whole files, histories or logs. Redirect long command output to a log and return failures plus the final summary.
+- Before running checks, confirm which suite exercises the changed path. `make tests-unit` excludes coordinator coverage; processing and queue regressions require `make tests`. Reproduce the reported stage and action sequence, add a failing regression, then fix it. A transcript-seeded continuation does not verify a Transcribing bug.
+- Complete related edits before expensive verification. Reuse passing checks for unchanged inputs; repeat when code, dependencies, settings or fixtures affecting that check change. Preserve required quality gates and semantic review. Confirm dependency versions before starting expensive runtime evaluations.
+- When parallel agents are authorized, give each a bounded outcome and request only its commit, changed files, checks, evidence paths and blockers. Designate one owner for builds and native inference. Keep independent worktree build directories; do not symlink or concurrently mutate SwiftPM scratch paths. Reuse a working build configuration within its checkout rather than repeatedly resolving or cleaning dependencies.
+- Keep one compact execution checkpoint under ignored `tmp/`: revision/dirty state, commands and build configuration, active jobs, completed checks, evidence paths and next action. Resume from it after interruptions; verify relevant inputs before reusing evidence. Keep observations in the evidence files instead of repeatedly copying them into chat.
+- Check UI access before starting a recording run. If the Mac is locked or access is denied, report the blocker once and continue independent work; retry after access changes. After an unexpected UI action, refresh state and exclude invalid runs before continuing.
+- Distinguish built, tested, recorded and installed in completion reports. A successful package build does not establish that `/Applications/CaptainsLog.app` was replaced; verify the installed bundle against the tested artifact when installation is requested.
+
 ## Privacy
 
 - Never read, copy, or use personal recordings or data from `processed/`, Obsidian, or CaptainsLog data folders for tests, evaluations, reproductions, or debugging.
