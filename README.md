@@ -65,9 +65,9 @@ open dist/CaptainsLog.app
 ```
 
 The development and release configurations both use the checksum-verified upstream
-`llama-b11609-xcframework.zip` (llama.cpp revision
-`fcac19079f3f2985fe74ed845f0880e7e9a8030a`). SwiftPM verifies SHA-256
-`e802079e8fe7b5523f272e8a6fc15344572229a5ea6a6292b12184c1f45103b0`
+`llama-b11723-xcframework.zip` (llama.cpp revision
+`31288c9c66e59377f7788d920678a565bb89dd37`). SwiftPM verifies SHA-256
+`c3911a2dba69e68e87e0306090cd3999a642f8caaf29a7587e2d5685bce1a9f8`
 before resolving the matching llama/GGML headers and framework. The universal
 macOS slice contains arm64 and x86_64 code; CaptainsLog builds arm64 with deployment
 target macOS 26.0. Upstream built the framework for macOS 13.3 with SDK 26.4

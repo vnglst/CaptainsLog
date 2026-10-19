@@ -28,12 +28,12 @@ let package = Package(
                 .product(name: "HuggingFace", package: "swift-huggingface"),
             ]
         ),
-        // Upstream b11609, source fcac19079f3f2985fe74ed845f0880e7e9a8030a.
+        // Upstream b11723, source 31288c9c66e59377f7788d920678a565bb89dd37.
         // SwiftPM verifies this digest before using matching llama/GGML headers and code.
         .binaryTarget(
             name: "llama",
-            url: "https://github.com/ggml-org/llama.cpp/releases/download/b11609/llama-b11609-xcframework.zip",
-            checksum: "e802079e8fe7b5523f272e8a6fc15344572229a5ea6a6292b12184c1f45103b0"
+            url: "https://github.com/ggml-org/llama.cpp/releases/download/b11723/llama-b11723-xcframework.zip",
+            checksum: "c3911a2dba69e68e87e0306090cd3999a642f8caaf29a7587e2d5685bce1a9f8"
         ),
         .target(
             name: "CSQLiteVec",

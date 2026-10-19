@@ -8,7 +8,7 @@ CaptainsLog includes or downloads third-party software and model weights. Captai
 | --- | --- | --- |
 | sqlite-vec v0.1.10-alpha.4 | MIT or Apache-2.0 | [sqlite-vec](https://github.com/asg017/sqlite-vec) |
 | llama.cpp / ggml runtime | MIT | [llama.cpp](https://github.com/ggml-org/llama.cpp) |
-| XCFramework mtmd helpers: stb_image, miniaudio, xxHash, SHA-1/SHA-256, subprocess.h | MIT / MIT No Attribution / BSD-2-Clause / public domain; exact notices bundled with the runtime | [Pinned upstream native helpers](https://github.com/ggml-org/llama.cpp/tree/fcac19079f3f2985fe74ed845f0880e7e9a8030a/vendor) |
+| XCFramework mtmd helpers: stb_image, miniaudio, xxHash, SHA-1/SHA-256, subprocess.h | MIT / MIT No Attribution / BSD-2-Clause / public domain; exact notices bundled with the runtime | [Pinned upstream native helpers](https://github.com/ggml-org/llama.cpp/tree/31288c9c66e59377f7788d920678a565bb89dd37/vendor) |
 | Swift Argument Parser | Apache-2.0 | [swift-argument-parser](https://github.com/apple/swift-argument-parser) |
 | WhisperKit / argmax-oss-swift | MIT | [argmax-oss-swift](https://github.com/argmaxinc/argmax-oss-swift) |
 | Swift Transformers | Apache-2.0 | [swift-transformers](https://github.com/huggingface/swift-transformers) |

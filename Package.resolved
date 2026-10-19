@@ -1,5 +1,5 @@
 {
-  "originHash" : "d1a1ad4c7bad4288777b587de5861cc3d6104a60fc56a7664d075564c9efc729",
+  "originHash" : "07772eb83a6626abf934f4db9f9fb188eb66672fdfb711dedece1e4cc418c2ba",
   "pins" : [
     {
       "identity" : "argmax-oss-swift",
@@ -60,8 +60,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/huggingface/swift-jinja.git",
       "state" : {
-        "revision" : "4588064a20f3fc093c95f2f7d3359999bf30cae5",
-        "version" : "2.5.1"
+        "revision" : "1e4d0dc69f7ec1277131fb3853808229c5991825",
+        "version" : "2.5.2"
       }
     },
     {
