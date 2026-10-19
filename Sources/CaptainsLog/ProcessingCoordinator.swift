@@ -21,6 +21,7 @@ public final class ProcessingCoordinator {
     private var processingTask: Task<Void, Never>?
     private var pendingProcessingStems: [String] = []
     private var isStopping = false
+    private var restartPendingBatch: (() -> Void)?
     private let resumePipeline: PipelineResume
 
     /// Includes queued entries and the interval before a task reports its first stage.
@@ -83,7 +84,7 @@ public final class ProcessingCoordinator {
                 reason: "Processing CaptainsLog recordings"
             )
             defer { ProcessInfo.processInfo.endActivity(activity) }
-            defer { if Task.isCancelled { processingTask = nil } }
+            defer { if Task.isCancelled { finishCancelledProcessing() } }
             while !pendingProcessingStems.isEmpty {
                 guard !Task.isCancelled else { break }
                 let stem = pendingProcessingStems.removeFirst()
@@ -116,6 +117,7 @@ public final class ProcessingCoordinator {
 
     /// Pause/cancel current processing.
     public func pauseProcessing() {
+        restartPendingBatch = nil
         processingTask?.cancel()
         pendingProcessingStems = []
         stage = .idle
@@ -150,7 +152,7 @@ public final class ProcessingCoordinator {
                 reason: "Processing CaptainsLog recordings"
             )
             defer { ProcessInfo.processInfo.endActivity(activity) }
-            defer { if Task.isCancelled { processingTask = nil } }
+            defer { if Task.isCancelled { finishCancelledProcessing() } }
             await runResume(stem: stem, fromStage: fromStage, dataDir: dataDir, onComplete: onComplete, onError: onError)
         }
     }
@@ -163,8 +165,18 @@ public final class ProcessingCoordinator {
         onComplete: @escaping () -> Void,
         onError: @escaping (Error) -> Void
     ) {
-        guard !isStopping, processingTask == nil else { return }
-        guard !pendingEntries.isEmpty else { return }
+        guard !isStopping, !pendingEntries.isEmpty else { return }
+        if let processingTask {
+            // Native work must finish cancelling before the requested restart begins.
+            guard processingTask.isCancelled else { return }
+            restartPendingBatch = { [weak self] in
+                self?.batchResumePending(
+                    pendingEntries: pendingEntries, dataDir: dataDir,
+                    onProgress: onProgress, onComplete: onComplete, onError: onError
+                )
+            }
+            return
+        }
 
         errorMessage = nil
         processingTask = Task { [self] in
@@ -173,7 +185,7 @@ public final class ProcessingCoordinator {
                 reason: "Processing CaptainsLog recordings"
             )
             defer { ProcessInfo.processInfo.endActivity(activity) }
-            defer { if Task.isCancelled { processingTask = nil } }
+            defer { if Task.isCancelled { finishCancelledProcessing() } }
             for entry in pendingEntries {
                 guard !Task.isCancelled else { break }
                 processingStem = entry.stem
@@ -203,6 +215,14 @@ public final class ProcessingCoordinator {
             processingTask = nil
             onComplete()
         }
+    }
+
+    private func finishCancelledProcessing() {
+        processingTask = nil
+        let restart = restartPendingBatch
+        restartPendingBatch = nil
+        guard !isStopping else { return }
+        restart?()
     }
 
     /// Clear errors tied to outputs that have been deliberately removed.

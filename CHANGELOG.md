@@ -23,6 +23,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Fixed
 
+- Restart pending processing after a pause once cancelled native work finishes, preserving exclusive pipeline ownership.
+
 - Keep Logs, recording controls, Context and Settings at readable widths in large and full-screen windows.
 
 - Restore microphone selection in Settings with a device picker shared with the recording dock's selected input.

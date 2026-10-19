@@ -2554,6 +2554,87 @@ func runCoordinatorCoverageTests() async {
         try expect(coordinator.statusMessage == "Paused", "Cancelled queue should preserve the paused status")
     }
 
+    await testAsync("ProcessingCoordinator: pending restart waits for cancellation and respects later stop") {
+        for action in ["restart", "pause", "terminate"] {
+            let root = FileManager.default.temporaryDirectory
+                .appendingPathComponent("CaptainsLogPendingRestart-\(UUID().uuidString)", isDirectory: true)
+            defer { try? FileManager.default.removeItem(at: root) }
+            let fixture = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+                .appendingPathComponent("eval/transcribe/expected/durins-volk.md")
+            let stem = "2025-01-14-0830"
+            let transcript = root.appendingPathComponent(".pipeline/01-transcribed/\(stem).md")
+            try FileManager.default.createDirectory(at: transcript.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try FileManager.default.copyItem(at: fixture, to: transcript)
+            let gate = LockedValue<CheckedContinuation<Void, Never>?>(nil)
+            let stages = LockedStringArray()
+            let staleProgress = LockedValue<(@Sendable (Pipeline.Progress) -> Void)?>(nil)
+            let coordinator = ProcessingCoordinator { stem, _, fromStage, progress in
+                stages.append(fromStage?.rawValue ?? "nil")
+                if stages.snapshot().count == 1 {
+                    staleProgress.set(progress)
+                    progress?(.init(stem: stem, stage: .cleaning))
+                    // Simulate native inference that cannot return immediately on cancellation.
+                    await withCheckedContinuation { gate.set($0) }
+                } else {
+                    progress?(.init(stem: stem, stage: .categorizing))
+                }
+                return result(for: stem)
+            }
+            let appState = AppState(config: {
+                let config = ConfigManager()
+                config.dataDir = root.path
+                return config
+            }(), processing: coordinator)
+            appState.loadEntries()
+            appState.batchResumePending()
+            for _ in 0..<200 where gate.get() == nil {
+                try await Task.sleep(for: .milliseconds(1))
+            }
+            guard let continuation = gate.get() else {
+                coordinator.pauseProcessing()
+                throw NSError(domain: "PendingRestartTest", code: 1, userInfo: [NSLocalizedDescriptionKey: "Pending pipeline did not enter its native-work gate"])
+            }
+            var gateReleased = false
+            defer { if !gateReleased { continuation.resume() } }
+            appState.pauseProcessing()
+            appState.batchResumePending()
+            appState.batchResumePending() // Repeated clicks must not create overlapping retries.
+            let heldOwnership = coordinator.hasScheduledWork && stages.snapshot() == ["cleaning"]
+            // The old worker can finish a checkpoint before observing cancellation.
+            let cleaned = root.appendingPathComponent(Pipeline.Directory.logs.path).appendingPathComponent("\(stem).md")
+            try FileManager.default.createDirectory(at: cleaned.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try FileManager.default.copyItem(at: fixture, to: cleaned)
+            if action == "pause" { appState.pauseProcessing() }
+            let terminationStarted = LockedValue(false)
+            let termination: Task<Void, Never>? = action == "terminate" ? Task {
+                terminationStarted.set(true)
+                await coordinator.stopForTermination()
+            } : nil
+            if termination != nil {
+                for _ in 0..<200 where !terminationStarted.get() {
+                    try await Task.sleep(for: .milliseconds(1))
+                }
+            }
+            gateReleased = true
+            continuation.resume()
+            await termination?.value
+            for _ in 0..<200 where coordinator.hasScheduledWork {
+                try await Task.sleep(for: .milliseconds(1))
+            }
+            staleProgress.get()?(.init(stem: stem, stage: .transcribing))
+            await Task.yield()
+            try expect(heldOwnership, "Restart must wait for cancelled native work")
+            try expect(!coordinator.hasScheduledWork, "Processing must release ownership after draining")
+            if action == "restart" {
+                try expect(stages.snapshot() == ["cleaning", "categorizing"], "Restart must run once from the checkpoint present after cancellation")
+                try expect(coordinator.stage == .done, "Stale cancelled progress must not overwrite restart completion")
+            } else {
+                try expect(stages.snapshot() == ["cleaning"], "A later pause or termination must discard the requested restart")
+                try expect(coordinator.stage == .idle && coordinator.statusMessage == "Paused")
+            }
+        }
+    }
+
     await testAsync("ProcessingCoordinator: quit rejects late queued work") {
         let calls = LockedStringArray()
         let coordinator = ProcessingCoordinator { stem, _, _, _ in
