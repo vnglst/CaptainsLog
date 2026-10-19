@@ -692,7 +692,7 @@ private struct FieldNotesEntryRow: View {
                         }
                         if behavior.canReprocess {
                             Button("Reprocess") { appState.reprocessEntry(stem: entry.stem) }
-                                .disabled(!appState.canDeleteProcessingOutputs)
+                                .disabled(!appState.canReprocessEntry(stem: entry.stem))
                         }
                         Divider()
                         Button("Move to Trash", role: .destructive) { deleteTarget = entry }
@@ -732,6 +732,8 @@ private struct FieldNotesEntryRow: View {
             FieldNotesStatus(state: .processed, label: "Processed")
         case .failed:
             FieldNotesStatus(state: .failed, label: "Needs attention")
+        case .queued:
+            FieldNotesStatus(state: .paused, label: "Queued")
         case .paused:
             FieldNotesStatus(state: .paused, label: "Paused")
         case .active(let label):

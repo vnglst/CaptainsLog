@@ -28,7 +28,7 @@ public final class ProcessingCoordinator {
     var hasScheduledWork: Bool { processingTask != nil || !pendingProcessingStems.isEmpty }
 
     public var isProcessing: Bool {
-        [.transcribing, .cleaning, .categorizing, .naming, .enriching].contains(stage)
+        restartPendingBatch != nil || [.transcribing, .cleaning, .categorizing, .naming, .enriching].contains(stage)
     }
 
     var processingStage: Pipeline.Stage {
@@ -62,9 +62,16 @@ public final class ProcessingCoordinator {
         failedEntries[stem]
     }
 
+    func isQueued(stem: String) -> Bool { pendingProcessingStems.contains(stem) }
+
+    func canQueueReprocessing(stem: String) -> Bool {
+        !isStopping && processingTask?.isCancelled != true
+            && processingStem != stem && !pendingProcessingStems.contains(stem)
+    }
+
     /// Queue a stem for processing (called when recording completes).
     func queueProcessing(stem: String) {
-        guard !isStopping else { return }
+        guard !isStopping, !pendingProcessingStems.contains(stem) else { return }
         pendingProcessingStems.append(stem)
     }
 
@@ -175,9 +182,12 @@ public final class ProcessingCoordinator {
                     onProgress: onProgress, onComplete: onComplete, onError: onError
                 )
             }
+            statusMessage = "Waiting for previous processing to stop…"
             return
         }
 
+        let batchStems = Set(pendingEntries.map(\.stem))
+        pendingProcessingStems.removeAll { batchStems.contains($0) }
         errorMessage = nil
         processingTask = Task { [self] in
             let activity = ProcessInfo.processInfo.beginActivity(
@@ -188,6 +198,7 @@ public final class ProcessingCoordinator {
             defer { if Task.isCancelled { finishCancelledProcessing() } }
             for entry in pendingEntries {
                 guard !Task.isCancelled else { break }
+                pendingProcessingStems.removeAll { $0 == entry.stem }
                 processingStem = entry.stem
                 failedEntries.removeValue(forKey: entry.stem)
                 do {
@@ -310,6 +321,11 @@ public final class ProcessingCoordinator {
     }
 
     func recordPreparationFailure(_ error: Error, for stem: String) {
+        if hasScheduledWork {
+            failedEntries[stem] = error.localizedDescription
+            errorMessage = error.localizedDescription
+            return
+        }
         recordFailure(error, for: stem)
     }
 

@@ -38,6 +38,7 @@ public final class AppState {
         return entries.map { entry in
             var copy = entry
             copy.processingError = processing.failureMessage(for: entry.stem)
+            copy.isQueued = processing.isQueued(stem: entry.stem)
             if entry.stem == processing.processingStem {
                 copy.stage = processing.processingStage
                 copy.isActive = true
@@ -283,8 +284,14 @@ public final class AppState {
             stem: stem,
             fromStage: fromStage,
             dataDir: config.dataDir,
-            onComplete: { [weak self] in self?.loadEntries() },
-            onError: { [weak self] _ in self?.loadEntries() }
+            onComplete: { [weak self] in
+                self?.loadEntries()
+                self?.startQueuedProcessingIfPossible()
+            },
+            onError: { [weak self] _ in
+                self?.loadEntries()
+                self?.startQueuedProcessingIfPossible()
+            }
         )
     }
 
@@ -293,8 +300,13 @@ public final class AppState {
             && !processing.hasScheduledWork && !updates.isInstalling && !updates.needsRestart
     }
 
+    func canReprocessEntry(stem: String) -> Bool {
+        !isRecording && !updates.isInstalling && !updates.needsRestart
+            && processing.canQueueReprocessing(stem: stem)
+    }
+
     func reprocessEntry(stem: String) {
-        guard canDeleteProcessingOutputs else { return }
+        guard canReprocessEntry(stem: stem) else { return }
         if models.needsDownload {
             models.ensureModelsDownloaded { [weak self] in self?.reprocessEntry(stem: stem) }
             return
@@ -303,7 +315,8 @@ public final class AppState {
             try Pipeline.prepareReprocessing(stem: stem, dataDir: dataDir)
             search.invalidateIndex(dataDir: dataDir)
             loadEntries()
-            resumeProcessing(stem: stem, fromStage: .transcribing)
+            processing.queueProcessing(stem: stem)
+            startQueuedProcessingIfPossible()
         } catch {
             processing.recordPreparationFailure(error, for: stem)
             loadEntries()
@@ -335,6 +348,7 @@ public final class AppState {
             onComplete: { [weak self] in
                 self?.processing.stage = .done
                 self?.loadEntries()
+                self?.startQueuedProcessingIfPossible()
             },
             onError: { _ in }
         )
@@ -409,6 +423,7 @@ struct LogEntry: Identifiable, Sendable {
     var stage: Pipeline.Stage
     /// True when this entry is the one actively being processed (not paused).
     var isActive: Bool = false
+    var isQueued: Bool = false
     /// A recoverable processing error for this entry. Cleared when it is retried.
     var processingError: String?
 

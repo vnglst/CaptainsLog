@@ -5,6 +5,7 @@ enum EntryRowStatus: Equatable {
     case processed
     case failed
     case paused
+    case queued
     case active(String)
 }
 
@@ -21,17 +22,19 @@ struct EntryRowBehavior: Equatable {
 
     init(entry: LogEntry) {
         let failed = entry.processingError != nil
-        let paused = entry.stage != .done && !entry.isActive && !failed
+        let paused = entry.stage != .done && !entry.isActive && !entry.isQueued && !failed
         isFailure = failed
-        compactStatusLabel = entry.isActive ? "LIVE" : paused ? "PAUSED" : failed ? "ERROR" : ""
+        compactStatusLabel = entry.isActive ? "LIVE" : entry.isQueued ? "QUEUED" : paused ? "PAUSED" : failed ? "ERROR" : ""
         canOpen = entry.stage == .done
         canRevealInFinder = !entry.path.isEmpty
-        canResume = paused || failed
+        canResume = !entry.isQueued && (paused || failed)
         canReprocess = entry.stage == .done && !entry.isActive
         resumeTitle = canResume ? (failed ? "Retry processing" : "Resume processing") : nil
 
         if entry.stage == .done {
             status = .processed
+        } else if entry.isQueued {
+            status = .queued
         } else if failed {
             status = .failed
         } else if paused {

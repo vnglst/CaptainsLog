@@ -23,7 +23,7 @@ entry. Git links provide the complete commit history for each release.
 
 ### Fixed
 
-- Restart pending processing after a pause once cancelled native work finishes, preserving exclusive pipeline ownership.
+- Acknowledge pending restarts while cancelled native work finishes, and queue additional Reprocess requests without overlapping processing.
 
 - Keep Logs, recording controls, Context and Settings at readable widths in large and full-screen windows.
 
