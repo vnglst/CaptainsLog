@@ -2691,6 +2691,48 @@ func runCoordinatorCoverageTests() async {
         }
     }
 
+    await testAsync("App termination: deadline waits for closed audio and replies only once") {
+        for graceful in [true, false] {
+            let native = LockedValue<CheckedContinuation<Void, Never>?>(nil)
+            let deadline = LockedValue<CheckedContinuation<Void, Never>?>(nil)
+            let audio = LockedValue<CheckedContinuation<Void, Never>?>(nil)
+            let events = LockedStringArray()
+            let termination = AppTerminationCoordinator(waitForDeadline: {
+                await withCheckedContinuation { deadline.set($0) }
+            })
+            let prepare: @Sendable () async -> Void = {
+                events.append("cancel-requested")
+                await withCheckedContinuation { native.set($0) }
+            }
+            termination.begin(prepare: prepare, waitForAudio: {
+                await withCheckedContinuation { audio.set($0) }
+            }, onGraceful: { events.append("graceful") }, onDeadline: { events.append("bounded-exit") })
+            termination.begin(prepare: prepare, waitForAudio: {},
+                              onGraceful: { events.append("duplicate") }, onDeadline: { events.append("duplicate") })
+            for _ in 0..<500 where native.get() == nil || deadline.get() == nil { try await Task.sleep(for: .milliseconds(1)) }
+            guard let releaseNative = native.get(), let releaseDeadline = deadline.get() else {
+                throw NSError(domain: "TerminationTest", code: 1)
+            }
+            if graceful {
+                releaseNative.resume()
+                for _ in 0..<500 where !events.snapshot().contains("graceful") { try await Task.sleep(for: .milliseconds(1)) }
+            }
+            releaseDeadline.resume()
+            for _ in 0..<500 where audio.get() == nil { try await Task.sleep(for: .milliseconds(1)) }
+            guard let releaseAudio = audio.get() else { throw NSError(domain: "TerminationTest", code: 2) }
+            let beforeClose = events.snapshot()
+            releaseAudio.resume()
+            if !graceful {
+                for _ in 0..<500 where !events.snapshot().contains("bounded-exit") { try await Task.sleep(for: .milliseconds(1)) }
+                releaseNative.resume()
+            }
+            try await Task.sleep(for: .milliseconds(10))
+            try expect(!beforeClose.contains("bounded-exit"), "Never exit before the recording writer closes")
+            try expect(events.snapshot() == ["cancel-requested", graceful ? "graceful" : "bounded-exit"],
+                       "Quit must choose one outcome even when native cleanup returns late or Quit is repeated")
+        }
+    }
+
     await testAsync("ProcessingCoordinator: quit rejects late queued work") {
         let calls = LockedStringArray()
         let coordinator = ProcessingCoordinator { stem, _, _, _ in
@@ -5447,6 +5489,11 @@ func runTests() async {
         await recording.stopForTermination()
         try expect(events.snapshot() == ["writer-closed"])
         try expect(!recording.isRecording)
+        recording.startRecording(dataDir: FileManager.default.temporaryDirectory.path,
+                                 onComplete: { _ in events.append("late-processing") },
+                                 onError: { _ in events.append("late-error") })
+        await Task.yield()
+        try expect(!recording.isRecording, "Quit must reject a late recording before opening another writer")
     }
 
     await testAsync("RecordingState: cancellation errors are not surfaced as recording failures") {

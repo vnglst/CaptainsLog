@@ -24,6 +24,12 @@ public enum AppPerformanceTrace {
         #if DEBUG
         guard let path = ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_TRACE"] else { return }
         events.withLock { _ = $0.insert(event) }
+        if event == "whisper-loader Loading text decoder",
+           ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_QUIT_ON_LOAD"] == "1" {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                NotificationCenter.default.post(name: Notification.Name("CaptainsLogPerformanceDecode"), object: nil)
+            }
+        }
         lock.withLock {
             let line = "\(ProcessInfo.processInfo.systemUptime) \(event)\n"
             if !FileManager.default.fileExists(atPath: path) {

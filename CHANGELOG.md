@@ -23,6 +23,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Fixed
 
+- Finalize active recordings before quitting; bound shutdown when native model initialization cannot stop promptly, without racing Metal teardown.
+
 - Acknowledge pending restarts while cancelled native work finishes, and queue additional Reprocess requests without overlapping processing.
 
 - Keep Logs, recording controls, Context and Settings at readable widths in large and full-screen windows.

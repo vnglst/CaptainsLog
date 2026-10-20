@@ -55,6 +55,7 @@ public final class RecordingState {
     private var stopContinuation: AsyncStream<Void>.Continuation?
     private var recordingTimer: Timer?
     private var recordingTask: Task<Void, Never>?
+    private var isStopping = false
     private let dependencies: Dependencies
 
     public var isRecording: Bool {
@@ -135,7 +136,7 @@ public final class RecordingState {
         onComplete: @escaping (String) -> Void,
         onError: @escaping (Error) -> Void
     ) {
-        guard recordingTask == nil else { return }
+        guard !isStopping, recordingTask == nil else { return }
         recordingDuration = 0
         audioLevel = 0
         errorMessage = nil
@@ -238,6 +239,7 @@ public final class RecordingState {
 
     /// Close the active audio file without scheduling processing, before app exit.
     public func stopForTermination() async {
+        isStopping = true
         let task = recordingTask
         stopRecording()
         task?.cancel()

@@ -83,6 +83,9 @@ A simulated search fixture cannot establish this shutdown regression.
 
 `make tests-app-performance RUN_DIR=/absolute/new/output` builds the debug app and CLI,
 then performs three separate process launches and one real Whisper decoding/quit check.
+Use `ARGS=--quit-during-loading` for the separate Whisper initialization regression.
+It requires Quit during the text-decoder load and process exit within three seconds;
+a bounded exit must follow the audio-writer-close marker.
 The two prepared model-folder environment variables are mandatory; model downloads
 are not part of the timing. Set `CAPTAINSLOG_PERFORMANCE_QWEN=1` for a Qwen check
 starting from the repository's expected transcript. Run all checks sequentially,

@@ -54,7 +54,14 @@ private final class RecorderErrorBox: @unchecked Sendable {
     }
 }
 
+private let recorderCaptureLifecycle = NativeInferenceLifecycle()
+
 extension Recorder {
+    /// Reject new capture and wait until the audio writer has finalized its file.
+    public static func stopCaptureAndWait() async {
+        await recorderCaptureLifecycle.stopAndWait()
+    }
+
     static func record(
         to url: URL,
         duration: TimeInterval?,
@@ -65,6 +72,7 @@ extension Recorder {
         earlyTranscription: Bool = false,
         operations: RecorderOperations
     ) async throws {
+        try Task.checkCancellation()
         let dir = url.deletingLastPathComponent()
         try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
 
@@ -73,7 +81,18 @@ extension Recorder {
         }
         let engine = try operations.makeEngine(selectedDevice)
         await RecordingTranscription.discard(url.path)
-        let writer = try operations.makeWriter(url, engine.inputFormat)
+        try recorderCaptureLifecycle.beginOperation(onlyIfIdle: true)
+        let writer: any RecorderAudioWriter
+        do { writer = try operations.makeWriter(url, engine.inputFormat) }
+        catch { recorderCaptureLifecycle.endOperation(); throw error }
+        var captureClosed = false
+        func closeCapture() {
+            guard !captureClosed else { return }
+            writer.finish()
+            recorderCaptureLifecycle.endOperation()
+            captureClosed = true
+        }
+        defer { closeCapture() }
         // Only a caller that owns follow-up processing may retain native work
         // after capture stops. Standalone recording must remain audio-only.
         let early = earlyTranscription ? operations.makeEarlyTranscription() : nil
@@ -96,6 +115,7 @@ extension Recorder {
         } catch {
             engine.stop()
             engine.removeTap()
+            closeCapture()
             await early?.finish(audioPath: url.path, cancelled: true)
             throw error
         }
@@ -105,6 +125,7 @@ extension Recorder {
         } catch {
             engine.stop()
             engine.removeTap()
+            closeCapture()
             await early?.finish(audioPath: url.path, cancelled: true)
             throw Recorder.RecorderError.engineStartFailed(error)
         }
@@ -134,8 +155,8 @@ extension Recorder {
         engine.stop()
         engine.removeTap()
 
+        closeCapture()
         AppPerformanceTrace.mark("recording-capture-stopped")
-        writer.finish()
         await early?.finish(audioPath: url.path, cancelled: Task.isCancelled || tapError.value != nil)
         AppPerformanceTrace.mark("recording-tail-handed-off")
         if let error = tapError.value { throw error }

@@ -112,7 +112,7 @@ struct CaptainsLogApp: App {
                     }
                 }
                 .onReceive(NotificationCenter.default.publisher(for: Notification.Name("CaptainsLogPerformanceDecode")).receive(on: RunLoop.main)) { _ in
-                    if ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_QUIT_ON_DECODE"] == "1" || ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_STARTUP_ONLY"] == "1" || ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_FINISH_PIPELINE"] == "1" || ProcessInfo.processInfo.environment["CAPTAINSLOG_SEARCH_QUIT_CHECK"] == "1" {
+                    if ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_QUIT_ON_LOAD"] == "1" || ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_QUIT_ON_DECODE"] == "1" || ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_STARTUP_ONLY"] == "1" || ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_FINISH_PIPELINE"] == "1" || ProcessInfo.processInfo.environment["CAPTAINSLOG_SEARCH_QUIT_CHECK"] == "1" {
                         AppPerformanceTrace.mark("quit-request")
                         NSApplication.shared.terminate(nil)
                     }
@@ -168,19 +168,34 @@ struct CaptainsLogApp: App {
 
 @MainActor
 private final class CaptainsLogAppDelegate: NSObject, NSApplicationDelegate {
-    var prepareForTermination: (@MainActor () async -> Void)?
+    var prepareForTermination: (@MainActor @Sendable () async -> Void)?
+    private let termination = AppTerminationCoordinator()
     private var isTerminating = false
 
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
         AppPerformanceTrace.mark("delegate-terminate")
         guard !isTerminating else { return .terminateLater }
         isTerminating = true
-        Task { @MainActor in
-            await prepareForTermination?()
-            // Native contexts have unwound before AppKit frees global Metal state.
-            AppPerformanceTrace.mark("delegate-reply")
-            sender.reply(toApplicationShouldTerminate: true)
-        }
+        let prepare = prepareForTermination
+        termination.begin(
+            prepare: { await prepare?() },
+            waitForAudio: {
+                await Recorder.stopCaptureAndWait()
+                AppPerformanceTrace.mark("termination-capture-closed")
+            },
+            onGraceful: {
+                Task { @MainActor in
+                    AppPerformanceTrace.mark("delegate-reply")
+                    NSApplication.shared.reply(toApplicationShouldTerminate: true)
+                }
+            },
+            onDeadline: {
+                AppPerformanceTrace.mark("termination-bounded-exit")
+                // Audio is finalized. Skip C++/Metal destructors while native
+                // work is still unwinding; the OS releases process resources.
+                _exit(EXIT_SUCCESS)
+            }
+        )
         return .terminateLater
     }
 

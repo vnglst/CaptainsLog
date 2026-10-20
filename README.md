@@ -126,6 +126,10 @@ all intermediate results, finished logs and reprocessing backups while keeping
 original audio and settings. Return to Logs to process all unprocessed recordings
 with the current settings.
 
+Quit cancels active work and finalizes any recording. If a native model call cannot
+stop within two seconds, the app exits after the recording writer closes, preserving
+original audio and saved checkpoints. The unfinished stage remains pending.
+
 Intermediate files live under `.pipeline/`; completed entries are saved to `logs/`. Use `make cli ARGS=--help` for other commands, including configuration and individual pipeline stages.
 
 Context and initial setup let you choose categories for future processing. Removing

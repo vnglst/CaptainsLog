@@ -7,8 +7,9 @@ import Darwin
 let args = CommandLine.arguments
 let env = ProcessInfo.processInfo.environment
 func require(_ condition: Bool, _ message: String) { if !condition { fputs(message + "\n", stderr); exit(1) } }
-require(args.count >= 3, "usage: test-app-performance.swift APP_EXECUTABLE OUTPUT_DIR [--baseline] [--startup-only] [--startup-entries=1000] [--startup-max-seconds=5] [--startup-runs=3]")
+require(args.count >= 3, "usage: test-app-performance.swift APP_EXECUTABLE OUTPUT_DIR [--baseline] [--startup-only] [--quit-during-loading] [--startup-entries=1000] [--startup-max-seconds=5] [--startup-runs=3]")
 let startupOnly = args.contains("--startup-only")
+let quitDuringLoading = args.contains("--quit-during-loading")
 let entriesOption = args.dropFirst(3).first { $0.hasPrefix("--startup-entries=") }
 let runsOption = args.dropFirst(3).first { $0.hasPrefix("--startup-runs=") }
 let startupRuns = runsOption.flatMap { Int($0.split(separator: "=").last ?? "") } ?? 3
@@ -18,7 +19,7 @@ let startupLimit = limitOption.flatMap { Double($0.split(separator: "=").last ??
 require((limitOption == nil || Double(limitOption!.split(separator: "=").last ?? "") != nil) && startupLimit > 0 && startupLimit.isFinite, "Startup limit must be positive and finite")
 let startupEntries = entriesOption.flatMap { Int($0.split(separator: "=").last ?? "") } ?? 0
 require(entriesOption == nil || (startupEntries > 0 && startupEntries <= 10000), "Startup fixture count must be 1...10000")
-require(args.dropFirst(3).allSatisfy { $0 == "--baseline" || $0 == "--startup-only" || $0 == entriesOption || $0 == limitOption || $0 == runsOption }, "Unknown performance option")
+require(args.dropFirst(3).allSatisfy { $0 == "--baseline" || $0 == "--startup-only" || $0 == "--quit-during-loading" || $0 == entriesOption || $0 == limitOption || $0 == runsOption }, "Unknown performance option")
 require(!args[2].isEmpty, "A new absolute output directory is required")
 require(args[2].hasPrefix("/"), "Use an absolute output directory")
 let processTimeoutValue = env["CAPTAINSLOG_PERFORMANCE_PROCESS_TIMEOUT"]
@@ -57,11 +58,11 @@ if startupEntries > 0 {
         startupFixtureHashes[path] = try sha256(path)
     }
 }
-let metadata: [String: Any] = ["revision": String(decoding: revisionData, as: UTF8.self).trimmingCharacters(in: .whitespacesAndNewlines), "executable": URL(fileURLWithPath: args[1]).standardizedFileURL.path, "binarySHA256": try sha256(args[1]), "fixtureSHA256": try sha256(fixture.path), "modelSHA256": modelHashes, "operatingSystem": ProcessInfo.processInfo.operatingSystemVersionString, "processorCount": ProcessInfo.processInfo.processorCount, "promptChunkSize": 128, "baselineThresholdsDisabled": baseline, "startupFixtureEntries": startupEntries, "startupFixtureSHA256": startupFixtureHashes, "startupLimitSeconds": startupLimit, "startupOnlyControlledStop": startupOnly, "startupRuns": startupRuns, "processingWatchdogSeconds": processTimeout]
+let metadata: [String: Any] = ["revision": String(decoding: revisionData, as: UTF8.self).trimmingCharacters(in: .whitespacesAndNewlines), "executable": URL(fileURLWithPath: args[1]).standardizedFileURL.path, "binarySHA256": try sha256(args[1]), "fixtureSHA256": try sha256(fixture.path), "modelSHA256": modelHashes, "operatingSystem": ProcessInfo.processInfo.operatingSystemVersionString, "processorCount": ProcessInfo.processInfo.processorCount, "promptChunkSize": 128, "baselineThresholdsDisabled": baseline, "startupFixtureEntries": startupEntries, "startupFixtureSHA256": startupFixtureHashes, "startupLimitSeconds": startupLimit, "startupOnlyControlledStop": startupOnly, "quitDuringLoading": quitDuringLoading, "startupRuns": startupRuns, "processingWatchdogSeconds": processTimeout]
 try JSONSerialization.data(withJSONObject: metadata, options: [.prettyPrinted, .sortedKeys]).write(to: output.appendingPathComponent("metadata.json"))
 var results: [[String: Any]] = []
 let startupModes = (1...startupRuns).map { "startup-\($0)" }
-let modes = startupOnly ? startupModes : env["CAPTAINSLOG_PERFORMANCE_QWEN"] == "1" ? ["processing-close"] : startupModes + ["processing-close"]
+let modes = quitDuringLoading ? ["processing-close"] : startupOnly ? startupModes : env["CAPTAINSLOG_PERFORMANCE_QWEN"] == "1" ? ["processing-close"] : startupModes + ["processing-close"]
 for mode in modes {
     let run = output.appendingPathComponent(mode, isDirectory: true)
     require(!fm.fileExists(atPath: run.path), "Output already exists: \(run.path)")
@@ -119,7 +120,8 @@ for mode in modes {
     child["CAPTAINSLOG_PERFORMANCE_TRACE"] = trace.path
     if mode == "processing-close" {
         child["CAPTAINSLOG_PERFORMANCE_PROCESS"] = "1"
-        if env["CAPTAINSLOG_PERFORMANCE_FINISH_PIPELINE"] != "1" { child["CAPTAINSLOG_PERFORMANCE_QUIT_ON_DECODE"] = "1" }
+        if quitDuringLoading { child["CAPTAINSLOG_PERFORMANCE_QUIT_ON_LOAD"] = "1" }
+        else if env["CAPTAINSLOG_PERFORMANCE_FINISH_PIPELINE"] != "1" { child["CAPTAINSLOG_PERFORMANCE_QUIT_ON_DECODE"] = "1" }
     } else { child["CAPTAINSLOG_PERFORMANCE_STARTUP_ONLY"] = "1" }
     child.removeValue(forKey: "CAPTAINSLOG_UI_FIXTURE")
     process.environment = child
@@ -183,7 +185,18 @@ for mode in modes {
             require(!timedOut && process.terminationStatus == 0 && process.terminationReason == .exit, "Native check did not terminate cleanly")
         }
         require(startup >= 0 && startup < startupLimit, "Startup readiness exceeded \(startupLimit) seconds")
-        if mode == "processing-close" {
+        if mode == "processing-close" && quitDuringLoading {
+            require(markers["whisper-loader Loading text decoder"] != nil && markers["quit-request"] != nil && markers["delegate-terminate"] != nil, "Quit must occur during native model initialization")
+            require(close >= 0 && close < 3, "Quit during model initialization exceeded 3 seconds")
+            if let bounded = markers["termination-bounded-exit"] {
+                require(markers["termination-capture-closed"].map { $0 <= bounded } == true,
+                        "Bounded exit must wait for the recording writer to close")
+            } else {
+                require(markers["termination-drained"] != nil && markers["delegate-reply"] != nil,
+                        "Graceful exit must drain native teardown")
+            }
+        }
+        if mode == "processing-close" && !quitDuringLoading {
             require((markers["whisper-decode"] != nil || markers["qwen-decode"] != nil) && markers["delegate-terminate"] != nil && markers["termination-drained"] != nil && markers["delegate-reply"] != nil, "Quit must occur during actual native decoding and drain teardown")
             let decode = markers["whisper-decode"] ?? markers["qwen-decode"]!
             require(decode <= markers["quit-request"]! && markers["quit-request"]! <= markers["delegate-terminate"]! && markers["delegate-terminate"]! <= markers["termination-drained"]! && markers["termination-drained"]! <= markers["delegate-reply"]!, "Native shutdown markers are out of order")
