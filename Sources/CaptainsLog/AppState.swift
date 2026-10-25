@@ -29,6 +29,7 @@ public final class AppState {
     public let directoryWatcher: DirectoryWatcher
     public let search: SearchManager
     private let moveToTrash: (URL) -> Void
+    private var processingRequestGeneration = 0
 
     // MARK: - Entries
 
@@ -210,7 +211,7 @@ public final class AppState {
     func startRecording() {
         guard !updates.isInstalling, !updates.needsRestart else { return }
         guard !recording.isRecording else { return }
-        processing.stage = .recording
+        if !processing.isProcessing { processing.stage = .recording }
         recording.startRecording(
             dataDir: config.dataDir,
             onComplete: { [weak self] stem in
@@ -268,6 +269,7 @@ public final class AppState {
     }
 
     public func pauseProcessing() {
+        processingRequestGeneration += 1
         processing.pauseProcessing()
         loadEntries()
     }
@@ -275,8 +277,10 @@ public final class AppState {
     func resumeProcessing(stem: String, fromStage: Pipeline.Stage? = nil) {
         guard !updates.isInstalling, !updates.needsRestart else { return }
         if models.needsDownload {
+            let generation = processingRequestGeneration
             models.ensureModelsDownloaded { [weak self] in
-                self?.resumeProcessing(stem: stem, fromStage: fromStage)
+                guard let self, self.processingRequestGeneration == generation else { return }
+                self.resumeProcessing(stem: stem, fromStage: fromStage)
             }
             return
         }
@@ -286,11 +290,9 @@ public final class AppState {
             dataDir: config.dataDir,
             onComplete: { [weak self] in
                 self?.loadEntries()
-                self?.startQueuedProcessingIfPossible()
             },
             onError: { [weak self] _ in
                 self?.loadEntries()
-                self?.startQueuedProcessingIfPossible()
             }
         )
     }
@@ -308,19 +310,24 @@ public final class AppState {
     func reprocessEntry(stem: String) {
         guard canReprocessEntry(stem: stem) else { return }
         if models.needsDownload {
-            models.ensureModelsDownloaded { [weak self] in self?.reprocessEntry(stem: stem) }
+            let generation = processingRequestGeneration
+            models.ensureModelsDownloaded { [weak self] in
+                guard let self, self.processingRequestGeneration == generation else { return }
+                self.reprocessEntry(stem: stem)
+            }
             return
         }
-        do {
-            try Pipeline.prepareReprocessing(stem: stem, dataDir: dataDir)
-            search.invalidateIndex(dataDir: dataDir)
-            loadEntries()
-            processing.queueProcessing(stem: stem)
-            startQueuedProcessingIfPossible()
-        } catch {
-            processing.recordPreparationFailure(error, for: stem)
-            loadEntries()
-        }
+        let directory = dataDir
+        processing.reprocessEntry(
+            stem: stem, dataDir: directory,
+            prepare: { [weak self] in
+                try Pipeline.prepareReprocessing(stem: stem, dataDir: directory)
+                self?.search.invalidateIndex(dataDir: directory)
+                self?.loadEntries()
+            },
+            onComplete: { [weak self] in self?.loadEntries() },
+            onError: { [weak self] _ in self?.loadEntries() }
+        )
     }
 
     func deleteProcessingOutputs() {
@@ -338,7 +345,11 @@ public final class AppState {
     public func batchResumePending() {
         guard !updates.isInstalling, !updates.needsRestart else { return }
         if models.needsDownload {
-            models.ensureModelsDownloaded { [weak self] in self?.batchResumePending() }
+            let generation = processingRequestGeneration
+            models.ensureModelsDownloaded { [weak self] in
+                guard let self, self.processingRequestGeneration == generation else { return }
+                self.batchResumePending()
+            }
             return
         }
         processing.batchResumePending(
@@ -348,14 +359,15 @@ public final class AppState {
             onComplete: { [weak self] in
                 self?.processing.stage = .done
                 self?.loadEntries()
-                self?.startQueuedProcessingIfPossible()
             },
             onError: { _ in }
         )
     }
 
+    func canDeleteEntry(stem: String) -> Bool { !processing.ownsEntry(stem: stem) }
+
     public func deleteEntry(stem: String, slug: String?) {
-        guard processing.processingStem != stem else { return }
+        guard canDeleteEntry(stem: stem) else { return }
         let candidates = Pipeline.deletionCandidatePaths(
             stem: stem,
             slug: slug,

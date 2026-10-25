@@ -687,7 +687,7 @@ private struct FieldNotesEntryRow: View {
                         }
                         if behavior.canResume, let title = behavior.resumeTitle {
                             Button(title) {
-                                appState.resumeProcessing(stem: entry.stem, fromStage: entry.stage)
+                                appState.resumeProcessing(stem: entry.stem)
                             }
                         }
                         if behavior.canReprocess {
@@ -696,6 +696,7 @@ private struct FieldNotesEntryRow: View {
                         }
                         Divider()
                         Button("Move to Trash", role: .destructive) { deleteTarget = entry }
+                            .disabled(!appState.canDeleteEntry(stem: entry.stem))
                     } label: {
                         Image(systemName: "ellipsis")
                             .foregroundStyle(FieldNotes.ColorToken.tertiaryText)

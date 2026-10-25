@@ -1994,6 +1994,14 @@ func runCoreCoverageTests() {
         try expect(!completed.canResume && completed.resumeTitle == nil, "done entries should not resume")
         try expect(completed.canRevealInFinder, "non-empty path should be revealable")
 
+        var waiting = entry(stage: .done)
+        waiting.isQueued = true
+        let queued = EntryRowBehavior(entry: waiting)
+        try expect(queued.status == .queued && queued.compactStatusLabel == "QUEUED",
+                   "A queued Reprocess must be visible while its existing outputs are preserved")
+        try expect(queued.canOpen && !queued.canResume && !queued.canReprocess,
+                   "Existing output remains readable, but queued work cannot be submitted again")
+
         let pathless = EntryRowBehavior(entry: entry(stage: .done, path: ""))
         try expect(!pathless.canRevealInFinder, "pathless entry should not reveal in Finder")
     }
@@ -2323,18 +2331,11 @@ func runCoordinatorCoverageTests() async {
         coordinator.pauseProcessing()
         try expect(coordinator.hasScheduledWork, "Cancelled native work must retain ownership until it returns")
         coordinator.resumeEntry(stem: stem, dataDir: "/tmp/captainslog-retry",
-                                onComplete: { completions.append("overlap") },
-                                onError: { _ in completions.append("overlap-error") })
+                                onComplete: { completions.append("retry") },
+                                onError: { _ in completions.append("retry-error") })
         try await Task.sleep(for: .milliseconds(10))
         try expect(calls.snapshot().count == 1, "Retry cannot overlap the cancelled worker")
         firstGate.get()?.resume()
-        for _ in 0..<100 where coordinator.hasScheduledWork {
-            try await Task.sleep(for: .milliseconds(1))
-        }
-        try expect(!coordinator.hasScheduledWork)
-        coordinator.resumeEntry(stem: stem, dataDir: "/tmp/captainslog-retry",
-                                onComplete: { completions.append("retry") },
-                                onError: { _ in completions.append("retry-error") })
         for _ in 0..<100 where retryGate.get() == nil || coordinator.stage != .enriching {
             try await Task.sleep(for: .milliseconds(1))
         }
@@ -2677,17 +2678,176 @@ func runCoordinatorCoverageTests() async {
             let activePreserved = coordinator.processingStem == stems[0]
             state.reprocessEntry(stem: stems[1])
             state.reprocessEntry(stem: stems[1])
-            let secondPrepared = !fm.fileExists(atPath: root.appendingPathComponent(".pipeline/01-transcribed/\(stems[1]).md").path)
+            let outputsPreservedWhileQueued = fm.fileExists(atPath: root.appendingPathComponent(".pipeline/01-transcribed/\(stems[1]).md").path)
             let queuedLabel = state.allEntries.first { $0.stem == stems[1] }.map { EntryRowBehavior(entry: $0).compactStatusLabel }
             let serialized = calls.snapshot() == [stems[0]]
             continuation.resume()
             for _ in 0..<500 where coordinator.hasScheduledWork { try await Task.sleep(for: .milliseconds(1)) }
             try expect(queuedLabel == "QUEUED", "Accepted Reprocess should be visibly queued")
             try expect(activePreserved, "A rejected Reprocess must preserve the current worker and its progress")
-            try expect(secondPrepared, "Second Reprocess must be accepted while transcription is running (\(mode))")
+            try expect(outputsPreservedWhileQueued, "Queued work must not delete outputs before owning the worker (\(mode))")
             try expect(serialized && calls.snapshot() == stems, "Queued Reprocess must run once after the first finishes")
             try expect(!coordinator.hasScheduledWork)
             for stem in stems { try expect(fm.fileExists(atPath: root.appendingPathComponent("audio/\(stem).m4a").path)) }
+        }
+    }
+
+    await testAsync("AppState: global pause then row Resume survives every cancelled pipeline stage") {
+        for stage in [Pipeline.Stage.transcribing, .cleaning, .categorizing, .naming, .enriching] {
+            let root = FileManager.default.temporaryDirectory.appendingPathComponent("RowResume-\(UUID().uuidString)")
+            defer { try? FileManager.default.removeItem(at: root) }
+            let stem = "2025-01-14-0730"
+            let audio = root.appendingPathComponent("audio/\(stem).m4a")
+            try FileManager.default.createDirectory(at: audio.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try FileManager.default.copyItem(at: URL(fileURLWithPath: "eval/transcribe/audio/2025-01-14 side project.m4a"), to: audio)
+            let gate = LockedValue<CheckedContinuation<Void, Never>?>(nil)
+            let calls = LockedStringArray()
+            let coordinator = ProcessingCoordinator { stem, _, fromStage, progress in
+                calls.append(fromStage?.rawValue ?? "nil")
+                progress?(.init(stem: stem, stage: stage))
+                if calls.snapshot().count == 1 { await withCheckedContinuation { gate.set($0) } }
+                return result(for: stem)
+            }
+            let config = ConfigManager(); config.dataDir = root.path
+            let state = AppState(config: config, processing: coordinator)
+            state.loadEntries(); state.batchResumePending()
+            for _ in 0..<300 where gate.get() == nil { try await Task.sleep(for: .milliseconds(1)) }
+            guard let release = gate.get() else { throw NSError(domain: "RowResume", code: 1) }
+            state.pauseProcessing()
+            state.resumeProcessing(stem: stem)
+            state.resumeProcessing(stem: stem)
+            let acknowledged = coordinator.isQueued(stem: stem) && coordinator.isProcessing
+            let serialized = calls.snapshot().count == 1
+            // A cancelled native call may save a checkpoint before returning.
+            let transcript = root.appendingPathComponent(".pipeline/01-transcribed/\(stem).md")
+            try FileManager.default.createDirectory(at: transcript.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try FileManager.default.copyItem(at: URL(fileURLWithPath: "eval/transcribe/expected/2025-01-14 side project.md"), to: transcript)
+            release.resume()
+            for _ in 0..<500 where coordinator.hasScheduledWork { try await Task.sleep(for: .milliseconds(1)) }
+            try expect(acknowledged, "Row Resume must visibly queue while \(stage.rawValue) cancels")
+            try expect(serialized && calls.snapshot() == ["transcribing", "cleaning"], "Resume must run once after cancellation using the latest checkpoint")
+            try expect(!coordinator.hasScheduledWork && coordinator.stage == .done)
+        }
+    }
+
+    await testAsync("AppState: row resumes and batch requests share one deduplicated queue") {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("MixedResume-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: root) }
+        let stems = ["2025-01-14-0730", "2025-01-14-0830", "2025-01-14-0930"]
+        for stem in stems {
+            let audio = root.appendingPathComponent("audio/\(stem).m4a")
+            try FileManager.default.createDirectory(at: audio.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try FileManager.default.copyItem(at: URL(fileURLWithPath: "eval/transcribe/audio/2025-01-14 side project.m4a"), to: audio)
+        }
+        let gate = LockedValue<CheckedContinuation<Void, Never>?>(nil)
+        let calls = LockedStringArray()
+        let coordinator = ProcessingCoordinator { stem, _, _, progress in
+            calls.append(stem); progress?(.init(stem: stem, stage: .transcribing))
+            if calls.snapshot().count == 1 { await withCheckedContinuation { gate.set($0) } }
+            return result(for: stem)
+        }
+        let config = ConfigManager(); config.dataDir = root.path
+        let state = AppState(config: config, processing: coordinator)
+        state.loadEntries(); state.resumeProcessing(stem: stems[0])
+        for _ in 0..<300 where gate.get() == nil { try await Task.sleep(for: .milliseconds(1)) }
+        guard let release = gate.get() else { throw NSError(domain: "MixedResume", code: 1) }
+        state.resumeProcessing(stem: stems[1]); state.resumeProcessing(stem: stems[1])
+        state.entries.sort { $0.stem < $1.stem }
+        state.batchResumePending(); state.batchResumePending()
+        let queued = coordinator.isQueued(stem: stems[1]) && coordinator.isQueued(stem: stems[2])
+        release.resume()
+        for _ in 0..<500 where coordinator.hasScheduledWork { try await Task.sleep(for: .milliseconds(1)) }
+        try expect(queued && calls.snapshot() == stems, "Every accepted row/batch request must run exactly once in order")
+    }
+
+    await testAsync("AppState: queued restart survives cancellation but later Pause and Quit discard it") {
+        for mode in ["resume", "reprocess", "recording"] {
+            for action in ["run", "pause", "quit"] {
+                let root = FileManager.default.temporaryDirectory.appendingPathComponent("RestartLifecycle-\(UUID().uuidString)")
+                defer { try? FileManager.default.removeItem(at: root) }
+                let stem = "2025-01-14-0730"
+                let audio = root.appendingPathComponent("audio/\(stem).m4a")
+                let transcript = root.appendingPathComponent(".pipeline/01-transcribed/\(stem).md")
+                try FileManager.default.createDirectory(at: audio.deletingLastPathComponent(), withIntermediateDirectories: true)
+                try FileManager.default.copyItem(at: URL(fileURLWithPath: "eval/transcribe/audio/2025-01-14 side project.m4a"), to: audio)
+                let gate = LockedValue<CheckedContinuation<Void, Never>?>(nil)
+                let calls = LockedStringArray()
+                let coordinator = ProcessingCoordinator { stem, _, fromStage, progress in
+                    calls.append(fromStage?.rawValue ?? "nil")
+                    progress?(.init(stem: stem, stage: .transcribing))
+                    if calls.snapshot().count == 1 { await withCheckedContinuation { gate.set($0) } }
+                    return result(for: stem)
+                }
+                let config = ConfigManager(); config.dataDir = root.path
+                let trashed = LockedStringArray()
+                let state = AppState(config: config, processing: coordinator, moveToTrash: { trashed.append($0.path) })
+                state.resumeProcessing(stem: stem)
+                for _ in 0..<300 where gate.get() == nil { try await Task.sleep(for: .milliseconds(1)) }
+                guard let release = gate.get() else { throw NSError(domain: "RestartLifecycle", code: 1) }
+                state.pauseProcessing()
+                try FileManager.default.createDirectory(at: transcript.deletingLastPathComponent(), withIntermediateDirectories: true)
+                try FileManager.default.copyItem(at: URL(fileURLWithPath: "eval/transcribe/expected/2025-01-14 side project.md"), to: transcript)
+                if mode == "resume" { state.resumeProcessing(stem: stem) }
+                if mode == "reprocess" { state.reprocessEntry(stem: stem) }
+                if mode == "recording" {
+                    coordinator.queueProcessing(stem: stem)
+                    coordinator.startProcessing(dataDir: root.path, isRecording: false, onProgress: {}, onComplete: {}, onError: { _ in })
+                }
+                state.deleteEntry(stem: stem, slug: nil)
+                let protected = trashed.snapshot().isEmpty && FileManager.default.fileExists(atPath: transcript.path)
+                if action == "pause" { state.pauseProcessing() }
+                let shutdownStarted = LockedValue(false)
+                let shutdown = action == "quit" ? Task {
+                    shutdownStarted.set(true)
+                    await coordinator.stopForTermination()
+                } : nil
+                if shutdown != nil {
+                    for _ in 0..<300 where !shutdownStarted.get() { try await Task.sleep(for: .milliseconds(1)) }
+                }
+                release.resume()
+                await shutdown?.value
+                for _ in 0..<500 where coordinator.hasScheduledWork { try await Task.sleep(for: .milliseconds(1)) }
+                try expect(protected, "Cancelled/queued writes must keep ownership until they finish")
+                if action == "run" {
+                    try expect(calls.snapshot() == ["transcribing", mode == "resume" ? "cleaning" : "transcribing"], "Accepted \(mode) must run after cancellation")
+                    if mode == "reprocess" { try expect(!FileManager.default.fileExists(atPath: transcript.path), "Reprocess clears old outputs only when its turn begins") }
+                } else {
+                    try expect(calls.snapshot() == ["transcribing"], "Later \(action) cancels queued \(mode)")
+                    try expect(coordinator.statusMessage == "Paused" && !coordinator.hasScheduledWork)
+                    try expect(FileManager.default.fileExists(atPath: transcript.path), "Discarded reprocess must preserve checkpoints")
+                }
+            }
+        }
+    }
+
+    await testAsync("AppState: Pause invalidates row, batch and reprocess actions waiting for models") {
+        for action in ["resume", "batch", "reprocess"] {
+            let root = FileManager.default.temporaryDirectory.appendingPathComponent("ModelWaitPause-\(UUID().uuidString)")
+            defer { try? FileManager.default.removeItem(at: root) }
+            let stem = "2025-01-14-0730"
+            let audio = root.appendingPathComponent("audio/\(stem).m4a")
+            try FileManager.default.createDirectory(at: audio.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try FileManager.default.copyItem(at: URL(fileURLWithPath: "eval/transcribe/audio/2025-01-14 side project.m4a"), to: audio)
+            let gate = LockedValue<CheckedContinuation<Void, Never>?>(nil)
+            let calls = LockedStringArray()
+            let models = ModelManager(dependencies: .init(
+                clearStaleConfig: {}, cleanCorruptedMetadata: {},
+                whisperIsDownloaded: { false }, qwenIsDownloaded: { true },
+                downloadWhisper: { _ in await withCheckedContinuation { gate.set($0) } }, downloadQwen: { _ in }
+            ))
+            let coordinator = ProcessingCoordinator { stem, _, _, _ in calls.append(stem); return result(for: stem) }
+            let config = ConfigManager(); config.dataDir = root.path
+            let state = AppState(config: config, processing: coordinator, models: models)
+            state.loadEntries(); models.didDeleteModel(.whisper)
+            if action == "resume" { state.resumeProcessing(stem: stem) }
+            if action == "batch" { state.batchResumePending() }
+            if action == "reprocess" { state.reprocessEntry(stem: stem) }
+            for _ in 0..<300 where gate.get() == nil { try await Task.sleep(for: .milliseconds(1)) }
+            guard let release = gate.get() else { throw NSError(domain: "ModelWaitPause", code: 1) }
+            state.pauseProcessing(); release.resume()
+            for _ in 0..<300 where !models.modelsReady { try await Task.sleep(for: .milliseconds(1)) }
+            try expect(models.modelsReady && calls.snapshot().isEmpty && !coordinator.hasScheduledWork,
+                       "Finishing a model download must not resurrect a paused \(action) request")
         }
     }
 
@@ -5564,7 +5724,7 @@ func runTests() async {
         ))
         let appState = AppState(recording: recording)
         // Simulate processing in progress
-        appState.processing.stage = .transcribing
+        appState.processing.stage = .enriching
         appState.models.modelState = .downloading(model: "Test", progress: 0.5)
         try expect(appState.processing.isProcessing == true)
         try expect(appState.modelsReady == false)
@@ -5576,6 +5736,7 @@ func runTests() async {
 
         // The fake recorder remains active until stop, proving processing did not block it.
         try expect(appState.isRecording == true)
+        try expect(appState.processing.stage == .enriching, "Recording must not overwrite the active pipeline stage")
         await Task.yield()
 
         appState.stopRecording()
@@ -6788,7 +6949,7 @@ private func runUpdateManagerTests(fixtures: URL) async {
             dataDir: root.path, onComplete: {}, onError: { _ in })
         defer { processing.pauseProcessing() }
         // Deliberately assert before yielding to the reserved processing task.
-        try expect(!state.isProcessing && processing.hasScheduledWork)
+        try expect(state.isProcessing && processing.hasScheduledWork, "Accepted work is visibly active before the first callback")
         try expect(!state.canInstallUpdate)
         await state.installUpdate()
         await manager.runScheduledUpdate { state.canInstallUpdate }

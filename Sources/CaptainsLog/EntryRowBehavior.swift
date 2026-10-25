@@ -27,14 +27,14 @@ struct EntryRowBehavior: Equatable {
         compactStatusLabel = entry.isActive ? "LIVE" : entry.isQueued ? "QUEUED" : paused ? "PAUSED" : failed ? "ERROR" : ""
         canOpen = entry.stage == .done
         canRevealInFinder = !entry.path.isEmpty
-        canResume = !entry.isQueued && (paused || failed)
-        canReprocess = entry.stage == .done && !entry.isActive
+        canResume = !entry.isActive && !entry.isQueued && (paused || failed)
+        canReprocess = entry.stage == .done && !entry.isActive && !entry.isQueued
         resumeTitle = canResume ? (failed ? "Retry processing" : "Resume processing") : nil
 
-        if entry.stage == .done {
-            status = .processed
-        } else if entry.isQueued {
+        if entry.isQueued {
             status = .queued
+        } else if entry.stage == .done {
+            status = .processed
         } else if failed {
             status = .failed
         } else if paused {
