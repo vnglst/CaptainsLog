@@ -515,6 +515,11 @@ public enum Pipeline {
         artifactCandidatePaths(stem: stem, slug: slug, dataDir: dataDir, includeAudio: true)
     }
 
+    /// Snapshot derived paths before invalidation removes the slug/category metadata.
+    public static func processingResultPaths(stem: String, dataDir: String) -> [String] {
+        artifactCandidatePaths(stem: stem, slug: nil, dataDir: dataDir, includeAudio: false)
+    }
+
     /// Clear only this recording's derived artifacts before running the shared pipeline again.
     public static func prepareReprocessing(stem: String, dataDir: String) throws {
         let root = URL(fileURLWithPath: dataDir)
@@ -522,7 +527,7 @@ public enum Pipeline {
             throw CocoaError(.fileNoSuchFile)
         }
         let fm = FileManager.default
-        for path in artifactCandidatePaths(stem: stem, slug: nil, dataDir: dataDir, includeAudio: false) {
+        for path in processingResultPaths(stem: stem, dataDir: dataDir) {
             if fm.fileExists(atPath: path) { try fm.removeItem(atPath: path) }
         }
     }

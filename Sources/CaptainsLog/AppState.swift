@@ -309,25 +309,26 @@ public final class AppState {
 
     func reprocessEntry(stem: String) {
         guard canReprocessEntry(stem: stem) else { return }
-        if models.needsDownload {
-            let generation = processingRequestGeneration
-            models.ensureModelsDownloaded { [weak self] in
-                guard let self, self.processingRequestGeneration == generation else { return }
-                self.reprocessEntry(stem: stem)
-            }
-            return
-        }
         let directory = dataDir
-        processing.reprocessEntry(
-            stem: stem, dataDir: directory,
+        // Preserve paths whose identifying metadata is about to be deleted.
+        let resultPaths = Pipeline.processingResultPaths(stem: stem, dataDir: directory)
+        let ready = models.modelsReady
+        let accepted = processing.reprocessEntry(
+            stem: stem, dataDir: directory, modelsReady: ready,
             prepare: { [weak self] in
+                defer {
+                    self?.search.invalidateIndex(dataDir: directory)
+                    self?.loadEntries()
+                }
                 try Pipeline.prepareReprocessing(stem: stem, dataDir: directory)
-                self?.search.invalidateIndex(dataDir: directory)
-                self?.loadEntries()
+                for path in resultPaths where FileManager.default.fileExists(atPath: path) {
+                    try FileManager.default.removeItem(atPath: path)
+                }
             },
             onComplete: { [weak self] in self?.loadEntries() },
             onError: { [weak self] _ in self?.loadEntries() }
         )
+        if accepted && !ready { ensureModelsDownloaded() }
     }
 
     func deleteProcessingOutputs() {

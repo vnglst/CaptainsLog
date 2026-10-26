@@ -133,8 +133,9 @@ original audio and saved checkpoints. The unfinished stage remains pending.
 Pause cancels the active worker and clears queued requests. Resume, Process pending,
 Reprocess and completed recordings share one serial queue; requests made while
 native cancellation finishes show as queued and run afterwards. Resume detects the
-latest saved stage when its turn starts. Reprocess clears outputs only at that point.
-A later Pause or Quit discards waiting requests.
+latest saved stage when its turn starts. Reprocess immediately deletes derived outputs
+and queues fresh processing, including when models must download. A later Pause or
+Quit discards waiting processing but keeps the outputs deleted.
 
 Intermediate files live under `.pipeline/`; completed entries are saved to `logs/`. Use `make cli ARGS=--help` for other commands, including configuration and individual pipeline stages.
 

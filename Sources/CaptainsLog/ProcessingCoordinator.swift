@@ -26,12 +26,12 @@ public final class ProcessingCoordinator {
         let stem: String
         let fromStage: Pipeline.Stage?
         var context: Context?
-        var prepare: () throws -> Void = {}
     }
 
     private var processingTask: Task<Void, Never>?
     // Unlike the visible processingStem, ownership survives Pause until native work returns.
     private var ownedStem: String?
+    private var cleanupAfterCancellation: (() -> Void)?
     private var requests: [Request] = []
     private var drainCallbacks: [() -> Void] = []
     private var isStopping = false
@@ -129,15 +129,36 @@ public final class ProcessingCoordinator {
         startWorker()
     }
 
-    /// Output removal runs only after the old worker has released ownership.
+    /// Delete synchronously; only inference waits in the serial queue.
+    @discardableResult
     func reprocessEntry(
-        stem: String, dataDir: String, prepare: @escaping () throws -> Void,
+        stem: String, dataDir: String, modelsReady: Bool = true,
+        prepare: @escaping () throws -> Void,
         onComplete: @escaping () -> Void, onError: @escaping (Error) -> Void
-    ) {
-        enqueue(Request(stem: stem, fromStage: .transcribing,
-                        context: Context(dataDir: dataDir, onProgress: onComplete, onError: onError),
-                        prepare: prepare))
+    ) -> Bool {
+        guard canQueueReprocessing(stem: stem) else { return false }
+        do { try prepare() }
+        catch {
+            recordPreparationFailure(error, for: stem)
+            onError(error)
+            return false
+        }
+        if ownedStem == stem {
+            // A cancelled native call can finish an in-flight write. Invalidation
+            // survives Pause/Quit even when the queued restart is discarded.
+            cleanupAfterCancellation = { [self] in
+                do { try prepare() }
+                catch {
+                    requests.removeAll { $0.stem == stem }
+                    recordPreparationFailure(error, for: stem)
+                    onError(error)
+                }
+            }
+        }
+        let context = Context(dataDir: dataDir, onProgress: onComplete, onError: onError)
+        enqueue(Request(stem: stem, fromStage: .transcribing, context: modelsReady ? context : nil))
         startWorker()
+        return true
     }
 
     func batchResumePending(
@@ -173,7 +194,6 @@ public final class ProcessingCoordinator {
                 ownedStem = request.stem
                 processingStem = request.stem
                 do {
-                    try request.prepare()
                     let detected = request.fromStage ?? Pipeline.detectNextStage(stem: request.stem, dataDir: context.dataDir)
                     stage = Self.appStage(for: detected)
                     statusMessage = "Processing \(request.stem)..."
@@ -195,6 +215,9 @@ public final class ProcessingCoordinator {
                     context.onError(error)
                 }
             }
+            let cleanup = cleanupAfterCancellation
+            cleanupAfterCancellation = nil
+            cleanup?()
             ownedStem = nil
             processingTask = nil
             guard !Task.isCancelled else {

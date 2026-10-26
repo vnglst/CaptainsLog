@@ -25,7 +25,7 @@ entry. Git links provide the complete commit history for each release.
 
 - Finalize active recordings before quitting; bound shutdown when native model initialization cannot stop promptly, without racing Metal teardown.
 
-- Use one serial queue for Resume, Process pending, Reprocess and new recordings. Keep requested restarts while cancelled work finishes, resume from the latest saved stage, and defer output deletion until reprocessing starts.
+- Use one serial queue for Resume, Process pending, Reprocess and new recordings. Keep requested restarts while cancelled work finishes, resume from the latest saved stage, and immediately clear derived results when Reprocess is clicked.
 
 - Keep Logs, recording controls, Context and Settings at readable widths in large and full-screen windows.
 
