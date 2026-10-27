@@ -2219,6 +2219,36 @@ func runCoordinatorCoverageTests() async {
         try expect(models.modelsReady)
     }
 
+    await testAsync("AppState: finishing a recording does not block the main thread on slow entry reads") {
+        let models = ModelManager(dependencies: .init(
+            clearStaleConfig: {}, cleanCorruptedMetadata: {},
+            whisperIsDownloaded: { true }, qwenIsDownloaded: { true },
+            downloadWhisper: { _ in }, downloadQwen: { _ in }
+        ))
+        let coordinator = ProcessingCoordinator { stem, _, _, _ in result(for: stem) }
+        // Simulates a dataless iCloud file whose read stalls.
+        let gate = DispatchSemaphore(value: 0)
+        let loaderCalls = LockedStringArray()
+        let state = AppState(
+            config: ConfigManager(loadContextFiles: false),
+            processing: coordinator, models: models,
+            entryLoader: { _ in
+                loaderCalls.append("load")
+                if gate.wait(timeout: .now() + 3) == .success { gate.signal() }
+                return []
+            }
+        )
+        defer { gate.signal() }
+        let start = Date()
+        state.onRecordingComplete(stem: "2025-01-14-0830")
+        let elapsed = Date().timeIntervalSince(start)
+        try expect(elapsed < 1, "Recording completion blocked the main thread for \(elapsed)s on entry loading")
+        for _ in 0..<500 where loaderCalls.snapshot().isEmpty {
+            try await Task.sleep(for: .milliseconds(2))
+        }
+        try expect(!loaderCalls.snapshot().isEmpty, "Entries should still be loaded in the background")
+    }
+
     await testAsync("ProcessingCoordinator: drains queued work through injected pipeline") {
         let processed = LockedStringArray()
         let coordinator = ProcessingCoordinator { stem, _, fromStage, progress in

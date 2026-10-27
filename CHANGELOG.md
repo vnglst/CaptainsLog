@@ -23,6 +23,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Fixed
 
+- Stop the app from freezing after a recording when reading log files stalls (for example cloud-evicted files); entry lists now refresh off the main thread.
+
 - Finalize active recordings before quitting; bound shutdown when native model initialization cannot stop promptly, without racing Metal teardown.
 
 - Use one serial queue for Resume, Process pending, Reprocess and new recordings. Keep requested restarts while cancelled work finishes, resume from the latest saved stage, and immediately clear derived results when Reprocess is clicked.

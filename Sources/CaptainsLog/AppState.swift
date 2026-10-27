@@ -29,6 +29,8 @@ public final class AppState {
     public let directoryWatcher: DirectoryWatcher
     public let search: SearchManager
     private let moveToTrash: (URL) -> Void
+    private var entryLoadGeneration = 0
+    private let entryLoader: @Sendable (String) -> [LogEntry]
     private var processingRequestGeneration = 0
 
     // MARK: - Entries
@@ -127,6 +129,7 @@ public final class AppState {
         models = ModelManager()
         search = SearchManager()
         moveToTrash = { url in try? FileManager.default.trashItem(at: url, resultingItemURL: nil) }
+        entryLoader = AppState.defaultEntryLoader
         // Initialize with placeholder closure - will be configured after init
         directoryWatcher = DirectoryWatcher(onReload: { })
         // Set initial first-run state from config
@@ -143,7 +146,8 @@ public final class AppState {
         directoryWatcher: DirectoryWatcher = DirectoryWatcher(onReload: { }),
         moveToTrash: @escaping (URL) -> Void = {
             try? FileManager.default.trashItem(at: $0, resultingItemURL: nil)
-        }
+        },
+        entryLoader: @escaping @Sendable (String) -> [LogEntry] = AppState.defaultEntryLoader
     ) {
         self.updates = updates
         self.config = config
@@ -153,13 +157,14 @@ public final class AppState {
         self.search = search
         self.directoryWatcher = directoryWatcher
         self.moveToTrash = moveToTrash
+        self.entryLoader = entryLoader
         needsFirstRunDisplay = config.needsFirstRun
     }
 
     /// Called by CaptainsLogApp after self is fully constructed
     public func configureDirectoryWatcher() {
         directoryWatcher.onReload = { [weak self] in
-            self?.loadEntries()
+            self?.refreshEntries()
             guard let self else { return }
             self.search.invalidateIndex(dataDir: self.config.dataDir)
         }
@@ -223,9 +228,9 @@ public final class AppState {
         )
     }
 
-    private func onRecordingComplete(stem: String) {
+    func onRecordingComplete(stem: String) {
         processing.queueProcessing(stem: stem)
-        loadEntries()
+        refreshEntries()
         startQueuedProcessingIfPossible()
     }
 
@@ -239,7 +244,7 @@ public final class AppState {
         processing.startProcessing(
             dataDir: config.dataDir,
             isRecording: recording.isRecording,
-            onProgress: { [weak self] in self?.loadEntries() },
+            onProgress: { [weak self] in self?.refreshEntries() },
             onComplete: { [weak self] in
                 self?.processing.stage = self?.recording.isRecording == true ? .recording : .done
                 self?.loadEntries()
@@ -403,17 +408,37 @@ public final class AppState {
         ensureModelsDownloaded()
         async let deviceRefresh: Void = recording.refreshDevicesInBackground()
         let dataDir = config.dataDir
-        let entryLoadingTask = Task.detached(priority: .utility) {
-            Pipeline.listEntries(dataDir: dataDir).map(LogEntry.from)
-        }
+        let loader = entryLoader
+        let entryLoadingTask = Task.detached(priority: .utility) { loader(dataDir) }
         entries = await entryLoadingTask.value
         await deviceRefresh
         configureDirectoryWatcher()
         AppPerformanceTrace.mark("bootstrap-ready")
     }
 
+    static let defaultEntryLoader: @Sendable (String) -> [LogEntry] = { dataDir in
+        Pipeline.listEntries(dataDir: dataDir).map(LogEntry.from)
+    }
+
+    /// Synchronous reload for callers that need the result immediately. Reading
+    /// the data folder can block on cloud-backed (dataless) files, so event
+    /// handlers on the main thread use `refreshEntries()` instead.
     public func loadEntries() {
-        entries = Pipeline.listEntries(dataDir: config.dataDir).map(LogEntry.from)
+        entryLoadGeneration += 1
+        entries = entryLoader(config.dataDir)
+    }
+
+    /// Reloads entries off the main thread; a newer reload supersedes older results.
+    func refreshEntries() {
+        entryLoadGeneration += 1
+        let generation = entryLoadGeneration
+        let dataDir = config.dataDir
+        let loader = entryLoader
+        Task { @MainActor [weak self] in
+            let loaded = await Task.detached(priority: .utility) { loader(dataDir) }.value
+            guard let self, self.entryLoadGeneration == generation else { return }
+            self.entries = loaded
+        }
     }
 
 }
