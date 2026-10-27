@@ -27,7 +27,8 @@ validation do not load inference models. Generation requires the selected models
 never run concurrent inference jobs or use personal recordings. Model evaluations
 run separately from release preparation.
 
-The [TNG reference scripts](tng-reference/README.md) are three short, fictional
-recording scripts in English, Dutch and German, with paired expected outputs.
+The [TNG reference scripts](tng-reference/README.md) are three fictional personal logs aboard
+the Enterprise, about ten minutes each, in English, Dutch and German, with paired
+expected outputs.
 The owner still needs to record the audio. These scripts are separate from the
 active suites. Demo inputs under `demo/` are presentation material.

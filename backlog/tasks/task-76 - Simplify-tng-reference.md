@@ -4,7 +4,7 @@ title: Simplify tng-reference
 status: Verify
 assignee: []
 created_date: '2026-10-27 13:27'
-updated_date: '2026-10-27 15:54'
+updated_date: '2026-10-27 16:59'
 labels: []
 dependencies: []
 ordinal: 65250

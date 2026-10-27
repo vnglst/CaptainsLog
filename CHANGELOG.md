@@ -43,7 +43,7 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
-- Shorten the three TNG reference recording scripts in English, Dutch and German, use more natural spoken language, and refresh their expected outputs and recording instructions.
+- Rewrite the three TNG reference scripts as personal logs aboard the Enterprise, about ten minutes each in English, Dutch and German, with natural spoken language, matching expected outputs and updated recording instructions.
 
 - Add an experimental CLI option to generate filing categories, filenames and searchable metadata together.
 - Keep backlog-only updates out of changelog coverage and release notes; remove backlog noise and duplicate context from the existing history.

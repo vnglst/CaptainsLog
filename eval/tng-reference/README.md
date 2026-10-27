@@ -1,21 +1,28 @@
 # TNG recording scripts
 
-Three short, fictional recording scripts with a Star Trek theme: one English,
-one Dutch and one German. Each takes roughly a minute to read aloud at a
-comfortable pace. The owner still needs to record the audio; the audio filenames
-in the scripts are intended filenames, not existing recordings.
+Three fictional personal logs aboard the Enterprise: one English, one Dutch and
+one German. Each has roughly 1,200 words, intended for about ten minutes of relaxed
+reading with natural pauses. Actual duration depends on the speaker. The owner
+still needs to record the audio; the audio filenames in the scripts are intended
+filenames, not existing recordings.
 
 | Script | Language | Topic |
 |---|---|---|
-| [Work week review](tng-01-work-week-review.md) | English | A migration fix, a progress presentation and code reviews |
-| [Weekend en werkplanning](tng-nl01-weekend-werkplanning.md) | Dutch | Family weekend, a home voice assistant and the coming workweek |
-| [Fehlersuche im LCARS-Cluster](tng-de01-lcars-cluster-debugging.md) | German | A configuration typo, a fix and follow-up work |
+| [A week aboard the Enterprise](tng-01-work-week-review.md) | English | A warp nacelle warning, a probe survey and an external repair |
+| [Een vrije dag op de Enterprise](tng-nl01-vrije-dag-enterprise.md) | Dutch | The holodeck, Alexander and Molly, Ten Forward and upcoming duties |
+| [Sensorstörung auf der Enterprise](tng-de01-sensorstoerung.md) | German | Conflicting sensor readings, a repair and unfinished checks |
 
-The scripts use everyday spoken language, with Star Trek names woven into a
-fictional present-day setting. Each file pairs its narration with a cleaned-up
-version, example metadata and an expected filename. The dates and times are fixed
-reference values. Expected wording is a reference, not the only valid output;
-review generated text for missing details, changed meaning and invented content.
+The narrator is an unnamed crew member. The stories take place aboard the ship,
+with watch duties, engineering work, exploration and time off among the crew.
+They are invented recording material, not accounts of specific televised episodes.
+The spoken language is conversational rather than a formal mission report.
+
+Each file pairs its narration with a lightly cleaned version, example metadata
+and an expected filename. Cleanup preserves the full narration rather than
+summarizing it. Dates and times are fixed reference values. Expected wording is a
+reference, not the only valid output; review generated text for missing details,
+changed meaning and invented content. In particular, preserve the distinction
+between completed repairs, planned checks and unresolved questions.
 
 ## Evaluation status
 
