@@ -1,14 +1,14 @@
 ---
 id: TASK-58
 title: Reprocess an individual processed log
-status: Verify
+status: Complete
 assignee: []
 created_date: '2026-10-13 13:44'
-updated_date: '2026-10-14 05:26'
+updated_date: '2026-10-27 13:18'
 labels: []
 dependencies: []
 type: feature
-ordinal: 51000
+ordinal: 0.00028312206268310547
 ---
 
 ## Description

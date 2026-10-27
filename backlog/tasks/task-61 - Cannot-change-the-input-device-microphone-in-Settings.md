@@ -1,14 +1,14 @@
 ---
 id: TASK-61
 title: Cannot change the input device (microphone) in Settings
-status: Verify
+status: Complete
 assignee: []
 created_date: '2026-10-14 17:19'
-updated_date: '2026-10-14 18:08'
+updated_date: '2026-10-27 13:19'
 labels: []
 dependencies: []
 type: bug
-ordinal: 54000
+ordinal: 0.000035390257835388184
 ---
 
 ## Description

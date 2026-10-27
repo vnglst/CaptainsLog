@@ -1,14 +1,14 @@
 ---
 id: TASK-60
 title: Update all dependencies to their newest versions
-status: Verify
+status: Complete
 assignee: []
 created_date: '2026-10-13 13:47'
-updated_date: '2026-10-14 10:25'
+updated_date: '2026-10-27 13:18'
 labels: []
 dependencies: []
 type: chore
-ordinal: 53000
+ordinal: 0.00007078051567077637
 ---
 
 ## Description

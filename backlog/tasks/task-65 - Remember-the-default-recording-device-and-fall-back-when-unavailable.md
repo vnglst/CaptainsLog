@@ -3,14 +3,14 @@ id: TASK-65
 title: >-
   Remember default recording device automatically, fallback to other if not
   available
-status: Verify
+status: Complete
 assignee: []
 created_date: '2026-10-16 06:19'
-updated_date: '2026-10-16 16:54'
+updated_date: '2026-10-27 13:22'
 labels: []
 dependencies: []
 type: enhancement
-ordinal: 58000
+ordinal: 0.000013271346688270569
 ---
 
 ## Description

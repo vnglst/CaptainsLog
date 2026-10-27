@@ -1,14 +1,14 @@
 ---
 id: TASK-62
 title: Remove the duplicate Reprocess button from the individual log view
-status: Verify
+status: Complete
 assignee: []
 created_date: '2026-10-14 17:22'
-updated_date: '2026-10-14 18:08'
+updated_date: '2026-10-27 13:19'
 labels: []
 dependencies: []
 type: task
-ordinal: 55000
+ordinal: 0.000017695128917694092
 ---
 
 ## Description

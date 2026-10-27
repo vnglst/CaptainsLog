@@ -3,13 +3,13 @@ id: TASK-71
 title: >-
   Bug: If I stop process pending and try to start it again, it doesn't work
   anymore.
-status: Verify
+status: Complete
 assignee: []
 created_date: '2026-10-18 14:05'
-updated_date: '2026-10-26 05:42'
+updated_date: '2026-10-27 13:21'
 labels: []
 dependencies: []
-ordinal: 59500
+ordinal: 0.000053085386753082275
 ---
 
 

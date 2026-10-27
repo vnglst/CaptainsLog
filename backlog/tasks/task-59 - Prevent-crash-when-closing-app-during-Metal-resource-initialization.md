@@ -1,14 +1,14 @@
 ---
 id: TASK-59
 title: Prevent crash when closing app during Metal resource initialization
-status: Verify
+status: Complete
 assignee: []
 created_date: '2026-10-13 13:44'
-updated_date: '2026-10-14 06:04'
+updated_date: '2026-10-27 13:18'
 labels: []
 dependencies: []
 type: bug
-ordinal: 52000
+ordinal: 0.00014156103134155273
 ---
 
 ## Description

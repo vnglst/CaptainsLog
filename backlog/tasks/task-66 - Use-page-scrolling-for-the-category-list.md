@@ -1,14 +1,14 @@
 ---
 id: TASK-66
 title: Category scroll bar
-status: Verify
+status: Complete
 assignee: []
 created_date: '2026-10-16 06:20'
-updated_date: '2026-10-16 17:57'
+updated_date: '2026-10-27 13:22'
 labels: []
 dependencies: []
 type: enhancement
-ordinal: 59000
+ordinal: 0.000026542693376541138
 ---
 
 ## Description

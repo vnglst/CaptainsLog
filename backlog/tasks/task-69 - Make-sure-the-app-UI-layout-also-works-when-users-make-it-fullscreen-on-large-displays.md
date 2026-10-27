@@ -3,14 +3,14 @@ id: TASK-69
 title: >-
   Make sure the app UI layout also works when users make it fullscreen on large
   displays
-status: Verify
+status: Complete
 assignee: []
 created_date: '2026-10-16 08:43'
-updated_date: '2026-10-16 16:54'
+updated_date: '2026-10-27 13:21'
 labels: []
 dependencies: []
 type: enhancement
-ordinal: 61000
+ordinal: 0.000039814040064811707
 ---
 
 ## Description

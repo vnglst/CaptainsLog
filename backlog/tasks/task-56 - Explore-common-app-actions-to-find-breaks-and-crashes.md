@@ -1,13 +1,13 @@
 ---
 id: TASK-56
 title: Explore common app actions to find breaks and crashes
-status: Verify
+status: Complete
 assignee: []
 created_date: '2026-10-12 17:07'
-updated_date: '2026-10-13 17:37'
+updated_date: '2026-10-27 13:18'
 labels: []
 dependencies: []
-ordinal: 49000
+ordinal: 0.0011324882507324219
 ---
 
 ## Description

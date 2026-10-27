@@ -1,13 +1,13 @@
 ---
 id: TASK-57
 title: Benchmark and optimize app startup and close times
-status: Verify
+status: Complete
 assignee: []
 created_date: '2026-10-12 17:08'
-updated_date: '2026-10-13 20:44'
+updated_date: '2026-10-27 13:18'
 labels: []
 dependencies: []
-ordinal: 50000
+ordinal: 0.0005662441253662109
 ---
 
 ## Description

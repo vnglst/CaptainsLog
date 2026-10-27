@@ -1,14 +1,14 @@
 ---
 id: TASK-63
 title: Make the All entries button easy to click
-status: Verify
+status: Complete
 assignee: []
 created_date: '2026-10-14 17:23'
-updated_date: '2026-10-14 18:09'
+updated_date: '2026-10-27 13:19'
 labels: []
 dependencies: []
 type: bug
-ordinal: 56000
+ordinal: 0.000008847564458847046
 ---
 
 ## Description

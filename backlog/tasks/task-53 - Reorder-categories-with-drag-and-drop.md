@@ -1,13 +1,13 @@
 ---
 id: TASK-53
 title: Reorder categories with drag and drop
-status: Verify
+status: Complete
 assignee: []
 created_date: '2026-10-11 16:46'
-updated_date: '2026-10-13 05:12'
+updated_date: '2026-10-27 13:18'
 labels: []
 dependencies: []
-ordinal: 48000
+ordinal: 0.0022649765014648438
 ---
 
 ## Description
