@@ -194,7 +194,16 @@ public final class ProcessingCoordinator {
                 ownedStem = request.stem
                 processingStem = request.stem
                 do {
-                    let detected = request.fromStage ?? Pipeline.detectNextStage(stem: request.stem, dataDir: context.dataDir)
+                    let detected: Pipeline.Stage
+                    if let requested = request.fromStage {
+                        detected = requested
+                    } else {
+                        let stem = request.stem, dataDir = context.dataDir
+                        detected = await Task.detached(priority: .utility) {
+                            Pipeline.detectNextStage(stem: stem, dataDir: dataDir)
+                        }.value
+                    }
+                    try Task.checkCancellation()
                     stage = Self.appStage(for: detected)
                     statusMessage = "Processing \(request.stem)..."
                     if detected != .done {

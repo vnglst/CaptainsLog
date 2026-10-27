@@ -247,9 +247,9 @@ public final class AppState {
             onProgress: { [weak self] in self?.refreshEntries() },
             onComplete: { [weak self] in
                 self?.processing.stage = self?.recording.isRecording == true ? .recording : .done
-                self?.loadEntries()
+                self?.refreshEntries()
             },
-            onError: { [weak self] _ in self?.loadEntries() }
+            onError: { [weak self] _ in self?.refreshEntries() }
         )
     }
 
@@ -276,7 +276,7 @@ public final class AppState {
     public func pauseProcessing() {
         processingRequestGeneration += 1
         processing.pauseProcessing()
-        loadEntries()
+        refreshEntries()
     }
 
     func resumeProcessing(stem: String, fromStage: Pipeline.Stage? = nil) {
@@ -294,10 +294,10 @@ public final class AppState {
             fromStage: fromStage,
             dataDir: config.dataDir,
             onComplete: { [weak self] in
-                self?.loadEntries()
+                self?.refreshEntries()
             },
             onError: { [weak self] _ in
-                self?.loadEntries()
+                self?.refreshEntries()
             }
         )
     }
@@ -323,15 +323,15 @@ public final class AppState {
             prepare: { [weak self] in
                 defer {
                     self?.search.invalidateIndex(dataDir: directory)
-                    self?.loadEntries()
+                    self?.refreshEntries()
                 }
                 try Pipeline.prepareReprocessing(stem: stem, dataDir: directory)
                 for path in resultPaths where FileManager.default.fileExists(atPath: path) {
                     try FileManager.default.removeItem(atPath: path)
                 }
             },
-            onComplete: { [weak self] in self?.loadEntries() },
-            onError: { [weak self] _ in self?.loadEntries() }
+            onComplete: { [weak self] in self?.refreshEntries() },
+            onError: { [weak self] _ in self?.refreshEntries() }
         )
         if accepted && !ready { ensureModelsDownloaded() }
     }
@@ -361,10 +361,10 @@ public final class AppState {
         processing.batchResumePending(
             pendingEntries: pendingEntries,
             dataDir: config.dataDir,
-            onProgress: { [weak self] in self?.loadEntries() },
+            onProgress: { [weak self] in self?.refreshEntries() },
             onComplete: { [weak self] in
                 self?.processing.stage = .done
-                self?.loadEntries()
+                self?.refreshEntries()
             },
             onError: { _ in }
         )
