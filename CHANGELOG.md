@@ -43,6 +43,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
+- Shorten the three TNG reference recording scripts in English, Dutch and German, use more natural spoken language, and refresh their expected outputs and recording instructions.
+
 - Add an experimental CLI option to generate filing categories, filenames and searchable metadata together.
 - Keep backlog-only updates out of changelog coverage and release notes; remove backlog noise and duplicate context from the existing history.
 - Let the category list scroll with the whole Context or setup page instead of inside a fixed-height panel.

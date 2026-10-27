@@ -27,5 +27,7 @@ validation do not load inference models. Generation requires the selected models
 never run concurrent inference jobs or use personal recordings. Model evaluations
 run separately from release preparation.
 
-The [TNG reference corpus](tng-reference/README.md) is retained material, not an
-active suite. Demo inputs under `demo/` are presentation material.
+The [TNG reference scripts](tng-reference/README.md) are three short, fictional
+recording scripts in English, Dutch and German, with paired expected outputs.
+The owner still needs to record the audio. These scripts are separate from the
+active suites. Demo inputs under `demo/` are presentation material.

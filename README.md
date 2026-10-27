@@ -163,7 +163,7 @@ Transcription uses Whisper Large-v2. Cleanup, categorization, filenames, and met
 - [Release procedure](#changelog-and-releases)
 - [Third-party notices](./THIRD-PARTY-NOTICES.md)
 - [Active evaluation fixtures](./eval/)
-- [Inactive TNG reference corpus](./eval/tng-reference/README.md)
+- [Three short TNG recording scripts](./eval/tng-reference/README.md)
 - [Design references](./design/README.md)
 - [Architecture decisions](#architecture-decisions)
 
@@ -230,7 +230,10 @@ QWEN_FOLDER, QWEN_FILE, QWEN_LABEL, WHISPER_FOLDER and WHISPER_MODEL variables;
 seeds come from its case manifest; the pipeline and other stages retain their
 sampling defaults. Text cases reuse weights sequentially with fresh contexts and
 samplers. Compile before inference; never edit a running evaluator or start another
-model job concurrently. The retained TNG reference corpus is not an active suite.
+model job concurrently. The [TNG reference folder](eval/tng-reference/README.md)
+contains three short recording scripts, one each in English, Dutch and German,
+with paired expected outputs. Audio is still to be recorded by the owner; these
+scripts are separate from the active suites.
 
 For opt-in native startup and quit performance checks, close the installed app,
 provide the prepared `CAPTAINSLOG_WHISPER_MODEL_FOLDER` and
