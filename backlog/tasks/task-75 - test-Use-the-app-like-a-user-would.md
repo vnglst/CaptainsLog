@@ -1,10 +1,10 @@
 ---
 id: TASK-75
 title: '[test] Use the app like a user would'
-status: Next
+status: Verify
 assignee: []
-created_date: '2026-10-27 13:24'
-updated_date: '2026-10-27 13:24'
+created_date: 2026-10-27 13:24
+updated_date: '2026-10-28T17:39:00Z'
 labels: []
 dependencies: []
 ordinal: 65500
