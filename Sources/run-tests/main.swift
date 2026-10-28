@@ -6062,6 +6062,31 @@ func runTests() async {
         try expect(calls.snapshot() == ["whisper", "qwen"])
     }
 
+    test("AppState: model deletion rechecks busy state before touching files") {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("ModelDeletion-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let weights = root.appendingPathComponent("fixture.gguf")
+        try Data("synthetic model placeholder".utf8).write(to: weights)
+        let previousFolder = CaptainsLogConfig.load().qwenModelFolder
+        defer { try? CaptainsLogConfig.update { $0.qwenModelFolder = previousFolder } }
+        try CaptainsLogConfig.update { $0.qwenModelFolder = root.path }
+        let state = AppState(config: ConfigManager(loadContextFiles: false))
+        state.models.modelState = .downloading(model: "fixture", progress: 0)
+        try expect(!state.canDeleteModels)
+        var rejected = false
+        do { try state.deleteModel(.qwen) } catch { rejected = true }
+        try expect(rejected, "Deletion must reject an active model download")
+        try expect(FileManager.default.fileExists(atPath: weights.path))
+        try expect(CaptainsLogConfig.load().qwenModelFolder == root.path)
+        state.models.modelState = .ready
+        try expect(state.canDeleteModels)
+        try state.deleteModel(.qwen)
+        try expect(!FileManager.default.fileExists(atPath: weights.path))
+        try expect(state.config.qwenModelFolder.isEmpty)
+        try expect(!state.models.modelsReady)
+    }
+
     // MARK: - ModelManager Tests
 
     test("ModelManager: initial model state is ready") {

@@ -462,8 +462,11 @@ private struct FieldNotesEntriesView: View {
             Text("Record a thought below. CaptainsLog turns it into a note, without uploading your recording.")
                 .font(FieldNotes.Typography.body())
                 .foregroundStyle(FieldNotes.ColorToken.secondaryText)
+                .fixedSize(horizontal: false, vertical: true)
         }
         .multilineTextAlignment(.center)
+        .frame(maxWidth: 420)
+        .padding(.horizontal, FieldNotes.Spacing.xl)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.bottom, 90)
     }
@@ -1339,11 +1342,7 @@ private struct FieldNotesSettingsView: View {
     }
 
     private var canDeleteModels: Bool {
-        guard !isDemoMode, !deletingModel, !appState.isRecording,
-              !appState.isProcessing, !appState.processing.hasScheduledWork,
-              !appState.search.isActive, !appState.updates.isInstalling else { return false }
-        if case .downloading = appState.modelState { return false }
-        return true
+        !deletingModel && appState.canDeleteModels
     }
 
     private func refreshModelUsage() async {
@@ -1355,18 +1354,9 @@ private struct FieldNotesSettingsView: View {
     private func deleteModel(_ model: ModelStorage.Model) async {
         guard canDeleteModels else { return }
         deletingModel = true
-        defer {
-            deletingModel = false
-            let saved = CaptainsLogConfig.load()
-            appState.config.whisperModelFolder = saved.whisperModelFolder ?? ""
-            appState.config.qwenModelFolder = saved.qwenModelFolder ?? ""
-        }
+        defer { deletingModel = false }
         do {
-            if model == .embeddings { appState.search.releaseModel() }
-            // Keep deletion synchronous with the idle check: no recording or
-            // processing can start between that check and removing the files.
-            appState.models.didDeleteModel(model)
-            try ModelStorage.delete(model)
+            try appState.deleteModel(model)
             storageMessage = "Model deleted. It will download again when needed."
         } catch {
             storageMessage = error.localizedDescription

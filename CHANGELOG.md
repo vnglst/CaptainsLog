@@ -23,6 +23,9 @@ entry. Git links provide the complete commit history for each release.
 
 ### Fixed
 
+- Keep the first-log invitation readable with a centered, wrapping caption and side margins in narrow windows.
+- Keep model deletion eligibility, model lifecycle updates and saved-path synchronization together outside Settings layout.
+
 - Stop the app from freezing after a recording when reading log files stalls (for example cloud-evicted files); entry lists now refresh off the main thread, including after processing, pause, resume, reprocess and batch runs, and processing stage detection no longer blocks the UI.
 
 - Finalize active recordings before quitting; bound shutdown when native model initialization cannot stop promptly, without racing Metal teardown.
