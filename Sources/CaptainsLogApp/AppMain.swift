@@ -26,6 +26,18 @@ struct CaptainsLogApp: App {
                 exit(EX_CONFIG)
             }
         }
+        let unmetRequirements = SystemRequirements.currentUnmetRequirements()
+        if !unmetRequirements.isEmpty {
+            NSApplication.shared.setActivationPolicy(.regular)
+            NSApplication.shared.activate(ignoringOtherApps: true)
+            let alert = NSAlert()
+            alert.alertStyle = .critical
+            alert.messageText = "This Mac cannot run CaptainsLog"
+            alert.informativeText = unmetRequirements.joined(separator: "\n\n")
+            alert.addButton(withTitle: "Quit")
+            alert.runModal()
+            exit(EX_UNAVAILABLE)
+        }
         AppPerformanceTrace.mark("app-init")
         #if DEBUG
         if ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_TRACE"] != nil {

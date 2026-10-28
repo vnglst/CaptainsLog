@@ -3960,6 +3960,24 @@ func runTests() async {
     let suiteName = lightweightUnitOnly ? "Lightweight CaptainsLog Unit Tests" : "Full CaptainsLog Tests"
     print("\nRunning \(suiteName)...\n")
 
+    test("System requirements: supported platform passes; unsupported capabilities explain every failure") {
+        try expect(SystemRequirements.unmetRequirements(
+            macOSMajorVersion: 26, isAppleSilicon: true, hasMetalDevice: true).isEmpty)
+        try expect(SystemRequirements.unmetRequirements(
+            macOSMajorVersion: 27, isAppleSilicon: true, hasMetalDevice: true).isEmpty)
+        let oldOS = SystemRequirements.unmetRequirements(
+            macOSMajorVersion: 25, isAppleSilicon: true, hasMetalDevice: true)
+        try expect(oldOS.count == 1 && oldOS[0].contains("macOS 26"))
+        let intel = SystemRequirements.unmetRequirements(
+            macOSMajorVersion: 26, isAppleSilicon: false, hasMetalDevice: true)
+        try expect(intel.count == 1 && intel[0].contains("Apple Silicon"))
+        let noGPU = SystemRequirements.unmetRequirements(
+            macOSMajorVersion: 26, isAppleSilicon: true, hasMetalDevice: false)
+        try expect(noGPU.count == 1 && noGPU[0].contains("Metal"))
+        try expect(SystemRequirements.unmetRequirements(
+            macOSMajorVersion: 25, isAppleSilicon: false, hasMetalDevice: false).count == 3)
+    }
+
     await testAsync("Transcriber: genuine QuickTime audio converts to readable audio without changing the source") {
         let fm = FileManager.default
         let fixture = URL(fileURLWithPath: fm.currentDirectoryPath)
