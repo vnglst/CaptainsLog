@@ -1,9 +1,10 @@
 ---
 id: TASK-72
 title: Assess minimal system requirements on startup
-status: Next
+status: Verify
 assignee: []
-created_date: '2026-10-19 18:54'
+created_date: 2026-10-19 18:54
+updated_date: '2026-10-28T11:45:00Z'
 labels: []
 dependencies: []
 ordinal: 64000

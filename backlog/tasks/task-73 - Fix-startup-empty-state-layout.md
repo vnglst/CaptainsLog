@@ -1,9 +1,10 @@
 ---
 id: TASK-73
 title: Fix startup empty-state layout
-status: Next
+status: Verify
 assignee: []
-created_date: '2026-10-19 19:18'
+created_date: 2026-10-19 19:18
+updated_date: '2026-10-28T11:46:00Z'
 labels: []
 dependencies: []
 references:

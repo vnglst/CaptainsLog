@@ -1,9 +1,10 @@
 ---
 id: TASK-74
 title: Refactor separation of concerns
-status: Next
+status: Verify
 assignee: []
-created_date: '2026-10-20 06:53'
+created_date: 2026-10-20 06:53
+updated_date: '2026-10-28T11:45:00Z'
 labels: []
 dependencies: []
 ordinal: 66000
