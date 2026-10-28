@@ -14,6 +14,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Added
 
+- Add reusable user scenarios for checking candidate builds before releases.
+
 - Check the supported macOS, Apple Silicon and Metal requirements before startup and explain unmet requirements before loading models.
 
 - Transcribe app and pipeline recording chunks while capacity is available to reduce processing after stop, with full-file fallback when another inference job is active or background transcription is unsafe or fails, and a bounded chunk queue that accommodates slow initial model loading.

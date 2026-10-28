@@ -171,3 +171,31 @@ For an isolated native performance check on a cold CoreML specialization cache,
 setup watchdog (default 180 seconds; accepted range 180–600). Metadata records
 the selected value. Actual native decoding readiness, ordered shutdown markers
 and the three-second processing quit limit remain required.
+
+## User scenarios before a release
+
+Run these scenarios against the candidate build, using only repository `eval/`
+fixtures and fresh isolated configuration/data. Check UI access before starting;
+a locked screen or denied access leaves interactive scenarios unverified. Quit
+other app instances and run all model work sequentially. Preserve the build
+revision, configuration, fixture names, screenshots/video, observed results and
+failures under ignored `tmp/`. Mark a scenario passed only after its actions and
+observable results have been checked; simulated UI states establish presentation
+only.
+
+| Scenario | Actions | Check |
+|---|---|---|
+| First launch | Start `make ui ARGS=onboarding`; walk through onboarding, choose categories and context, then open Logs. | Every control is reachable; setup completes; choices appear in Context and Settings. This harness skips actual model download. |
+| Empty library | Start `make ui ARGS=eval-empty`; resize to a small supported window and a large window; open Context and Settings and return. | Empty-state content and recording controls remain readable and do not overlap; navigation remains usable. |
+| Import through completed log | Launch the candidate executable directly with `CAPTAINS_LOG_CONFIG_PATH` pointing to fresh isolated config and data, bypassing demo seeding. Configure prepared models; copy `eval/transcribe/audio/2025-01-14 side project.m4a` into its `audio/` directory. Follow transcription, cleanup, categorization and completion; open the log. | The original audio survives; the completed log is readable and searchable. Compare transcript, cleaned text and final output with the corresponding eval references for omissions, changed meaning and invented content. Preview fixtures cannot establish this result. |
+| Pause and resume | During real fixture processing, Pause, then Resume; repeat while cancellation is still draining. | UI remains responsive; work resumes from saved progress; requests run serially; no duplicate or partial completed log appears. |
+| Reprocess | Reprocess the completed fixture from the row action and from log detail; Pause a queued restart, then request it again. | Derived results clear immediately; original audio remains; all stages rerun; a later Pause discards waiting work without restoring deleted outputs. |
+| Search and filters | Search for a distinctive phrase from the completed fixture, change category filters, try a missing phrase and clear search. Open a result. | Results respect filters and open the expected log; empty results are understandable; clearing search restores Logs. Use prepared embedding models for real search. |
+| Context and settings | Change categories, personal context and a correction; change microphone selection; quit and reopen the same isolated build/config. | Choices persist. Future processing uses the chosen context; existing logs remain available. Do not record personal audio to test input selection. |
+| Model availability | Inspect Models and its disk usage; inspect `eval-model-downloading` and `eval-model-error` presentation states. Test actual missing-model setup only in a separate disposable model directory. | Progress and failures are understandable and retry remains available. Never delete prepared/shared model caches; preview states do not verify downloads or recovery. |
+| Recording controls | Inspect `eval-recording` and `eval-recording-paused`; for hardware capture use separately confirmed `make tests-recorder`. For processing use eval audio and the existing fixture recording engine. | Recording, pause and stop controls remain reachable; captured audio finalizes before processing. State previews do not verify hardware capture or transcription during capture. |
+| Quit and reopen | Quit once idle and once during fixture transcription, then reopen the isolated candidate. Use `make tests-app-performance` for bounded native shutdown evidence. | Process exits without hanging; original audio and saved checkpoints survive; unfinished work remains pending. An idle quit does not verify native cancellation. |
+
+Keep per-run observations in the evidence directory. Report unperformed actions
+and fixture-only substitutes explicitly; do not turn a presentation preview into
+a claim that real processing passed.
