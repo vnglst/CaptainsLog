@@ -214,7 +214,7 @@ async function showOverview(push=true){
  const cards=$('reviewCards');cards.replaceChildren();$('overviewStatus').textContent='Loading reviews…';
  try{
   const response=await fetch('/api/reviews',{cache:'no-store'});if(!response.ok)throw new Error('Could not load review overview.');const result=await response.json();
-  result.reviews.sort((a,b)=>a.title.localeCompare(b.title));const history=document.createElement('details');history.className='review-history';const historyTitle=document.createElement('summary');historyTitle.textContent='Earlier review rounds';history.append(historyTitle);const historyCards=document.createElement('div');historyCards.className='history-cards';history.append(historyCards);
+  result.reviews.sort((a,b)=>a.title.localeCompare(b.title));
   for(const item of result.reviews){
    const card=document.createElement('article');card.className='review-card';const title=document.createElement('h2');title.textContent=item.title;card.append(title);
    const progress=document.createElement('p');progress.textContent=item.complete?`Complete · ${item.verified} verified${item.replaced_passages?.length?' · '+item.replaced_passages.length+' replaced':''}${item.carried_passages?.length?' · '+item.carried_passages.length+' carried forward':''}`:`${item.resolved??item.verified} of ${item.total} passages resolved`;progress.className='muted';card.append(progress);
@@ -222,8 +222,8 @@ async function showOverview(push=true){
    for(const [text,passage,primary] of (item.complete?[['Open review','full',false]]:[[item.verified?'Continue review':'Start review',item.next_passage,true],['Recording & exports','full',false]])){
     const target=item;const targetPassage=passage;const link=document.createElement('a');link.className=primary?'button-link primary':'button-link';link.textContent=text;link.href=`${target.url}/#recording=${encodeURIComponent(target.recording_id)}&passage=${encodeURIComponent(targetPassage)}`;
     if(item.current&&target===item)link.addEventListener('click',async event=>{event.preventDefault();recording=data.recordings.find(r=>r.id===item.recording_id);await navigateTo(passage==='full'?recording.passages[0].id:passage,passage==='full')});actions.append(link);
-   }card.append(actions);(item.archived?historyCards:cards).append(card);
-  }if(historyCards.children.length)cards.append(history);$('overviewStatus').textContent=result.reviews.length?'':'No reviews are available.';
+   }card.append(actions);cards.append(card);
+  }$('overviewStatus').textContent=result.reviews.length?'':'No reviews are available.';
  }catch(error){$('overviewStatus').textContent=error.message}
 }
 $('overviewButton').addEventListener('click',()=>showOverview());$('backOverview').addEventListener('click',()=>showOverview());

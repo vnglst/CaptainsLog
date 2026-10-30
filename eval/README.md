@@ -35,8 +35,7 @@ recording accepted by the owner after two listening rounds on 2026-10-30.
 - Manifest: `transcribe/cases.json` pins both hashes and `audio-reviewed` status.
 - Passage timing and provenance: matching files in `transcribe/review/`.
 
-Run `make evals STAGE=transcribe` for the single WER case, or
-`make evals-pipeline` for its complete audio-to-log pipeline. Every run snapshots
+Run `make evals STAGE=transcribe` for the single WER case. Full pipeline evaluation is separate follow-up work (TASK-82). Every run snapshots
 inputs, raw output and an aligned WER report. WER measures word edits; semantic
 review still matters, especially for hallucinations and changed meaning.
 

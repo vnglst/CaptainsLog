@@ -55,4 +55,3 @@ button.identity{background:transparent;border:0;padding:0;text-align:left;cursor
 
 .review-card.review-complete{border-color:#557346}.review-complete>.muted{color:var(--success)}
 
-.review-history{grid-column:1/-1;margin-top:12px;border-top:1px solid var(--line);padding-top:20px}.review-history>summary{cursor:pointer;color:var(--quiet);font-size:13px}.history-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:16px;margin-top:20px}
