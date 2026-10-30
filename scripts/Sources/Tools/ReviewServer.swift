@@ -92,7 +92,6 @@ final class EvalReviewServer: @unchecked Sendable {
         if path == "/api/reviews", method == "GET" {
             var sessions: [EvalItem] = [["root": root.path, "url": "http://127.0.0.1:\(port)"]]
             if let catalog, let registered = try? tools.json(catalog) as? [EvalItem] { sessions = registered }
-            let activeNames = Set(((try? tools.json(tools.path("eval/transcribe/cases.json"))) as? [String: EvalItem] ?? [:]).keys)
             var result: [EvalItem] = []
             for session in sessions {
                 guard let folder = session["root"] as? String, let url = session["url"] as? String,
@@ -102,13 +101,11 @@ final class EvalReviewServer: @unchecked Sendable {
                 let saved = state["reviews"] as? [String: EvalItem] ?? [:]
                 for recording in data["recordings"] as? [EvalItem] ?? [] {
                     let passages = recording["passages"] as? [EvalItem] ?? []
-                    let archived = (recording["name"] as? String).map { !activeNames.contains($0) } ?? false
-                    if archived && !passages.contains(where: { saved[$0["id"] as? String ?? ""] != nil }) { continue }
                     let verified = passages.filter { p in
                         guard let id = p["id"] as? String, let review = saved[id], ["matches", "corrected"].contains(review["status"] as? String ?? ""), let context = p["context"] as? EvalItem else { return false }
                         return sameContext(review["context"] as? EvalItem, context)
                     }.count
-                    result.append(["title": recording["title"] ?? "Recording", "recording_id": recording["id"] ?? "", "url": url, "verified": verified, "total": passages.count, "next_passage": passages.first(where: { p in guard let id = p["id"] as? String else { return false }; return !["matches", "corrected"].contains(saved[id]?["status"] as? String ?? "") })?["id"] ?? passages.first?["id"] ?? "", "current": folder == root.path, "archived": archived, "audio_sha256": recording["audio_sha256"] ?? "", "reference_sha256": recording["reference_sha256"] ?? "", "passages": passages, "saved": saved, "exports": state["consolidations"] ?? [], "carried_candidates": recording["carried_passages"] ?? []])
+                    result.append(["title": recording["title"] ?? "Recording", "recording_id": recording["id"] ?? "", "url": url, "verified": verified, "total": passages.count, "next_passage": passages.first(where: { p in guard let id = p["id"] as? String else { return false }; return !["matches", "corrected"].contains(saved[id]?["status"] as? String ?? "") })?["id"] ?? passages.first?["id"] ?? "", "current": folder == root.path, "audio_sha256": recording["audio_sha256"] ?? "", "reference_sha256": recording["reference_sha256"] ?? "", "passages": passages, "saved": saved, "exports": state["consolidations"] ?? [], "carried_candidates": recording["carried_passages"] ?? []])
                 }
             }
             for index in result.indices {

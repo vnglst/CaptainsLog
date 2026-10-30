@@ -14,7 +14,7 @@ entry. Git links provide the complete commit history for each release.
 
 ### Added
 
-- Add transcription Word Error Rates and a persistent local audio/text review app styled to match CaptainsLog, with playback markers for choosing replacement ranges, replacement audio takes with microphone selection and clear take-selection actions and a shared review overview with completed-review status, carried-forward verification for unchanged passages, and follow-up navigation, and a focused corrected-recording result with export history; make the Dutch TNG recording available in evaluations and the development demo, with the owner-reviewed corrected Dutch recording as the single active transcription evaluation and earlier recordings and review rounds archived.
+- Add transcription WER scoring and reusable local audio/text review, including replacement recording and consolidation, completed-review status and carried-forward checks. Use the reviewed Dutch recording as the single active transcription eval and in the development demo.
 
 - Add reusable user scenarios for checking candidate builds before releases.
 
