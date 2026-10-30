@@ -61,7 +61,7 @@ extension Tools {
             let output = savedFile("output", "output.md")
             let transcript = fm.fileExists(atPath: output.path) ? try admittedText(output) : nil
             let liveDefinition = path("eval/transcribe/review/\(name).json")
-            let definitionURL = fm.fileExists(atPath: liveDefinition.path) ? liveDefinition : path("eval/transcribe/archive/review/\(name).json")
+            let definitionURL = fm.fileExists(atPath: liveDefinition.path) ? liveDefinition : path("eval/transcribe/history/review/\(name).json")
             let definition = fm.fileExists(atPath: definitionURL.path) ? try json(definitionURL) as? EvalItem : nil
             let duplicate = audioCases.filter { evaluator.string($0, "name") == name }.count > 1
             let baseID = evaluator.string(definition ?? [:], "id", "recording-\(index)")
@@ -108,10 +108,10 @@ extension Tools {
             if let sourceName = fixture["reference_check"] as? EvalItem, let parent = sourceName["derived_from"] as? String,
                let provenance = (try? json(provenanceURL)) as? EvalItem,
                let editMap = provenance["edit_map"] as? EvalItem, editMap["corrected_sha256"] as? String == audioHash,
-               let sourceDefinition = (try? json(path("eval/transcribe/archive/review/\(parent).json"))) as? EvalItem,
+               let sourceDefinition = (try? json(path("eval/transcribe/history/review/\(parent).json"))) as? EvalItem,
                sourceDefinition["audio_sha256"] as? String == provenance["source_audio_sha256"] as? String,
                sourceDefinition["reference_sha256"] as? String == provenance["source_reference_sha256"] as? String {
-                let sourceText = ReviewText(try read(path("eval/transcribe/archive/expected/\(parent).md")))
+                let sourceText = ReviewText(try read(path("eval/transcribe/history/expected/\(parent).md")))
                 var originals = sourceDefinition["passages"] as? [EvalItem] ?? []
                 for i in originals.indices {
                     if let a = originals[i]["reference_start_word"] as? Int, let b = originals[i]["reference_end_word"] as? Int { originals[i]["reference"] = sourceText.excerpt(a, b) }

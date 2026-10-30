@@ -12,6 +12,10 @@ entry. Git links provide the complete commit history for each release.
 
 ## [Unreleased]
 
+### Changed
+
+- Organize evaluation results under each stage’s history folder and retain transcription review rounds and not-reviewed recordings outside active selection.
+
 ### Added
 
 - Add transcription WER scoring and reusable local audio/text review, including replacement recording and consolidation, completed-review status and carried-forward checks. Use the reviewed Dutch recording as the single active transcription eval and in the development demo.

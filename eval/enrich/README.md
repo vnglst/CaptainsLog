@@ -66,12 +66,12 @@ extraction of unusually repetitive names. The then-current 0.6.0/0.26.0 runtime 
 completed in 177 tokens, with byte-identical output. All five cases passed sequential generation and saved validation in run
 `2026-10-08_18-31-07_71234_Qwen3.5-9B-Q4_K_M`. Build, 25 validator checks and
 six CLI seed boundaries passed. The per-case reports were retained under
-`eval/enrich/reports/`. ADR-007 records the test-runner decision; it is not an
+`eval/enrich/history/reports/`. ADR-007 records the test-runner decision; it is not an
 evaluation history.
 
 ## Historical comparison procedure
 
-[`baseline-observability.patch`](baseline-observability.patch) adds seed passthrough,
+[`history/baseline-observability.patch`](history/baseline-observability.patch) adds seed passthrough,
 diagnostics and optional tracing to code before the fix, without altering its
 sampler, decoding, unbounded budget or error behavior. It selects matching copied
 headers and loads the native backend directory explicitly. Use matching native
@@ -88,7 +88,7 @@ REPO_DIR="$PWD"
 mkdir -p tmp
 REPRO_DIR="$(mktemp -d "$REPO_DIR/tmp/enrich-baseline-XXXXXX")"
 git archive 556ef708fd6f9f4ac07408cc9689a5cbc2ac00db | tar -x -C "$REPRO_DIR"
-git apply --directory="${REPRO_DIR#"$REPO_DIR/"}" eval/enrich/baseline-observability.patch
+git apply --directory="${REPRO_DIR#"$REPO_DIR/"}" eval/enrich/history/baseline-observability.patch
 mkdir -p "$REPRO_DIR/Sources/CLlama/legacy-include"
 cp "$CAPTAINS_LOG_BASELINE_LLAMA_DIR/include/llama.h" "$REPRO_DIR/Sources/CLlama/legacy-include/"
 cp "$CAPTAINS_LOG_BASELINE_GGML_DIR/include/"*.h "$REPRO_DIR/Sources/CLlama/legacy-include/"

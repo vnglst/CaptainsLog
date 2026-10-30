@@ -1,0 +1,1 @@
+I want to read the book called "Facilitating Software Architecture" by Andrew Harmel Law, who I saw at the GOTO Conference last year.

@@ -183,7 +183,7 @@ final class Evaluator {
         for i in items.indices {
             let stage = string(items[i], "stage"), label = stage == "transcribe" ? tools.environment["CAPTAINS_LOG_EVAL_WHISPER_MODEL"] ?? "openai_whisper-large-v2" : tools.environment["CAPTAINS_LOG_EVAL_QWEN_LABEL"] ?? "Qwen3.5-9B-Q4_K_M"
             try tools.require(tools.match("\\A[\\w.-]+\\z", label) != nil, "Model label must be a filename component")
-            items[i]["output"] = tools.path("eval/\(stage)/generated/\(stamp)_\(label)_\(string(items[i], "name")).\(stage == "categorize" ? "json" : "md")").path
+            items[i]["output"] = tools.path("eval/\(stage)/history/generated/\(stamp)_\(label)_\(string(items[i], "name")).\(stage == "categorize" ? "json" : "md")").path
             if items[i]["date"] == nil { items[i]["date"] = date }; if items[i]["recording_time"] == nil { items[i]["recording_time"] = time }
         }
     }

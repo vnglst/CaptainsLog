@@ -66,7 +66,7 @@ extension Tools {
         for key in keys { try require(!(environment[key] ?? "").isEmpty, "Set \(key) to an already-installed model before running this opt-in smoke.", status: 2) }
         for key in [keys[1], keys[3]] { var directory: ObjCBool = false; try require(fm.fileExists(atPath: environment[key]!, isDirectory: &directory) && directory.boolValue, "Model folder does not exist: \(environment[key]!)", status: 2) }
         try require(files(path(environment[keys[3]]!)).contains { $0.pathExtension == "gguf" }, "Qwen model folder must contain an installed .gguf file.", status: 2)
-        let fixture = path("eval/transcribe/archive/audio/durins-volk.m4a")
+        let fixture = path("eval/transcribe/history/audio/durins-volk.m4a")
         try require(nonempty(fixture), "Synthetic transcription fixture missing", status: 2)
         let dir = try temporary("captainslog-model-smoke-"); defer { try? fm.removeItem(at: dir) }; try isolated(dir)
         for (key, value) in [("whisperModel", environment[keys[0]]!), ("whisperModelFolder", environment[keys[1]]!), ("qwenModelId", environment[keys[2]]!), ("qwenModelFolder", environment[keys[3]]!)] { try run(["swift", "run", "cl", "config", "set", key, value], quiet: true) }
@@ -113,8 +113,8 @@ extension Tools {
         }
         let slug = try source("filename/expected/2025-01-14 side project.md").trimmingCharacters(in: .whitespacesAndNewlines).replacingOccurrences(of: ".md", with: "")
         let cleaned = try source("cleanup/expected/2025-01-14 side project.md")
-        try completed("2025-01-14-0730", slug, "side_project", "transcribe/archive/expected/2025-01-14 side project.md", cleaned, source("enrich/expected/2025-01-14 side project.md") + cleaned)
-        try copy(path("eval/transcribe/archive/audio/2025-01-14 side project.m4a"), data.appendingPathComponent("audio/2025-01-14-0730.m4a"))
+        try completed("2025-01-14-0730", slug, "side_project", "transcribe/history/expected/2025-01-14 side project.md", cleaned, source("enrich/expected/2025-01-14 side project.md") + cleaned)
+        try copy(path("eval/transcribe/history/audio/2025-01-14 side project.m4a"), data.appendingPathComponent("audio/2025-01-14-0730.m4a"))
         let work = try source("enrich/input/01_work_week.md")
         try completed("2025-01-15-1200", "2025-01-15-work-week-review", "professional", "enrich/input/01_work_week.md", work, source("enrich/expected/01_work_week.md") + work)
         try copy(path("eval/cleanup/input/book-reference.md"), data.appendingPathComponent(".pipeline/01-transcribed/2025-01-16-0900.md"))

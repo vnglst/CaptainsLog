@@ -16,7 +16,7 @@ extension Evaluator {
             }
         }
         if includingArchived {
-            let archive = tools.path("eval/transcribe/archive")
+            let archive = tools.path("eval/transcribe/history")
             if let historical = (try? tools.json(archive.appendingPathComponent("cases.json"))) as? [String: EvalItem] {
                 for (name, entry) in historical where entries[name] == nil {
                     try tools.require(entry["audio_sha256"] as? String == tools.hash(archive.appendingPathComponent("audio/\(name).m4a")), "Archived recording hash mismatch: \(name)")

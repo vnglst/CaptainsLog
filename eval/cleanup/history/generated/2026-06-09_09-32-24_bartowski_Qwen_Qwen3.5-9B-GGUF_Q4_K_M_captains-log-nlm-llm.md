@@ -1,0 +1,1 @@
+I have some great ideas around Captain's Log. It will be a way for me to get more insights from my notes. I'm not really sure how, but I'm thinking about creating a hierarchy, a knowledge graph on top of it using tags like Obsidian does, and let an NLM do that for me. I'm curious to see if that works.

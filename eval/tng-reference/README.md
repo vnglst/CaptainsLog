@@ -28,7 +28,7 @@ between completed repairs, planned checks and unresolved questions.
 
 The Dutch recording is active in the transcription suite and available as a pending
 memo in the isolated development demo. Its script remains unchanged; the separate
-verbatim transcription reference incorporates the owner’s wording corrections and was accepted after two audio-review rounds on 2026-10-30. The original and intermediate rounds are preserved in `../transcribe/archive/`. Do not use generated recognition output as ground truth.
+verbatim transcription reference incorporates the owner’s wording corrections and was accepted after two audio-review rounds on 2026-10-30. The original and intermediate rounds are preserved in `../transcribe/history/`. Do not use generated recognition output as ground truth.
 
 Run `make evals STAGE=transcribe CASE=tng-nl01-vrije-dag-enterprise-corrected` for aligned
 WER scoring, or `make evals-pipeline CASE=tng-nl01-vrije-dag-enterprise-corrected` for the

@@ -20,7 +20,7 @@ extension Tools {
         try json(local("config.json"), ["schemaVersion": 1, "dataDir": local("data").path])
         for (source, destination) in [
             ("eval/cleanup/input/captains-log-nlm-llm.md", "input.md"),
-            ("eval/transcribe/archive/expected/durins-volk.md", "data/.pipeline/01-transcribed/2025-01-14-0830.md"),
+            ("eval/transcribe/history/expected/durins-volk.md", "data/.pipeline/01-transcribed/2025-01-14-0830.md"),
             ("eval/filename/input/01_single_topic.md", "filename-input.md"),
             ("eval/enrich/input/01_work_week.md", "enrich-input.md"),
         ] { try copy(path(source), local(destination)) }

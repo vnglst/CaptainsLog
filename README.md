@@ -234,7 +234,7 @@ samplers. Compile before inference; never edit a running evaluator or start anot
 model job concurrently. The [TNG reference folder](eval/tng-reference/README.md)
 contains three personal log scripts aboard the Enterprise, each about ten
 minutes long, in English, Dutch and German, with paired expected outputs.
-The corrected, owner-reviewed Dutch recording is the only active transcription case. Other recordings and earlier review rounds are preserved under `eval/transcribe/archive/`; English and German TNG audio are still to be recorded by the owner.
+The corrected, owner-reviewed Dutch recording is the only active transcription case. Other recordings and earlier review rounds are preserved under `eval/transcribe/history/`; English and German TNG audio are still to be recorded by the owner.
 
 For opt-in native startup and quit performance checks, close the installed app,
 provide the prepared `CAPTAINSLOG_WHISPER_MODEL_FOLDER` and

@@ -17,9 +17,7 @@ make evals ARGS="--validate-run RUN_DIR"
 
 The runner snapshots fixtures, isolates config/data, records model/runtime
 identity, and prints a review bundle under its temporary run directory. Text
-cases reuse one model sequentially with fresh contexts and samplers. Legacy
-`generated/` and `reports/` directories retain older ignored outputs; new run
-bundles contain their own outputs, validation and per-case reports.
+cases reuse one model sequentially with fresh contexts and samplers. Stage `history/generated/` and `history/reports/` folders preserve previous results; new run bundles contain their own outputs, validation and per-case reports.
 
 See [evaluation commands and isolation](../README.md#fixture-evaluations) and the
 [stage review skills](../skills/) for semantic review. Discovery and saved-run
@@ -43,15 +41,15 @@ inputs, raw output and an aligned WER report. WER measures word edits; semantic
 review still matters, especially for hallucinations and changed meaning.
 
 Earlier recordings are **not active transcription evaluations**. Their audio,
-references and timing definitions live in `transcribe/archive/` for later review
+references and timing definitions live in `transcribe/history/` for later review
 and existing synthetic regression checks. Text-stage fixtures remain independent.
 
-The two preserved review rounds in `transcribe/archive/review-1/` and `review-2/`
+The two preserved review rounds in `transcribe/history/review-1/` and `review-2/`
 contain raw outputs, measurements, owner decisions, replacement takes, timing maps
 and the browser review app. Reopen either with, for example:
 
 ```sh
-make evals-review RUN_DIR=eval/transcribe/archive/review-2
+make evals-review RUN_DIR=eval/transcribe/history/review-2
 ```
 
 The [TNG scripts](tng-reference/README.md) preserve the original script separately

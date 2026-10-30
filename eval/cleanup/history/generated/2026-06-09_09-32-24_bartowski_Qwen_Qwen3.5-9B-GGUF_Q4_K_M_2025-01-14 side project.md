@@ -1,0 +1,1 @@
+[34m0.01.008.592[0m [31mE srv    send_error: task id = 0, error: request (2211 tokens) exceeds the available context size (2048 tokens), try increasing it
