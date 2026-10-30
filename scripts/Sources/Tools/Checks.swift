@@ -4,18 +4,26 @@ import Darwin
 extension Tools {
     func nonempty(_ url: URL) -> Bool { ((try? fm.attributesOfItem(atPath: url.path)[.size] as? NSNumber)?.intValue ?? 0) > 0 }
     func evalPipeline(_ args: [String]) throws {
-        try require(args.count == 2 || (args.count == 3 && args[2] == "--combined-metadata"), "Usage: eval-pipeline RUN_DIR CL [--combined-metadata]", status: 2)
-        let dir = path(args[0]), cl = args[1], data = dir.appendingPathComponent("data")
-        try run([cl, "pipeline", "--input", "eval/transcribe/audio/2025-01-14 side project.m4a", "--data-dir", data.path] + (args.count == 3 ? [args[2]] : []), log: dir.appendingPathComponent("pipeline.log"))
-        for relative in ["01-transcribed/2025-01-14 side project.md", "02-logs/2025-01-14 side project.md", "03-category/2025-01-14 side project.json"] {
+        try require(args.count >= 2 && args.dropFirst(2).allSatisfy { ["--combined-metadata", "--check-artifacts"].contains($0) }, "Usage: eval-pipeline RUN_DIR CL [--combined-metadata] [--check-artifacts]", status: 2)
+        let dir = path(args[0]), cl = args[1], data = dir.appendingPathComponent("data"), eval = Evaluator(self)
+        guard let manifest = try json(dir.appendingPathComponent("manifest.json")) as? [EvalItem],
+              let audio = manifest.first(where: { eval.string($0, "scope") == "pipeline" && eval.string($0, "stage") == "transcribe" }) else { throw ToolFailure("Missing pipeline audio fixture") }
+        let stem = eval.string(audio, "name")
+        if !args.contains("--check-artifacts") {
+            try run([cl, "pipeline", "--input", eval.string(audio, "input"), "--data-dir", data.path] + (args.contains("--combined-metadata") ? ["--combined-metadata"] : []), log: dir.appendingPathComponent("pipeline.log"))
+        }
+        for relative in ["01-transcribed/\(stem).md", "02-logs/\(stem).md", "03-category/\(stem).json"] {
             try require(nonempty(data.appendingPathComponent(".pipeline/" + relative)), "Pipeline artifact assertion failed: \(relative)")
         }
-        let category = try json(data.appendingPathComponent(".pipeline/03-category/2025-01-14 side project.json")) as? [String: Any]
-        try require(category?["category"] as? String == "side_project", "Unexpected pipeline category")
-        let marker = data.appendingPathComponent(".pipeline/04-rename/2025-01-14 side project.slug.txt")
+        let category = try json(data.appendingPathComponent(".pipeline/03-category/\(stem).json")) as? [String: Any]
+        guard let categoryName = category?["category"] as? String,
+              let categoryFixture = manifest.first(where: { eval.string($0, "scope") == "pipeline" && eval.string($0, "stage") == "categorize" }) else { throw ToolFailure("Missing pipeline category") }
+        let accepted = try read(eval.file(categoryFixture, "expected")).split(whereSeparator: \.isNewline).map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+        try require(accepted.contains(categoryName), "Unexpected pipeline category")
+        let marker = data.appendingPathComponent(".pipeline/04-rename/\(stem).slug.txt")
         try require(nonempty(marker), "Missing slug marker")
         let slug = try read(marker).trimmingCharacters(in: .whitespacesAndNewlines)
-        let enriched = data.appendingPathComponent("logs/side-project/\(slug).md")
+        let enriched = data.appendingPathComponent("logs/\(categoryName.replacingOccurrences(of: "_", with: "-"))/\(slug).md")
         try require(nonempty(data.appendingPathComponent(".pipeline/04-rename/\(slug).md")) && nonempty(enriched), "Missing renamed/enriched artifacts for \(slug)")
         func snapshot() throws -> String { try files(data, recursive: true).map { try hash($0) + "  " + $0.path }.sorted().joined(separator: "\n") + "\n" }
         let before = try snapshot(); try write(dir.appendingPathComponent("before-resume.sha256"), before)
@@ -23,7 +31,7 @@ extension Tools {
         let after = try snapshot(); try write(dir.appendingPathComponent("after-resume.sha256"), after)
         try require(before == after, "Resume changed completed pipeline artifacts")
         try run([cl, "search-index", "--data-dir", data.path], log: dir.appendingPathComponent("search-index.log"))
-        let search = try run([cl, "search", "Star Trek captain log side project", "--data-dir", data.path, "--limit", "5"], log: dir.appendingPathComponent("search.log"))
+        let search = try run([cl, "search", eval.string(audio, "search_query", "Star Trek captain log side project"), "--data-dir", data.path, "--limit", "5"], log: dir.appendingPathComponent("search.log"))
         try require(search.output.contains(enriched.path), "Search did not return pipeline entry: \(enriched.path)")
         print("Pipeline artifact, category, resume immutability, and search readback assertions passed.")
     }
@@ -58,7 +66,7 @@ extension Tools {
         for key in keys { try require(!(environment[key] ?? "").isEmpty, "Set \(key) to an already-installed model before running this opt-in smoke.", status: 2) }
         for key in [keys[1], keys[3]] { var directory: ObjCBool = false; try require(fm.fileExists(atPath: environment[key]!, isDirectory: &directory) && directory.boolValue, "Model folder does not exist: \(environment[key]!)", status: 2) }
         try require(files(path(environment[keys[3]]!)).contains { $0.pathExtension == "gguf" }, "Qwen model folder must contain an installed .gguf file.", status: 2)
-        let fixture = path("eval/transcribe/audio/durins-volk.m4a")
+        let fixture = path("eval/transcribe/archive/audio/durins-volk.m4a")
         try require(nonempty(fixture), "Synthetic transcription fixture missing", status: 2)
         let dir = try temporary("captainslog-model-smoke-"); defer { try? fm.removeItem(at: dir) }; try isolated(dir)
         for (key, value) in [("whisperModel", environment[keys[0]]!), ("whisperModelFolder", environment[keys[1]]!), ("qwenModelId", environment[keys[2]]!), ("qwenModelFolder", environment[keys[3]]!)] { try run(["swift", "run", "cl", "config", "set", key, value], quiet: true) }
@@ -105,8 +113,8 @@ extension Tools {
         }
         let slug = try source("filename/expected/2025-01-14 side project.md").trimmingCharacters(in: .whitespacesAndNewlines).replacingOccurrences(of: ".md", with: "")
         let cleaned = try source("cleanup/expected/2025-01-14 side project.md")
-        try completed("2025-01-14-0730", slug, "side_project", "transcribe/expected/2025-01-14 side project.md", cleaned, source("enrich/expected/2025-01-14 side project.md") + cleaned)
-        try copy(path("eval/transcribe/audio/2025-01-14 side project.m4a"), data.appendingPathComponent("audio/2025-01-14-0730.m4a"))
+        try completed("2025-01-14-0730", slug, "side_project", "transcribe/archive/expected/2025-01-14 side project.md", cleaned, source("enrich/expected/2025-01-14 side project.md") + cleaned)
+        try copy(path("eval/transcribe/archive/audio/2025-01-14 side project.m4a"), data.appendingPathComponent("audio/2025-01-14-0730.m4a"))
         let work = try source("enrich/input/01_work_week.md")
         try completed("2025-01-15-1200", "2025-01-15-work-week-review", "professional", "enrich/input/01_work_week.md", work, source("enrich/expected/01_work_week.md") + work)
         try copy(path("eval/cleanup/input/book-reference.md"), data.appendingPathComponent(".pipeline/01-transcribed/2025-01-16-0900.md"))

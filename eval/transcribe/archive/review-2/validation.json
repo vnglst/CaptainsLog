@@ -1,0 +1,7 @@
+{
+  "cases" : 1,
+  "enrichment_validator_sha256" : "907757a6fe4717ce247fe7c9ebfbacb4803385fc5dde0b79512a52ed419ad66e",
+  "failures" : 0,
+  "transcription_scorer_sha256" : "a0352cfa9a3899ec99a94a1174a559148c9e308d3ba73ef73c7e9e6c41f7d6de",
+  "validator_sha256" : "6380a1b063d30f7569fb21eb1d7d1db952690a0d54f0e7d1a2805172631c60c3"
+}

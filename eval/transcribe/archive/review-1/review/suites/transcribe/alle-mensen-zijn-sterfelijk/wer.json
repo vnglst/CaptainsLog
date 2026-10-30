@@ -1,0 +1,145 @@
+{
+  "alignment" : "unit-cost-levenshtein-diagonal-delete-insert-v1",
+  "audio_sha256" : "f8a977f21028036d9b88496bb87da3dcfcc0ad731732b41f29d782da4fd992ca",
+  "deletions" : 0,
+  "edits" : [
+    {
+      "hypothesis" : "regine",
+      "hypothesis_index" : 4,
+      "operation" : "substitution",
+      "reference" : "régine",
+      "reference_index" : 4
+    },
+    {
+      "hypothesis" : "regine",
+      "hypothesis_index" : 34,
+      "operation" : "substitution",
+      "reference" : "régine",
+      "reference_index" : 34
+    },
+    {
+      "hypothesis" : "haren",
+      "hypothesis_index" : 81,
+      "operation" : "substitution",
+      "reference" : "hare",
+      "reference_index" : 81
+    },
+    {
+      "hypothesis" : "provincieszaal",
+      "hypothesis_index" : 104,
+      "operation" : "substitution",
+      "reference" : "provinciezaal",
+      "reference_index" : 104
+    },
+    {
+      "hypothesis" : "wachten",
+      "hypothesis_index" : 116,
+      "operation" : "substitution",
+      "reference" : "wachtten",
+      "reference_index" : 116
+    },
+    {
+      "hypothesis" : "vlammertje",
+      "hypothesis_index" : 188,
+      "operation" : "substitution",
+      "reference" : "vlammetje",
+      "reference_index" : 188
+    },
+    {
+      "hypothesis" : "praten",
+      "hypothesis_index" : 224,
+      "operation" : "substitution",
+      "reference" : "praatten",
+      "reference_index" : 224
+    },
+    {
+      "hypothesis" : "vlammertje",
+      "hypothesis_index" : 227,
+      "operation" : "substitution",
+      "reference" : "vlammetje",
+      "reference_index" : 227
+    },
+    {
+      "hypothesis" : "regine",
+      "hypothesis_index" : 241,
+      "operation" : "substitution",
+      "reference" : "régine",
+      "reference_index" : 241
+    },
+    {
+      "hypothesis" : "regine",
+      "hypothesis_index" : 264,
+      "operation" : "substitution",
+      "reference" : "régine",
+      "reference_index" : 264
+    },
+    {
+      "hypothesis" : "regine",
+      "hypothesis_index" : 273,
+      "operation" : "substitution",
+      "reference" : "régine",
+      "reference_index" : 273
+    },
+    {
+      "hypothesis" : "bent",
+      "hypothesis_index" : 285,
+      "operation" : "substitution",
+      "reference" : "hebt",
+      "reference_index" : 285
+    },
+    {
+      "hypothesis" : "regine",
+      "hypothesis_index" : 302,
+      "operation" : "substitution",
+      "reference" : "régine",
+      "reference_index" : 302
+    },
+    {
+      "hypothesis" : "kammer",
+      "hypothesis_index" : 328,
+      "operation" : "substitution",
+      "reference" : "kammen",
+      "reference_index" : 328
+    },
+    {
+      "hypothesis" : "florence",
+      "hypothesis_index" : 334,
+      "operation" : "insertion",
+      "reference" : "",
+      "reference_index" : 334
+    },
+    {
+      "hypothesis" : "zal",
+      "hypothesis_index" : 342,
+      "operation" : "substitution",
+      "reference" : "zou",
+      "reference_index" : 341
+    },
+    {
+      "hypothesis" : "niet",
+      "hypothesis_index" : 345,
+      "operation" : "substitution",
+      "reference" : "niets",
+      "reference_index" : 344
+    },
+    {
+      "hypothesis" : "네",
+      "hypothesis_index" : 370,
+      "operation" : "insertion",
+      "reference" : "",
+      "reference_index" : 369
+    }
+  ],
+  "errors" : 18,
+  "hypothesis_sha256" : "85697684b9feb49d4d519ac74c3c6589d6c4282ba3b4055e176461c13a91da0b",
+  "hypothesis_words" : 371,
+  "insertions" : 2,
+  "normalization" : "unicode-words-v1",
+  "provisional" : true,
+  "reference_sha256" : "68240648e0c0fd312608cb1f13adf81f952dc3c0fbeebba9daaa48990150dc6f",
+  "reference_status" : "model-assisted",
+  "reference_words" : 369,
+  "substitutions" : 16,
+  "wer" : 0.04878048780487805,
+  "wer_percent" : 4.8780487804878048
+}

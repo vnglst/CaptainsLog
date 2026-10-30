@@ -34,8 +34,9 @@ evaluations remain a separate `make evals` command.
 
 | Supporting command | Purpose / options |
 |---|---|
+| `make evals-review RUN_DIR=...` | Serve the selected saved run's audio/transcript review app on localhost. `COMPARISON_RUN=...` adds a saved eval run or a directory of per-recording `.txt` transcripts. `PORT=8777` selects the port; `ARGS=--prepare-only` skips serving. No inference. |
 | `make evals-list` | List synthetic fixtures without loading models; accepts `STAGE` / `CASE`. |
-| `make evals-pipeline` / `make evals-suites` | Run the audio pipeline or all stage suites. |
+| `make evals-pipeline` / `make evals-suites` | Run the audio pipeline or all stage suites. The reviewed Dutch TNG recording is the default and only transcription pipeline input. |
 | `make evals ARGS="--validate-run RUN_DIR"` | Validate saved outputs without inference; `--baseline RUN_DIR` assembles comparison evidence. |
 | `make tests-coverage` | LLVM-instrumented deterministic and fixture CLI coverage; enforce production coverage floor. |
 | `make tests-updates` | Exercise simulated Homebrew updates using fake Homebrew fixtures. |
@@ -139,6 +140,7 @@ than guessing a filename from a Make target.
 | Packaging, framework bundling, runtime verification | [Native.swift](Sources/Tools/Native.swift) |
 | UI harness, updater/model/recorder checks, pipeline artifact checks | [Checks.swift](Sources/Tools/Checks.swift) |
 | Evaluation selection, generation and review bundles | [Evals.swift](Sources/Tools/Evals.swift) |
+| Saved-run listening review and local HTTP/audio serving | [EvalReview.swift](Sources/Tools/EvalReview.swift), [ReviewServer.swift](Sources/Tools/ReviewServer.swift), [ReviewAudio.swift](Sources/Tools/ReviewAudio.swift), UI assets in `Sources/Tools/Resources/EvalReview/` |
 | Evaluation tooling fixtures and enrichment validation | [EvalChecks.swift](Sources/Tools/EvalChecks.swift), [EnrichValidation.swift](Sources/Tools/EnrichValidation.swift) |
 | Coverage | [Coverage.swift](Sources/Tools/Coverage.swift) |
 | Release preparation, notes, changelog checks and cask updates | [release.swift](release.swift); release fixtures: [ReleaseChecks.swift](Sources/Tools/ReleaseChecks.swift) |
@@ -187,7 +189,7 @@ only.
 |---|---|---|
 | First launch | Start `make ui ARGS=onboarding`; walk through onboarding, choose categories and context, then open Logs. | Every control is reachable; setup completes; choices appear in Context and Settings. This harness skips actual model download. |
 | Empty library | Start `make ui ARGS=eval-empty`; resize to a small supported window and a large window; open Context and Settings and return. | Empty-state content and recording controls remain readable and do not overlap; navigation remains usable. |
-| Import through completed log | Launch the candidate executable directly with `CAPTAINS_LOG_CONFIG_PATH` pointing to fresh isolated config and data, bypassing demo seeding. Configure prepared models; copy `eval/transcribe/audio/2025-01-14 side project.m4a` into its `audio/` directory. Follow transcription, cleanup, categorization and completion; open the log. | The original audio survives; the completed log is readable and searchable. Compare transcript, cleaned text and final output with the corresponding eval references for omissions, changed meaning and invented content. Preview fixtures cannot establish this result. |
+| Import through completed log | Launch the candidate executable directly with `CAPTAINS_LOG_CONFIG_PATH` pointing to fresh isolated config and data, bypassing demo seeding. Configure prepared models; copy `eval/transcribe/audio/tng-nl01-vrije-dag-enterprise-corrected.m4a` into its `audio/` directory. Follow transcription, cleanup, categorization and completion; open the log. | The original audio survives; the completed log is readable and searchable. Compare transcript, cleaned text and final output with the corresponding eval references for omissions, changed meaning and invented content. Preview fixtures cannot establish this result. |
 | Pause and resume | During real fixture processing, Pause, then Resume; repeat while cancellation is still draining. | UI remains responsive; work resumes from saved progress; requests run serially; no duplicate or partial completed log appears. |
 | Reprocess | Reprocess the completed fixture from the row action and from log detail; Pause a queued restart, then request it again. | Derived results clear immediately; original audio remains; all stages rerun; a later Pause discards waiting work without restoring deleted outputs. |
 | Search and filters | Search for a distinctive phrase from the completed fixture, change category filters, try a missing phrase and clear search. Open a result. | Results respect filters and open the expected log; empty results are understandable; clearing search restores Logs. Use prepared embedding models for real search. |
@@ -199,3 +201,5 @@ only.
 Keep per-run observations in the evidence directory. Report unperformed actions
 and fixture-only substitutes explicitly; do not turn a presentation preview into
 a claim that real processing passed.
+
+The listening app opens on a review overview by default. Its Overview button returns from any passage or recording. Running review servers register their local addresses in ignored `tmp/eval-review-sessions.json`, so the overview can link related rounds and read their saved progress. Restart the relevant review server if its local address is no longer available.

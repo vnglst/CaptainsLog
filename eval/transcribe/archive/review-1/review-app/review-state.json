@@ -1,0 +1,326 @@
+{
+  "archived_reviews" : {
+
+  },
+  "consolidations" : [
+    {
+      "audio" : "assets/consolidated/429e45c9-4be6-43c1-9baf-88bf75da591a.m4a",
+      "audio_sha256" : "755b844c73b8103a6197bd7f7544ca9178697e0e298154186d473a6bbcc3247e",
+      "created_at" : "2026-10-30T06:01:30Z",
+      "edit_map" : "assets/consolidated/429e45c9-4be6-43c1-9baf-88bf75da591a.json",
+      "id" : "429e45c9-4be6-43c1-9baf-88bf75da591a",
+      "recording_id" : "tng-nl01",
+      "reference_sha256" : "b82391127acdbd43fbfdd34f35f1fcb952003b04fa59a07cebd124a39496bfc1",
+      "selections" : {
+        "tng-nl01-D03" : "9b34d0cb-7946-4bad-8469-6aac3f5b5e8b"
+      }
+    },
+    {
+      "audio" : "assets/consolidated/8c4cab51-8f17-47a0-b8e8-16d54409c0ee.m4a",
+      "audio_sha256" : "5b8d1a13a1a65d345b9780d81744c2846c29f83d32d001fcfec03bae658f35be",
+      "created_at" : "2026-10-30T08:13:04Z",
+      "edit_map" : "assets/consolidated/8c4cab51-8f17-47a0-b8e8-16d54409c0ee.json",
+      "id" : "8c4cab51-8f17-47a0-b8e8-16d54409c0ee",
+      "recording_id" : "tng-nl01",
+      "reference_sha256" : "b82391127acdbd43fbfdd34f35f1fcb952003b04fa59a07cebd124a39496bfc1",
+      "selections" : {
+        "tng-nl01-D03" : "9b34d0cb-7946-4bad-8469-6aac3f5b5e8b"
+      }
+    },
+    {
+      "audio" : "assets/consolidated/da470aec-56e4-4636-bd45-cf1d84311c53.m4a",
+      "audio_sha256" : "35e47d4886636b9a1f91839e6cc37092ac458021000c80fa0f5f3a985c1d901c",
+      "created_at" : "2026-10-30T08:23:39Z",
+      "edit_map" : "assets/consolidated/da470aec-56e4-4636-bd45-cf1d84311c53.json",
+      "id" : "da470aec-56e4-4636-bd45-cf1d84311c53",
+      "recording_id" : "tng-nl01",
+      "reference_sha256" : "b82391127acdbd43fbfdd34f35f1fcb952003b04fa59a07cebd124a39496bfc1",
+      "selections" : {
+        "tng-nl01-D03" : "d45f4350-5a55-41c5-b4a8-7911ba228d93",
+        "tng-nl01-D12" : "db2b6cde-64bd-40c0-8ba1-7b3f5834eb80"
+      }
+    },
+    {
+      "audio" : "assets/consolidated/c85ffed4-6251-485c-bba1-aabe0ccd19e2.m4a",
+      "audio_sha256" : "731efc1781210e0717e9952bcea5ab761793810b7f4f0fcd7d607fff6fa3c990",
+      "created_at" : "2026-10-30T08:25:24Z",
+      "edit_map" : "assets/consolidated/c85ffed4-6251-485c-bba1-aabe0ccd19e2.json",
+      "id" : "c85ffed4-6251-485c-bba1-aabe0ccd19e2",
+      "recording_id" : "tng-nl01",
+      "reference_sha256" : "b82391127acdbd43fbfdd34f35f1fcb952003b04fa59a07cebd124a39496bfc1",
+      "selections" : {
+        "tng-nl01-D03" : "d45f4350-5a55-41c5-b4a8-7911ba228d93",
+        "tng-nl01-D12" : "db2b6cde-64bd-40c0-8ba1-7b3f5834eb80"
+      }
+    }
+  ],
+  "reviews" : {
+    "alle-mensen-P01" : {
+      "accepted_take_id" : null,
+      "audio_issue" : false,
+      "context" : {
+        "audio_sha256" : "f8a977f21028036d9b88496bb87da3dcfcc0ad731732b41f29d782da4fd992ca",
+        "end_seconds" : 18.940000000000001,
+        "reference_end_word" : 40,
+        "reference_sha256" : "68240648e0c0fd312608cb1f13adf81f952dc3c0fbeebba9daaa48990150dc6f",
+        "reference_start_word" : 0,
+        "start_seconds" : 0
+      },
+      "notes" : "",
+      "retakes" : [
+
+      ],
+      "status" : "matches",
+      "updated_at" : "2026-10-30T09:32:02Z",
+      "words" : ""
+    },
+    "alle-mensen-P02" : {
+      "accepted_take_id" : null,
+      "audio_issue" : false,
+      "context" : {
+        "audio_sha256" : "f8a977f21028036d9b88496bb87da3dcfcc0ad731732b41f29d782da4fd992ca",
+        "end_seconds" : 39.799999999999997,
+        "reference_end_word" : 92,
+        "reference_sha256" : "68240648e0c0fd312608cb1f13adf81f952dc3c0fbeebba9daaa48990150dc6f",
+        "reference_start_word" : 40,
+        "start_seconds" : 17.879999999999999
+      },
+      "notes" : "",
+      "retakes" : [
+
+      ],
+      "status" : "matches",
+      "updated_at" : "2026-10-30T09:32:23Z",
+      "words" : ""
+    },
+    "tng-nl01-D01" : {
+      "context" : {
+        "audio_sha256" : "aee104e58c261dc5bd91c6da002eac3ee0909b25b23c61de578e30eb72814cf9",
+        "end_seconds" : 55,
+        "reference_end_word" : 132,
+        "reference_sha256" : "b82391127acdbd43fbfdd34f35f1fcb952003b04fa59a07cebd124a39496bfc1",
+        "reference_start_word" : 81,
+        "start_seconds" : 32
+      },
+      "notes" : "",
+      "status" : "corrected",
+      "updated_at" : "2026-10-29T17:00:24Z",
+      "words" : "Vanmorgen had ik een uur op het holodeck gereserveerd. Gewoon een wandeling door een bos, met een pad langs een meer. Geen ingewikkeld avontuur en ook geen tegenstanders die ineens achter een boom vandaan springen. Ik wilde even ergens zijn waar ik niet voortdurend de ventilatie van het schip hoorde"
+    },
+    "tng-nl01-D02" : {
+      "context" : {
+        "audio_sha256" : "aee104e58c261dc5bd91c6da002eac3ee0909b25b23c61de578e30eb72814cf9",
+        "end_seconds" : 68,
+        "reference_end_word" : 164,
+        "reference_sha256" : "b82391127acdbd43fbfdd34f35f1fcb952003b04fa59a07cebd124a39496bfc1",
+        "reference_start_word" : 132,
+        "start_seconds" : 54
+      },
+      "notes" : "",
+      "status" : "matches",
+      "updated_at" : "2026-10-29T17:00:54Z",
+      "words" : ""
+    },
+    "tng-nl01-D03" : {
+      "accepted_take_id" : "d45f4350-5a55-41c5-b4a8-7911ba228d93",
+      "audio_issue" : true,
+      "context" : {
+        "audio_sha256" : "aee104e58c261dc5bd91c6da002eac3ee0909b25b23c61de578e30eb72814cf9",
+        "end_seconds" : 194,
+        "reference_end_word" : 460,
+        "reference_sha256" : "b82391127acdbd43fbfdd34f35f1fcb952003b04fa59a07cebd124a39496bfc1",
+        "reference_start_word" : 423,
+        "start_seconds" : 176
+      },
+      "notes" : "",
+      "retakes" : [
+        {
+          "audio" : "assets/retakes/9b34d0cb-7946-4bad-8469-6aac3f5b5e8b.wav",
+          "created_at" : "2026-10-30T06:00:05Z",
+          "duration_seconds" : 14.76,
+          "id" : "9b34d0cb-7946-4bad-8469-6aac3f5b5e8b",
+          "replace_end_seconds" : 192.31999999999999,
+          "replace_start_seconds" : 177.19999999999999,
+          "sha256" : "b94596a02c6c8b7abd552456ae88e7a445b76be06fd00471fca61ad96b29afa6"
+        },
+        {
+          "audio" : "assets/retakes/d45f4350-5a55-41c5-b4a8-7911ba228d93.wav",
+          "created_at" : "2026-10-30T08:12:46Z",
+          "duration_seconds" : 17.879999999999999,
+          "id" : "d45f4350-5a55-41c5-b4a8-7911ba228d93",
+          "replace_end_seconds" : 192.55000000000001,
+          "replace_start_seconds" : 177.59999999999999,
+          "sha256" : "50b5ce097002cee96b241db0c3ee928c884aae3ab8bc9061eda1b470849e90d7"
+        }
+      ],
+      "status" : "uncertain",
+      "updated_at" : "2026-10-30T08:23:02Z",
+      "words" : ""
+    },
+    "tng-nl01-D04" : {
+      "context" : {
+        "audio_sha256" : "aee104e58c261dc5bd91c6da002eac3ee0909b25b23c61de578e30eb72814cf9",
+        "end_seconds" : 224,
+        "reference_end_word" : 527,
+        "reference_sha256" : "b82391127acdbd43fbfdd34f35f1fcb952003b04fa59a07cebd124a39496bfc1",
+        "reference_start_word" : 509,
+        "start_seconds" : 204
+      },
+      "notes" : "",
+      "status" : "matches",
+      "updated_at" : "2026-10-29T17:06:12Z",
+      "words" : ""
+    },
+    "tng-nl01-D05" : {
+      "context" : {
+        "audio_sha256" : "aee104e58c261dc5bd91c6da002eac3ee0909b25b23c61de578e30eb72814cf9",
+        "end_seconds" : 252,
+        "reference_end_word" : 598,
+        "reference_sha256" : "b82391127acdbd43fbfdd34f35f1fcb952003b04fa59a07cebd124a39496bfc1",
+        "reference_start_word" : 566,
+        "start_seconds" : 233
+      },
+      "notes" : "",
+      "status" : "corrected",
+      "updated_at" : "2026-10-29T17:06:54Z",
+      "words" : "Toch liep ik op de terugweg bijna vanzelf richting de turbolift naar de machinekamer. Ik moet mezelf eraan herinneren dat Geordi daar een volledige ploeg heeft staan, ook als ik vrij ben"
+    },
+    "tng-nl01-D06" : {
+      "context" : {
+        "audio_sha256" : "aee104e58c261dc5bd91c6da002eac3ee0909b25b23c61de578e30eb72814cf9",
+        "end_seconds" : 289,
+        "reference_end_word" : 675,
+        "reference_sha256" : "b82391127acdbd43fbfdd34f35f1fcb952003b04fa59a07cebd124a39496bfc1",
+        "reference_start_word" : 633,
+        "start_seconds" : 263
+      },
+      "notes" : "",
+      "status" : "matches",
+      "updated_at" : "2026-10-29T17:08:01Z",
+      "words" : ""
+    },
+    "tng-nl01-D07" : {
+      "accepted_take_id" : null,
+      "audio_issue" : false,
+      "context" : {
+        "audio_sha256" : "aee104e58c261dc5bd91c6da002eac3ee0909b25b23c61de578e30eb72814cf9",
+        "end_seconds" : 308,
+        "reference_end_word" : 722,
+        "reference_sha256" : "b82391127acdbd43fbfdd34f35f1fcb952003b04fa59a07cebd124a39496bfc1",
+        "reference_start_word" : 702,
+        "start_seconds" : 293
+      },
+      "notes" : "",
+      "retakes" : [
+
+      ],
+      "status" : "corrected",
+      "updated_at" : "2026-10-30T08:14:23Z",
+      "words" : "Daarna hebben we de mensen die de storing hebben gemeld gevraagd of ze nog problemen merkten. Tot nu toe niet"
+    },
+    "tng-nl01-D08" : {
+      "accepted_take_id" : null,
+      "audio_issue" : false,
+      "context" : {
+        "audio_sha256" : "aee104e58c261dc5bd91c6da002eac3ee0909b25b23c61de578e30eb72814cf9",
+        "end_seconds" : 345,
+        "reference_end_word" : 838,
+        "reference_sha256" : "b82391127acdbd43fbfdd34f35f1fcb952003b04fa59a07cebd124a39496bfc1",
+        "reference_start_word" : 789,
+        "start_seconds" : 323
+      },
+      "notes" : "",
+      "retakes" : [
+
+      ],
+      "status" : "corrected",
+      "updated_at" : "2026-10-30T08:15:55Z",
+      "words" : "Die ziet alleen dat ik een onderdeel heb gecontroleerd. Niet wat ik gemeten heb, of waarom ik daarna iets anders ben gaan bekijken. Data heeft me daar laatst op gewezen. Heel rustig, gewoon met de vraag waar hij de meetwaarden kon vinden. Die stonden nog op mijn persoonlijke scherm"
+    },
+    "tng-nl01-D09" : {
+      "accepted_take_id" : null,
+      "audio_issue" : false,
+      "context" : {
+        "audio_sha256" : "aee104e58c261dc5bd91c6da002eac3ee0909b25b23c61de578e30eb72814cf9",
+        "end_seconds" : 374,
+        "reference_end_word" : 896,
+        "reference_sha256" : "b82391127acdbd43fbfdd34f35f1fcb952003b04fa59a07cebd124a39496bfc1",
+        "reference_start_word" : 873,
+        "start_seconds" : 354
+      },
+      "notes" : "",
+      "retakes" : [
+
+      ],
+      "status" : "matches",
+      "updated_at" : "2026-10-30T08:16:22Z",
+      "words" : ""
+    },
+    "tng-nl01-D10" : {
+      "accepted_take_id" : null,
+      "audio_issue" : false,
+      "context" : {
+        "audio_sha256" : "aee104e58c261dc5bd91c6da002eac3ee0909b25b23c61de578e30eb72814cf9",
+        "end_seconds" : 401,
+        "reference_end_word" : 985,
+        "reference_sha256" : "b82391127acdbd43fbfdd34f35f1fcb952003b04fa59a07cebd124a39496bfc1",
+        "reference_start_word" : 944,
+        "start_seconds" : 375
+      },
+      "notes" : "",
+      "retakes" : [
+
+      ],
+      "status" : "corrected",
+      "updated_at" : "2026-10-30T08:16:55Z",
+      "words" : "Worf heeft gevraagd of we daarbij ook de afscherming van de sensoren controleren. Dat doen we, maar ik wil eerst met Geordi bespreken in welke volgorde. We kunnen niet alles tegelijk uitschakelen. Dan heeft de brug tijdelijk te weinig betrouwbare informatie"
+    },
+    "tng-nl01-D11" : {
+      "accepted_take_id" : null,
+      "audio_issue" : false,
+      "context" : {
+        "audio_sha256" : "aee104e58c261dc5bd91c6da002eac3ee0909b25b23c61de578e30eb72814cf9",
+        "end_seconds" : 438,
+        "reference_end_word" : 1081,
+        "reference_sha256" : "b82391127acdbd43fbfdd34f35f1fcb952003b04fa59a07cebd124a39496bfc1",
+        "reference_start_word" : 1026,
+        "start_seconds" : 410
+      },
+      "notes" : "",
+      "retakes" : [
+
+      ],
+      "status" : "corrected",
+      "updated_at" : "2026-10-30T08:17:46Z",
+      "words" : "Ik heb deze week ook een gesprek met commandant William Riker. Hij wil weten hoe het gaat met de nieuwe bemanningsleden tijdens de nachtdienst. Ik heb er twee ingewerkt. Ze kennen de procedures, maar aarzelen nog om iemand wakker te maken als een meting vreemd is. Dat herken ik van mijn eerste weken hier"
+    },
+    "tng-nl01-D12" : {
+      "accepted_take_id" : "db2b6cde-64bd-40c0-8ba1-7b3f5834eb80",
+      "audio_issue" : true,
+      "context" : {
+        "audio_sha256" : "aee104e58c261dc5bd91c6da002eac3ee0909b25b23c61de578e30eb72814cf9",
+        "end_seconds" : 490.94400000000002,
+        "reference_end_word" : 1205,
+        "reference_sha256" : "b82391127acdbd43fbfdd34f35f1fcb952003b04fa59a07cebd124a39496bfc1",
+        "reference_start_word" : 1175,
+        "start_seconds" : 467
+      },
+      "notes" : "",
+      "retakes" : [
+        {
+          "audio" : "assets/retakes/db2b6cde-64bd-40c0-8ba1-7b3f5834eb80.wav",
+          "created_at" : "2026-10-30T08:19:50Z",
+          "duration_seconds" : 14.1,
+          "id" : "db2b6cde-64bd-40c0-8ba1-7b3f5834eb80",
+          "replace_end_seconds" : 490.72000000000003,
+          "replace_start_seconds" : 471.98000000000002,
+          "sha256" : "61940e8e24893886e6cdb7dc0fac6a83cf224629a828703c31090c9a8d4e5495"
+        }
+      ],
+      "status" : "uncertain",
+      "updated_at" : "2026-10-30T08:22:39Z",
+      "words" : ""
+    }
+  },
+  "version" : 1
+}

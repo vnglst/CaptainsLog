@@ -1,0 +1,89 @@
+{
+  "2025-01-14 side project": {
+    "language": "Dutch",
+    "reference_status": "model-assisted",
+    "audio_sha256": "018807fe80637d269afa19e839f15b0b78925a3a65391fdb09fb666da183af85",
+    "reference_sha256": "ee97b8485fedf9f38508952527cecb41e8a22b33717faa4936ed16b81cfe7e44",
+    "reference_check": {
+      "date": "2026-10-29",
+      "model": "Whisper Large-v3 q5_0",
+      "repository": "ggerganov/whisper.cpp",
+      "revision": "5359861c739e955e79d9a303bcbc70fb988958b1",
+      "model_sha256": "d75795ecff3f83b5faa89d1900604ad8c780abd5739fae406de19f23ecd98ad1",
+      "runtime_sha256": "e23dcdf55fdff2dfc085902b00cac93aba09e0373422e40ddd69d7c67d725f16",
+      "owner_audio_verification": "pending"
+    }
+  },
+  "alle-mensen-zijn-sterfelijk": {
+    "language": "Dutch",
+    "reference_status": "model-assisted",
+    "audio_sha256": "f8a977f21028036d9b88496bb87da3dcfcc0ad731732b41f29d782da4fd992ca",
+    "reference_sha256": "68240648e0c0fd312608cb1f13adf81f952dc3c0fbeebba9daaa48990150dc6f",
+    "reference_check": {
+      "date": "2026-10-29",
+      "model": "Whisper Large-v3 q5_0",
+      "repository": "ggerganov/whisper.cpp",
+      "revision": "5359861c739e955e79d9a303bcbc70fb988958b1",
+      "model_sha256": "d75795ecff3f83b5faa89d1900604ad8c780abd5739fae406de19f23ecd98ad1",
+      "runtime_sha256": "e23dcdf55fdff2dfc085902b00cac93aba09e0373422e40ddd69d7c67d725f16",
+      "owner_audio_verification": "pending"
+    }
+  },
+  "durins-volk": {
+    "language": "Dutch",
+    "reference_status": "model-assisted",
+    "audio_sha256": "423df075a1d2efcdc74966cd24e5b09f02cc9012855715a1cb2fd12b0aae6e9b",
+    "reference_sha256": "841d8ff3922985a94f1b92bd37684c75e7880d8972b72dc4977732ae6a0c4a3f",
+    "reference_check": {
+      "date": "2026-10-29",
+      "model": "Whisper Large-v3 q5_0",
+      "repository": "ggerganov/whisper.cpp",
+      "revision": "5359861c739e955e79d9a303bcbc70fb988958b1",
+      "model_sha256": "d75795ecff3f83b5faa89d1900604ad8c780abd5739fae406de19f23ecd98ad1",
+      "runtime_sha256": "e23dcdf55fdff2dfc085902b00cac93aba09e0373422e40ddd69d7c67d725f16",
+      "owner_audio_verification": "pending"
+    }
+  },
+  "tng-nl01-vrije-dag-enterprise": {
+    "language": "Dutch",
+    "reference_status": "model-assisted",
+    "audio_sha256": "aee104e58c261dc5bd91c6da002eac3ee0909b25b23c61de578e30eb72814cf9",
+    "reference_sha256": "b82391127acdbd43fbfdd34f35f1fcb952003b04fa59a07cebd124a39496bfc1",
+    "reference_check": {
+      "date": "2026-10-29",
+      "model": "Whisper Large-v3 q5_0",
+      "repository": "ggerganov/whisper.cpp",
+      "revision": "5359861c739e955e79d9a303bcbc70fb988958b1",
+      "model_sha256": "d75795ecff3f83b5faa89d1900604ad8c780abd5739fae406de19f23ecd98ad1",
+      "runtime_sha256": "e23dcdf55fdff2dfc085902b00cac93aba09e0373422e40ddd69d7c67d725f16",
+      "owner_audio_verification": "pending"
+    }
+  },
+  "world-war-z": {
+    "language": "English",
+    "reference_status": "model-assisted",
+    "audio_sha256": "6f419da2feeb93596b095aa544dd70ad8c8cdef2f0816f2c458dedb0914740d6",
+    "reference_sha256": "c235024887c363a203d4e2728f63a8f85b1f4f415b67f32d87019c4b816d5812",
+    "reference_check": {
+      "date": "2026-10-29",
+      "model": "Whisper Large-v3 q5_0",
+      "repository": "ggerganov/whisper.cpp",
+      "revision": "5359861c739e955e79d9a303bcbc70fb988958b1",
+      "model_sha256": "d75795ecff3f83b5faa89d1900604ad8c780abd5739fae406de19f23ecd98ad1",
+      "runtime_sha256": "e23dcdf55fdff2dfc085902b00cac93aba09e0373422e40ddd69d7c67d725f16",
+      "owner_audio_verification": "pending"
+    }
+  },
+  "tng-nl01-vrije-dag-enterprise-corrected": {
+    "language": "Dutch",
+    "reference_status": "model-assisted",
+    "audio_sha256": "731efc1781210e0717e9952bcea5ab761793810b7f4f0fcd7d607fff6fa3c990",
+    "reference_sha256": "37a5afd505cea14c707ae0e4d041e0e1537588531c3acedf54c228a698ec87bf",
+    "reference_check": {
+      "date": "2026-10-30",
+      "source": "Owner first-round wording corrections and explicitly selected replacement takes",
+      "owner_audio_verification": "second round pending",
+      "derived_from": "tng-nl01-vrije-dag-enterprise"
+    }
+  }
+}

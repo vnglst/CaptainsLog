@@ -13,12 +13,14 @@ VERSION ?=
 BASE ?=
 HEAD ?= HEAD
 RUN_DIR ?=
+COMPARISON_RUN ?=
+PORT ?= 8777
 SHA256 ?=
 
 # Directory timestamps also invalidate the app when source files are added or removed.
 DEV_INPUTS := Package.swift Package.resolved $(shell find Sources Vendor -type f -o -type d)
 
-.PHONY: help build dev run cli tests tests-unit tests-coverage tests-updates tests-release tests-evals tests-runtime tests-enrich tests-model tests-recorder tests-app-performance tests-search-shutdown ui evals evals-list evals-pipeline evals-suites packaging release release-notes release-check release-cask icons clean
+.PHONY: help build dev run cli tests tests-unit tests-coverage tests-updates tests-release tests-evals tests-runtime tests-enrich tests-model tests-recorder tests-app-performance tests-search-shutdown ui evals evals-review evals-list evals-pipeline evals-suites packaging release release-notes release-check release-cask icons clean
 
 help:
 	@printf '%s\n' \
@@ -26,6 +28,7 @@ help:
 	  'make build                    Build app, CLI and test executables' \
 	  'make tests                    Run deterministic tests in isolated storage' \
 	  'make evals                    Run all fixture evaluations sequentially' \
+	  'make evals-review RUN_DIR=...  Serve the saved audio/transcript listening review' \
 	  'make packaging                Build the release app, CLI and ZIP' \
 	  'make release                  Prepare a release on clean main' \
 	  '' \
@@ -99,8 +102,11 @@ ui:
 evals:
 	$(SWIFT) scripts/run-evals.swift $(if $(STAGE),--stage "$(STAGE)",$(if $(MODE),--$(MODE))) $(if $(CASE),--case "$(CASE)") $(ARGS)
 
+evals-review:
+	$(SWIFT) scripts/evals-review.swift $(if $(RUN_DIR),--run "$(RUN_DIR)") $(if $(COMPARISON_RUN),--comparison-run "$(COMPARISON_RUN)") --port "$(PORT)" $(ARGS)
+
 evals-list:
-	$(SWIFT) scripts/run-evals.swift --list $(if $(STAGE),--stage "$(STAGE)") $(if $(CASE),--case "$(CASE)") $(ARGS)
+	$(SWIFT) scripts/run-evals.swift --list $(if $(STAGE),--stage "$(STAGE)",$(if $(MODE),--$(MODE))) $(if $(CASE),--case "$(CASE)") $(ARGS)
 
 evals-pipeline:
 	$(MAKE) evals MODE=pipeline

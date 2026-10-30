@@ -1,0 +1,31 @@
+# transcribe/world-war-z
+
+Validation: PASS
+
+Input: [/Users/vnglst/Code/CaptainsLog/tmp/evals-2026-10-29_17-00-08_32779/fixtures/transcribe/world-war-z/world-war-z.m4a](/Users/vnglst/Code/CaptainsLog/tmp/evals-2026-10-29_17-00-08_32779/fixtures/transcribe/world-war-z/world-war-z.m4a)
+
+## Input
+
+(Audio fixture linked above.)
+
+## Expected
+
+GREATER CHONGQING, THE UNITED FEDERATION OF CHINA
+
+[At its prewar height, this region boasted a population of over thirty-five million people. Now, there are barely fifty thousand. Reconstruction funds have been slow to arrive in this part of the country, the government choosing to concentrate on more densely populated coast. There is no central power grid, no running water besides the Yangtze River. But the streets are clear of rubble and the local "security council" has prevented any postwar outbreaks. The chairman of that council is Kwang Jing-shu, a medical doctor who, despite his advanced age and wartime injuries, still manages to make house calls to all his patients.]
+
+The first outbreak I saw was in a remote village that officially had no name. The residents called it "New Dachang," but this was more out of nostalgia than anything else. Their former home, "Old Dachang," had stood since the period of the Three Kingdoms, with farms and houses and even trees said to be centuries old. When the Three Gorges Dam was completed, and reservoir waters began to rise, much of Dachang had been disassembled, brick by brick, then rebuilt on higher ground. This New Dachang, however, was not a town anymore, but a "national historic museum." It must have been a heartbreaking irony for those poor peasants, to see their town saved but then only being able to visit it as a tourist. Maybe that is why some of them choose to name their newly constructed hamlet "New Dachang" to preserve some connection to their heritage, even if it was only in name. I personally didn't know that this older New Dachang existed, so you can imagine how confused I was when the call came in.
+
+The hospital was quiet; it had been a slow night, even for the increasing number of drunk-driving accidents. Motorcycles were becoming very popular. We used to say that your Harley-Davidsons killed more young Chinese than all the G.I.s in the Korean War. That's why I was so grateful for a quiet shift. I was tired, my back and feet ached. I was on my way out to smoke a cigarette and watch the dawn when I heard my name being paged. The receptionist that night was new and couldn't quite understand the dialect. There had been an accident, or an illness. It was an emergency, that part was obvious, and could we please send help at once.
+
+## Generated
+
+Greater Chongqing, the United Federation of China. At its pre-war height, this region boasted a population of over 35 million people. Now there are barely 50,000. Reconstruction funds have been slow to arrive in this part of the country, the government choosing to concentrate on more densely populated coasts. There is no central power grid, no running water besides the Yangtze River. But the streets are clear of rubble and the local security council has prevented any post-war outbreaks. The chairman of that council is Kuang Ying-choo, a medical doctor who, despite his advanced age and wartime injuries, still manages to make house calls to all his patients. The first outbreak I saw was in a remote village that officially had no name. The residents called it 'New Dachang', but this was more out of nostalgia than anything else. Their former home, 'Old Dachang', had stood since the period of the Three Kingdoms, with farms and houses, and even trees said to be centuries old. When the Three Gorges Dam was completed, and reservoir waters began to rise, much of Dachang has been disassembled, brick by brick, then rebuilt on higher ground. This new Dachang, however, was not a town anymore, but a national historic museum. It must have been a heartbreaking irony for those poor peasants to see their town saved, but then only being able to visit it as a tourist. Maybe that is why some of them choose the name to name their newly constructed hamlet 'New Dachang', to preserve some connection to their heritage, even if it was only in name. I personally didn't know that this older Dachang existed, so you can imagine how confused I was when the call came in. The hospital was quiet. It had been a slow night, even for the increasing number of drunk-driving accidents. Motorcycles were becoming very popular. We used to say that your Harley-Davidson skilled more young Chinese than all the G.I.s in the Korean War. That's why I was so grateful for a quiet shift. I was tired, my back and feet ached. I was on my way out to smoke a cigarette and watch the dawn when I heard my name being paged. The receptionist that night was new and couldn't quite understand the dialect. There had been an accident or an illness. It was an emergency. That part was obvious. And could we please send help at once?
+
+## Transcription measurement
+
+WER 4.39% (12 substitutions + 2 deletions + 4 insertions) / 410 reference words (provisional reference)
+
+[Aligned word differences](wer.md) · [Machine-readable score](wer.json)
+
+[Semantic report](report.md)

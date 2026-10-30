@@ -1,0 +1,14 @@
+{
+  "tng-nl01-vrije-dag-enterprise-corrected": {
+    "date": "today",
+    "category": "personal",
+    "search_query": "holodeck Alexander Molly replicators sensoren",
+    "expected": {
+      "transcribe": "eval/transcribe/expected/tng-nl01-vrije-dag-enterprise-corrected.md",
+      "cleanup": "eval/pipeline/tng-nl01/cleaned.md",
+      "categorize": "eval/pipeline/tng-nl01/category.category",
+      "filename": "eval/pipeline/tng-nl01/filename.md",
+      "enrich": "eval/pipeline/tng-nl01/enriched.md"
+    }
+  }
+}

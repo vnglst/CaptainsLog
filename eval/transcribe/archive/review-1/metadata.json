@@ -1,0 +1,19 @@
+{
+  "kind": "consolidated-saved-runs",
+  "native_and_revalidation_runs": [
+    "/Users/vnglst/Code/CaptainsLog/tmp/task-77-dutch-revalidation",
+    "/Users/vnglst/Code/CaptainsLog/tmp/evals-2026-10-29_16-55-56_31364",
+    "/Users/vnglst/Code/CaptainsLog/tmp/evals-2026-10-29_16-57-12_31997",
+    "/Users/vnglst/Code/CaptainsLog/tmp/evals-2026-10-29_16-58-17_32284",
+    "/Users/vnglst/Code/CaptainsLog/tmp/evals-2026-10-29_17-00-08_32779"
+  ],
+  "reference_status": "model-assisted; owner audio verification pending",
+  "binary_sha256": "fe0fe1d7004d9642c44b7e691ffa6dd3af47ab590a239b5e4b0070f02c0aa5fe",
+  "status": "passed-mechanical-checks",
+  "semantic_review": "complete; owner reference/audio verification pending",
+  "listening_review": {
+    "command": "make evals-review RUN_DIR=tmp/task-77-evidence",
+    "app": "review-app",
+    "verification_pending": true
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "corrected_duration" : 490.54000000000002,
+  "corrected_sha256" : "755b844c73b8103a6197bd7f7544ca9178697e0e298154186d473a6bbcc3247e",
+  "edits" : [
+    {
+      "corrected_end" : 177.19999999999999,
+      "corrected_start" : 0,
+      "kind" : "original",
+      "original_end" : 177.19999999999999,
+      "original_start" : 0
+    },
+    {
+      "corrected_end" : 191.96000000000001,
+      "corrected_start" : 177.19999999999999,
+      "kind" : "replacement",
+      "original_end" : 192.31999999999999,
+      "original_start" : 177.19999999999999,
+      "passage_id" : "tng-nl01-D03",
+      "replacement_sha256" : "b94596a02c6c8b7abd552456ae88e7a445b76be06fd00471fca61ad96b29afa6",
+      "take_id" : "9b34d0cb-7946-4bad-8469-6aac3f5b5e8b"
+    },
+    {
+      "corrected_end" : 490.54000000000002,
+      "corrected_start" : 191.96000000000001,
+      "kind" : "original",
+      "original_end" : 490.89999999999998,
+      "original_start" : 192.31999999999999
+    }
+  ],
+  "original_duration" : 490.89999999999998,
+  "source_sha256" : "aee104e58c261dc5bd91c6da002eac3ee0909b25b23c61de578e30eb72814cf9",
+  "version" : 1
+}

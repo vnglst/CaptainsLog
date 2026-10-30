@@ -1,0 +1,163 @@
+[
+  {
+    "audio_sha256": "aee104e58c261dc5bd91c6da002eac3ee0909b25b23c61de578e30eb72814cf9",
+    "category": "personal",
+    "date": "2026-10-29",
+    "expected": "eval/transcribe/archive/review-1/review/pipeline/transcribe/tng-nl01-vrije-dag-enterprise/expected.md",
+    "input": "eval/transcribe/archive/review-1/review/pipeline/transcribe/tng-nl01-vrije-dag-enterprise/input.m4a",
+    "language": "Dutch",
+    "name": "tng-nl01-vrije-dag-enterprise",
+    "output": "eval/transcribe/archive/review-1/review/pipeline/transcribe/tng-nl01-vrije-dag-enterprise/output.md",
+    "recording_time": "16:28",
+    "reference_check": {
+      "date": "2026-10-29",
+      "model": "Whisper Large-v3 q5_0",
+      "model_sha256": "d75795ecff3f83b5faa89d1900604ad8c780abd5739fae406de19f23ecd98ad1",
+      "owner_audio_verification": "pending",
+      "repository": "ggerganov/whisper.cpp",
+      "revision": "5359861c739e955e79d9a303bcbc70fb988958b1",
+      "runtime_sha256": "e23dcdf55fdff2dfc085902b00cac93aba09e0373422e40ddd69d7c67d725f16"
+    },
+    "reference_sha256": "b82391127acdbd43fbfdd34f35f1fcb952003b04fa59a07cebd124a39496bfc1",
+    "reference_status": "model-assisted",
+    "scope": "pipeline",
+    "search_query": "holodeck Alexander Molly replicators sensoren",
+    "stage": "transcribe"
+  },
+  {
+    "category": "personal",
+    "date": "2026-10-29",
+    "expected": "eval/transcribe/archive/review-1/review/pipeline/cleanup/tng-nl01-vrije-dag-enterprise/expected.md",
+    "input": "eval/transcribe/archive/review-1/review/pipeline/cleanup/tng-nl01-vrije-dag-enterprise/input.md",
+    "name": "tng-nl01-vrije-dag-enterprise",
+    "output": "eval/transcribe/archive/review-1/review/pipeline/cleanup/tng-nl01-vrije-dag-enterprise/output.md",
+    "recording_time": "16:28",
+    "scope": "pipeline",
+    "search_query": "holodeck Alexander Molly replicators sensoren",
+    "stage": "cleanup"
+  },
+  {
+    "category": "personal",
+    "date": "2026-10-29",
+    "expected": "eval/transcribe/archive/review-1/review/pipeline/categorize/tng-nl01-vrije-dag-enterprise/expected.md",
+    "input": "eval/transcribe/archive/review-1/review/pipeline/categorize/tng-nl01-vrije-dag-enterprise/input.md",
+    "name": "tng-nl01-vrije-dag-enterprise",
+    "output": "eval/transcribe/archive/review-1/review/pipeline/categorize/tng-nl01-vrije-dag-enterprise/output.md",
+    "recording_time": "16:28",
+    "scope": "pipeline",
+    "search_query": "holodeck Alexander Molly replicators sensoren",
+    "stage": "categorize"
+  },
+  {
+    "category": "personal",
+    "date": "2026-10-29",
+    "expected": "eval/transcribe/archive/review-1/review/pipeline/filename/tng-nl01-vrije-dag-enterprise/expected.md",
+    "input": "eval/transcribe/archive/review-1/review/pipeline/filename/tng-nl01-vrije-dag-enterprise/input.md",
+    "name": "tng-nl01-vrije-dag-enterprise",
+    "output": "eval/transcribe/archive/review-1/review/pipeline/filename/tng-nl01-vrije-dag-enterprise/output.md",
+    "recording_time": "16:28",
+    "scope": "pipeline",
+    "search_query": "holodeck Alexander Molly replicators sensoren",
+    "stage": "filename"
+  },
+  {
+    "category": "personal",
+    "date": "2026-10-29",
+    "expected": "eval/transcribe/archive/review-1/review/pipeline/enrich/tng-nl01-vrije-dag-enterprise/expected.md",
+    "input": "eval/transcribe/archive/review-1/review/pipeline/enrich/tng-nl01-vrije-dag-enterprise/input.md",
+    "name": "tng-nl01-vrije-dag-enterprise",
+    "output": "eval/transcribe/archive/review-1/review/pipeline/enrich/tng-nl01-vrije-dag-enterprise/output.md",
+    "recording_time": "16:28",
+    "scope": "pipeline",
+    "search_query": "holodeck Alexander Molly replicators sensoren",
+    "stage": "enrich"
+  },
+  {
+    "audio_sha256": "018807fe80637d269afa19e839f15b0b78925a3a65391fdb09fb666da183af85",
+    "date": "2025-01-15",
+    "expected": "eval/transcribe/archive/review-1/review/suites/transcribe/2025-01-14 side project/expected.md",
+    "input": "eval/transcribe/archive/review-1/review/suites/transcribe/2025-01-14 side project/input.m4a",
+    "language": "Dutch",
+    "name": "2025-01-14 side project",
+    "output": "eval/transcribe/archive/review-1/review/suites/transcribe/2025-01-14 side project/output.md",
+    "recording_time": "12:00",
+    "reference_check": {
+      "date": "2026-10-29",
+      "model": "Whisper Large-v3 q5_0",
+      "model_sha256": "d75795ecff3f83b5faa89d1900604ad8c780abd5739fae406de19f23ecd98ad1",
+      "owner_audio_verification": "pending",
+      "repository": "ggerganov/whisper.cpp",
+      "revision": "5359861c739e955e79d9a303bcbc70fb988958b1",
+      "runtime_sha256": "e23dcdf55fdff2dfc085902b00cac93aba09e0373422e40ddd69d7c67d725f16"
+    },
+    "reference_sha256": "ee97b8485fedf9f38508952527cecb41e8a22b33717faa4936ed16b81cfe7e44",
+    "reference_status": "model-assisted",
+    "stage": "transcribe"
+  },
+  {
+    "audio_sha256": "f8a977f21028036d9b88496bb87da3dcfcc0ad731732b41f29d782da4fd992ca",
+    "date": "2025-01-15",
+    "expected": "eval/transcribe/archive/review-1/review/suites/transcribe/alle-mensen-zijn-sterfelijk/expected.md",
+    "input": "eval/transcribe/archive/review-1/review/suites/transcribe/alle-mensen-zijn-sterfelijk/input.m4a",
+    "language": "Dutch",
+    "name": "alle-mensen-zijn-sterfelijk",
+    "output": "eval/transcribe/archive/review-1/review/suites/transcribe/alle-mensen-zijn-sterfelijk/output.md",
+    "recording_time": "12:00",
+    "reference_check": {
+      "date": "2026-10-29",
+      "model": "Whisper Large-v3 q5_0",
+      "model_sha256": "d75795ecff3f83b5faa89d1900604ad8c780abd5739fae406de19f23ecd98ad1",
+      "owner_audio_verification": "pending",
+      "repository": "ggerganov/whisper.cpp",
+      "revision": "5359861c739e955e79d9a303bcbc70fb988958b1",
+      "runtime_sha256": "e23dcdf55fdff2dfc085902b00cac93aba09e0373422e40ddd69d7c67d725f16"
+    },
+    "reference_sha256": "68240648e0c0fd312608cb1f13adf81f952dc3c0fbeebba9daaa48990150dc6f",
+    "reference_status": "model-assisted",
+    "stage": "transcribe"
+  },
+  {
+    "audio_sha256": "423df075a1d2efcdc74966cd24e5b09f02cc9012855715a1cb2fd12b0aae6e9b",
+    "date": "2025-01-15",
+    "expected": "eval/transcribe/archive/review-1/review/suites/transcribe/durins-volk/expected.md",
+    "input": "eval/transcribe/archive/review-1/review/suites/transcribe/durins-volk/input.m4a",
+    "language": "Dutch",
+    "name": "durins-volk",
+    "output": "eval/transcribe/archive/review-1/review/suites/transcribe/durins-volk/output.md",
+    "recording_time": "12:00",
+    "reference_check": {
+      "date": "2026-10-29",
+      "model": "Whisper Large-v3 q5_0",
+      "model_sha256": "d75795ecff3f83b5faa89d1900604ad8c780abd5739fae406de19f23ecd98ad1",
+      "owner_audio_verification": "pending",
+      "repository": "ggerganov/whisper.cpp",
+      "revision": "5359861c739e955e79d9a303bcbc70fb988958b1",
+      "runtime_sha256": "e23dcdf55fdff2dfc085902b00cac93aba09e0373422e40ddd69d7c67d725f16"
+    },
+    "reference_sha256": "841d8ff3922985a94f1b92bd37684c75e7880d8972b72dc4977732ae6a0c4a3f",
+    "reference_status": "model-assisted",
+    "stage": "transcribe"
+  },
+  {
+    "audio_sha256": "6f419da2feeb93596b095aa544dd70ad8c8cdef2f0816f2c458dedb0914740d6",
+    "date": "2025-01-15",
+    "expected": "eval/transcribe/archive/review-1/review/suites/transcribe/world-war-z/expected.md",
+    "input": "eval/transcribe/archive/review-1/review/suites/transcribe/world-war-z/input.m4a",
+    "language": "English",
+    "name": "world-war-z",
+    "output": "eval/transcribe/archive/review-1/review/suites/transcribe/world-war-z/output.md",
+    "recording_time": "12:00",
+    "reference_check": {
+      "date": "2026-10-29",
+      "model": "Whisper Large-v3 q5_0",
+      "model_sha256": "d75795ecff3f83b5faa89d1900604ad8c780abd5739fae406de19f23ecd98ad1",
+      "owner_audio_verification": "pending",
+      "repository": "ggerganov/whisper.cpp",
+      "revision": "5359861c739e955e79d9a303bcbc70fb988958b1",
+      "runtime_sha256": "e23dcdf55fdff2dfc085902b00cac93aba09e0373422e40ddd69d7c67d725f16"
+    },
+    "reference_sha256": "c235024887c363a203d4e2728f63a8f85b1f4f415b67f32d87019c4b816d5812",
+    "reference_status": "model-assisted",
+    "stage": "transcribe"
+  }
+]

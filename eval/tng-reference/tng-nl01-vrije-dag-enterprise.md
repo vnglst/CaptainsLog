@@ -4,7 +4,7 @@
 **Recording target:** ~10 minutes (~1,200 words at a relaxed speaking pace)
 **Categories:** work, personal
 **Audio filename:** `tng-nl01-vrije-dag-enterprise.m4a`
-**Recording status:** To be recorded by the owner.
+**Recording status:** Recorded by the owner; canonical audio is in `../transcribe/audio/`. Verbatim reference review is pending.
 
 ## Raw Script
 

@@ -7,3 +7,9 @@ These are synthetic voice-memo entries in the TNG setting used for product demon
 Run `make dev` from the repository. The app prepares `tmp/demo-runtime/data/` and a separate config there. Changes made in the app affect the working copy. Quit the app and move `tmp/demo-runtime/` aside to reset it.
 
 `audio/2026-09-24-1750.qta` is a short synthesized QuickTime audio example. Its adjacent text file contains the spoken words. It was generated with macOS `say` and encoded as AAC in a QuickTime container using FFmpeg. The debug app copies it alongside the M4A files as a pending memo.
+
+The development app also copies the owner's Dutch TNG recording from
+`eval/transcribe/audio/tng-nl01-vrije-dag-enterprise-corrected.m4a` into its isolated audio
+folder as a pending memo. The eval fixture remains canonical; processing in the
+demo changes only the runtime copy. English and German recordings are not seeded
+until they are supplied.

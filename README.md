@@ -213,7 +213,8 @@ For the sequential model-backed fixture pipeline, run `make evals-pipeline`. Run
 Run `make evals-list` to discover cases without loading models.
 Use `make evals STAGE=filename CASE="fixture stem"` for focused work,
 `make evals-pipeline` for the full audio fixture pipeline and `make evals-suites`
-for all stage suites. Plain `make evals` runs pipeline then suites. Quote stems
+for all stage suites. Select the Dutch TNG pipeline with
+`make evals-pipeline`; its default is the reviewed Dutch TNG recording. Plain `make evals` runs pipeline then suites. Quote stems
 containing spaces; categorization and enrichment also use `STAGE`. Additional
 evaluator flags are passed with `ARGS="..."`.
 
@@ -232,8 +233,8 @@ sampling defaults. Text cases reuse weights sequentially with fresh contexts and
 samplers. Compile before inference; never edit a running evaluator or start another
 model job concurrently. The [TNG reference folder](eval/tng-reference/README.md)
 contains three personal log scripts aboard the Enterprise, each about ten
-minutes long, in English, Dutch and German, with paired expected outputs. Audio is still to be recorded by the owner; these
-scripts are separate from the active suites.
+minutes long, in English, Dutch and German, with paired expected outputs.
+The corrected, owner-reviewed Dutch recording is the only active transcription case. Other recordings and earlier review rounds are preserved under `eval/transcribe/archive/`; English and German TNG audio are still to be recorded by the owner.
 
 For opt-in native startup and quit performance checks, close the installed app,
 provide the prepared `CAPTAINSLOG_WHISPER_MODEL_FOLDER` and
@@ -243,6 +244,36 @@ fixtures and fresh isolated config/data, records real native decoding and proces
 termination, and does not use the microphone. See the
 [native performance check](scripts/README.md#native-performance-regression-check)
 for timing scopes, hardware-dependent limits, retained evidence and abort behavior.
+
+Audio evaluation runs also prepare a local listening-review app. Reopen a saved run
+without loading models:
+
+```sh
+make evals-review RUN_DIR=tmp/evals-RUN
+# Optional: compare another saved run or a folder of per-recording .txt transcripts:
+make evals-review RUN_DIR=tmp/evals-RUN COMPARISON_RUN=tmp/comparison-RUN
+```
+
+Open the printed localhost URL. The app pairs audio fragments with the selected
+run's reference and raw transcripts, highlights differences, and saves your wording
+and decisions in `review-app/review-state.json` inside that run. Export provides a
+JSON copy. Mark corrupted or incorrect audio, record and preview a replacement,
+then select the take to use. **Build corrected recording** exports one M4A with
+approved replacements and an edit map for shifted timestamps. Original fixtures
+stay intact; overlapping ranges must be adjusted before combining. Microphone
+permission is requested only when you press Record. Regenerating the app preserves saved reviews; changed audio or reference
+text requires verification again. Reviews do not overwrite fixture references.
+Use `PORT=8778` for another local port or `ARGS=--prepare-only` to prepare files
+without serving them. The app uses bundled Swift tooling and browser audio seeking;
+Python, FFmpeg and additional model downloads are not required.
+
+Transcription cases are pinned in `eval/transcribe/cases.json`. Every transcription
+review includes aligned Word Error Rate (`wer.json`, `wer.md`); the run's
+`transcription-scores.json` contains a word-weighted aggregate. WER counts
+substitutions, deletions and insertions against verbatim spoken words. Unverified
+scripts and legacy references produce explicitly provisional scores until checked
+against the recording; do not copy Whisper output into its own reference.
+The normalization and alignment policy lives in the transcription review skill.
 
 Evaluation bundles include source and generated text, validation results, model/runtime
 identity, hashes, settings and timings. Heuristic scores do not establish completeness

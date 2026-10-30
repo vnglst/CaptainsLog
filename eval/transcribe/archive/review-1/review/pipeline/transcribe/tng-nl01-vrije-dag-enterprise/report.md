@@ -1,0 +1,7 @@
+# Semantic review — 2026-10-29
+
+- Omissions / changed meaning: the raw app transcript changes Vanmorgen to Voor morgen, loses vrachtschip gekeken dat een tijdje, and mangles Keiko haalde Molly. The straling/meting phrase becomes meting hebben invloed; this obscures the planned scientific comparison. Guinan, Geordi and Data receive inconsistent phonetic spellings. These are differences from the script, not yet proven recognition errors rather than reading deviations.
+- Added or hallucinated content: the closing phrase inserts na. The pipeline replay also emits (sneezes), accounting for one additional insertion versus the first isolated run (4.73%). No large invented narrative block in the app output. Independent Large-v3 produces its own malformed fragments and repeated closing attempts; those are not accepted as ground truth.
+- Improvements / regressions against baseline: no matched older native baseline. Independent Large-v3 supports Vanmorgen and metingen beïnvloedt, but shares the damaged freight-ship and Keiko phrases. Agreement is insufficient to certify spoken wording.
+- Stage observations: 43 substitutions, 7 deletions, 8 insertions / 1205 script words = 4.81% provisional normalized WER. Names and twelve/12 contribute mechanically; semantic importance varies. All twelve selected listening passages have clips and a side-by-side app review.
+- Judgment and remaining limits: original script and reference are preserved. Model-assisted review only; owner audio verification remains pending. See the temporary review app for actual wording decisions.

@@ -1,0 +1,7 @@
+# Semantic review — 2026-10-29
+
+- Omissions / changed meaning: the summary says the narrator joins Mollie and Keiko for a meal, while the source describes Alexander and Molly at Ten Forward and Keiko collecting Molly later. It also says without the communicator while omitting the explicit inability to turn it off when on call. Missing documentation work and the remaining Geordi approval are important unfinished actions not represented in the summary.
+- Added or hallucinated content: Starfleet officer is an inferred role for an unnamed crew member. Abborretent and damaged names are promoted into metadata. Enterprise is classified as a project although it is the ship, not an explicitly named project.
+- Improvements / regressions against baseline: no matched earlier baseline. The metadata retains both work and personal categories and a Dutch language label, but uses an English summary and tags for a Dutch note.
+- Stage observations: YAML/schema checks, supplied date/time and byte-exact body preservation pass. Expected persons Guinan, Data, Geordi and Molly are replaced by Kynan, Deda, Jordi and Mollie inherited from the input. Worf, Alexander, Keiko and William Riker remain.
+- Judgment and remaining limits: mechanical success does not imply a grounded summary. Actor swap and omitted caveats are concrete semantic failures for owner review; enrichment behavior was not changed in this task.

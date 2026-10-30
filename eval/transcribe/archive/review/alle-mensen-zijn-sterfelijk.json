@@ -1,0 +1,189 @@
+{
+  "id": "alle-mensen",
+  "title": "Alle mensen zijn sterfelijk",
+  "audio_sha256": "f8a977f21028036d9b88496bb87da3dcfcc0ad731732b41f29d782da4fd992ca",
+  "reference_sha256": "68240648e0c0fd312608cb1f13adf81f952dc3c0fbeebba9daaa48990150dc6f",
+  "timing_source": "Owner-requested listening passages; non-TNG boundaries from the recorded Whisper Large-v3 comparison, with context padding. Text alignment remains approximate.",
+  "passages": [
+    {
+      "id": "alle-mensen-P01",
+      "short_id": "P01",
+      "title": "Het doek ging op. Régine boog en glimlachte; in…",
+      "start_seconds": 0,
+      "end_seconds": 18.94,
+      "reference_start_word": 0,
+      "reference_end_word": 40,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "alle-mensen-P02",
+      "short_id": "P02",
+      "title": "een donderende waterval, het geraas van een lawine vulde…",
+      "start_seconds": 17.88,
+      "end_seconds": 39.8,
+      "reference_start_word": 40,
+      "reference_end_word": 92,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "alle-mensen-P03",
+      "short_id": "P03",
+      "title": "Vijf keer halen, dat is niet gek,\" zei de…",
+      "start_seconds": 40.879999999999995,
+      "end_seconds": 48.44,
+      "reference_start_word": 92,
+      "reference_end_word": 107,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "alle-mensen-P04",
+      "short_id": "P04",
+      "title": "Ze liep het trapje af naar de foyer. Ze…",
+      "start_seconds": 47.879999999999995,
+      "end_seconds": 75.48,
+      "reference_start_word": 107,
+      "reference_end_word": 169,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "alle-mensen-P05",
+      "short_id": "P05",
+      "title": "Ze zeiden wat ze moesten zeggen",
+      "start_seconds": 74.98,
+      "end_seconds": 78.74,
+      "reference_start_word": 169,
+      "reference_end_word": 175,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "alle-mensen-P06",
+      "short_id": "P06",
+      "title": "Het was geniaal! Het was indrukwekkend!' En hun ogen…",
+      "start_seconds": 77.88,
+      "end_seconds": 104.67999999999999,
+      "reference_start_word": 175,
+      "reference_end_word": 232,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "alle-mensen-P07",
+      "short_id": "P07",
+      "title": "Alsof je van ons allebei tegelijk kunt houden, dacht…",
+      "start_seconds": 103.98,
+      "end_seconds": 109.36,
+      "reference_start_word": 232,
+      "reference_end_word": 242,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "alle-mensen-P08",
+      "short_id": "P08",
+      "title": "driftig, alsof we niet verschillen als dag en nacht",
+      "start_seconds": 107.88,
+      "end_seconds": 113.6,
+      "reference_start_word": 242,
+      "reference_end_word": 251,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "alle-mensen-P09",
+      "short_id": "P09",
+      "title": "Florence glimlachte. Niets belette haar te geloven dat ze…",
+      "start_seconds": 113.28,
+      "end_seconds": 123.38,
+      "reference_start_word": 251,
+      "reference_end_word": 271,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "alle-mensen-P10",
+      "short_id": "P10",
+      "title": "Roger wachtte Régine op in haar kleedkamer; hij nam…",
+      "start_seconds": 125.48,
+      "end_seconds": 132.64000000000001,
+      "reference_start_word": 271,
+      "reference_end_word": 284,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "alle-mensen-P11",
+      "short_id": "P11",
+      "title": "Je hebt nog nooit zo goed gespeeld als vanavond!\",…",
+      "start_seconds": 131.92000000000002,
+      "end_seconds": 139.36,
+      "reference_start_word": 284,
+      "reference_end_word": 295,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "alle-mensen-P12",
+      "short_id": "P12",
+      "title": "Te goed voor een dergelijk publiek,\" zei Régine",
+      "start_seconds": 137.88000000000002,
+      "end_seconds": 144.26000000000002,
+      "reference_start_word": 295,
+      "reference_end_word": 303,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "alle-mensen-P13",
+      "short_id": "P13",
+      "title": "Je kreeg een geweldig applaus,\" zei Annie. \"Pff",
+      "start_seconds": 144.96,
+      "end_seconds": 150.02,
+      "reference_start_word": 303,
+      "reference_end_word": 311,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "alle-mensen-P14",
+      "short_id": "P14",
+      "title": "Florence kreeg evenveel applaus als ik",
+      "start_seconds": 150.86,
+      "end_seconds": 154.60000000000002,
+      "reference_start_word": 311,
+      "reference_end_word": 317,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "alle-mensen-P15",
+      "short_id": "P15",
+      "title": "Ze ging aan de kaptafel zitten en begon haar…",
+      "start_seconds": 154.24,
+      "end_seconds": 161.8,
+      "reference_start_word": 317,
+      "reference_end_word": 334,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "alle-mensen-P16",
+      "short_id": "P16",
+      "title": "Florence bekommert zich niet om mij, ik zou me…",
+      "start_seconds": 162.72,
+      "end_seconds": 168.8,
+      "reference_start_word": 334,
+      "reference_end_word": 349,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "alle-mensen-P17",
+      "short_id": "P17",
+      "title": "dacht ze. Maar ze trok zich wel iets van…",
+      "start_seconds": 167.88000000000002,
+      "end_seconds": 173.64000000000001,
+      "reference_start_word": 349,
+      "reference_end_word": 360,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "alle-mensen-P18",
+      "short_id": "P18",
+      "title": "en ze had een wrange smaak in haar keel",
+      "start_seconds": 172.96,
+      "end_seconds": 177.44,
+      "reference_start_word": 360,
+      "reference_end_word": 369,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    }
+  ]
+}

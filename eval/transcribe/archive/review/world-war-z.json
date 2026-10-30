@@ -1,0 +1,389 @@
+{
+  "id": "world-war-z",
+  "title": "World War Z",
+  "audio_sha256": "6f419da2feeb93596b095aa544dd70ad8c8cdef2f0816f2c458dedb0914740d6",
+  "reference_sha256": "c235024887c363a203d4e2728f63a8f85b1f4f415b67f32d87019c4b816d5812",
+  "timing_source": "Owner-requested listening passages; non-TNG boundaries from the recorded Whisper Large-v3 comparison, with context padding. Text alignment remains approximate.",
+  "passages": [
+    {
+      "id": "world-war-z-P01",
+      "short_id": "P01",
+      "title": "GREATER CHONGQING, THE UNITED FEDERATION OF CHINA",
+      "start_seconds": 0,
+      "end_seconds": 6.7,
+      "reference_start_word": 0,
+      "reference_end_word": 7,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "world-war-z-P02",
+      "short_id": "P02",
+      "title": "At its prewar height, this region boasted a population…",
+      "start_seconds": 5.2,
+      "end_seconds": 14.48,
+      "reference_start_word": 7,
+      "reference_end_word": 22,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "world-war-z-P03",
+      "short_id": "P03",
+      "title": "Now, there are barely fifty thousand",
+      "start_seconds": 13.520000000000001,
+      "end_seconds": 17.86,
+      "reference_start_word": 22,
+      "reference_end_word": 28,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "world-war-z-P04",
+      "short_id": "P04",
+      "title": "Reconstruction funds have been slow to arrive in this…",
+      "start_seconds": 17.400000000000002,
+      "end_seconds": 22.96,
+      "reference_start_word": 28,
+      "reference_end_word": 41,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "world-war-z-P05",
+      "short_id": "P05",
+      "title": "the government choosing to concentrate on more densely populated…",
+      "start_seconds": 21.46,
+      "end_seconds": 27.96,
+      "reference_start_word": 41,
+      "reference_end_word": 51,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "world-war-z-P06",
+      "short_id": "P06",
+      "title": "There is no central power grid, no running water…",
+      "start_seconds": 27.92,
+      "end_seconds": 33.82,
+      "reference_start_word": 51,
+      "reference_end_word": 64,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "world-war-z-P07",
+      "short_id": "P07",
+      "title": "But the streets are clear of rubble and the…",
+      "start_seconds": 32.64,
+      "end_seconds": 41.68,
+      "reference_start_word": 64,
+      "reference_end_word": 81,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "world-war-z-P08",
+      "short_id": "P08",
+      "title": "The chairman of that council is Kwang Jing-shu",
+      "start_seconds": 41.019999999999996,
+      "end_seconds": 46.22,
+      "reference_start_word": 81,
+      "reference_end_word": 90,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "world-war-z-P09",
+      "short_id": "P09",
+      "title": "a medical doctor who, despite his advanced age and…",
+      "start_seconds": 44.72,
+      "end_seconds": 51.22,
+      "reference_start_word": 90,
+      "reference_end_word": 101,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "world-war-z-P10",
+      "short_id": "P10",
+      "title": "still manages to make house calls to all his…",
+      "start_seconds": 50.739999999999995,
+      "end_seconds": 56.04,
+      "reference_start_word": 101,
+      "reference_end_word": 111,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "world-war-z-P11",
+      "short_id": "P11",
+      "title": "The first outbreak I saw was in a remote…",
+      "start_seconds": 56.54,
+      "end_seconds": 63.16,
+      "reference_start_word": 111,
+      "reference_end_word": 126,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "world-war-z-P12",
+      "short_id": "P12",
+      "title": "The residents called it \"New Dachang,\" but this was…",
+      "start_seconds": 62.3,
+      "end_seconds": 69.52,
+      "reference_start_word": 126,
+      "reference_end_word": 142,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "world-war-z-P13",
+      "short_id": "P13",
+      "title": "Their former home, \"Old Dachang,\" had stood since the…",
+      "start_seconds": 68.38,
+      "end_seconds": 75.2,
+      "reference_start_word": 142,
+      "reference_end_word": 156,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "world-war-z-P14",
+      "short_id": "P14",
+      "title": "with farms and houses and even trees said to…",
+      "start_seconds": 73.84,
+      "end_seconds": 79.89999999999999,
+      "reference_start_word": 156,
+      "reference_end_word": 168,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "world-war-z-P15",
+      "short_id": "P15",
+      "title": "When the Three Gorges Dam was completed, and reservoir…",
+      "start_seconds": 79.6,
+      "end_seconds": 86.75999999999999,
+      "reference_start_word": 168,
+      "reference_end_word": 181,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "world-war-z-P16",
+      "short_id": "P16",
+      "title": "much of Dachang",
+      "start_seconds": 85.25999999999999,
+      "end_seconds": 86.86,
+      "reference_start_word": 181,
+      "reference_end_word": 184,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "world-war-z-P17",
+      "short_id": "P17",
+      "title": "had been disassembled, brick by brick, then rebuilt on…",
+      "start_seconds": 85.36,
+      "end_seconds": 94.22,
+      "reference_start_word": 184,
+      "reference_end_word": 195,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "world-war-z-P18",
+      "short_id": "P18",
+      "title": "This New Dachang, however, was not a town anymore,…",
+      "start_seconds": 93.58,
+      "end_seconds": 101.52,
+      "reference_start_word": 195,
+      "reference_end_word": 209,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "world-war-z-P19",
+      "short_id": "P19",
+      "title": "It must have been a heartbreaking irony for those…",
+      "start_seconds": 100.8,
+      "end_seconds": 109.0,
+      "reference_start_word": 209,
+      "reference_end_word": 225,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "world-war-z-P20",
+      "short_id": "P20",
+      "title": "but then only being able to visit it as…",
+      "start_seconds": 107.7,
+      "end_seconds": 112.48,
+      "reference_start_word": 225,
+      "reference_end_word": 236,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "world-war-z-P21",
+      "short_id": "P21",
+      "title": "Maybe that is why some of them choose",
+      "start_seconds": 111.6,
+      "end_seconds": 116.2,
+      "reference_start_word": 236,
+      "reference_end_word": 244,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "world-war-z-P22",
+      "short_id": "P22",
+      "title": "to name their newly constructed hamlet \"New Dachang",
+      "start_seconds": 115.28,
+      "end_seconds": 120.53999999999999,
+      "reference_start_word": 244,
+      "reference_end_word": 252,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "world-war-z-P23",
+      "short_id": "P23",
+      "title": "to preserve some connection to their heritage, even if…",
+      "start_seconds": 119.03999999999999,
+      "end_seconds": 126.39999999999999,
+      "reference_start_word": 252,
+      "reference_end_word": 266,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "world-war-z-P24",
+      "short_id": "P24",
+      "title": "I personally didn't know that this older New Dachang…",
+      "start_seconds": 124.89999999999999,
+      "end_seconds": 131.10000000000002,
+      "reference_start_word": 266,
+      "reference_end_word": 276,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "world-war-z-P25",
+      "short_id": "P25",
+      "title": "so you can imagine how confused I was when…",
+      "start_seconds": 129.60000000000002,
+      "end_seconds": 135.5,
+      "reference_start_word": 276,
+      "reference_end_word": 289,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "world-war-z-P26",
+      "short_id": "P26",
+      "title": "The hospital was quiet",
+      "start_seconds": 134.0,
+      "end_seconds": 138.0,
+      "reference_start_word": 289,
+      "reference_end_word": 293,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "world-war-z-P27",
+      "short_id": "P27",
+      "title": "it had been a slow night, even for the…",
+      "start_seconds": 136.5,
+      "end_seconds": 143.72,
+      "reference_start_word": 293,
+      "reference_end_word": 308,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "world-war-z-P28",
+      "short_id": "P28",
+      "title": "Motorcycles were becoming very popular",
+      "start_seconds": 142.22,
+      "end_seconds": 146.70000000000002,
+      "reference_start_word": 308,
+      "reference_end_word": 313,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "world-war-z-P29",
+      "short_id": "P29",
+      "title": "We used to say that your Harley-Davidsons killed more…",
+      "start_seconds": 145.20000000000002,
+      "end_seconds": 154.12,
+      "reference_start_word": 313,
+      "reference_end_word": 335,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "world-war-z-P30",
+      "short_id": "P30",
+      "title": "That's why I was so grateful for a quiet…",
+      "start_seconds": 153.20000000000002,
+      "end_seconds": 157.86,
+      "reference_start_word": 335,
+      "reference_end_word": 345,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "world-war-z-P31",
+      "short_id": "P31",
+      "title": "I was tired, my back and feet ached",
+      "start_seconds": 156.94,
+      "end_seconds": 160.68,
+      "reference_start_word": 345,
+      "reference_end_word": 353,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "world-war-z-P32",
+      "short_id": "P32",
+      "title": "I was on my way out to smoke a…",
+      "start_seconds": 159.72,
+      "end_seconds": 166.86,
+      "reference_start_word": 353,
+      "reference_end_word": 374,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "world-war-z-P33",
+      "short_id": "P33",
+      "title": "The receptionist that night was new and couldn't quite…",
+      "start_seconds": 166.84,
+      "end_seconds": 172.98000000000002,
+      "reference_start_word": 374,
+      "reference_end_word": 386,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "world-war-z-P34",
+      "short_id": "P34",
+      "title": "There had been an accident, or an illness",
+      "start_seconds": 172.24,
+      "end_seconds": 176.62,
+      "reference_start_word": 386,
+      "reference_end_word": 394,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "world-war-z-P35",
+      "short_id": "P35",
+      "title": "It was an emergency",
+      "start_seconds": 175.12,
+      "end_seconds": 178.62,
+      "reference_start_word": 394,
+      "reference_end_word": 398,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "world-war-z-P36",
+      "short_id": "P36",
+      "title": "that part was obvious",
+      "start_seconds": 177.12,
+      "end_seconds": 180.62,
+      "reference_start_word": 398,
+      "reference_end_word": 402,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "world-war-z-P37",
+      "short_id": "P37",
+      "title": "and could we please send help at once",
+      "start_seconds": 179.12,
+      "end_seconds": 183.5,
+      "reference_start_word": 402,
+      "reference_end_word": 410,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "world-war-z-P38",
+      "short_id": "P38",
+      "title": "please send help at once",
+      "start_seconds": 182.0,
+      "end_seconds": 184.746667,
+      "reference_start_word": 405,
+      "reference_end_word": 410,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    }
+  ]
+}

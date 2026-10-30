@@ -34,20 +34,30 @@ extension Tools {
             try write(path(value("--output")), source("transcribe/expected/\(name).md"))
         case "pipeline":
             if let trace = environment["EVAL_FIXTURE_PIPELINE_ARGS"] { try json(path(trace), args) }
-            let data = path(environment["CAPTAINS_LOG_DATA_DIR"]!), stem = "2025-01-14 side project", slug = "2025-01-14-side-project-star-trek-voice-log"
-            let transcript = try source("transcribe/expected/\(stem).md"), cleaned = try source("cleanup/expected/\(stem).md")
-            var frontmatter = try expectedFrontmatter(root.appendingPathComponent("eval/enrich/expected/\(stem).md")); frontmatter["date"] = "2025-01-14"
-            let audio = data.appendingPathComponent("audio/\(stem).m4a"); try copy(root.appendingPathComponent("eval/transcribe/audio/\(stem).m4a"), audio)
+            let data = path(environment["CAPTAINS_LOG_DATA_DIR"]!), input = path(try value("--input"))
+            let stem = input.deletingPathExtension().lastPathComponent
+            let settings = (try json(root.appendingPathComponent("eval/pipeline/cases.json")) as! [String: EvalItem])[stem]!
+            let expected = settings["expected"] as! [String: String]
+            let transcript = try read(root.appendingPathComponent(expected["transcribe"]!)), cleaned = try read(root.appendingPathComponent(expected["cleanup"]!))
+            let formatterDate = DateFormatter(); formatterDate.dateFormat = "yyyy-MM-dd"
+            let date = settings["date"] as! String == "today" ? formatterDate.string(from: Date()) : settings["date"] as! String
+            let slug = stem == "2025-01-14 side project" ? "2025-01-14-side-project-star-trek-voice-log" : date + "-enterprise-vrije-dag-sensorcontrole"
+            var frontmatter = try expectedFrontmatter(root.appendingPathComponent(expected["enrich"]!)); frontmatter["date"] = date
+            let audio = data.appendingPathComponent("audio/\(stem).m4a"); try copy(input, audio)
             let formatter = DateFormatter(); formatter.dateFormat = "HH:mm"; frontmatter["recording_time"] = formatter.string(from: try fm.attributesOfItem(atPath: audio.path)[.creationDate] as! Date)
-            let category = String(decoding: try JSONSerialization.data(withJSONObject: ["sourceStem": stem, "category": "side_project"]), as: UTF8.self)
-            let artifacts = [".pipeline/01-transcribed/\(stem).md": transcript, ".pipeline/02-logs/\(stem).md": cleaned, ".pipeline/03-category/\(stem).json": category, ".pipeline/04-rename/\(stem).slug.txt": slug, ".pipeline/04-rename/\(slug).md": cleaned, "logs/side-project/\(slug).md": try enriched(frontmatter, cleaned)]
+            let category = String(decoding: try JSONSerialization.data(withJSONObject: ["sourceStem": stem, "category": settings["category"] as! String]), as: UTF8.self)
+            let artifacts = [".pipeline/01-transcribed/\(stem).md": transcript, ".pipeline/02-logs/\(stem).md": cleaned, ".pipeline/03-category/\(stem).json": category, ".pipeline/04-rename/\(stem).slug.txt": slug, ".pipeline/04-rename/\(slug).md": cleaned, "logs/\((settings["category"] as! String).replacingOccurrences(of: "_", with: "-"))/\(slug).md": try enriched(frontmatter, cleaned)]
             for (relative, text) in artifacts { if environment["EVAL_FIXTURE_OMIT_ENRICH"] != nil && relative.hasPrefix("logs/") { continue }; try write(data.appendingPathComponent(relative), text) }
-        case "search": print(environment["CAPTAINS_LOG_DATA_DIR"]! + "/logs/side-project/2025-01-14-side-project-star-trek-voice-log.md")
+        case "search":
+            for file in files(path(environment["CAPTAINS_LOG_DATA_DIR"]!).appendingPathComponent("logs"), recursive: true) { print(file.path) }
         case "resume", "search-index": print("fixture no-op")
         default: throw ToolFailure("unexpected fixture command: \(command)")
         }
     }
     func testEvals() throws {
+        try testTranscriptionScoring()
+        try testEvalReview()
+        try testReviewAudio()
         var checks = 0
         func assert(_ condition: @autoclosure () throws -> Bool, _ message: String) throws { try require(condition(), message); checks += 1 }
         let dir = try temporary("captainslog-eval-tests-"); defer { try? fm.removeItem(at: dir) }
@@ -73,7 +83,7 @@ extension Tools {
         var cleanup = try eval.cases(["cleanup"], "book-reference")[0]; cleanup["output"] = dir.appendingPathComponent("cleanup.md").path
         for text in ["", "<think>private reasoning</think>", "bad\0text", "```output"] { try write(eval.file(cleanup, "output"), text); try assert(eval.validate(cleanup).hasPrefix("FAIL:"), "malformed cleanup accepted") }
         try copy(eval.file(cleanup, "expected"), eval.file(cleanup, "output")); try assert(eval.validate(cleanup) == "PASS", "valid cleanup rejected")
-        try assert(eval.cases(eval.stages).count == 24, "suite selection changed unexpectedly"); try assert(eval.cases(["filename"], "04_short_entry").count == 1, "case selection mismatch")
+        try assert(eval.cases(eval.stages).count == 21, "suite selection changed unexpectedly"); try assert(eval.cases(["filename"], "04_short_entry").count == 1, "case selection mismatch")
         do { _ = try eval.cases(["cleanup"], "missing"); throw ToolFailure("unknown fixture silently skipped") } catch { try assert(String(describing: error).contains("No fixtures"), "wrong unknown-fixture error") }
         try writeValue(data); try assert(eval.evidence(dir, [item]), "valid evidence failed")
         let review = dir.appendingPathComponent("review/suites/enrich/01_work_week"), report = review.appendingPathComponent("report.md")
@@ -97,11 +107,12 @@ extension Tools {
         var savedRuns: [URL] = []
         defer { for saved in savedRuns { if let manifest = (try? json(saved.appendingPathComponent("manifest.json"))) as? [EvalItem] { for item in manifest where eval.string(item, "scope") != "pipeline" { try? fm.removeItem(at: eval.file(item, "output")) } } } }
         let (suite, suiteResult) = try runFixture("suite", ["--suites"]); savedRuns.append(suite); try assert(suiteResult.status == 0, "suite fixture failed: \(suiteResult.output)")
-        let manifest = try json(suite.appendingPathComponent("manifest.json")) as! [EvalItem]; try assert(manifest.count == 24, "full suite dropped cases")
-        let calls = try read(dir.appendingPathComponent("calls")).split(separator: "\n").map(String.init); try assert(calls.filter { $0 != "enrich" } == ["transcribe", "transcribe", "transcribe", "transcribe", "eval-batch"], "suite did not batch text after sequential audio")
+        try require(fm.fileExists(atPath: suite.appendingPathComponent("review-app/recordings.json").path), "Audio suites must prepare their listening app automatically")
+        let manifest = try json(suite.appendingPathComponent("manifest.json")) as! [EvalItem]; try assert(manifest.count == 21, "full suite dropped cases")
+        let calls = try read(dir.appendingPathComponent("calls")).split(separator: "\n").map(String.init); try assert(calls.filter { $0 != "enrich" } == ["transcribe", "eval-batch"], "suite did not batch text after sequential audio")
         let metadata = try json(suite.appendingPathComponent("metadata.json")) as! EvalItem
         try assert(((metadata["models"] as? EvalItem)?["qwen"] as? EvalItem)?["sha256"] as? String == hash(eval.file(item, "input")), "actual model identity missing")
-        try assert(metadata["status"] as? String == "passed-mechanical-checks" && (metadata["fixture_hashes"] as? EvalItem)?.count == 48, "suite metadata incomplete")
+        try assert(metadata["status"] as? String == "passed-mechanical-checks" && (metadata["fixture_hashes"] as? EvalItem)?.count == 42, "suite metadata incomplete")
         let regression = manifest.first { eval.string($0, "name") == "04_fictional_name_loop" }!
         try assert(eval.string(regression, "date") == "2025-02-18" && eval.string(regression, "recording_time") == "20:30" && regression["seed"] as? Int == 42, "enrichment case settings lost")
         try assert(read(suite.appendingPathComponent("enrich-cases.json")) == read(path("eval/enrich/cases.json")), "enrichment manifest not snapshotted")
@@ -122,7 +133,19 @@ extension Tools {
         try assert(experimentalResult.status == 0 && (try json(combinedPipeline.appendingPathComponent("metadata.json")) as? EvalItem)?["combined_metadata"] != nil, "explicit pipeline experiment was not recorded")
         try assert((try json(trace) as? [String])?.contains("--combined-metadata") == true, "explicit experiment flag did not reach pipeline CLI")
         let (omitted, omittedResult) = try runFixture("omitted-pipeline-artifact", ["--pipeline"], ["EVAL_FIXTURE_OMIT_ENRICH": "1"]); try assert(omittedResult.status == 1 && omittedResult.output.contains("Missing renamed/enriched artifacts"), "pipeline assertion did not stop for missing output"); try assert(!fm.fileExists(atPath: omitted.appendingPathComponent("resume.log").path), "pipeline continued after failed artifact assertion")
-        let (combined, combinedResult) = try runFixture("all", ["--all"]); savedRuns.append(combined); try assert(combinedResult.status == 0, "combined release gate fixture failed: \(combinedResult.output)"); try assert((try json(combined.appendingPathComponent("manifest.json")) as? [EvalItem])?.count == 29, "combined gate dropped pipeline or suite cases")
+        let (combined, combinedResult) = try runFixture("all", ["--all"]); savedRuns.append(combined); try assert(combinedResult.status == 0, "combined release gate fixture failed: \(combinedResult.output)"); try assert((try json(combined.appendingPathComponent("manifest.json")) as? [EvalItem])?.count == 26, "combined gate dropped pipeline or suite cases")
+        let (dutch, dutchResult) = try runFixture("dutch-pipeline", ["--pipeline", "--case", "tng-nl01-vrije-dag-enterprise-corrected"])
+        try require(dutchResult.status == 0, "Dutch pipeline fixture failed: \(dutchResult.output)")
+        let dutchItems = try json(dutch.appendingPathComponent("manifest.json")) as! [EvalItem]
+        try require(dutchItems.count == 5 && dutchItems.allSatisfy { eval.string($0, "name") == "tng-nl01-vrije-dag-enterprise-corrected" }, "Dutch pipeline selection lost")
+        try require(fm.fileExists(atPath: dutch.appendingPathComponent("transcription-scores.json").path), "Pipeline WER missing")
+        let callsBeforeCheck = try read(dir.appendingPathComponent("calls"))
+        try run([executable, "eval-pipeline", dutch.path, bin.appendingPathComponent("cl").path, "--check-artifacts"], quiet: true, environment: env.merging(["CAPTAINS_LOG_CONFIG_PATH": dutch.appendingPathComponent("config.json").path, "CAPTAINS_LOG_DATA_DIR": dutch.appendingPathComponent("data").path]) { _, new in new })
+        try require(read(dir.appendingPathComponent("calls")).dropFirst(callsBeforeCheck.count).split(separator: "\n").map(String.init) == ["resume", "search-index", "search"], "Saved pipeline checks must not rerun generation")
+        let dutchCategory = dutchItems.first { eval.string($0, "stage") == "categorize" }!
+        try json(eval.file(dutchCategory, "output"), ["sourceStem": "tng-nl01-vrije-dag-enterprise-corrected", "category": "professional"])
+        try require(eval.validate(dutchCategory) == "PASS", "Mixed personal/work fixture must accept professional filing")
+
         try require(checks == 72, "Expected 72 evaluation tooling checks, got \(checks)")
         print("PASS: \(checks) evaluation tooling checks")
         let aliasYAML = "---\ndate: \"2025-01-15\"\nrecording_time: \"12:00\"\nlanguage: English\ncategories: [work]\ntags: &names [work, planning, meetings]\npersons: []\nprojects: []\ncompanies: []\nentities: *names\nsummary: A work week.\n---\n\n"

@@ -78,6 +78,13 @@ enum DemoMode {
                 try fm.copyItem(at: file, to: destination)
             }
         }
+        // Reuse the owner's synthetic Dutch TNG recording as a pending memo.
+        // Keep one canonical audio fixture; demo mutations stay in its runtime copy.
+        let dutchRecording = repository.appendingPathComponent("eval/transcribe/audio/tng-nl01-vrije-dag-enterprise-corrected.m4a")
+        let dutchDestination = audioDestination.appendingPathComponent(dutchRecording.lastPathComponent)
+        if !fm.fileExists(atPath: dutchDestination.path) {
+            try fm.copyItem(at: dutchRecording, to: dutchDestination)
+        }
     }
 }
 #endif

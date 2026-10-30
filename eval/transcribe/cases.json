@@ -1,0 +1,14 @@
+{
+  "tng-nl01-vrije-dag-enterprise-corrected": {
+    "language": "Dutch",
+    "reference_status": "audio-reviewed",
+    "audio_sha256": "731efc1781210e0717e9952bcea5ab761793810b7f4f0fcd7d607fff6fa3c990",
+    "reference_sha256": "37a5afd505cea14c707ae0e4d041e0e1537588531c3acedf54c228a698ec87bf",
+    "reference_check": {
+      "date": "2026-10-30",
+      "source": "Owner first-round wording corrections and explicitly selected replacement takes",
+      "owner_audio_verification": "Accepted by owner after two review rounds, 2026-10-30",
+      "derived_from": "tng-nl01-vrije-dag-enterprise"
+    }
+  }
+}

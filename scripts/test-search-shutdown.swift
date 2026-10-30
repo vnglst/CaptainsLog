@@ -38,7 +38,7 @@ let slug = "2025-01-14-side-project-star-trek-voice-log"
 for relative in [".pipeline/01-transcribed", ".pipeline/02-logs", ".pipeline/03-category", ".pipeline/04-rename"] {
     try fm.createDirectory(at: data.appendingPathComponent(relative), withIntermediateDirectories: true)
 }
-try fm.copyItem(at: URL(fileURLWithPath: "eval/transcribe/expected/2025-01-14 side project.md"),
+try fm.copyItem(at: URL(fileURLWithPath: "eval/transcribe/archive/expected/2025-01-14 side project.md"),
                 to: data.appendingPathComponent(".pipeline/01-transcribed/\(stem).md"))
 try fm.copyItem(at: body, to: data.appendingPathComponent(".pipeline/02-logs/\(stem).md"))
 try fm.copyItem(at: body, to: data.appendingPathComponent(".pipeline/04-rename/\(slug).md"))

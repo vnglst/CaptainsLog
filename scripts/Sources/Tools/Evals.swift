@@ -14,6 +14,7 @@ final class Evaluator {
         var result: [EvalItem] = []
         for stage in selectedStages {
             var enrichment: [String: EvalItem]?
+            let transcription = stage == "transcribe" ? try transcriptionCases() : nil
             if stage == "enrich" {
                 try tools.validateEnrichCases(tools.path("eval/enrich/cases.json"), tools.path("eval/enrich/input"))
                 enrichment = try tools.json(tools.path("eval/enrich/cases.json")) as? [String: EvalItem]
@@ -26,6 +27,7 @@ final class Evaluator {
                 let expected = tools.path("eval/\(stage)/expected/\(name).\(stage == "categorize" ? "category" : "md")")
                 try tools.require(tools.fm.fileExists(atPath: expected.path), "Missing expected fixture: \(expected.path)")
                 var item: EvalItem = ["stage": stage, "name": name, "input": input.path, "expected": expected.path]
+                if let settings = transcription?[name] { item.merge(settings) { _, new in new } }
                 if let settings = enrichment?[name] {
                     item.merge(settings.filter { $0.key != "sha256" }) { _, new in new }
                     if let hash = settings["sha256"] { item["input_sha256"] = hash }
@@ -68,7 +70,8 @@ final class Evaluator {
                 guard let data = try JSONSerialization.jsonObject(with: bytes) as? EvalItem else { throw ToolFailure("category manifest must contain only category and sourceStem") }
                 try tools.require(data.keys.sorted() == ["category", "sourceStem"], "category manifest must contain only category and sourceStem")
                 try tools.require(data["sourceStem"] as? String == string(item, "name"), "sourceStem mismatch")
-                try tools.require(data["category"] as? String == tools.read(file(item, "expected")).trimmingCharacters(in: .whitespacesAndNewlines), "category mismatch")
+                let accepted = try tools.read(file(item, "expected")).split(whereSeparator: \.isNewline).map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+                try tools.require(accepted.contains(data["category"] as? String ?? ""), "category mismatch")
             case "enrich":
                 let (yaml, body) = try tools.frontmatter(text, strict: true)
                 let data = try tools.yamlMapping(yaml)
@@ -99,6 +102,8 @@ final class Evaluator {
     func link(_ value: String) -> String { value.addingPercentEncoding(withAllowedCharacters: CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~/")) ?? value }
     func evidence(_ run: URL, _ items: [EvalItem], _ baseline: [EvalItem]? = nil) throws -> Bool {
         var failures = 0
+        var scores: [EvalItem] = []
+        var transcriptionFailures = 0
         var index = ["# Evaluation review", "", "Mechanical success does not establish semantic quality. Read every selected case; owner judgment remains required.", ""]
         for item in items {
             let relative = "review/\(string(item, "scope", "suites"))/\(string(item, "stage"))/\(string(item, "name"))", folder = run.appendingPathComponent(relative)
@@ -108,7 +113,22 @@ final class Evaluator {
                 let artifact = URL(fileURLWithPath: file(item, "output").path + suffix)
                 if tools.fm.fileExists(atPath: artifact.path) { try tools.copy(artifact, folder.appendingPathComponent("output" + suffix)) }
             }
-            let status = validate(item); if status != "PASS" { failures += 1 }
+            var status = validate(item)
+            var scoreSummary: String?
+            if string(item, "stage") == "transcribe" {
+                for name in ["wer.json", "wer.md"] where tools.fm.fileExists(atPath: folder.appendingPathComponent(name).path) { try tools.fm.removeItem(at: folder.appendingPathComponent(name)) }
+                if status == "PASS" {
+                    do {
+                        let (score, measurement) = try transcriptionEvidence(item, folder)
+                        var entry = measurement; entry["name"] = string(item, "name"); entry["scope"] = string(item, "scope", "suites")
+                        scores.append(entry)
+                        scoreSummary = score.summary + (measurement["provisional"] as? Bool == true ? " (provisional reference)" : "")
+                        print(scoreSummary!)
+                    } catch { status = "FAIL: \(error)" }
+                }
+                if status != "PASS" { transcriptionFailures += 1 }
+            }
+            if status != "PASS" { failures += 1 }
             print("\(string(item, "stage"))/\(string(item, "name")): \(status)")
             try tools.write(folder.appendingPathComponent("validation.txt"), status + "\n")
             func contents(_ key: String, scrub: Bool = false) -> String {
@@ -116,6 +136,7 @@ final class Evaluator {
                 return scrub ? String(decoding: data, as: UTF8.self) : (String(data: data, encoding: .utf8) ?? "(invalid UTF-8)")
             }
             var parts = ["# \(string(item, "stage"))/\(string(item, "name"))", "", "Validation: \(status)", "", "Input: [\(string(item, "input"))](\(link(string(item, "input"))))", "", "## Input", "", string(item, "stage") == "transcribe" ? "(Audio fixture linked above.)" : contents("input"), "", "## Expected", "", contents("expected"), "", "## Generated", "", contents("output", scrub: true), ""]
+            if let scoreSummary { parts += ["## Transcription measurement", "", scoreSummary, "", "[Aligned word differences](wer.md) · [Machine-readable score](wer.json)", ""] }
             if let baseline {
                 if let previous = baseline.first(where: { string($0, "scope") == string(item, "scope") && string($0, "stage") == string(item, "stage") && string($0, "name") == string(item, "name") }), tools.fm.fileExists(atPath: file(previous, "output").path), tools.fm.fileExists(atPath: file(item, "output").path) {
                     let old = file(previous, "output")
@@ -132,8 +153,18 @@ final class Evaluator {
             try tools.write(folder.appendingPathComponent("review.md"), parts.joined(separator: "\n"))
             index.append("- [\(string(item, "stage"))/\(string(item, "name"))](\(link(relative + "/review.md"))): \(status)")
         }
+        if !scores.isEmpty || transcriptionFailures > 0 {
+            let referenceWords = scores.reduce(0) { $0 + ($1["reference_words"] as? Int ?? 0) }
+            var summary: EvalItem = ["normalization": TranscriptionScore.normalization, "cases": scores, "failed_cases": transcriptionFailures, "reference_words": referenceWords, "provisional": scores.contains { $0["provisional"] as? Bool == true }]
+            var errors = 0
+            for key in ["substitutions", "deletions", "insertions"] { let count = scores.reduce(0) { $0 + ($1[key] as? Int ?? 0) }; summary[key] = count; errors += count }
+            summary["errors"] = errors
+            if referenceWords > 0 { summary["wer"] = Double(errors) / Double(referenceWords) }
+            try tools.json(run.appendingPathComponent("transcription-scores.json"), summary)
+            index += ["", "[Transcription scores (word-weighted; check reference status)](transcription-scores.json)"]
+        }
         try tools.write(run.appendingPathComponent("review.md"), index.joined(separator: "\n") + "\n")
-        try tools.json(run.appendingPathComponent("validation.json"), ["cases": items.count, "failures": failures, "validator_sha256": tools.hash(tools.path("scripts/Sources/Tools/Evals.swift")), "enrichment_validator_sha256": tools.hash(tools.path("scripts/Sources/Tools/EnrichValidation.swift"))])
+        try tools.json(run.appendingPathComponent("validation.json"), ["cases": items.count, "failures": failures, "validator_sha256": tools.hash(tools.path("scripts/Sources/Tools/Evals.swift")), "transcription_scorer_sha256": tools.hash(tools.path("scripts/Sources/Tools/TranscriptionScore.swift")), "enrichment_validator_sha256": tools.hash(tools.path("scripts/Sources/Tools/EnrichValidation.swift"))])
         print("Validated \(items.count) cases; failures: \(failures). Review: \(run.path)/review.md")
         return failures == 0
     }
@@ -182,21 +213,39 @@ final class Evaluator {
         metadata["models"] = models; try tools.json(run.appendingPathComponent("config.json"), config)
         tools.environment["CAPTAINS_LOG_CONFIG_PATH"] = run.appendingPathComponent("config.json").path; tools.environment["CAPTAINS_LOG_DATA_DIR"] = run.appendingPathComponent("data").path
     }
-    func pipelineCases(_ run: URL) -> [EvalItem] {
-        let stem = "2025-01-14 side project", data = run.appendingPathComponent("data/.pipeline")
+    func pipelineCases(_ run: URL, _ selected: String? = nil) throws -> [EvalItem] {
+        let stem = selected ?? "tng-nl01-vrije-dag-enterprise-corrected", data = run.appendingPathComponent("data/.pipeline")
+        guard let cases = try tools.json(tools.path("eval/pipeline/cases.json")) as? [String: EvalItem],
+              let settings = cases[stem], let expected = settings["expected"] as? [String: String],
+              let transcription = try transcriptionCases()[stem] else { throw ToolFailure("No pipeline fixture: \(stem)", status: 2) }
+        try tools.require(Set(expected.keys) == Set(stages), "Pipeline fixture must declare every expected stage: \(stem)")
+        try tools.require(["personal", "professional", "side_project"].contains(string(settings, "category")), "Invalid pipeline filing category: \(stem)")
+        try tools.require(!string(settings, "search_query").isEmpty, "Missing pipeline search query: \(stem)")
+        for path in expected.values { try tools.require(tools.fm.fileExists(atPath: tools.path(path).path), "Missing pipeline reference: \(path)") }
         let transcript = data.appendingPathComponent("01-transcribed/\(stem).md").path, cleaned = data.appendingPathComponent("02-logs/\(stem).md").path
-        return [("transcribe", tools.path("eval/transcribe/audio/\(stem).m4a").path, transcript, "eval/transcribe/expected/\(stem).md"), ("cleanup", transcript, cleaned, "eval/cleanup/expected/\(stem).md"), ("categorize", cleaned, data.appendingPathComponent("03-category/\(stem).json").path, "eval/categorize/expected/side-project-voice-app.category"), ("filename", cleaned, data.appendingPathComponent("04-rename/\(stem).slug.txt").path, "eval/filename/expected/\(stem).md"), ("enrich", cleaned, run.appendingPathComponent("data/logs/missing.md").path, "eval/enrich/expected/\(stem).md")].map { ["scope": "pipeline", "stage": $0.0, "name": stem, "input": $0.1, "output": $0.2, "expected": tools.path($0.3).path, "date": "2025-01-14"] }
+        let formatter = DateFormatter(); formatter.dateFormat = "yyyy-MM-dd"
+        let date = string(settings, "date") == "today" ? formatter.string(from: Date()) : string(settings, "date")
+        return [("transcribe", tools.path("eval/transcribe/audio/\(stem).m4a").path, transcript), ("cleanup", transcript, cleaned), ("categorize", cleaned, data.appendingPathComponent("03-category/\(stem).json").path), ("filename", cleaned, data.appendingPathComponent("04-rename/\(stem).slug.txt").path), ("enrich", cleaned, run.appendingPathComponent("data/logs/missing.md").path)].map {
+            var item: EvalItem = ["scope": "pipeline", "stage": $0.0, "name": stem, "input": $0.1, "output": $0.2, "expected": tools.path(expected[$0.0]!).path, "date": date, "category": string(settings, "category"), "search_query": string(settings, "search_query")]
+            if $0.0 == "transcribe" { item.merge(transcription) { _, new in new } }
+            return item
+        }
     }
     func refresh(_ run: URL, _ items: inout [EvalItem]) throws {
-        guard let i = items.firstIndex(where: { string($0, "scope") == "pipeline" && string($0, "stage") == "enrich" }), let text = try? tools.read(run.appendingPathComponent("data/.pipeline/04-rename/2025-01-14 side project.slug.txt")) else { return }
-        let slug = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        if let output = tools.files(run.appendingPathComponent("data/logs"), recursive: true).first(where: { $0.lastPathComponent == slug + ".md" }) { items[i]["output"] = output.path }
+        for i in items.indices where string(items[i], "scope") == "pipeline" && string(items[i], "stage") == "enrich" {
+            let stem = string(items[i], "name")
+            guard let text = try? tools.read(run.appendingPathComponent("data/.pipeline/04-rename/\(stem).slug.txt")) else { continue }
+            let slug = text.trimmingCharacters(in: .whitespacesAndNewlines)
+            if let output = tools.files(run.appendingPathComponent("data/logs"), recursive: true).first(where: { $0.lastPathComponent == slug + ".md" }) { items[i]["output"] = output.path }
+        }
     }
     func pipelineParameters(_ run: URL, _ items: inout [EvalItem]) throws {
-        let audio = run.appendingPathComponent("data/audio/2025-01-14 side project.m4a")
-        guard let attributes = try? tools.fm.attributesOfItem(atPath: audio.path), let birth = attributes[.creationDate] as? Date else { return }
         let formatter = DateFormatter(); formatter.dateFormat = "HH:mm"
-        for i in items.indices where string(items[i], "scope") == "pipeline" { items[i]["recording_time"] = formatter.string(from: birth) }
+        for i in items.indices where string(items[i], "scope") == "pipeline" {
+            let audio = run.appendingPathComponent("data/audio/\(string(items[i], "name")).m4a")
+            guard let attributes = try? tools.fm.attributesOfItem(atPath: audio.path), let birth = attributes[.creationDate] as? Date else { continue }
+            items[i]["recording_time"] = formatter.string(from: birth)
+        }
     }
     func recordPipeline(_ run: URL, _ items: inout [EvalItem], _ metadata: inout EvalItem) throws {
         try pipelineParameters(run, &items)
@@ -231,7 +280,7 @@ final class Evaluator {
             }
             i += 1
         }
-        try tools.require(selected == nil || stage != nil, "--case requires --stage", status: 2)
+        try tools.require(selected == nil || stage != nil || mode == "--pipeline", "--case requires --stage or --pipeline", status: 2)
         let chosen = stage.map { [$0] } ?? (["--categorize", "--enrich"].contains(mode) ? [String(mode.dropFirst(2))] : stages)
         if let validation {
             try tools.require(!explicit && selected == nil && !list && !combinedMetadata, "Validation cannot be combined with execution options", status: 2)
@@ -247,10 +296,16 @@ final class Evaluator {
             if tools.fm.fileExists(atPath: run.appendingPathComponent("manifest.json").path) { try tools.json(run.appendingPathComponent("manifest.json"), items) }
             let recorded = (try? tools.json(run.appendingPathComponent("metadata.json"))) as? EvalItem
             errorStatus = 1
-            if try !evidence(run, items, baselineItems(baselinePath ?? recorded?["baseline"] as? String)) { throw ToolFailure("Saved evaluation failed validation") }; return
+            let valid = try evidence(run, items, baselineItems(baselinePath ?? recorded?["baseline"] as? String))
+            if let app = try tools.prepareEvalReview(run, items: items) { print("Listening review: make evals-review RUN_DIR=\(run.path) (\(app.path))") }
+            if !valid { throw ToolFailure("Saved evaluation failed validation") }; return
         }
         var items = mode == "--pipeline" ? [] : try cases(chosen, selected)
         if combinedMetadata { seedCombinedCases(&items) }
+        if list && mode == "--pipeline" {
+            guard let available = try tools.json(tools.path("eval/pipeline/cases.json")) as? [String: EvalItem] else { throw ToolFailure("Invalid pipeline cases") }
+            items = try (selected.map { [$0] } ?? available.keys.sorted()).flatMap { try pipelineCases(tools.path("tmp/eval-list"), $0) }
+        }
         if list { for item in items { print("\(string(item, "stage"))/\(string(item, "name"))") }; return }
         let baseline = try baselineItems(baselinePath)
         let formatter = DateFormatter(); formatter.dateFormat = "yyyy-MM-dd_HH-mm-ss"
@@ -270,6 +325,10 @@ final class Evaluator {
         }
         errorStatus = 1
         do {
+            if chosen.contains("transcribe") || ["--all", "--pipeline"].contains(mode) {
+                try tools.copy(tools.path("eval/transcribe/cases.json"), run.appendingPathComponent("transcription-cases.json"))
+                metadata["transcription_cases_sha256"] = try tools.hash(run.appendingPathComponent("transcription-cases.json"))
+            }
             if items.contains(where: { string($0, "stage") == "enrich" }) {
                 try tools.copy(tools.path("eval/enrich/cases.json"), run.appendingPathComponent("enrich-cases.json")); metadata["enrich_cases_sha256"] = try tools.hash(run.appendingPathComponent("enrich-cases.json"))
                 for i in items.indices where string(items[i], "stage") == "enrich" { items[i]["diagnostics"] = run.appendingPathComponent("enrich-\(string(items[i], "name")).log").path }
@@ -280,7 +339,8 @@ final class Evaluator {
                 for key in ["input", "expected"] { let source = file(items[i], key), destination = folder.appendingPathComponent((key == "input" ? string(items[i], "name") : "expected") + "." + source.pathExtension); try tools.copy(source, destination); items[i][key] = destination.path }
             }
             if ["--all", "--pipeline"].contains(mode) {
-                var pipeline = pipelineCases(run)
+                try tools.copy(tools.path("eval/pipeline/cases.json"), run.appendingPathComponent("pipeline-cases.json"))
+                var pipeline = try pipelineCases(run, selected)
                 for i in pipeline.indices {
                     let folder = run.appendingPathComponent("fixtures/pipeline/\(string(pipeline[i], "stage"))"), old = file(pipeline[i], "expected"), expected = folder.appendingPathComponent("expected." + old.pathExtension)
                     try tools.copy(old, expected); pipeline[i]["expected"] = expected.path
@@ -314,6 +374,7 @@ final class Evaluator {
         } catch { metadata["status"] = "failed"; metadata["error"] = String(describing: error); FileHandle.standardError.write(Data(("\(error)\n").utf8)) }
         try refresh(run, &items); try recordPipeline(run, &items, &metadata); try tools.json(run.appendingPathComponent("manifest.json"), items)
         let valid = try evidence(run, items, baseline)
+        if let app = try tools.prepareEvalReview(run, items: items) { print("Listening review: make evals-review RUN_DIR=\(run.path) (\(app.path))") }
         if metadata["status"] as? String == "generated" { metadata["status"] = valid ? "passed-mechanical-checks" : "failed-validation" }
         metadata["elapsed_seconds"] = ProcessInfo.processInfo.systemUptime - started; try tools.json(run.appendingPathComponent("metadata.json"), metadata)
         try tools.require(metadata["status"] as? String == "passed-mechanical-checks", "Evaluation failed; see \(run.path)")

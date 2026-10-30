@@ -757,10 +757,10 @@ func runAppWorkflowCoverageTests() async {
         try fm.createDirectory(at: audioDir, withIntermediateDirectories: true)
 
         let repository = URL(fileURLWithPath: fm.currentDirectoryPath)
-        let audioFixture = repository.appendingPathComponent("eval/transcribe/audio/durins-volk.m4a")
+        let audioFixture = repository.appendingPathComponent("eval/transcribe/archive/audio/durins-volk.m4a")
         let audioInput = audioDir.appendingPathComponent("synthetic-recording.m4a")
         try fm.copyItem(at: audioFixture, to: audioInput)
-        let transcriptFixture = repository.appendingPathComponent("eval/transcribe/expected/durins-volk.md")
+        let transcriptFixture = repository.appendingPathComponent("eval/transcribe/archive/expected/durins-volk.md")
         let expectedTranscript = try String(contentsOf: transcriptFixture, encoding: .utf8)
         let expectedOutput = audioDir.appendingPathComponent("synthetic-recording.md")
         let calls = LockedStringArray()
@@ -815,7 +815,7 @@ func runAppWorkflowCoverageTests() async {
         try fm.createDirectory(at: root, withIntermediateDirectories: true)
 
         let fixture = URL(fileURLWithPath: fm.currentDirectoryPath)
-            .appendingPathComponent("eval/transcribe/audio/durins-volk.m4a")
+            .appendingPathComponent("eval/transcribe/archive/audio/durins-volk.m4a")
         let input = root.appendingPathComponent("synthetic-recording.m4a")
         try fm.copyItem(at: fixture, to: input)
         let originalAudio = try Data(contentsOf: input)
@@ -1270,7 +1270,7 @@ func runAppWorkflowCoverageTests() async {
 
         let repository = URL(fileURLWithPath: fm.currentDirectoryPath)
         let completedFixture = repository.appendingPathComponent("eval/enrich/expected/02_personal_only.md")
-        let pendingFixture = repository.appendingPathComponent("eval/transcribe/expected/durins-volk.md")
+        let pendingFixture = repository.appendingPathComponent("eval/transcribe/archive/expected/durins-volk.md")
         try expect(fm.fileExists(atPath: completedFixture.path), "Missing repository enrichment fixture")
         try expect(fm.fileExists(atPath: pendingFixture.path), "Missing repository transcription fixture")
 
@@ -1350,8 +1350,8 @@ func runAppWorkflowCoverageTests() async {
         defer { try? fm.removeItem(at: root) }
         let repository = URL(fileURLWithPath: fm.currentDirectoryPath)
         let completedFixture = repository.appendingPathComponent("eval/enrich/expected/02_personal_only.md")
-        let transcriptFixture = repository.appendingPathComponent("eval/transcribe/expected/durins-volk.md")
-        let audioFixture = repository.appendingPathComponent("eval/transcribe/audio/durins-volk.m4a")
+        let transcriptFixture = repository.appendingPathComponent("eval/transcribe/archive/expected/durins-volk.md")
+        let audioFixture = repository.appendingPathComponent("eval/transcribe/archive/audio/durins-volk.m4a")
         let stem = "2025-01-15-1200"
         let slug = "2025-01-15-weekend-with-family"
 
@@ -1404,7 +1404,7 @@ func runAppWorkflowCoverageTests() async {
         let stem = "2025-01-14-0830"
         let transcript = root.appendingPathComponent(".pipeline/01-transcribed/\(stem).md")
         let fixture = URL(fileURLWithPath: fm.currentDirectoryPath)
-            .appendingPathComponent("eval/transcribe/expected/durins-volk.md")
+            .appendingPathComponent("eval/transcribe/archive/expected/durins-volk.md")
         try fm.createDirectory(at: transcript.deletingLastPathComponent(), withIntermediateDirectories: true)
         try fm.copyItem(at: fixture, to: transcript)
 
@@ -1431,7 +1431,7 @@ func runAppWorkflowCoverageTests() async {
         let stem = "2025-01-14-0830"
         let transcript = root.appendingPathComponent(".pipeline/01-transcribed/\(stem).md")
         let fixture = URL(fileURLWithPath: fm.currentDirectoryPath)
-            .appendingPathComponent("eval/transcribe/expected/durins-volk.md")
+            .appendingPathComponent("eval/transcribe/archive/expected/durins-volk.md")
         try fm.createDirectory(at: transcript.deletingLastPathComponent(), withIntermediateDirectories: true)
         try fm.copyItem(at: fixture, to: transcript)
 
@@ -1457,7 +1457,7 @@ func runAppWorkflowCoverageTests() async {
         let stem = "2025-01-14-0830"
         let transcript = root.appendingPathComponent(".pipeline/01-transcribed/\(stem).md")
         let fixture = URL(fileURLWithPath: fm.currentDirectoryPath)
-            .appendingPathComponent("eval/transcribe/expected/durins-volk.md")
+            .appendingPathComponent("eval/transcribe/archive/expected/durins-volk.md")
         try fm.createDirectory(at: transcript.deletingLastPathComponent(), withIntermediateDirectories: true)
         try fm.copyItem(at: fixture, to: transcript)
 
@@ -1489,7 +1489,7 @@ func runAppWorkflowCoverageTests() async {
             .appendingPathComponent("CaptainsLogResumeWorkflow-\(UUID().uuidString)", isDirectory: true)
         defer { try? fm.removeItem(at: root) }
         let repository = URL(fileURLWithPath: fm.currentDirectoryPath)
-        let fixture = repository.appendingPathComponent("eval/transcribe/expected/durins-volk.md")
+        let fixture = repository.appendingPathComponent("eval/transcribe/archive/expected/durins-volk.md")
         let stem = "2025-01-14-0830"
         let transcriptURL = root.appendingPathComponent(".pipeline/01-transcribed/\(stem).md")
         try fm.createDirectory(at: transcriptURL.deletingLastPathComponent(), withIntermediateDirectories: true)
@@ -1547,6 +1547,10 @@ func runAppWorkflowCoverageTests() async {
         try expect(coordinator.processingStem == nil, "Completed resume should clear the active stem")
         try expect(coordinator.stage == .done, "Completed resume should report done")
         try expect(appState.allEntries.count == 1, "Resume should preserve one log entry")
+        // Coordinator completion schedules a separate asynchronous entries reload.
+        for _ in 0..<200 where appState.allEntries.first?.stage != .done {
+            try await Task.sleep(for: .milliseconds(10))
+        }
         try expect(appState.allEntries[0].stage == .done, "Enriched eval should no longer be pending; stage is \(appState.allEntries[0].stage.rawValue)")
         try expect(appState.allEntries[0].displayName == "2025-01-14-fixture-resume", "Logs row should adopt the generated display name")
         try expect(appState.pendingEntries.isEmpty, "Completed resume should clear the queue")
@@ -1770,7 +1774,7 @@ func runCoreCoverageTests() {
         )
         let audioDir = root.appendingPathComponent("audio")
         try FileManager.default.createDirectory(at: audioDir, withIntermediateDirectories: true)
-        let audioFixture = repository.appendingPathComponent("eval/transcribe/audio/2025-01-14 side project.m4a")
+        let audioFixture = repository.appendingPathComponent("eval/transcribe/archive/audio/2025-01-14 side project.m4a")
         for stem in ["2025-01-15-0900", "2025-01-15-1700", "imported-memo"] {
             let audio = audioDir.appendingPathComponent("\(stem).m4a")
             try FileManager.default.copyItem(at: audioFixture, to: audio)
@@ -2172,7 +2176,7 @@ func runCoordinatorCoverageTests() async {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent("SleepPipeline-\(UUID().uuidString)")
         defer { try? FileManager.default.removeItem(at: root) }
         let fixture = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
-            .appendingPathComponent("eval/transcribe/audio/durins-volk.m4a")
+            .appendingPathComponent("eval/transcribe/archive/audio/durins-volk.m4a")
         let checked = LockedStringArray()
         let operations = Pipeline.Operations(
             transcribe: { _, _ in try expectProcessingPreventsIdleSleep(); checked.append("transcribe"); return "Fixture" },
@@ -2284,8 +2288,8 @@ func runCoordinatorCoverageTests() async {
         let stem = "2025-01-14 side project"
         let audio = root.appendingPathComponent("audio/\(stem).m4a")
         try fm.createDirectory(at: audio.deletingLastPathComponent(), withIntermediateDirectories: true)
-        try fm.copyItem(at: repo.appendingPathComponent("eval/transcribe/audio/\(stem).m4a"), to: audio)
-        let transcript = try String(contentsOf: repo.appendingPathComponent("eval/transcribe/expected/\(stem).md"), encoding: .utf8)
+        try fm.copyItem(at: repo.appendingPathComponent("eval/transcribe/archive/audio/\(stem).m4a"), to: audio)
+        let transcript = try String(contentsOf: repo.appendingPathComponent("eval/transcribe/archive/expected/\(stem).md"), encoding: .utf8)
         let cleaned = try String(contentsOf: repo.appendingPathComponent("eval/cleanup/expected/\(stem).md"), encoding: .utf8)
         let filename = try String(contentsOf: repo.appendingPathComponent("eval/filename/expected/\(stem).md"), encoding: .utf8)
             .trimmingCharacters(in: .whitespacesAndNewlines)
@@ -2447,7 +2451,7 @@ func runCoordinatorCoverageTests() async {
             .appendingPathComponent("CaptainsLogBatchResume-\(UUID().uuidString)", isDirectory: true)
         defer { try? FileManager.default.removeItem(at: root) }
         let repository = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
-        let fixture = repository.appendingPathComponent("eval/transcribe/expected/durins-volk.md")
+        let fixture = repository.appendingPathComponent("eval/transcribe/archive/expected/durins-volk.md")
         let stems = ["2025-01-14-0830", "2025-01-15-1015"]
         for stem in stems {
             let transcript = root.appendingPathComponent(".pipeline/01-transcribed/\(stem).md")
@@ -2498,7 +2502,7 @@ func runCoordinatorCoverageTests() async {
             .appendingPathComponent("CaptainsLogBatchResumeFailure-\(UUID().uuidString)", isDirectory: true)
         defer { try? fm.removeItem(at: root) }
         let fixture = URL(fileURLWithPath: fm.currentDirectoryPath)
-            .appendingPathComponent("eval/transcribe/expected/durins-volk.md")
+            .appendingPathComponent("eval/transcribe/archive/expected/durins-volk.md")
         let stems = ["2025-01-14-0830", "2025-01-15-1015"]
         let entries = try stems.map { stem -> LogEntry in
             let transcript = root.appendingPathComponent(".pipeline/01-transcribed/\(stem).md")
@@ -2551,7 +2555,7 @@ func runCoordinatorCoverageTests() async {
             .appendingPathComponent("CaptainsLogPausedQueue-\(UUID().uuidString)", isDirectory: true)
         defer { try? FileManager.default.removeItem(at: root) }
         let repository = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
-        let fixture = repository.appendingPathComponent("eval/transcribe/expected/durins-volk.md")
+        let fixture = repository.appendingPathComponent("eval/transcribe/archive/expected/durins-volk.md")
         let stem = "2025-01-14-0830"
         let transcript = root.appendingPathComponent(".pipeline/01-transcribed/\(stem).md")
         try FileManager.default.createDirectory(at: transcript.deletingLastPathComponent(), withIntermediateDirectories: true)
@@ -2591,7 +2595,7 @@ func runCoordinatorCoverageTests() async {
                 .appendingPathComponent("CaptainsLogPendingRestart-\(UUID().uuidString)", isDirectory: true)
             defer { try? FileManager.default.removeItem(at: root) }
             let fixture = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
-                .appendingPathComponent("eval/transcribe/expected/durins-volk.md")
+                .appendingPathComponent("eval/transcribe/archive/expected/durins-volk.md")
             let stem = "2025-01-14-0830"
             let transcript = root.appendingPathComponent(".pipeline/01-transcribed/\(stem).md")
             try FileManager.default.createDirectory(at: transcript.deletingLastPathComponent(), withIntermediateDirectories: true)
@@ -2673,7 +2677,7 @@ func runCoordinatorCoverageTests() async {
             let fm = FileManager.default
             let root = fm.temporaryDirectory.appendingPathComponent("ReprocessQueue-\(UUID().uuidString)")
             defer { try? fm.removeItem(at: root) }
-            let fixture = URL(fileURLWithPath: fm.currentDirectoryPath).appendingPathComponent("eval/transcribe/audio/2025-01-14 side project.m4a")
+            let fixture = URL(fileURLWithPath: fm.currentDirectoryPath).appendingPathComponent("eval/transcribe/archive/audio/2025-01-14 side project.m4a")
             let stems = ["2025-01-14-0730", "2025-01-14-0830"]
             for stem in stems {
                 let audio = root.appendingPathComponent("audio/\(stem).m4a")
@@ -2729,7 +2733,7 @@ func runCoordinatorCoverageTests() async {
             let stem = "2025-01-14-0730"
             let audio = root.appendingPathComponent("audio/\(stem).m4a")
             try FileManager.default.createDirectory(at: audio.deletingLastPathComponent(), withIntermediateDirectories: true)
-            try FileManager.default.copyItem(at: URL(fileURLWithPath: "eval/transcribe/audio/2025-01-14 side project.m4a"), to: audio)
+            try FileManager.default.copyItem(at: URL(fileURLWithPath: "eval/transcribe/archive/audio/2025-01-14 side project.m4a"), to: audio)
             let gate = LockedValue<CheckedContinuation<Void, Never>?>(nil)
             let calls = LockedStringArray()
             let coordinator = ProcessingCoordinator { stem, _, fromStage, progress in
@@ -2751,7 +2755,7 @@ func runCoordinatorCoverageTests() async {
             // A cancelled native call may save a checkpoint before returning.
             let transcript = root.appendingPathComponent(".pipeline/01-transcribed/\(stem).md")
             try FileManager.default.createDirectory(at: transcript.deletingLastPathComponent(), withIntermediateDirectories: true)
-            try FileManager.default.copyItem(at: URL(fileURLWithPath: "eval/transcribe/expected/2025-01-14 side project.md"), to: transcript)
+            try FileManager.default.copyItem(at: URL(fileURLWithPath: "eval/transcribe/archive/expected/2025-01-14 side project.md"), to: transcript)
             release.resume()
             for _ in 0..<500 where coordinator.hasScheduledWork { try await Task.sleep(for: .milliseconds(1)) }
             try expect(acknowledged, "Row Resume must visibly queue while \(stage.rawValue) cancels")
@@ -2767,7 +2771,7 @@ func runCoordinatorCoverageTests() async {
         for stem in stems {
             let audio = root.appendingPathComponent("audio/\(stem).m4a")
             try FileManager.default.createDirectory(at: audio.deletingLastPathComponent(), withIntermediateDirectories: true)
-            try FileManager.default.copyItem(at: URL(fileURLWithPath: "eval/transcribe/audio/2025-01-14 side project.m4a"), to: audio)
+            try FileManager.default.copyItem(at: URL(fileURLWithPath: "eval/transcribe/archive/audio/2025-01-14 side project.m4a"), to: audio)
         }
         let gate = LockedValue<CheckedContinuation<Void, Never>?>(nil)
         let calls = LockedStringArray()
@@ -2799,7 +2803,7 @@ func runCoordinatorCoverageTests() async {
                 let audio = root.appendingPathComponent("audio/\(stem).m4a")
                 let transcript = root.appendingPathComponent(".pipeline/01-transcribed/\(stem).md")
                 try FileManager.default.createDirectory(at: audio.deletingLastPathComponent(), withIntermediateDirectories: true)
-                try FileManager.default.copyItem(at: URL(fileURLWithPath: "eval/transcribe/audio/2025-01-14 side project.m4a"), to: audio)
+                try FileManager.default.copyItem(at: URL(fileURLWithPath: "eval/transcribe/archive/audio/2025-01-14 side project.m4a"), to: audio)
                 let gate = LockedValue<CheckedContinuation<Void, Never>?>(nil)
                 let calls = LockedStringArray()
                 let coordinator = ProcessingCoordinator { stem, _, fromStage, progress in
@@ -2820,7 +2824,7 @@ func runCoordinatorCoverageTests() async {
                 guard let release = gate.get() else { throw NSError(domain: "RestartLifecycle", code: 1) }
                 state.pauseProcessing()
                 try FileManager.default.createDirectory(at: transcript.deletingLastPathComponent(), withIntermediateDirectories: true)
-                try FileManager.default.copyItem(at: URL(fileURLWithPath: "eval/transcribe/expected/2025-01-14 side project.md"), to: transcript)
+                try FileManager.default.copyItem(at: URL(fileURLWithPath: "eval/transcribe/archive/expected/2025-01-14 side project.md"), to: transcript)
                 if mode == "resume" { state.resumeProcessing(stem: stem) }
                 if mode == "reprocess" { state.reprocessEntry(stem: stem) }
                 if mode == "recording" {
@@ -2861,10 +2865,10 @@ func runCoordinatorCoverageTests() async {
             let stem = "2025-01-14-0730"
             let audio = root.appendingPathComponent("audio/\(stem).m4a")
             try FileManager.default.createDirectory(at: audio.deletingLastPathComponent(), withIntermediateDirectories: true)
-            try FileManager.default.copyItem(at: URL(fileURLWithPath: "eval/transcribe/audio/2025-01-14 side project.m4a"), to: audio)
+            try FileManager.default.copyItem(at: URL(fileURLWithPath: "eval/transcribe/archive/audio/2025-01-14 side project.m4a"), to: audio)
             let transcript = root.appendingPathComponent(".pipeline/01-transcribed/\(stem).md")
             try FileManager.default.createDirectory(at: transcript.deletingLastPathComponent(), withIntermediateDirectories: true)
-            try FileManager.default.copyItem(at: URL(fileURLWithPath: "eval/transcribe/expected/2025-01-14 side project.md"), to: transcript)
+            try FileManager.default.copyItem(at: URL(fileURLWithPath: "eval/transcribe/archive/expected/2025-01-14 side project.md"), to: transcript)
             let gate = LockedValue<CheckedContinuation<Void, Never>?>(nil)
             let calls = LockedStringArray()
             let models = ModelManager(dependencies: .init(
@@ -2897,7 +2901,7 @@ func runCoordinatorCoverageTests() async {
         let stem = "2025-01-14-0730"
         let active = "2025-01-14-0830"
         let slug = "2025-01-14-old-fixture-result"
-        let fixture = URL(fileURLWithPath: "eval/transcribe/audio/2025-01-14 side project.m4a")
+        let fixture = URL(fileURLWithPath: "eval/transcribe/archive/audio/2025-01-14 side project.m4a")
         let expectedAudio = try Data(contentsOf: fixture)
         let text = try String(contentsOfFile: "eval/cleanup/expected/2025-01-14 side project.md", encoding: .utf8)
         for name in [stem, active] {
@@ -3045,7 +3049,7 @@ func runPipelineOrchestrationCoverageTests() async {
         let fm = FileManager.default
         let root = fm.temporaryDirectory.appendingPathComponent("PipelineOptIn-\(UUID().uuidString)")
         defer { try? fm.removeItem(at: root) }
-        let fixture = URL(fileURLWithPath: fm.currentDirectoryPath).appendingPathComponent("eval/transcribe/audio/2025-01-14 side project.m4a")
+        let fixture = URL(fileURLWithPath: fm.currentDirectoryPath).appendingPathComponent("eval/transcribe/archive/audio/2025-01-14 side project.m4a")
         for enabled in [false, true] {
             let calls = LockedStringArray()
             let operations = Pipeline.Operations(
@@ -3069,7 +3073,7 @@ func runPipelineOrchestrationCoverageTests() async {
         let root = fm.temporaryDirectory.appendingPathComponent("Reprocess-\(UUID().uuidString)")
         defer { try? fm.removeItem(at: root) }
         let fixture = URL(fileURLWithPath: fm.currentDirectoryPath)
-            .appendingPathComponent("eval/transcribe/audio/2025-01-14 side project.m4a")
+            .appendingPathComponent("eval/transcribe/archive/audio/2025-01-14 side project.m4a")
         let calls = LockedStringArray()
         let operations = Pipeline.Operations(
             transcribe: { _, _ in calls.append("transcribe"); return "fixture transcript" },
@@ -3133,7 +3137,7 @@ func runPipelineOrchestrationCoverageTests() async {
             let stem = "2025-01-14-0900"
             let filename = "\(stem).\(ext)"
             let fixture = repository.appendingPathComponent(ext == "m4a"
-                ? "eval/transcribe/audio/durins-volk.m4a" : "eval/audio-formats/quicktime.mov")
+                ? "eval/transcribe/archive/audio/durins-volk.m4a" : "eval/audio-formats/quicktime.mov")
             let source = root.appendingPathComponent(filename)
             try fm.copyItem(at: fixture, to: source)
             let stored = audio.appendingPathComponent(filename)
@@ -3316,7 +3320,7 @@ func runPipelineOrchestrationCoverageTests() async {
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: root) }
         let fixture = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
-            .appendingPathComponent("eval/transcribe/audio/2025-01-14 side project.m4a")
+            .appendingPathComponent("eval/transcribe/archive/audio/2025-01-14 side project.m4a")
         let input = try String(contentsOfFile: "eval/categorize/input/side-project-voice-app.md", encoding: .utf8)
         var config = previous.withDataDir(root.path)
         config.categories = ["research", "travel"]
@@ -3348,7 +3352,7 @@ func runPipelineOrchestrationCoverageTests() async {
             .appendingPathComponent("PipelineFreshRun-\(UUID().uuidString)", isDirectory: true)
         defer { try? FileManager.default.removeItem(at: root) }
         let fixture = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
-            .appendingPathComponent("eval/transcribe/audio/2025-01-14 side project.m4a")
+            .appendingPathComponent("eval/transcribe/archive/audio/2025-01-14 side project.m4a")
         let fixtureBytes = try Data(contentsOf: fixture)
         let stem = "2025-01-14 side project"
         let calls = LockedStringArray()
@@ -3411,7 +3415,7 @@ func runPipelineOrchestrationCoverageTests() async {
     await testAsync("Pipeline CLI: failure at each fresh stage preserves prior artifacts and retry stage") {
         let fm = FileManager.default
         let repository = URL(fileURLWithPath: fm.currentDirectoryPath)
-        let fixture = repository.appendingPathComponent("eval/transcribe/audio/2025-01-14 side project.m4a")
+        let fixture = repository.appendingPathComponent("eval/transcribe/archive/audio/2025-01-14 side project.m4a")
         let stem = "2025-01-14 side project"
         let stages: [Pipeline.Stage] = [.transcribing, .cleaning, .categorizing, .naming, .enriching]
         let operationNames = ["transcribe", "cleanup", "categorize", "filename", "enrich"]
@@ -3504,7 +3508,7 @@ func runPipelineOrchestrationCoverageTests() async {
             .appendingPathComponent("PipelineAudioSelfImport-\(UUID().uuidString)", isDirectory: true)
         defer { try? FileManager.default.removeItem(at: root) }
         let fixture = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
-            .appendingPathComponent("eval/transcribe/audio/durins-volk.m4a")
+            .appendingPathComponent("eval/transcribe/archive/audio/durins-volk.m4a")
         let expectedBytes = try Data(contentsOf: fixture)
         let stem = fixture.deletingPathExtension().lastPathComponent
         let audioURL = root.appendingPathComponent("audio/\(stem).m4a")
@@ -3563,7 +3567,7 @@ func runPipelineOrchestrationCoverageTests() async {
                 let audio = root.appendingPathComponent("audio/\(stem).m4a")
                 try FileManager.default.createDirectory(at: audio.deletingLastPathComponent(), withIntermediateDirectories: true)
                 let fixture = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
-                    .appendingPathComponent("eval/transcribe/audio/durins-volk.m4a")
+                    .appendingPathComponent("eval/transcribe/archive/audio/durins-volk.m4a")
                 try FileManager.default.copyItem(at: fixture, to: audio)
             }
             let order: [Pipeline.Stage] = [.transcribing, .cleaning, .categorizing, .naming, .enriching, .done]
@@ -3999,7 +4003,7 @@ func runTests() async {
             try expect(try Data(contentsOf: input) == original)
         }
         let m4a = URL(fileURLWithPath: fm.currentDirectoryPath)
-            .appendingPathComponent("eval/transcribe/audio/durins-volk.m4a")
+            .appendingPathComponent("eval/transcribe/archive/audio/durins-volk.m4a")
         let unchanged = try await Transcriber.prepareAudio(m4a)
         try expect(unchanged == m4a)
     }
@@ -4007,7 +4011,7 @@ func runTests() async {
     await testAsync("Saved audio: transport loads fixture, pauses, seeks and stops") {
         let playback = SavedAudioPlayback()
         let fixture = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
-            .appendingPathComponent("eval/transcribe/audio/2025-01-14 side project.m4a")
+            .appendingPathComponent("eval/transcribe/archive/audio/2025-01-14 side project.m4a")
         await playback.load(url: fixture)
         try expect(playback.error == nil && !playback.isLoading && playback.duration > 1)
         try expect(!playback.isPlaying && playback.position == 0)
@@ -4345,7 +4349,7 @@ func runTests() async {
         let stem = "2025-01-14-0830"
         let transcript = selectedDataDir.appendingPathComponent(".pipeline/01-transcribed/\(stem).md")
         let fixture = URL(fileURLWithPath: fm.currentDirectoryPath)
-            .appendingPathComponent("eval/transcribe/expected/durins-volk.md")
+            .appendingPathComponent("eval/transcribe/archive/expected/durins-volk.md")
         try fm.createDirectory(at: transcript.deletingLastPathComponent(), withIntermediateDirectories: true)
         try fm.copyItem(at: fixture, to: transcript)
 
@@ -4644,7 +4648,7 @@ func runTests() async {
     }
 
     await testAsync("Recording transcription: finalized fixture audio is reused once; unsafe work falls back") {
-        let fixture = URL(fileURLWithPath: "eval/transcribe/audio/world-war-z.m4a")
+        let fixture = URL(fileURLWithPath: "eval/transcribe/archive/audio/world-war-z.m4a")
         let audio = try AVAudioFile(forReading: fixture)
         let pcm = AVAudioPCMBuffer(pcmFormat: audio.processingFormat, frameCapacity: 4096)!
         try audio.read(into: pcm)
@@ -4684,7 +4688,7 @@ func runTests() async {
     }
 
     await testAsync("Recording transcription: Stop hands pending tail to processing without waiting") {
-        let fixture = URL(fileURLWithPath: "eval/transcribe/audio/world-war-z.m4a")
+        let fixture = URL(fileURLWithPath: "eval/transcribe/archive/audio/world-war-z.m4a")
         let audio = try AVAudioFile(forReading: fixture)
         let pcm = AVAudioPCMBuffer(pcmFormat: audio.processingFormat, frameCapacity: 4096)!
         try audio.read(into: pcm)
@@ -4705,7 +4709,7 @@ func runTests() async {
     }
 
     await testAsync("Recording transcription: bounded queue absorbs a delayed cold model load") {
-        let fixture = URL(fileURLWithPath: "eval/transcribe/audio/world-war-z.m4a")
+        let fixture = URL(fileURLWithPath: "eval/transcribe/archive/audio/world-war-z.m4a")
         let audio = try AVAudioFile(forReading: fixture)
         let pcm = AVAudioPCMBuffer(pcmFormat: audio.processingFormat, frameCapacity: 4096)!
         try audio.read(into: pcm)
@@ -6612,7 +6616,7 @@ func runTests() async {
         let stem = "2025-01-14-0830"
         let transcript = root.appendingPathComponent(".pipeline/01-transcribed/\(stem).md")
         let fixture = URL(fileURLWithPath: fm.currentDirectoryPath)
-            .appendingPathComponent("eval/transcribe/expected/durins-volk.md")
+            .appendingPathComponent("eval/transcribe/archive/expected/durins-volk.md")
         try fm.createDirectory(at: transcript.deletingLastPathComponent(), withIntermediateDirectories: true)
         try fm.copyItem(at: fixture, to: transcript)
         watcher.scheduleReload()
@@ -6642,7 +6646,7 @@ func runTests() async {
         let stem = "2025-01-14-0730"
         let audio = root.appendingPathComponent("audio/\(stem).m4a")
         let audioFixture = URL(fileURLWithPath: fm.currentDirectoryPath)
-            .appendingPathComponent("eval/transcribe/audio/2025-01-14 side project.m4a")
+            .appendingPathComponent("eval/transcribe/archive/audio/2025-01-14 side project.m4a")
         try fm.createDirectory(at: audio.deletingLastPathComponent(), withIntermediateDirectories: true)
         try fm.copyItem(at: audioFixture, to: audio)
         let originalAudio = try Data(contentsOf: audio)
@@ -6686,7 +6690,7 @@ func runTests() async {
         let transcript = root.appendingPathComponent(".pipeline/01-transcribed/2025-01-14-0730.md")
         try fm.createDirectory(at: transcript.deletingLastPathComponent(), withIntermediateDirectories: true)
         try fm.copyItem(at: URL(fileURLWithPath: fm.currentDirectoryPath)
-            .appendingPathComponent("eval/transcribe/expected/2025-01-14 side project.md"), to: transcript)
+            .appendingPathComponent("eval/transcribe/archive/expected/2025-01-14 side project.md"), to: transcript)
         let config = ConfigManager(loadContextFiles: false)
         config.dataDir = root.path
         let processing = ProcessingCoordinator()
@@ -6715,7 +6719,7 @@ func runTests() async {
         defer { try? fm.removeItem(at: root) }
         let stems = ["2025-01-14-0830", "2025-01-15-1015"]
         let fixture = URL(fileURLWithPath: fm.currentDirectoryPath)
-            .appendingPathComponent("eval/transcribe/expected/durins-volk.md")
+            .appendingPathComponent("eval/transcribe/archive/expected/durins-volk.md")
         for stem in stems {
             let transcript = root.appendingPathComponent(".pipeline/01-transcribed/\(stem).md")
             try fm.createDirectory(at: transcript.deletingLastPathComponent(), withIntermediateDirectories: true)
@@ -7293,8 +7297,8 @@ func runNativeRecordingBusyCheck() async throws {
     guard fm.fileExists(atPath: folder, isDirectory: &directory), directory.boolValue else {
         throw failure("Precondition failed: cached Whisper model folder is unavailable.")
     }
-    let fixture = repository.appendingPathComponent("eval/transcribe/audio/durins-volk.m4a").resolvingSymlinksInPath()
-    guard isWithin(fixture, repository.appendingPathComponent("eval/transcribe/audio").resolvingSymlinksInPath()) else {
+    let fixture = repository.appendingPathComponent("eval/transcribe/archive/audio/durins-volk.m4a").resolvingSymlinksInPath()
+    guard isWithin(fixture, repository.appendingPathComponent("eval/transcribe").resolvingSymlinksInPath()) else {
         throw failure("Fixture must resolve inside the repository evaluation directory.")
     }
     let owned = fm.temporaryDirectory.appendingPathComponent("CaptainsLogNativeBusy-\(UUID())")

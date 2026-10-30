@@ -2,9 +2,9 @@
 
 Three fictional personal logs aboard the Enterprise: one English, one Dutch and
 one German. Each has roughly 1,200 words, intended for about ten minutes of relaxed
-reading with natural pauses. Actual duration depends on the speaker. The owner
-still needs to record the audio; the audio filenames in the scripts are intended
-filenames, not existing recordings.
+reading with natural pauses. Actual duration depends on the speaker. The owner has supplied the Dutch recording; its canonical audio is now
+[`../transcribe/audio/tng-nl01-vrije-dag-enterprise-corrected.m4a`](../transcribe/audio/tng-nl01-vrije-dag-enterprise-corrected.m4a).
+English and German audio are still to be recorded.
 
 | Script | Language | Topic |
 |---|---|---|
@@ -26,13 +26,19 @@ between completed repairs, planned checks and unresolved questions.
 
 ## Evaluation status
 
-This folder is reference material, separate from the active evaluation suites.
-Editing or recording these scripts does not add cases to the runner or verify
-model quality. The active audio, input and expected-output files live under
-`eval/{transcribe,cleanup,categorize,filename,enrich}`. Use `make evals-list` to
-see those cases and the [evaluation workflow](../../README.md#fixture-evaluations)
-to run them.
+The Dutch recording is active in the transcription suite and available as a pending
+memo in the isolated development demo. Its script remains unchanged; the separate
+verbatim transcription reference incorporates the owner’s wording corrections and was accepted after two audio-review rounds on 2026-10-30. The original and intermediate rounds are preserved in `../transcribe/archive/`. Do not use generated recognition output as ground truth.
 
-Before adding a recording to an active suite, pair it with reviewed expected
-outputs. Use only synthetic fixtures, never personal recordings, and run model
-checks sequentially with isolated config and data.
+Run `make evals STAGE=transcribe CASE=tng-nl01-vrije-dag-enterprise-corrected` for aligned
+WER scoring, or `make evals-pipeline CASE=tng-nl01-vrije-dag-enterprise-corrected` for the
+complete audio-to-log pipeline with resume and search checks. Full-pipeline
+references accept personal or professional filing (the script declares both
+personal and work categories) and preserve the narration, including “Dat was dus niet handig,” omitted
+from the original polished example. Runtime date/time expectations follow the
+pipeline's recording-name/current-date and audio-creation-time behavior, rather
+than assuming the script's example date is the recording date.
+
+English and German scripts stay outside active suites until their recordings and
+reviewed verbatim references are supplied. Use only synthetic fixtures, never
+personal recordings, and run inference sequentially with isolated config/data.

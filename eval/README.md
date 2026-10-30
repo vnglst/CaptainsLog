@@ -3,7 +3,7 @@
 Active stages are `transcribe`, `cleanup`, `categorize`, `filename` and `enrich`.
 Transcription inputs live in `transcribe/audio/`; text-stage inputs live in each
 stage's `input/`. Expected outputs are semantic references, not the only valid
-wording. The `2025-01-14 side project` recording exercises the full pipeline.
+wording. The reviewed Dutch TNG recording exercises the full pipeline.
 
 Use the runner from the repository root:
 
@@ -27,8 +27,69 @@ validation do not load inference models. Generation requires the selected models
 never run concurrent inference jobs or use personal recordings. Model evaluations
 run separately from release preparation.
 
-The [TNG reference scripts](tng-reference/README.md) are three fictional personal logs aboard
-the Enterprise, about ten minutes each, in English, Dutch and German, with paired
-expected outputs.
-The owner still needs to record the audio. These scripts are separate from the
-active suites. Demo inputs under `demo/` are presentation material.
+## Transcription
+
+The only active case is **Een vrije dag op de Enterprise**, the corrected Dutch
+recording accepted by the owner after two listening rounds on 2026-10-30.
+
+- Audio: `transcribe/audio/tng-nl01-vrije-dag-enterprise-corrected.m4a`
+- Verbatim reference: matching file in `transcribe/expected/`.
+- Manifest: `transcribe/cases.json` pins both hashes and `audio-reviewed` status.
+- Passage timing and provenance: matching files in `transcribe/review/`.
+
+Run `make evals STAGE=transcribe` for the single WER case, or
+`make evals-pipeline` for its complete audio-to-log pipeline. Every run snapshots
+inputs, raw output and an aligned WER report. WER measures word edits; semantic
+review still matters, especially for hallucinations and changed meaning.
+
+Earlier recordings are **not active transcription evaluations**. Their audio,
+references and timing definitions live in `transcribe/archive/` for later review
+and existing synthetic regression checks. Text-stage fixtures remain independent.
+
+The two preserved review rounds in `transcribe/archive/review-1/` and `review-2/`
+contain raw outputs, measurements, owner decisions, replacement takes, timing maps
+and the browser review app. Reopen either with, for example:
+
+```sh
+make evals-review RUN_DIR=eval/transcribe/archive/review-2
+```
+
+The [TNG scripts](tng-reference/README.md) preserve the original script separately
+from the verbatim reference. English and German recordings are still to be supplied.
+The development demo copies the reviewed Dutch audio into its isolated runtime.
+Full-pipeline expected outputs are selected in `pipeline/cases.json`.
+
+## Listening review
+
+Every saved run containing transcription prepares `review-app/`. Use
+`make evals-review RUN_DIR=...` to serve it locally, optionally adding
+`COMPARISON_RUN=...` for another eval run or a directory of per-recording `.txt`
+transcripts. The reference and raw output come from that run, not a global search
+for whatever output is newest. Audio must match a pinned synthetic fixture.
+
+`transcribe/review/` stores listening times and reference word ranges for the active
+recordings. Definitions pin the audio and reference hashes; when a reference
+changes, the app falls back to the full recording until those offsets are updated.
+Additional recordings work without segment definitions, using their full audio.
+Text alignment is approximate and is not proof of the spoken wording.
+
+Decisions and exact wording persist in the run's `review-app/review-state.json`.
+Regenerating assets preserves this file. Audio/reference changes prevent earlier
+verification from silently applying to new wording, while preserving the saved
+text. Only explicit owner verification establishes a verbatim reference; the app
+never applies corrections or marks fixtures verified automatically.
+
+For corrupted or incorrectly read audio, mark the original passage and use
+**Record replacement**. Stop, preview and save the take; then select it for the
+corrected recording. Takes remain in the run's `review-app/assets/retakes/`.
+You can adjust a saved take's original replacement range inside its passage.
+**Build corrected recording** joins selected takes with untouched original spans
+into `assets/consolidated/*.m4a`, with a JSON edit map recording original/corrected
+times and source/replacement/output hashes. Overlapping replacements are rejected.
+Neither recording nor consolidation modifies fixtures or reruns inference.
+
+Capture starts only with the Record button and browser microphone permission.
+The browser converts captured audio locally to mono 16 kHz PCM WAV, with a ten
+minute limit per take. Native AVFoundation exports the combined M4A. Optional
+capture lifecycle tests run with `node --test scripts/tests/review-capture.mjs`;
+`make tests-evals` covers storage and native consolidation with repository fixtures.

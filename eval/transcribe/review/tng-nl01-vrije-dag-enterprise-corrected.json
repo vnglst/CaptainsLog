@@ -1,0 +1,129 @@
+{
+  "id": "tng-nl01-r2",
+  "title": "Een vrije dag op de Enterprise",
+  "audio_sha256": "731efc1781210e0717e9952bcea5ab761793810b7f4f0fcd7d607fff6fa3c990",
+  "reference_sha256": "37a5afd505cea14c707ae0e4d041e0e1537588531c3acedf54c228a698ec87bf",
+  "timing_source": "Round-one passage boundaries mapped through the selected replacement edit map; text ranges adjusted for owner wording corrections. Approximate listening boundaries.",
+  "passages": [
+    {
+      "id": "tng-nl01-r2-D03",
+      "short_id": "D03",
+      "title": "Vrachtschip: possible stumble or omitted words",
+      "start_seconds": 176.0,
+      "end_seconds": 196.92999999999998,
+      "reference_start_word": 422,
+      "reference_end_word": 459,
+      "check": "Selected replacement: verify the splice at both ends. The vrachtschip sentence is now complete; Whisper spells Guinan as “Guynen”. Confirm no repeated or clipped words."
+    },
+    {
+      "id": "tng-nl01-r2-D12",
+      "short_id": "D12",
+      "title": "Laatste zin en eventuele herstart",
+      "start_seconds": 469.93000000000006,
+      "end_seconds": 489.18997916666666,
+      "reference_start_word": 1173,
+      "reference_end_word": 1203,
+      "check": "Selected replacement: confirm the closing sentence and splice boundaries. Whisper appends “MBC 뉴스 김재경입니다” after the Dutch ending; check this against the audio. Do not copy that addition into the reference."
+    },
+    {
+      "id": "tng-nl01-r2-D01",
+      "short_id": "D01",
+      "title": "Wandeling en avontuur",
+      "start_seconds": 32.0,
+      "end_seconds": 55.0,
+      "reference_start_word": 81,
+      "reference_end_word": 131,
+      "check": "Second review: check the exact spoken wording against the updated reference. Your round-one wording corrections have been applied. Prior verification carries forward for unchanged audio and confirmed wording; check only if you need to revise it."
+    },
+    {
+      "id": "tng-nl01-r2-D02",
+      "short_id": "D02",
+      "title": "Van / voor mij",
+      "start_seconds": 54.0,
+      "end_seconds": 68.0,
+      "reference_start_word": 131,
+      "reference_end_word": 163,
+      "check": "Second review: check the exact spoken wording against the updated reference. Your round-one wording corrections have been applied. Prior verification carries forward for unchanged audio and confirmed wording; check only if you need to revise it."
+    },
+    {
+      "id": "tng-nl01-r2-D04",
+      "short_id": "D04",
+      "title": "Keiko haalt Molly op",
+      "start_seconds": 206.92999999999998,
+      "end_seconds": 226.92999999999998,
+      "reference_start_word": 508,
+      "reference_end_word": 526,
+      "check": "Your first review confirmed “Keiko haalde”. Whisper now writes “Kijk ho, haal de”; check the raw recognition error against your confirmed wording."
+    },
+    {
+      "id": "tng-nl01-r2-D05",
+      "short_id": "D05",
+      "title": "Moest / moet mezelf",
+      "start_seconds": 235.92999999999998,
+      "end_seconds": 254.92999999999998,
+      "reference_start_word": 565,
+      "reference_end_word": 597,
+      "check": "Second review: check the exact spoken wording against the updated reference. Your round-one wording corrections have been applied. Prior verification carries forward for unchanged audio and confirmed wording; check only if you need to revise it."
+    },
+    {
+      "id": "tng-nl01-r2-D06",
+      "short_id": "D06",
+      "title": "Werkzaamheden en drankpatronen",
+      "start_seconds": 265.93,
+      "end_seconds": 291.93,
+      "reference_start_word": 632,
+      "reference_end_word": 674,
+      "check": "Second review: check the exact spoken wording against the updated reference. Your round-one wording corrections have been applied. Prior verification carries forward for unchanged audio and confirmed wording; check only if you need to revise it."
+    },
+    {
+      "id": "tng-nl01-r2-D07",
+      "short_id": "D07",
+      "title": "Hebben / hadden gemeld",
+      "start_seconds": 295.93,
+      "end_seconds": 310.93,
+      "reference_start_word": 701,
+      "reference_end_word": 721,
+      "check": "Second review: check the exact spoken wording against the updated reference. Your round-one wording corrections have been applied. Prior verification carries forward for unchanged audio and confirmed wording; check only if you need to revise it."
+    },
+    {
+      "id": "tng-nl01-r2-D08",
+      "short_id": "D08",
+      "title": "Woordvolgorde, Data en meetwaarde(n)",
+      "start_seconds": 325.93,
+      "end_seconds": 347.93,
+      "reference_start_word": 788,
+      "reference_end_word": 837,
+      "check": "Second review: check the exact spoken wording against the updated reference. Your round-one wording corrections have been applied. Prior verification carries forward for unchanged audio and confirmed wording; check only if you need to revise it."
+    },
+    {
+      "id": "tng-nl01-r2-D09",
+      "short_id": "D09",
+      "title": "Straling en metingen",
+      "start_seconds": 356.93,
+      "end_seconds": 376.93,
+      "reference_start_word": 872,
+      "reference_end_word": 895,
+      "check": "Whisper writes “meting hebben invloed” for “metingen beïnvloedt”. Your first review confirmed the reference; check whether the audio remains clear."
+    },
+    {
+      "id": "tng-nl01-r2-D10",
+      "short_id": "D10",
+      "title": "Sensorplan afspreken/bespreken en tijdelijk",
+      "start_seconds": 377.93,
+      "end_seconds": 403.93,
+      "reference_start_word": 943,
+      "reference_end_word": 984,
+      "check": "Your corrected reference says “tijdelijk”; Whisper still writes “duidelijk”, changing temporary loss of information into certainty. Check the disputed word."
+    },
+    {
+      "id": "tng-nl01-r2-D11",
+      "short_id": "D11",
+      "title": "Riker, ze aarzelen en eerste week/weken",
+      "start_seconds": 412.93,
+      "end_seconds": 440.93000000000006,
+      "reference_start_word": 1025,
+      "reference_end_word": 1079,
+      "check": "Second review: check the exact spoken wording against the updated reference. Your round-one wording corrections have been applied. Prior verification carries forward for unchanged audio and confirmed wording; check only if you need to revise it."
+    }
+  ]
+}

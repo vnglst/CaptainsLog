@@ -1,0 +1,129 @@
+{
+  "id": "tng-nl01",
+  "title": "Een vrije dag op de Enterprise",
+  "audio_sha256": "aee104e58c261dc5bd91c6da002eac3ee0909b25b23c61de578e30eb72814cf9",
+  "reference_sha256": "b82391127acdbd43fbfdd34f35f1fcb952003b04fa59a07cebd124a39496bfc1",
+  "timing_source": "Owner-requested listening passages; non-TNG boundaries from the recorded Whisper Large-v3 comparison, with context padding. Text alignment remains approximate.",
+  "passages": [
+    {
+      "id": "tng-nl01-D01",
+      "short_id": "D01",
+      "title": "Wandeling en avontuur",
+      "start_seconds": 32,
+      "end_seconds": 55,
+      "reference_start_word": 81,
+      "reference_end_word": 132,
+      "check": "Check “Vanmorgen”, “Gewoon een/Gewone”, singular/plural, and whether “alleen” was spoken."
+    },
+    {
+      "id": "tng-nl01-D02",
+      "short_id": "D02",
+      "title": "Van / voor mij",
+      "start_seconds": 54,
+      "end_seconds": 68,
+      "reference_start_word": 132,
+      "reference_end_word": 164,
+      "check": "Both models suggest “voor”; confirm the preposition."
+    },
+    {
+      "id": "tng-nl01-D03",
+      "short_id": "D03",
+      "title": "Vrachtschip: possible stumble or omitted words",
+      "start_seconds": 176,
+      "end_seconds": 194,
+      "reference_start_word": 423,
+      "reference_end_word": 460,
+      "check": "Highest priority: write the exact spoken words, including a restart if present."
+    },
+    {
+      "id": "tng-nl01-D04",
+      "short_id": "D04",
+      "title": "Keiko haalt Molly op",
+      "start_seconds": 204,
+      "end_seconds": 224,
+      "reference_start_word": 509,
+      "reference_end_word": 527,
+      "check": "Is this simply the pronounced name Keiko + “haalde”, or did the wording change? Do not accept the models’ phonetic spelling as evidence of a slip."
+    },
+    {
+      "id": "tng-nl01-D05",
+      "short_id": "D05",
+      "title": "Moest / moet mezelf",
+      "start_seconds": 233,
+      "end_seconds": 252,
+      "reference_start_word": 566,
+      "reference_end_word": 598,
+      "check": "Both models suggest present tense “moet”; confirm."
+    },
+    {
+      "id": "tng-nl01-D06",
+      "short_id": "D06",
+      "title": "Werkzaamheden en drankpatronen",
+      "start_seconds": 263,
+      "end_seconds": 289,
+      "reference_start_word": 633,
+      "reference_end_word": 675,
+      "check": "Confirm “aan/dan” and whether there was a restart before “drankpatronen”."
+    },
+    {
+      "id": "tng-nl01-D07",
+      "short_id": "D07",
+      "title": "Hebben / hadden gemeld",
+      "start_seconds": 293,
+      "end_seconds": 308,
+      "reference_start_word": 702,
+      "reference_end_word": 722,
+      "check": "Both models suggest “hebben”; confirm."
+    },
+    {
+      "id": "tng-nl01-D08",
+      "short_id": "D08",
+      "title": "Woordvolgorde, Data en meetwaarde(n)",
+      "start_seconds": 323,
+      "end_seconds": 345,
+      "reference_start_word": 789,
+      "reference_end_word": 838,
+      "check": "Confirm word order, any restart after “daar”, and singular/plural meetwaarde(n). Preserve canonical spelling Data."
+    },
+    {
+      "id": "tng-nl01-D09",
+      "short_id": "D09",
+      "title": "Straling en metingen",
+      "start_seconds": 354,
+      "end_seconds": 374,
+      "reference_start_word": 873,
+      "reference_end_word": 896,
+      "check": "Models disagree: verify the actual phrase. Final -t is a spelling issue, not an audible extra word."
+    },
+    {
+      "id": "tng-nl01-D10",
+      "short_id": "D10",
+      "title": "Sensorplan afspreken/bespreken en tijdelijk",
+      "start_seconds": 375,
+      "end_seconds": 401,
+      "reference_start_word": 944,
+      "reference_end_word": 985,
+      "check": "Confirm “afspreken/bespreken”, “tijdelijk/duidelijk”, and any false start. Names retain Worf/Geordi spelling."
+    },
+    {
+      "id": "tng-nl01-D11",
+      "short_id": "D11",
+      "title": "Riker, ze aarzelen en eerste week/weken",
+      "start_seconds": 410,
+      "end_seconds": 438,
+      "reference_start_word": 1026,
+      "reference_end_word": 1081,
+      "check": "Confirm the sentence opening, whether “ze” is omitted, and week/weken."
+    },
+    {
+      "id": "tng-nl01-D12",
+      "short_id": "D12",
+      "title": "Laatste zin en eventuele herstart",
+      "start_seconds": 467,
+      "end_seconds": 490.944,
+      "reference_start_word": 1175,
+      "reference_end_word": 1205,
+      "check": "Check whether you restarted the closing sentence. V3 can repeat text on its own; do not assume all its repeats were spoken. The later pipeline replay also emits “(sneezes)”; check whether a non-speech sound is present."
+    }
+  ]
+}

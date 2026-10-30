@@ -1,0 +1,229 @@
+{
+  "id": "durins-volk",
+  "title": "Durins volk",
+  "audio_sha256": "423df075a1d2efcdc74966cd24e5b09f02cc9012855715a1cb2fd12b0aae6e9b",
+  "reference_sha256": "841d8ff3922985a94f1b92bd37684c75e7880d8972b72dc4977732ae6a0c4a3f",
+  "timing_source": "Owner-requested listening passages; non-TNG boundaries from the recorded Whisper Large-v3 comparison, with context padding. Text alignment remains approximate.",
+  "passages": [
+    {
+      "id": "durins-volk-P01",
+      "short_id": "P01",
+      "title": "Over het begin van de Dwergen doen vreemde verhalen…",
+      "start_seconds": 0,
+      "end_seconds": 16.68,
+      "reference_start_word": 0,
+      "reference_end_word": 35,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "durins-volk-P02",
+      "short_id": "P02",
+      "title": "Durin is de naam die de Dwergen gebruikten voor…",
+      "start_seconds": 15.180000000000001,
+      "end_seconds": 27.52,
+      "reference_start_word": 35,
+      "reference_end_word": 62,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "durins-volk-P03",
+      "short_id": "P03",
+      "title": "Hij sliep alleen, tot hij in de diepten van…",
+      "start_seconds": 26.02,
+      "end_seconds": 45.279999999999994,
+      "reference_start_word": 62,
+      "reference_end_word": 101,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "durins-volk-P04",
+      "short_id": "P04",
+      "title": "waar naderhand",
+      "start_seconds": 43.779999999999994,
+      "end_seconds": 46.32,
+      "reference_start_word": 101,
+      "reference_end_word": 103,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "durins-volk-P05",
+      "short_id": "P05",
+      "title": "de Mijnen van Moria waren",
+      "start_seconds": 44.82,
+      "end_seconds": 47.94,
+      "reference_start_word": 103,
+      "reference_end_word": 108,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "durins-volk-P06",
+      "short_id": "P06",
+      "title": "beroemd uit liederen",
+      "start_seconds": 46.44,
+      "end_seconds": 49.32,
+      "reference_start_word": 108,
+      "reference_end_word": 111,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "durins-volk-P07",
+      "short_id": "P07",
+      "title": "Daar woonde hij zo lang",
+      "start_seconds": 47.82,
+      "end_seconds": 51.699999999999996,
+      "reference_start_word": 111,
+      "reference_end_word": 116,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "durins-volk-P08",
+      "short_id": "P08",
+      "title": "dat hij wijd en zijd bekend stond",
+      "start_seconds": 50.199999999999996,
+      "end_seconds": 54.04,
+      "reference_start_word": 116,
+      "reference_end_word": 123,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "durins-volk-P09",
+      "short_id": "P09",
+      "title": "als Durin de Onsterfelijke",
+      "start_seconds": 52.54,
+      "end_seconds": 56.019999999999996,
+      "reference_start_word": 123,
+      "reference_end_word": 127,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "durins-volk-P10",
+      "short_id": "P10",
+      "title": "Maar tenslotte stierf hij toch",
+      "start_seconds": 54.519999999999996,
+      "end_seconds": 58.58,
+      "reference_start_word": 127,
+      "reference_end_word": 132,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "durins-volk-P11",
+      "short_id": "P11",
+      "title": "voordat de Oudste Tijden",
+      "start_seconds": 57.08,
+      "end_seconds": 60.58,
+      "reference_start_word": 132,
+      "reference_end_word": 136,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "durins-volk-P12",
+      "short_id": "P12",
+      "title": "voorbij waren",
+      "start_seconds": 59.08,
+      "end_seconds": 61.459999999999994,
+      "reference_start_word": 136,
+      "reference_end_word": 138,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "durins-volk-P13",
+      "short_id": "P13",
+      "title": "en zijn graftombe",
+      "start_seconds": 59.959999999999994,
+      "end_seconds": 63.019999999999996,
+      "reference_start_word": 138,
+      "reference_end_word": 141,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "durins-volk-P14",
+      "short_id": "P14",
+      "title": "stond in Khazad-dûm",
+      "start_seconds": 61.519999999999996,
+      "end_seconds": 65.98,
+      "reference_start_word": 141,
+      "reference_end_word": 145,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "durins-volk-P15",
+      "short_id": "P15",
+      "title": "maar zijn lijn stierf nooit uit",
+      "start_seconds": 64.48,
+      "end_seconds": 68.94,
+      "reference_start_word": 145,
+      "reference_end_word": 151,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "durins-volk-P16",
+      "short_id": "P16",
+      "title": "en vijf keer werd er",
+      "start_seconds": 67.44,
+      "end_seconds": 70.48,
+      "reference_start_word": 151,
+      "reference_end_word": 156,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "durins-volk-P17",
+      "short_id": "P17",
+      "title": "een erfgenaam van zijn Huis geboren",
+      "start_seconds": 68.98,
+      "end_seconds": 72.74,
+      "reference_start_word": 156,
+      "reference_end_word": 162,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "durins-volk-P18",
+      "short_id": "P18",
+      "title": "die zozeer op zijn voorvader",
+      "start_seconds": 71.24,
+      "end_seconds": 74.92,
+      "reference_start_word": 162,
+      "reference_end_word": 167,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "durins-volk-P19",
+      "short_id": "P19",
+      "title": "leek dat hij",
+      "start_seconds": 73.42,
+      "end_seconds": 75.96,
+      "reference_start_word": 167,
+      "reference_end_word": 170,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "durins-volk-P20",
+      "short_id": "P20",
+      "title": "de naam Durin kreeg",
+      "start_seconds": 74.46,
+      "end_seconds": 77.58,
+      "reference_start_word": 170,
+      "reference_end_word": 174,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "durins-volk-P21",
+      "short_id": "P21",
+      "title": "De Dwergen beschouwden hem werkelijk als de Onsterfelijke die…",
+      "start_seconds": 76.08,
+      "end_seconds": 87.6,
+      "reference_start_word": 174,
+      "reference_end_word": 200,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    },
+    {
+      "id": "durins-volk-P22",
+      "short_id": "P22",
+      "title": "hun lot in de wereld",
+      "start_seconds": 86.1,
+      "end_seconds": 90.858667,
+      "reference_start_word": 195,
+      "reference_end_word": 200,
+      "check": "Listen for the exact wording, omissions and any restarts. Reference excerpts are aligned automatically; use the full transcript for context. Name spelling alone does not establish a reading slip."
+    }
+  ]
+}

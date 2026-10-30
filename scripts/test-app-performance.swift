@@ -33,7 +33,7 @@ let qwen = env["CAPTAINSLOG_QWEN_MODEL_FOLDER"] ?? ""
 let whisper = env["CAPTAINSLOG_WHISPER_MODEL_FOLDER"] ?? ""
 require(fm.fileExists(atPath: qwen), "Missing prepared Qwen folder")
 require(fm.fileExists(atPath: whisper), "Missing prepared Whisper folder")
-let fixture = URL(fileURLWithPath: "eval/transcribe/audio/2025-01-14 side project.m4a")
+let fixture = URL(fileURLWithPath: "eval/transcribe/archive/audio/2025-01-14 side project.m4a")
 require(fm.fileExists(atPath: fixture.path), "Run from the repository root with eval fixtures")
 func sha256(_ path: String) throws -> String {
     let file = try FileHandle(forReadingFrom: URL(fileURLWithPath: path)); defer { try? file.close() }
@@ -54,7 +54,7 @@ try revisionProcess.run(); let revisionData = revisionOutput.fileHandleForReadin
 require(revisionProcess.terminationStatus == 0, "Cannot record repository revision")
 var startupFixtureHashes: [String: String] = [:]
 if startupEntries > 0 {
-    for path in ["eval/transcribe/expected/2025-01-14 side project.md", "eval/cleanup/expected/2025-01-14 side project.md", "eval/enrich/expected/2025-01-14 side project.md"] {
+    for path in ["eval/transcribe/archive/expected/2025-01-14 side project.md", "eval/cleanup/expected/2025-01-14 side project.md", "eval/enrich/expected/2025-01-14 side project.md"] {
         startupFixtureHashes[path] = try sha256(path)
     }
 }
@@ -69,7 +69,7 @@ for mode in modes {
     let data = run.appendingPathComponent("data", isDirectory: true)
     try fm.createDirectory(at: data.appendingPathComponent("audio"), withIntermediateDirectories: true)
     if mode.hasPrefix("startup") && startupEntries > 0 {
-        let transcript = try Data(contentsOf: URL(fileURLWithPath: "eval/transcribe/expected/2025-01-14 side project.md"))
+        let transcript = try Data(contentsOf: URL(fileURLWithPath: "eval/transcribe/archive/expected/2025-01-14 side project.md"))
         let cleaned = try Data(contentsOf: URL(fileURLWithPath: "eval/cleanup/expected/2025-01-14 side project.md"))
         let enriched = try Data(contentsOf: URL(fileURLWithPath: "eval/enrich/expected/2025-01-14 side project.md"))
         for directory in [".pipeline/01-transcribed", ".pipeline/02-logs", ".pipeline/03-category", ".pipeline/04-rename", "logs/side-project"] {
@@ -91,7 +91,7 @@ for mode in modes {
     if env["CAPTAINSLOG_PERFORMANCE_QWEN"] == "1" {
         let transcript = data.appendingPathComponent(".pipeline/01-transcribed/2025-01-14-0730.md")
         try fm.createDirectory(at: transcript.deletingLastPathComponent(), withIntermediateDirectories: true)
-        try fm.copyItem(at: URL(fileURLWithPath: "eval/transcribe/expected/2025-01-14 side project.md"), to: transcript)
+        try fm.copyItem(at: URL(fileURLWithPath: "eval/transcribe/archive/expected/2025-01-14 side project.md"), to: transcript)
     }
     let config: [String: Any] = ["schemaVersion": 1, "dataDir": data.path, "whisperModel": "openai_whisper-large-v2", "whisperModelFolder": whisper, "qwenModelId": "Qwen3.5-9B-Q4_K_M", "qwenModelFolder": qwen, "automaticUpdates": false, "automaticUpdateChecks": false]
     let configPath = run.appendingPathComponent("config.json")

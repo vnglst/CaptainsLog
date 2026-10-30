@@ -6,5 +6,5 @@ let package = Package(
     platforms: [.macOS(.v26)],
     products: [.executable(name: "captainslog-tools", targets: ["Tools"])],
     dependencies: [.package(url: "https://github.com/jpsim/Yams.git", exact: "6.2.2")],
-    targets: [.executableTarget(name: "Tools", dependencies: [.product(name: "Yams", package: "Yams")])]
+    targets: [.executableTarget(name: "Tools", dependencies: [.product(name: "Yams", package: "Yams")], resources: [.copy("Resources/EvalReview")])]
 )

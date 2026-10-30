@@ -19,6 +19,10 @@ extension Tools {
         switch command {
         case "isolated-check": let temp = try temporary("captainslog-check-"); defer { try? fm.removeItem(at: temp) }; try isolated(temp); try run(args)
         case "evals": try evals(args)
+        case "evals-review": try evalsReview(args)
+        case "score-transcription":
+            try require(args.count == 4 && args[0] == "--expected" && args[2] == "--generated", "Usage: score-transcription --expected PATH --generated PATH", status: 2)
+            print(try TranscriptionScore(reference: read(path(args[1])), hypothesis: read(path(args[3]))).markdown)
         case "test-evals": try testEvals()
         case "test-coverage": try testCoverage(args)
         case "test-release-tooling": try testReleaseTooling()

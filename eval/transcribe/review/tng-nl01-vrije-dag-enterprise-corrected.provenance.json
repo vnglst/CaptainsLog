@@ -1,0 +1,133 @@
+{
+  "date": "2026-10-30",
+  "source_audio_sha256": "aee104e58c261dc5bd91c6da002eac3ee0909b25b23c61de578e30eb72814cf9",
+  "source_reference_sha256": "b82391127acdbd43fbfdd34f35f1fcb952003b04fa59a07cebd124a39496bfc1",
+  "export": {
+    "audio": "assets/consolidated/c85ffed4-6251-485c-bba1-aabe0ccd19e2.m4a",
+    "audio_sha256": "731efc1781210e0717e9952bcea5ab761793810b7f4f0fcd7d607fff6fa3c990",
+    "created_at": "2026-10-30T08:25:24Z",
+    "edit_map": "assets/consolidated/c85ffed4-6251-485c-bba1-aabe0ccd19e2.json",
+    "id": "c85ffed4-6251-485c-bba1-aabe0ccd19e2",
+    "recording_id": "tng-nl01",
+    "reference_sha256": "b82391127acdbd43fbfdd34f35f1fcb952003b04fa59a07cebd124a39496bfc1",
+    "selections": {
+      "tng-nl01-D03": "d45f4350-5a55-41c5-b4a8-7911ba228d93",
+      "tng-nl01-D12": "db2b6cde-64bd-40c0-8ba1-7b3f5834eb80"
+    }
+  },
+  "edit_map": {
+    "corrected_duration": 489.18997916666666,
+    "corrected_sha256": "731efc1781210e0717e9952bcea5ab761793810b7f4f0fcd7d607fff6fa3c990",
+    "edits": [
+      {
+        "corrected_end": 177.6,
+        "corrected_start": 0,
+        "kind": "original",
+        "original_end": 177.6,
+        "original_start": 0
+      },
+      {
+        "corrected_end": 195.48,
+        "corrected_start": 177.6,
+        "kind": "replacement",
+        "original_end": 192.55,
+        "original_start": 177.6,
+        "passage_id": "tng-nl01-D03",
+        "replacement_sha256": "50b5ce097002cee96b241db0c3ee928c884aae3ab8bc9061eda1b470849e90d7",
+        "take_id": "d45f4350-5a55-41c5-b4a8-7911ba228d93"
+      },
+      {
+        "corrected_end": 474.91,
+        "corrected_start": 195.48,
+        "kind": "original",
+        "original_end": 471.98,
+        "original_start": 192.55
+      },
+      {
+        "corrected_end": 489.01,
+        "corrected_start": 474.91,
+        "kind": "replacement",
+        "original_end": 490.72,
+        "original_start": 471.98,
+        "passage_id": "tng-nl01-D12",
+        "replacement_sha256": "61940e8e24893886e6cdb7dc0fac6a83cf224629a828703c31090c9a8d4e5495",
+        "take_id": "db2b6cde-64bd-40c0-8ba1-7b3f5834eb80"
+      },
+      {
+        "corrected_end": 489.18997916666666,
+        "corrected_start": 489.01,
+        "kind": "original",
+        "original_end": 490.9,
+        "original_start": 490.72
+      }
+    ],
+    "original_duration": 490.9,
+    "source_sha256": "aee104e58c261dc5bd91c6da002eac3ee0909b25b23c61de578e30eb72814cf9",
+    "version": 1
+  },
+  "owner_decisions": {
+    "tng-nl01-D01": {
+      "status": "corrected",
+      "words": "Vanmorgen had ik een uur op het holodeck gereserveerd. Gewoon een wandeling door een bos, met een pad langs een meer. Geen ingewikkeld avontuur en ook geen tegenstanders die ineens achter een boom vandaan springen. Ik wilde even ergens zijn waar ik niet voortdurend de ventilatie van het schip hoorde",
+      "accepted_take_id": null
+    },
+    "tng-nl01-D02": {
+      "status": "matches",
+      "words": "",
+      "accepted_take_id": null
+    },
+    "tng-nl01-D03": {
+      "status": "uncertain",
+      "words": "",
+      "accepted_take_id": "d45f4350-5a55-41c5-b4a8-7911ba228d93"
+    },
+    "tng-nl01-D04": {
+      "status": "matches",
+      "words": "",
+      "accepted_take_id": null
+    },
+    "tng-nl01-D05": {
+      "status": "corrected",
+      "words": "Toch liep ik op de terugweg bijna vanzelf richting de turbolift naar de machinekamer. Ik moet mezelf eraan herinneren dat Geordi daar een volledige ploeg heeft staan, ook als ik vrij ben",
+      "accepted_take_id": null
+    },
+    "tng-nl01-D06": {
+      "status": "matches",
+      "words": "",
+      "accepted_take_id": null
+    },
+    "tng-nl01-D07": {
+      "status": "corrected",
+      "words": "Daarna hebben we de mensen die de storing hebben gemeld gevraagd of ze nog problemen merkten. Tot nu toe niet",
+      "accepted_take_id": null
+    },
+    "tng-nl01-D08": {
+      "status": "corrected",
+      "words": "Die ziet alleen dat ik een onderdeel heb gecontroleerd. Niet wat ik gemeten heb, of waarom ik daarna iets anders ben gaan bekijken. Data heeft me daar laatst op gewezen. Heel rustig, gewoon met de vraag waar hij de meetwaarden kon vinden. Die stonden nog op mijn persoonlijke scherm",
+      "accepted_take_id": null
+    },
+    "tng-nl01-D09": {
+      "status": "matches",
+      "words": "",
+      "accepted_take_id": null
+    },
+    "tng-nl01-D10": {
+      "status": "corrected",
+      "words": "Worf heeft gevraagd of we daarbij ook de afscherming van de sensoren controleren. Dat doen we, maar ik wil eerst met Geordi bespreken in welke volgorde. We kunnen niet alles tegelijk uitschakelen. Dan heeft de brug tijdelijk te weinig betrouwbare informatie",
+      "accepted_take_id": null
+    },
+    "tng-nl01-D11": {
+      "status": "corrected",
+      "words": "Ik heb deze week ook een gesprek met commandant William Riker. Hij wil weten hoe het gaat met de nieuwe bemanningsleden tijdens de nachtdienst. Ik heb er twee ingewerkt. Ze kennen de procedures, maar aarzelen nog om iemand wakker te maken als een meting vreemd is. Dat herken ik van mijn eerste weken hier",
+      "accepted_take_id": null
+    },
+    "tng-nl01-D12": {
+      "status": "uncertain",
+      "words": "",
+      "accepted_take_id": "db2b6cde-64bd-40c0-8ba1-7b3f5834eb80"
+    }
+  },
+  "reference_status": "model-assisted",
+  "limitations": "Owner wording corrections applied to their original excerpts. Retakes retain script wording pending second audio review; unchanged text outside the reviewed excerpts remains provisional.",
+  "source_review_state_sha256": "936f9890a71a7dc5cb42e73fcbfdc9ba0d72177f238a32d5ec9468589dd9d46e"
+}

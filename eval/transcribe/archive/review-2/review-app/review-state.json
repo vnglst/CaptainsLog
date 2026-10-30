@@ -1,0 +1,103 @@
+{
+  "archived_reviews" : {
+
+  },
+  "reviews" : {
+    "tng-nl01-r2-D01" : {
+      "accepted_take_id" : null,
+      "audio_issue" : false,
+      "context" : {
+        "audio_sha256" : "731efc1781210e0717e9952bcea5ab761793810b7f4f0fcd7d607fff6fa3c990",
+        "end_seconds" : 55,
+        "reference_end_word" : 131,
+        "reference_sha256" : "37a5afd505cea14c707ae0e4d041e0e1537588531c3acedf54c228a698ec87bf",
+        "reference_start_word" : 81,
+        "start_seconds" : 32
+      },
+      "notes" : "",
+      "retakes" : [
+
+      ],
+      "status" : "matches",
+      "updated_at" : "2026-10-30T09:24:57Z",
+      "words" : ""
+    },
+    "tng-nl01-r2-D02" : {
+      "accepted_take_id" : null,
+      "audio_issue" : false,
+      "context" : {
+        "audio_sha256" : "731efc1781210e0717e9952bcea5ab761793810b7f4f0fcd7d607fff6fa3c990",
+        "end_seconds" : 68,
+        "reference_end_word" : 163,
+        "reference_sha256" : "37a5afd505cea14c707ae0e4d041e0e1537588531c3acedf54c228a698ec87bf",
+        "reference_start_word" : 131,
+        "start_seconds" : 54
+      },
+      "notes" : "",
+      "retakes" : [
+
+      ],
+      "status" : "matches",
+      "updated_at" : "2026-10-30T09:25:12Z",
+      "words" : ""
+    },
+    "tng-nl01-r2-D03" : {
+      "accepted_take_id" : null,
+      "audio_issue" : false,
+      "context" : {
+        "audio_sha256" : "731efc1781210e0717e9952bcea5ab761793810b7f4f0fcd7d607fff6fa3c990",
+        "end_seconds" : 196.92999999999998,
+        "reference_end_word" : 459,
+        "reference_sha256" : "37a5afd505cea14c707ae0e4d041e0e1537588531c3acedf54c228a698ec87bf",
+        "reference_start_word" : 422,
+        "start_seconds" : 176
+      },
+      "notes" : "",
+      "retakes" : [
+
+      ],
+      "status" : "matches",
+      "updated_at" : "2026-10-30T09:24:09Z",
+      "words" : ""
+    },
+    "tng-nl01-r2-D04" : {
+      "accepted_take_id" : null,
+      "audio_issue" : false,
+      "context" : {
+        "audio_sha256" : "731efc1781210e0717e9952bcea5ab761793810b7f4f0fcd7d607fff6fa3c990",
+        "end_seconds" : 226.92999999999998,
+        "reference_end_word" : 526,
+        "reference_sha256" : "37a5afd505cea14c707ae0e4d041e0e1537588531c3acedf54c228a698ec87bf",
+        "reference_start_word" : 508,
+        "start_seconds" : 206.92999999999998
+      },
+      "notes" : "",
+      "retakes" : [
+
+      ],
+      "status" : "matches",
+      "updated_at" : "2026-10-30T09:25:24Z",
+      "words" : ""
+    },
+    "tng-nl01-r2-D12" : {
+      "accepted_take_id" : null,
+      "audio_issue" : false,
+      "context" : {
+        "audio_sha256" : "731efc1781210e0717e9952bcea5ab761793810b7f4f0fcd7d607fff6fa3c990",
+        "end_seconds" : 489.18997916666666,
+        "reference_end_word" : 1203,
+        "reference_sha256" : "37a5afd505cea14c707ae0e4d041e0e1537588531c3acedf54c228a698ec87bf",
+        "reference_start_word" : 1173,
+        "start_seconds" : 469.93000000000006
+      },
+      "notes" : "",
+      "retakes" : [
+
+      ],
+      "status" : "matches",
+      "updated_at" : "2026-10-30T09:24:36Z",
+      "words" : ""
+    }
+  },
+  "version" : 1
+}

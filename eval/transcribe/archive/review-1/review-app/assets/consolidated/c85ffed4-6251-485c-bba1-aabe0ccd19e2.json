@@ -1,0 +1,50 @@
+{
+  "corrected_duration" : 489.18997916666666,
+  "corrected_sha256" : "731efc1781210e0717e9952bcea5ab761793810b7f4f0fcd7d607fff6fa3c990",
+  "edits" : [
+    {
+      "corrected_end" : 177.59999999999999,
+      "corrected_start" : 0,
+      "kind" : "original",
+      "original_end" : 177.59999999999999,
+      "original_start" : 0
+    },
+    {
+      "corrected_end" : 195.47999999999999,
+      "corrected_start" : 177.59999999999999,
+      "kind" : "replacement",
+      "original_end" : 192.55000000000001,
+      "original_start" : 177.59999999999999,
+      "passage_id" : "tng-nl01-D03",
+      "replacement_sha256" : "50b5ce097002cee96b241db0c3ee928c884aae3ab8bc9061eda1b470849e90d7",
+      "take_id" : "d45f4350-5a55-41c5-b4a8-7911ba228d93"
+    },
+    {
+      "corrected_end" : 474.91000000000003,
+      "corrected_start" : 195.47999999999999,
+      "kind" : "original",
+      "original_end" : 471.98000000000002,
+      "original_start" : 192.55000000000001
+    },
+    {
+      "corrected_end" : 489.00999999999999,
+      "corrected_start" : 474.91000000000003,
+      "kind" : "replacement",
+      "original_end" : 490.72000000000003,
+      "original_start" : 471.98000000000002,
+      "passage_id" : "tng-nl01-D12",
+      "replacement_sha256" : "61940e8e24893886e6cdb7dc0fac6a83cf224629a828703c31090c9a8d4e5495",
+      "take_id" : "db2b6cde-64bd-40c0-8ba1-7b3f5834eb80"
+    },
+    {
+      "corrected_end" : 489.18997916666666,
+      "corrected_start" : 489.00999999999999,
+      "kind" : "original",
+      "original_end" : 490.89999999999998,
+      "original_start" : 490.72000000000003
+    }
+  ],
+  "original_duration" : 490.89999999999998,
+  "source_sha256" : "aee104e58c261dc5bd91c6da002eac3ee0909b25b23c61de578e30eb72814cf9",
+  "version" : 1
+}
