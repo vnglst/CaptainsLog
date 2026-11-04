@@ -32,7 +32,7 @@ extension Tools {
         let previousData = fm.fileExists(atPath: previousFile.path) ? try json(previousFile) as? EvalItem : nil
         let previousRecordings = previousData?["recordings"] as? [EvalItem] ?? []
         guard let source = Bundle.module.url(forResource: "EvalReview", withExtension: nil) else { throw ToolFailure("Missing evaluation review app resources") }
-        for name in ["index.html", "style.css", "app.js", "audio-capture.mjs"] { try copy(source.appendingPathComponent(name), app.appendingPathComponent(name)) }
+        for name in ["index.html", "style.css", "app.js", "audio-capture.mjs", "review-passages.mjs"] { try copy(source.appendingPathComponent(name), app.appendingPathComponent(name)) }
         func requireRunFile(_ url: URL) throws {
             let resolved = url.resolvingSymlinksInPath().standardizedFileURL.path
             let roots = [path("eval"), path("tmp"), run] + (comparison.map { [$0] } ?? [])

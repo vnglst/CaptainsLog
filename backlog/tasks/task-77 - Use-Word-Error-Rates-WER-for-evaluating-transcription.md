@@ -1,10 +1,10 @@
 ---
 id: TASK-77
 title: Use Word Error Rates (WER) for evaluating transcription
-status: Complete
+status: Verify
 assignee: []
 created_date: 2026-10-27 18:29
-updated_date: '2026-11-04T18:15:00Z'
+updated_date: '2026-11-04T22:00:00Z'
 labels: []
 dependencies: []
 ordinal: 68000

@@ -30,6 +30,7 @@ extension Tools {
         func request(_ method: String, _ route: String, _ value: EvalItem? = nil, _ custom: [String: String]? = nil) throws -> ReviewResponse {
             try server.response(method: method, path: route, headers: custom ?? headers, body: value.map { try JSONSerialization.data(withJSONObject: $0) } ?? Data())
         }
+        try require(request("GET", "/review-passages.mjs").status == 200, "Review queue module is not served")
         var value: EvalItem = ["id": passages[0]["id"]!, "status": "corrected", "words": "owner-supplied test wording", "notes": "test only", "context": passages[0]["context"]!]
         try require(request("POST", "/api/state", value).status == 200, "Review correction save failed")
         let stateFile = app.appendingPathComponent("review-state.json")

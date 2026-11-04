@@ -12,6 +12,10 @@ entry. Git links provide the complete commit history for each release.
 
 ## [Unreleased]
 
+### Fixed
+
+- Show current text differences in the transcription review queue, with matching passages available separately and stale dispute labels removed. Preserve audio verification decisions.
+
 ### Changed
 
 - Organize evaluation results under each stage’s history folder and retain transcription review rounds and not-reviewed recordings outside active selection. Distinguish the reviewed audio-only baseline from deferred end-to-end evaluation.

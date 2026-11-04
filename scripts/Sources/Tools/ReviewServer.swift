@@ -184,7 +184,7 @@ final class EvalReviewServer: @unchecked Sendable {
         }
         guard method == "GET" || method == "HEAD" else { return try jsonResponse(["error": "Method not allowed"], status: 405) }
         let relative = path == "/" ? "index.html" : String(path.dropFirst())
-        let allowed = ["index.html", "style.css", "app.js", "recordings.json", "audio-capture.mjs"].contains(relative) || ["assets/audio/", "assets/retakes/", "assets/consolidated/"].contains(where: relative.hasPrefix)
+        let allowed = ["index.html", "style.css", "app.js", "recordings.json", "audio-capture.mjs", "review-passages.mjs"].contains(relative) || ["assets/audio/", "assets/retakes/", "assets/consolidated/"].contains(where: relative.hasPrefix)
         let file = root.appendingPathComponent(relative).resolvingSymlinksInPath()
         guard allowed, file.path.hasPrefix(root.path + "/"), tools.fm.fileExists(atPath: file.path),
               let size = (try tools.fm.attributesOfItem(atPath: file.path))[.size] as? UInt64 else { return try jsonResponse(["error": "Not found"], status: 404) }

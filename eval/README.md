@@ -70,6 +70,11 @@ for whatever output is newest. Audio must match a pinned synthetic fixture.
 recordings. Definitions pin the audio and reference hashes; when a reference
 changes, the app falls back to the full recording until those offsets are updated.
 Additional recordings work without segment definitions, using their full audio.
+The passage list defaults to **Text differences only**. Matching passages remain
+available with **Show matching passages**, labelled for audio verification rather
+than as suspected errors. Differences in either saved transcript, unavailable
+transcripts and reported audio issues remain in the review queue. Text agreement
+does not verify the audio or change saved decisions.
 Text alignment is approximate and is not proof of the spoken wording.
 
 Decisions and exact wording persist in the run's `review-app/review-state.json`.
