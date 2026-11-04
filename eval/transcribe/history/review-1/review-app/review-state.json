@@ -93,6 +93,329 @@
       "updated_at" : "2026-10-30T09:32:23Z",
       "words" : ""
     },
+    "alle-mensen-P03" : {
+      "accepted_take_id" : null,
+      "audio_issue" : false,
+      "context" : {
+        "audio_sha256" : "f8a977f21028036d9b88496bb87da3dcfcc0ad731732b41f29d782da4fd992ca",
+        "end_seconds" : 48.439999999999998,
+        "reference_end_word" : 107,
+        "reference_sha256" : "68240648e0c0fd312608cb1f13adf81f952dc3c0fbeebba9daaa48990150dc6f",
+        "reference_start_word" : 92,
+        "start_seconds" : 40.879999999999995
+      },
+      "notes" : "",
+      "retakes" : [
+
+      ],
+      "status" : "matches",
+      "updated_at" : "2026-10-30T10:30:04Z",
+      "words" : ""
+    },
+    "alle-mensen-P04" : {
+      "accepted_take_id" : null,
+      "audio_issue" : false,
+      "context" : {
+        "audio_sha256" : "f8a977f21028036d9b88496bb87da3dcfcc0ad731732b41f29d782da4fd992ca",
+        "end_seconds" : 75.480000000000004,
+        "reference_end_word" : 169,
+        "reference_sha256" : "68240648e0c0fd312608cb1f13adf81f952dc3c0fbeebba9daaa48990150dc6f",
+        "reference_start_word" : 107,
+        "start_seconds" : 47.879999999999995
+      },
+      "notes" : "",
+      "retakes" : [
+
+      ],
+      "status" : "corrected",
+      "updated_at" : "2026-10-30T10:30:39Z",
+      "words" : "Ze liep het trapje af naar de foyer. Ze wachtte haar met bloemen op; in één klap stond ze weer met beide benen op de grond. Als ze onzichtbaar en anoniem in het donker zaten, wist je niet wie ze waren; je kon jezelf voor een zaal vol goden wanen, maar zodra je hen apart zag, stond je tegenover doodgewone, oninteressante mensen"
+    },
+    "alle-mensen-P05" : {
+      "accepted_take_id" : null,
+      "audio_issue" : false,
+      "context" : {
+        "audio_sha256" : "f8a977f21028036d9b88496bb87da3dcfcc0ad731732b41f29d782da4fd992ca",
+        "end_seconds" : 78.739999999999995,
+        "reference_end_word" : 175,
+        "reference_sha256" : "68240648e0c0fd312608cb1f13adf81f952dc3c0fbeebba9daaa48990150dc6f",
+        "reference_start_word" : 169,
+        "start_seconds" : 74.980000000000004
+      },
+      "notes" : "",
+      "retakes" : [
+
+      ],
+      "status" : "matches",
+      "updated_at" : "2026-10-30T10:30:56Z",
+      "words" : ""
+    },
+    "alle-mensen-P06" : {
+      "accepted_take_id" : null,
+      "audio_issue" : false,
+      "context" : {
+        "audio_sha256" : "f8a977f21028036d9b88496bb87da3dcfcc0ad731732b41f29d782da4fd992ca",
+        "end_seconds" : 104.67999999999999,
+        "reference_end_word" : 232,
+        "reference_sha256" : "68240648e0c0fd312608cb1f13adf81f952dc3c0fbeebba9daaa48990150dc6f",
+        "reference_start_word" : 175,
+        "start_seconds" : 77.879999999999995
+      },
+      "notes" : "",
+      "retakes" : [
+
+      ],
+      "status" : "matches",
+      "updated_at" : "2026-10-30T10:31:34Z",
+      "words" : ""
+    },
+    "alle-mensen-P07" : {
+      "accepted_take_id" : null,
+      "audio_issue" : false,
+      "context" : {
+        "audio_sha256" : "f8a977f21028036d9b88496bb87da3dcfcc0ad731732b41f29d782da4fd992ca",
+        "end_seconds" : 109.36,
+        "reference_end_word" : 242,
+        "reference_sha256" : "68240648e0c0fd312608cb1f13adf81f952dc3c0fbeebba9daaa48990150dc6f",
+        "reference_start_word" : 232,
+        "start_seconds" : 103.98
+      },
+      "notes" : "",
+      "retakes" : [
+
+      ],
+      "status" : "matches",
+      "updated_at" : "2026-10-30T10:31:46Z",
+      "words" : ""
+    },
+    "alle-mensen-P08" : {
+      "accepted_take_id" : null,
+      "audio_issue" : false,
+      "context" : {
+        "audio_sha256" : "f8a977f21028036d9b88496bb87da3dcfcc0ad731732b41f29d782da4fd992ca",
+        "end_seconds" : 113.59999999999999,
+        "reference_end_word" : 251,
+        "reference_sha256" : "68240648e0c0fd312608cb1f13adf81f952dc3c0fbeebba9daaa48990150dc6f",
+        "reference_start_word" : 242,
+        "start_seconds" : 107.88
+      },
+      "notes" : "",
+      "retakes" : [
+
+      ],
+      "status" : "matches",
+      "updated_at" : "2026-10-30T10:31:58Z",
+      "words" : ""
+    },
+    "alle-mensen-P09" : {
+      "accepted_take_id" : null,
+      "audio_issue" : false,
+      "context" : {
+        "audio_sha256" : "f8a977f21028036d9b88496bb87da3dcfcc0ad731732b41f29d782da4fd992ca",
+        "end_seconds" : 123.38,
+        "reference_end_word" : 271,
+        "reference_sha256" : "68240648e0c0fd312608cb1f13adf81f952dc3c0fbeebba9daaa48990150dc6f",
+        "reference_start_word" : 251,
+        "start_seconds" : 113.28
+      },
+      "notes" : "",
+      "retakes" : [
+
+      ],
+      "status" : "matches",
+      "updated_at" : "2026-10-30T10:32:15Z",
+      "words" : ""
+    },
+    "alle-mensen-P10" : {
+      "accepted_take_id" : null,
+      "audio_issue" : false,
+      "context" : {
+        "audio_sha256" : "f8a977f21028036d9b88496bb87da3dcfcc0ad731732b41f29d782da4fd992ca",
+        "end_seconds" : 132.64000000000001,
+        "reference_end_word" : 284,
+        "reference_sha256" : "68240648e0c0fd312608cb1f13adf81f952dc3c0fbeebba9daaa48990150dc6f",
+        "reference_start_word" : 271,
+        "start_seconds" : 125.48
+      },
+      "notes" : "",
+      "retakes" : [
+
+      ],
+      "status" : "matches",
+      "updated_at" : "2026-10-30T10:32:27Z",
+      "words" : ""
+    },
+    "alle-mensen-P11" : {
+      "accepted_take_id" : null,
+      "audio_issue" : false,
+      "context" : {
+        "audio_sha256" : "f8a977f21028036d9b88496bb87da3dcfcc0ad731732b41f29d782da4fd992ca",
+        "end_seconds" : 139.36000000000001,
+        "reference_end_word" : 295,
+        "reference_sha256" : "68240648e0c0fd312608cb1f13adf81f952dc3c0fbeebba9daaa48990150dc6f",
+        "reference_start_word" : 284,
+        "start_seconds" : 131.92000000000002
+      },
+      "notes" : "",
+      "retakes" : [
+
+      ],
+      "status" : "matches",
+      "updated_at" : "2026-10-30T10:32:39Z",
+      "words" : ""
+    },
+    "alle-mensen-P12" : {
+      "accepted_take_id" : null,
+      "audio_issue" : false,
+      "context" : {
+        "audio_sha256" : "f8a977f21028036d9b88496bb87da3dcfcc0ad731732b41f29d782da4fd992ca",
+        "end_seconds" : 144.26000000000002,
+        "reference_end_word" : 303,
+        "reference_sha256" : "68240648e0c0fd312608cb1f13adf81f952dc3c0fbeebba9daaa48990150dc6f",
+        "reference_start_word" : 295,
+        "start_seconds" : 137.88000000000002
+      },
+      "notes" : "",
+      "retakes" : [
+
+      ],
+      "status" : "matches",
+      "updated_at" : "2026-10-30T10:32:48Z",
+      "words" : ""
+    },
+    "alle-mensen-P13" : {
+      "accepted_take_id" : null,
+      "audio_issue" : false,
+      "context" : {
+        "audio_sha256" : "f8a977f21028036d9b88496bb87da3dcfcc0ad731732b41f29d782da4fd992ca",
+        "end_seconds" : 150.02000000000001,
+        "reference_end_word" : 311,
+        "reference_sha256" : "68240648e0c0fd312608cb1f13adf81f952dc3c0fbeebba9daaa48990150dc6f",
+        "reference_start_word" : 303,
+        "start_seconds" : 144.96000000000001
+      },
+      "notes" : "",
+      "retakes" : [
+
+      ],
+      "status" : "matches",
+      "updated_at" : "2026-10-30T10:32:58Z",
+      "words" : ""
+    },
+    "alle-mensen-P14" : {
+      "accepted_take_id" : null,
+      "audio_issue" : false,
+      "context" : {
+        "audio_sha256" : "f8a977f21028036d9b88496bb87da3dcfcc0ad731732b41f29d782da4fd992ca",
+        "end_seconds" : 154.60000000000002,
+        "reference_end_word" : 317,
+        "reference_sha256" : "68240648e0c0fd312608cb1f13adf81f952dc3c0fbeebba9daaa48990150dc6f",
+        "reference_start_word" : 311,
+        "start_seconds" : 150.86000000000001
+      },
+      "notes" : "",
+      "retakes" : [
+
+      ],
+      "status" : "matches",
+      "updated_at" : "2026-10-30T10:33:19Z",
+      "words" : ""
+    },
+    "alle-mensen-P15" : {
+      "accepted_take_id" : null,
+      "audio_issue" : false,
+      "context" : {
+        "audio_sha256" : "f8a977f21028036d9b88496bb87da3dcfcc0ad731732b41f29d782da4fd992ca",
+        "end_seconds" : 161.80000000000001,
+        "reference_end_word" : 334,
+        "reference_sha256" : "68240648e0c0fd312608cb1f13adf81f952dc3c0fbeebba9daaa48990150dc6f",
+        "reference_start_word" : 317,
+        "start_seconds" : 154.24000000000001
+      },
+      "notes" : "",
+      "retakes" : [
+
+      ],
+      "status" : "matches",
+      "updated_at" : "2026-10-30T10:33:30Z",
+      "words" : ""
+    },
+    "alle-mensen-P16" : {
+      "accepted_take_id" : null,
+      "audio_issue" : false,
+      "context" : {
+        "audio_sha256" : "f8a977f21028036d9b88496bb87da3dcfcc0ad731732b41f29d782da4fd992ca",
+        "end_seconds" : 168.80000000000001,
+        "reference_end_word" : 349,
+        "reference_sha256" : "68240648e0c0fd312608cb1f13adf81f952dc3c0fbeebba9daaa48990150dc6f",
+        "reference_start_word" : 334,
+        "start_seconds" : 162.72
+      },
+      "notes" : "",
+      "retakes" : [
+
+      ],
+      "status" : "matches",
+      "updated_at" : "2026-10-30T10:33:42Z",
+      "words" : ""
+    },
+    "alle-mensen-P17" : {
+      "accepted_take_id" : null,
+      "audio_issue" : false,
+      "context" : {
+        "audio_sha256" : "f8a977f21028036d9b88496bb87da3dcfcc0ad731732b41f29d782da4fd992ca",
+        "end_seconds" : 173.64000000000001,
+        "reference_end_word" : 360,
+        "reference_sha256" : "68240648e0c0fd312608cb1f13adf81f952dc3c0fbeebba9daaa48990150dc6f",
+        "reference_start_word" : 349,
+        "start_seconds" : 167.88000000000002
+      },
+      "notes" : "",
+      "retakes" : [
+
+      ],
+      "status" : "matches",
+      "updated_at" : "2026-10-30T10:33:50Z",
+      "words" : ""
+    },
+    "alle-mensen-P18" : {
+      "accepted_take_id" : null,
+      "audio_issue" : false,
+      "context" : {
+        "audio_sha256" : "f8a977f21028036d9b88496bb87da3dcfcc0ad731732b41f29d782da4fd992ca",
+        "end_seconds" : 177.44,
+        "reference_end_word" : 369,
+        "reference_sha256" : "68240648e0c0fd312608cb1f13adf81f952dc3c0fbeebba9daaa48990150dc6f",
+        "reference_start_word" : 360,
+        "start_seconds" : 172.96000000000001
+      },
+      "notes" : "",
+      "retakes" : [
+
+      ],
+      "status" : "matches",
+      "updated_at" : "2026-10-30T10:33:59Z",
+      "words" : ""
+    },
+    "durins-volk-P01" : {
+      "accepted_take_id" : null,
+      "audio_issue" : false,
+      "context" : {
+        "audio_sha256" : "423df075a1d2efcdc74966cd24e5b09f02cc9012855715a1cb2fd12b0aae6e9b",
+        "end_seconds" : 16.68,
+        "reference_end_word" : 35,
+        "reference_sha256" : "841d8ff3922985a94f1b92bd37684c75e7880d8972b72dc4977732ae6a0c4a3f",
+        "reference_start_word" : 0,
+        "start_seconds" : 0
+      },
+      "notes" : "",
+      "retakes" : [
+
+      ],
+      "status" : "matches",
+      "updated_at" : "2026-10-30T10:34:27Z",
+      "words" : ""
+    },
     "tng-nl01-D01" : {
       "context" : {
         "audio_sha256" : "aee104e58c261dc5bd91c6da002eac3ee0909b25b23c61de578e30eb72814cf9",
