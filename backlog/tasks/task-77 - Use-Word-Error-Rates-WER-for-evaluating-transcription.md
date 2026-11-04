@@ -1,10 +1,10 @@
 ---
 id: TASK-77
 title: Use Word Error Rates (WER) for evaluating transcription
-status: Next
+status: Complete
 assignee: []
 created_date: 2026-10-27 18:29
-updated_date: '2026-10-30T09:42:00Z'
+updated_date: '2026-11-04T18:15:00Z'
 labels: []
 dependencies: []
 ordinal: 68000
@@ -15,7 +15,7 @@ ordinal: 68000
 <!-- SECTION:DESCRIPTION:BEGIN -->
 This replaces the current setup for evaluating transcription.
 
-- Build an eval for transcription and an eval pipeline around the Dutch TNG recording first. Check if I made mistakes while reading the generated text.
+- Build an eval for transcription around the Dutch TNG recording first. For now, do only audio. Check if I made mistakes while reading the generated text.
 - Do transcription yourself or use a different model you have access to.
 - Make a list of specific passages for me to check and verify.
 - Make it easier for me to review: side-by-side text + audio fragments in an app.

@@ -90,3 +90,5 @@ The browser converts captured audio locally to mono 16 kHz PCM WAV, with a ten
 minute limit per take. Native AVFoundation exports the combined M4A. Optional
 capture lifecycle tests run with `node --test scripts/tests/review-capture.mjs`;
 `make tests-evals` covers storage and native consolidation with repository fixtures.
+
+The fresh owner-reviewed Dutch baseline is preserved in `transcribe/history/baselines/2026-10-30-whisper-large-v2/`: WER 3.66% (44 edits / 1,203 words). Its report retains the remaining recognition errors and ungrounded Korean ending.
