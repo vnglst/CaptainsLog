@@ -1,4 +1,4 @@
-# Transcription archive
+# Transcription history
 
 `cases.json` explicitly labels recordings that have not been reviewed and the superseded original Dutch recording.
 

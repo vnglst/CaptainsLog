@@ -14,7 +14,7 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
-- Organize evaluation results under each stage’s history folder and retain transcription review rounds and not-reviewed recordings outside active selection.
+- Organize evaluation results under each stage’s history folder and retain transcription review rounds and not-reviewed recordings outside active selection. Distinguish the reviewed audio-only baseline from deferred end-to-end evaluation.
 
 ### Added
 

@@ -3,7 +3,8 @@
 Active stages are `transcribe`, `cleanup`, `categorize`, `filename` and `enrich`.
 Transcription inputs live in `transcribe/audio/`; text-stage inputs live in each
 stage's `input/`. Expected outputs are semantic references, not the only valid
-wording. The reviewed Dutch TNG recording exercises the full pipeline.
+wording. The reviewed Dutch TNG recording is the single active transcription fixture.
+End-to-end evaluation remains separate follow-up work (TASK-82).
 
 Use the runner from the repository root:
 
@@ -54,7 +55,8 @@ make evals-review RUN_DIR=eval/transcribe/history/review-2
 The [TNG scripts](tng-reference/README.md) preserve the original script separately
 from the verbatim reference. English and German recordings are still to be supplied.
 The development demo copies the reviewed Dutch audio into its isolated runtime.
-Full-pipeline expected outputs are selected in `pipeline/cases.json`.
+The existing pipeline configuration is retained in `pipeline/cases.json`; its
+downstream references have not been verified as part of the audio-only baseline.
 
 ## Listening review
 
