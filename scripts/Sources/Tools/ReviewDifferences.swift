@@ -26,14 +26,14 @@ extension Tools {
         try require(!segments.isEmpty, "Comparison requires timestamped transcription segments")
         let segmentTexts = segments.map { $0["text"] as? String ?? "" }
         try require(TranscriptionScore.words(segmentTexts.joined(separator: " ")) == TranscriptionScore.words(comparison), "Comparison timing text does not match its transcript")
-        var bounds: [(start: Double, end: Double, a: Int, b: Int)] = [], offset = 0
+        var bounds: [(start: Double, end: Double, a: Int, b: Int, words: [String])] = [], offset = 0
         for (segment, text) in zip(segments, segmentTexts) {
             guard let offsets = segment["offsets"] as? EvalItem,
                   let from = offsets["from"] as? NSNumber, let to = offsets["to"] as? NSNumber else { throw ToolFailure("Missing comparison timestamps") }
             let start = from.doubleValue / 1000, end = to.doubleValue / 1000
             try require(start >= 0 && end >= start && start <= duration + 0.5 && (bounds.last?.start ?? 0) <= start, "Invalid comparison timestamps")
             let count = TranscriptionScore.words(text).count
-            if count > 0 { bounds.append((start, min(end, duration), offset, offset + count)) }
+            if count > 0 { bounds.append((start, min(end, duration), offset, offset + count, TranscriptionScore.words(text))) }
             offset += count
         }
         try require(!bounds.isEmpty, "Comparison timing has no spoken words")
@@ -49,7 +49,18 @@ extension Tools {
         }
         // Keep each timestamped segment separate; adjacent errors must not grow
         // into minute-long review clips simply because each segment has an edit.
-        let groups = selected.sorted().map { (first: $0, last: $0) }
+        var groups: [(first: Int, last: Int)] = []
+        for index in selected.sorted() {
+            var first = index, last = index
+            // Repeated output can align its first copy to an insertion and its
+            // second copy to the reference. Review both copies together so the
+            // reference sentence is not split from the audio that contains it.
+            while first > 0 && bounds[first - 1].words == bounds[index].words { first -= 1 }
+            while last + 1 < bounds.count && bounds[last + 1].words == bounds[index].words { last += 1 }
+            if let previous = groups.last, first <= previous.last {
+                groups[groups.count - 1] = (previous.first, max(previous.last, last))
+            } else { groups.append((first, last)) }
+        }
         var passages: [EvalItem] = []
         for group in groups {
             let first = bounds[group.first], last = bounds[group.last]

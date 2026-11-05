@@ -1343,56 +1343,30 @@
           "title" : "De naam Durin: spelling of the name"
         },
         {
-          "app_transcript" : "De",
+          "app_transcript" : "De dwergen beschouwden hem werkelijk als de onsterflijke die terugkeerde, want zij hebben vele vreemde verhalen en opvattingen over zichzelf en hun lot in de wereld",
           "audio" : "assets/audio/2.m4a",
           "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
-          "clip_end" : 87.549999999999997,
-          "clip_start" : 76.030000000000001,
+          "clip_end" : 90.8,
+          "clip_start" : 76.03,
           "context" : {
             "audio_sha256" : "423df075a1d2efcdc74966cd24e5b09f02cc9012855715a1cb2fd12b0aae6e9b",
-            "end_seconds" : 87.549999999999997,
-            "reference_end_word" : 175,
-            "reference_sha256" : "841d8ff3922985a94f1b92bd37684c75e7880d8972b72dc4977732ae6a0c4a3f",
-            "reference_start_word" : 174,
-            "start_seconds" : 76.030000000000001
-          },
-          "end_seconds" : 87.549999999999997,
-          "id" : "durins-volk-E09",
-          "model_errors" : [
-            0,
-            26
-          ],
-          "reference" : "De",
-          "second_transcript" : "de dwergen beschouwden hem werkelijk als de onsterfelijke die terugkeerde want zij hebben vele vreemde verhalen en opvattingen over zichzelf en hun lot in de wereld\nde",
-          "short_id" : "E09",
-          "start_seconds" : 76.030000000000001,
-          "title" : "Overtuigingen van de Dwergen: possible repeated passage"
-        },
-        {
-          "app_transcript" : "dwergen beschouwden hem werkelijk als de onsterflijke die terugkeerde, want zij hebben vele vreemde verhalen en opvattingen over zichzelf en hun lot in de wereld",
-          "audio" : "assets/audio/2.m4a",
-          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
-          "clip_end" : 90.799999999999997,
-          "clip_start" : 86.049999999999997,
-          "context" : {
-            "audio_sha256" : "423df075a1d2efcdc74966cd24e5b09f02cc9012855715a1cb2fd12b0aae6e9b",
-            "end_seconds" : 90.799999999999997,
+            "end_seconds" : 90.8,
             "reference_end_word" : 200,
             "reference_sha256" : "841d8ff3922985a94f1b92bd37684c75e7880d8972b72dc4977732ae6a0c4a3f",
-            "reference_start_word" : 175,
-            "start_seconds" : 86.049999999999997
+            "reference_start_word" : 174,
+            "start_seconds" : 76.03
           },
-          "end_seconds" : 90.799999999999997,
-          "id" : "durins-volk-E10",
+          "end_seconds" : 90.8,
+          "id" : "durins-volk-E09",
           "model_errors" : [
             1,
-            0
+            26
           ],
-          "reference" : "Dwergen beschouwden hem werkelijk als de Onsterfelijke die terugkeerde; want zij hebben vele vreemde verhalen en opvattingen over zichzelf en hun lot in de wereld",
-          "second_transcript" : "dwergen beschouwden hem werkelijk als de onsterfelijke die terugkeerde want zij hebben vele vreemde verhalen en opvattingen over zichzelf en hun lot in de wereld",
-          "short_id" : "E10",
-          "start_seconds" : 86.049999999999997,
-          "title" : "De Onsterfelijke keert terug: wording or spelling"
+          "reference" : "De Dwergen beschouwden hem werkelijk als de Onsterfelijke die terugkeerde; want zij hebben vele vreemde verhalen en opvattingen over zichzelf en hun lot in de wereld",
+          "second_transcript" : "de dwergen beschouwden hem werkelijk als de onsterfelijke die terugkeerde want zij hebben vele vreemde verhalen en opvattingen over zichzelf en hun lot in de wereld\nde dwergen beschouwden hem werkelijk als de onsterfelijke die terugkeerde want zij hebben vele vreemde verhalen en opvattingen over zichzelf en hun lot in de wereld",
+          "short_id" : "E09",
+          "start_seconds" : 76.03,
+          "title" : "Overtuigingen van de Dwergen: possible repeated passage"
         }
       ],
       "reference" : "Over het begin van de Dwergen doen vreemde verhalen de ronde, zowel onder de Eldar als bij de Dwergen zelf; maar aangezien deze dingen ver voor onze tijd liggen, wordt er hier weinig over medegedeeld. Durin is de naam die de Dwergen gebruikten voor de oudste van de Zeven Vaders van hun ras en de voorvader van alle Koningen van de Langbaarden. Hij sliep alleen, tot hij in de diepten van de tijd en bij het ontwaken van dat volk naar Azanulbizar ging, en in de grotten boven het Kheled-zâram in het oosten van de Nevelbergen vestigde hij zijn woonplaats, waar naderhand de Mijnen van Moria waren, beroemd uit liederen. Daar woonde hij zo lang dat hij wijd en zijd bekend stond als Durin de Onsterfelijke. Maar tenslotte stierf hij toch voordat de Oudste Tijden voorbij waren, en zijn graftombe stond in Khazad-dûm; maar zijn lijn stierf nooit uit en vijf keer werd er een erfgenaam van zijn Huis geboren die zozeer op zijn voorvader leek dat hij de naam Durin kreeg. De Dwergen beschouwden hem werkelijk als de Onsterfelijke die terugkeerde; want zij hebben vele vreemde verhalen en opvattingen over zichzelf en hun lot in de wereld.",

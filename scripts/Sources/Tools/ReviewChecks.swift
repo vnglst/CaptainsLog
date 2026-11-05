@@ -18,6 +18,18 @@ extension Tools {
             ["text": "three four five six", "offsets": ["from": 2100, "to": 6000]]]]
         let repeated = try differencePassages(reference: clean, transcript: clean, comparison: "one two extra other three four five six", timing: repeatedTiming, identifier: "repeat", duration: 6)
         try require(repeated.count == 1 && (repeated[0]["title"] as? String)?.contains(": possible added or repeated words") == true, "Collapsed reference words created duplicate or one-word review titles")
+        let duplicatedTiming: EvalItem = ["transcription": [
+            ["text": "one two", "offsets": ["from": 0, "to": 2000]],
+            ["text": "three four five six", "offsets": ["from": 2000, "to": 5000]],
+            ["text": "three four five six", "offsets": ["from": 5000, "to": 6000]]]]
+        let duplicated = try differencePassages(reference: clean, transcript: clean,
+            comparison: "one two three four five six three four five six", timing: duplicatedTiming,
+            identifier: "duplicate", duration: 6)
+        try require(duplicated.count == 1 && duplicated[0]["reference_start_word"] as? Int == 2
+            && duplicated[0]["reference_end_word"] as? Int == 6
+            && duplicated[0]["end_seconds"] as? Double == 6
+            && duplicated[0]["model_errors"] as? [Int] == [0, 4],
+            "Repeated sentence split its reference from the corresponding audio")
         let tail = try differencePassages(reference: clean, transcript: clean + " invented tail", comparison: clean, timing: timing, identifier: "test", duration: 6)
         try require(tail.count == 1 && tail[0]["reference_start_word"] as? Int == 4, "Final insertion was omitted")
         let secondTiming: EvalItem = ["transcription": [["text": "one two three changed five six", "offsets": ["from": 0, "to": 6000]]]]

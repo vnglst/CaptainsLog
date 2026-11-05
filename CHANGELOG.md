@@ -14,6 +14,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Fixed
 
+- Keep duplicated transcription sentences together in listening review so the full reference stays aligned with the audio.
+
 - Generate transcription review clips from complete reference alignments of both Whisper models, pin comparison audio/output/timing evidence, use topic-and-issue passage titles, and keep pending review focused on the selected recordings while retaining completed history as passive overview cards. Matching text is excluded without a filter option. Preserve earlier review decisions and keep matching passages out of the differences queue.
 
 ### Changed

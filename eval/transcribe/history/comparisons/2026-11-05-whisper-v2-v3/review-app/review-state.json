@@ -1,0 +1,517 @@
+{
+  "archived_reviews": {
+    "durins-volk-E09@before-ending-alignment-fix": {
+      "accepted_take_id": null,
+      "audio_issue": false,
+      "context": {
+        "audio_sha256": "423df075a1d2efcdc74966cd24e5b09f02cc9012855715a1cb2fd12b0aae6e9b",
+        "end_seconds": 87.55,
+        "reference_end_word": 175,
+        "reference_sha256": "841d8ff3922985a94f1b92bd37684c75e7880d8972b72dc4977732ae6a0c4a3f",
+        "reference_start_word": 174,
+        "start_seconds": 76.03
+      },
+      "notes": "There audio contains a lot more information the in reference and Whisper Large-v2.",
+      "retakes": [],
+      "status": "corrected",
+      "updated_at": "2026-11-05T19:25:04Z",
+      "words": "see notes"
+    },
+    "durins-volk-E10@before-ending-alignment-fix": {
+      "accepted_take_id": null,
+      "audio_issue": false,
+      "context": {
+        "audio_sha256": "423df075a1d2efcdc74966cd24e5b09f02cc9012855715a1cb2fd12b0aae6e9b",
+        "end_seconds": 90.8,
+        "reference_end_word": 200,
+        "reference_sha256": "841d8ff3922985a94f1b92bd37684c75e7880d8972b72dc4977732ae6a0c4a3f",
+        "reference_start_word": 175,
+        "start_seconds": 86.05
+      },
+      "notes": "different audio than expected text for all",
+      "retakes": [],
+      "status": "corrected",
+      "updated_at": "2026-11-05T19:25:13Z",
+      "words": "see notes"
+    }
+  },
+  "reviews": {
+    "alle-mensen-E01": {
+      "accepted_take_id": null,
+      "audio_issue": false,
+      "context": {
+        "audio_sha256": "f8a977f21028036d9b88496bb87da3dcfcc0ad731732b41f29d782da4fd992ca",
+        "end_seconds": 18.89,
+        "reference_end_word": 40,
+        "reference_sha256": "68240648e0c0fd312608cb1f13adf81f952dc3c0fbeebba9daaa48990150dc6f",
+        "reference_start_word": 0,
+        "start_seconds": 0
+      },
+      "notes": "",
+      "retakes": [],
+      "status": "matches",
+      "updated_at": "2026-11-05T19:17:16Z",
+      "words": ""
+    },
+    "alle-mensen-E02": {
+      "accepted_take_id": null,
+      "audio_issue": false,
+      "context": {
+        "audio_sha256": "f8a977f21028036d9b88496bb87da3dcfcc0ad731732b41f29d782da4fd992ca",
+        "end_seconds": 39.75,
+        "reference_end_word": 92,
+        "reference_sha256": "68240648e0c0fd312608cb1f13adf81f952dc3c0fbeebba9daaa48990150dc6f",
+        "reference_start_word": 40,
+        "start_seconds": 17.83
+      },
+      "notes": "",
+      "retakes": [],
+      "status": "matches",
+      "updated_at": "2026-11-05T19:17:41Z",
+      "words": ""
+    },
+    "alle-mensen-E03": {
+      "accepted_take_id": null,
+      "audio_issue": false,
+      "context": {
+        "audio_sha256": "f8a977f21028036d9b88496bb87da3dcfcc0ad731732b41f29d782da4fd992ca",
+        "end_seconds": 48.39,
+        "reference_end_word": 107,
+        "reference_sha256": "68240648e0c0fd312608cb1f13adf81f952dc3c0fbeebba9daaa48990150dc6f",
+        "reference_start_word": 92,
+        "start_seconds": 40.83
+      },
+      "notes": "",
+      "retakes": [],
+      "status": "matches",
+      "updated_at": "2026-11-05T19:17:53Z",
+      "words": ""
+    },
+    "alle-mensen-E04": {
+      "accepted_take_id": null,
+      "audio_issue": false,
+      "context": {
+        "audio_sha256": "f8a977f21028036d9b88496bb87da3dcfcc0ad731732b41f29d782da4fd992ca",
+        "end_seconds": 75.43,
+        "reference_end_word": 169,
+        "reference_sha256": "68240648e0c0fd312608cb1f13adf81f952dc3c0fbeebba9daaa48990150dc6f",
+        "reference_start_word": 107,
+        "start_seconds": 47.83
+      },
+      "notes": "",
+      "retakes": [],
+      "status": "matches",
+      "updated_at": "2026-11-05T19:18:07Z",
+      "words": ""
+    },
+    "alle-mensen-E05": {
+      "accepted_take_id": null,
+      "audio_issue": false,
+      "context": {
+        "audio_sha256": "f8a977f21028036d9b88496bb87da3dcfcc0ad731732b41f29d782da4fd992ca",
+        "end_seconds": 104.63,
+        "reference_end_word": 232,
+        "reference_sha256": "68240648e0c0fd312608cb1f13adf81f952dc3c0fbeebba9daaa48990150dc6f",
+        "reference_start_word": 175,
+        "start_seconds": 77.83
+      },
+      "notes": "",
+      "retakes": [],
+      "status": "matches",
+      "updated_at": "2026-11-05T19:18:37Z",
+      "words": ""
+    },
+    "alle-mensen-E06": {
+      "accepted_take_id": null,
+      "audio_issue": false,
+      "context": {
+        "audio_sha256": "f8a977f21028036d9b88496bb87da3dcfcc0ad731732b41f29d782da4fd992ca",
+        "end_seconds": 109.31,
+        "reference_end_word": 242,
+        "reference_sha256": "68240648e0c0fd312608cb1f13adf81f952dc3c0fbeebba9daaa48990150dc6f",
+        "reference_start_word": 232,
+        "start_seconds": 103.93
+      },
+      "notes": "",
+      "retakes": [],
+      "status": "matches",
+      "updated_at": "2026-11-05T19:18:47Z",
+      "words": ""
+    },
+    "alle-mensen-E07": {
+      "accepted_take_id": null,
+      "audio_issue": false,
+      "context": {
+        "audio_sha256": "f8a977f21028036d9b88496bb87da3dcfcc0ad731732b41f29d782da4fd992ca",
+        "end_seconds": 113.55,
+        "reference_end_word": 251,
+        "reference_sha256": "68240648e0c0fd312608cb1f13adf81f952dc3c0fbeebba9daaa48990150dc6f",
+        "reference_start_word": 242,
+        "start_seconds": 107.83
+      },
+      "notes": "",
+      "retakes": [],
+      "status": "matches",
+      "updated_at": "2026-11-05T19:18:59Z",
+      "words": ""
+    },
+    "alle-mensen-E08": {
+      "accepted_take_id": null,
+      "audio_issue": false,
+      "context": {
+        "audio_sha256": "f8a977f21028036d9b88496bb87da3dcfcc0ad731732b41f29d782da4fd992ca",
+        "end_seconds": 123.33,
+        "reference_end_word": 271,
+        "reference_sha256": "68240648e0c0fd312608cb1f13adf81f952dc3c0fbeebba9daaa48990150dc6f",
+        "reference_start_word": 251,
+        "start_seconds": 113.23
+      },
+      "notes": "",
+      "retakes": [],
+      "status": "matches",
+      "updated_at": "2026-11-05T19:19:11Z",
+      "words": ""
+    },
+    "alle-mensen-E09": {
+      "accepted_take_id": null,
+      "audio_issue": false,
+      "context": {
+        "audio_sha256": "f8a977f21028036d9b88496bb87da3dcfcc0ad731732b41f29d782da4fd992ca",
+        "end_seconds": 132.59,
+        "reference_end_word": 284,
+        "reference_sha256": "68240648e0c0fd312608cb1f13adf81f952dc3c0fbeebba9daaa48990150dc6f",
+        "reference_start_word": 271,
+        "start_seconds": 125.43
+      },
+      "notes": "",
+      "retakes": [],
+      "status": "matches",
+      "updated_at": "2026-11-05T19:19:24Z",
+      "words": ""
+    },
+    "alle-mensen-E10": {
+      "accepted_take_id": null,
+      "audio_issue": false,
+      "context": {
+        "audio_sha256": "f8a977f21028036d9b88496bb87da3dcfcc0ad731732b41f29d782da4fd992ca",
+        "end_seconds": 139.31,
+        "reference_end_word": 295,
+        "reference_sha256": "68240648e0c0fd312608cb1f13adf81f952dc3c0fbeebba9daaa48990150dc6f",
+        "reference_start_word": 284,
+        "start_seconds": 131.87
+      },
+      "notes": "",
+      "retakes": [],
+      "status": "matches",
+      "updated_at": "2026-11-05T19:19:35Z",
+      "words": ""
+    },
+    "alle-mensen-E11": {
+      "accepted_take_id": null,
+      "audio_issue": false,
+      "context": {
+        "audio_sha256": "f8a977f21028036d9b88496bb87da3dcfcc0ad731732b41f29d782da4fd992ca",
+        "end_seconds": 144.21,
+        "reference_end_word": 303,
+        "reference_sha256": "68240648e0c0fd312608cb1f13adf81f952dc3c0fbeebba9daaa48990150dc6f",
+        "reference_start_word": 295,
+        "start_seconds": 137.83
+      },
+      "notes": "",
+      "retakes": [],
+      "status": "matches",
+      "updated_at": "2026-11-05T19:19:39Z",
+      "words": ""
+    },
+    "alle-mensen-E12": {
+      "accepted_take_id": null,
+      "audio_issue": false,
+      "context": {
+        "audio_sha256": "f8a977f21028036d9b88496bb87da3dcfcc0ad731732b41f29d782da4fd992ca",
+        "end_seconds": 154.55,
+        "reference_end_word": 317,
+        "reference_sha256": "68240648e0c0fd312608cb1f13adf81f952dc3c0fbeebba9daaa48990150dc6f",
+        "reference_start_word": 310,
+        "start_seconds": 150.81
+      },
+      "notes": "",
+      "retakes": [],
+      "status": "matches",
+      "updated_at": "2026-11-05T19:19:42Z",
+      "words": ""
+    },
+    "alle-mensen-E13": {
+      "accepted_take_id": null,
+      "audio_issue": false,
+      "context": {
+        "audio_sha256": "f8a977f21028036d9b88496bb87da3dcfcc0ad731732b41f29d782da4fd992ca",
+        "end_seconds": 161.75,
+        "reference_end_word": 334,
+        "reference_sha256": "68240648e0c0fd312608cb1f13adf81f952dc3c0fbeebba9daaa48990150dc6f",
+        "reference_start_word": 317,
+        "start_seconds": 154.19
+      },
+      "notes": "",
+      "retakes": [],
+      "status": "matches",
+      "updated_at": "2026-11-05T19:19:56Z",
+      "words": ""
+    },
+    "alle-mensen-E14": {
+      "accepted_take_id": null,
+      "audio_issue": false,
+      "context": {
+        "audio_sha256": "f8a977f21028036d9b88496bb87da3dcfcc0ad731732b41f29d782da4fd992ca",
+        "end_seconds": 168.75,
+        "reference_end_word": 349,
+        "reference_sha256": "68240648e0c0fd312608cb1f13adf81f952dc3c0fbeebba9daaa48990150dc6f",
+        "reference_start_word": 334,
+        "start_seconds": 162.67
+      },
+      "notes": "",
+      "retakes": [],
+      "status": "matches",
+      "updated_at": "2026-11-05T19:20:12Z",
+      "words": ""
+    },
+    "alle-mensen-E15": {
+      "accepted_take_id": null,
+      "audio_issue": false,
+      "context": {
+        "audio_sha256": "f8a977f21028036d9b88496bb87da3dcfcc0ad731732b41f29d782da4fd992ca",
+        "end_seconds": 177.39,
+        "reference_end_word": 369,
+        "reference_sha256": "68240648e0c0fd312608cb1f13adf81f952dc3c0fbeebba9daaa48990150dc6f",
+        "reference_start_word": 360,
+        "start_seconds": 172.91
+      },
+      "notes": "",
+      "retakes": [],
+      "status": "matches",
+      "updated_at": "2026-11-05T19:20:21Z",
+      "words": ""
+    },
+    "durins-volk-E01": {
+      "accepted_take_id": null,
+      "audio_issue": false,
+      "context": {
+        "audio_sha256": "423df075a1d2efcdc74966cd24e5b09f02cc9012855715a1cb2fd12b0aae6e9b",
+        "end_seconds": 27.47,
+        "reference_end_word": 62,
+        "reference_sha256": "841d8ff3922985a94f1b92bd37684c75e7880d8972b72dc4977732ae6a0c4a3f",
+        "reference_start_word": 35,
+        "start_seconds": 15.13
+      },
+      "notes": "",
+      "retakes": [],
+      "status": "matches",
+      "updated_at": "2026-11-05T19:20:59Z",
+      "words": ""
+    },
+    "durins-volk-E02": {
+      "accepted_take_id": null,
+      "audio_issue": false,
+      "context": {
+        "audio_sha256": "423df075a1d2efcdc74966cd24e5b09f02cc9012855715a1cb2fd12b0aae6e9b",
+        "end_seconds": 45.23,
+        "reference_end_word": 101,
+        "reference_sha256": "841d8ff3922985a94f1b92bd37684c75e7880d8972b72dc4977732ae6a0c4a3f",
+        "reference_start_word": 62,
+        "start_seconds": 25.97
+      },
+      "notes": "",
+      "retakes": [],
+      "status": "matches",
+      "updated_at": "2026-11-05T19:21:20Z",
+      "words": ""
+    },
+    "durins-volk-E03": {
+      "accepted_take_id": null,
+      "audio_issue": false,
+      "context": {
+        "audio_sha256": "423df075a1d2efcdc74966cd24e5b09f02cc9012855715a1cb2fd12b0aae6e9b",
+        "end_seconds": 46.27,
+        "reference_end_word": 103,
+        "reference_sha256": "841d8ff3922985a94f1b92bd37684c75e7880d8972b72dc4977732ae6a0c4a3f",
+        "reference_start_word": 101,
+        "start_seconds": 43.73
+      },
+      "notes": "",
+      "retakes": [],
+      "status": "matches",
+      "updated_at": "2026-11-05T19:21:28Z",
+      "words": ""
+    },
+    "durins-volk-E04": {
+      "accepted_take_id": null,
+      "audio_issue": false,
+      "context": {
+        "audio_sha256": "423df075a1d2efcdc74966cd24e5b09f02cc9012855715a1cb2fd12b0aae6e9b",
+        "end_seconds": 49.27,
+        "reference_end_word": 111,
+        "reference_sha256": "841d8ff3922985a94f1b92bd37684c75e7880d8972b72dc4977732ae6a0c4a3f",
+        "reference_start_word": 108,
+        "start_seconds": 46.39
+      },
+      "notes": "",
+      "retakes": [],
+      "status": "matches",
+      "updated_at": "2026-11-05T19:21:34Z",
+      "words": ""
+    },
+    "durins-volk-E05": {
+      "accepted_take_id": null,
+      "audio_issue": false,
+      "context": {
+        "audio_sha256": "423df075a1d2efcdc74966cd24e5b09f02cc9012855715a1cb2fd12b0aae6e9b",
+        "end_seconds": 53.99,
+        "reference_end_word": 123,
+        "reference_sha256": "841d8ff3922985a94f1b92bd37684c75e7880d8972b72dc4977732ae6a0c4a3f",
+        "reference_start_word": 116,
+        "start_seconds": 50.15
+      },
+      "notes": "",
+      "retakes": [],
+      "status": "matches",
+      "updated_at": "2026-11-05T19:21:47Z",
+      "words": ""
+    },
+    "durins-volk-E06": {
+      "accepted_take_id": null,
+      "audio_issue": false,
+      "context": {
+        "audio_sha256": "423df075a1d2efcdc74966cd24e5b09f02cc9012855715a1cb2fd12b0aae6e9b",
+        "end_seconds": 55.97,
+        "reference_end_word": 127,
+        "reference_sha256": "841d8ff3922985a94f1b92bd37684c75e7880d8972b72dc4977732ae6a0c4a3f",
+        "reference_start_word": 123,
+        "start_seconds": 52.49
+      },
+      "notes": "",
+      "retakes": [],
+      "status": "matches",
+      "updated_at": "2026-11-05T19:21:57Z",
+      "words": ""
+    },
+    "durins-volk-E07": {
+      "accepted_take_id": null,
+      "audio_issue": false,
+      "context": {
+        "audio_sha256": "423df075a1d2efcdc74966cd24e5b09f02cc9012855715a1cb2fd12b0aae6e9b",
+        "end_seconds": 65.93,
+        "reference_end_word": 145,
+        "reference_sha256": "841d8ff3922985a94f1b92bd37684c75e7880d8972b72dc4977732ae6a0c4a3f",
+        "reference_start_word": 141,
+        "start_seconds": 61.47
+      },
+      "notes": "",
+      "retakes": [],
+      "status": "matches",
+      "updated_at": "2026-11-05T19:22:13Z",
+      "words": ""
+    },
+    "durins-volk-E08": {
+      "accepted_take_id": null,
+      "audio_issue": false,
+      "context": {
+        "audio_sha256": "423df075a1d2efcdc74966cd24e5b09f02cc9012855715a1cb2fd12b0aae6e9b",
+        "end_seconds": 77.53,
+        "reference_end_word": 174,
+        "reference_sha256": "841d8ff3922985a94f1b92bd37684c75e7880d8972b72dc4977732ae6a0c4a3f",
+        "reference_start_word": 170,
+        "start_seconds": 74.41
+      },
+      "notes": "",
+      "retakes": [],
+      "status": "matches",
+      "updated_at": "2026-11-05T19:22:16Z",
+      "words": ""
+    },
+    "side-project-E01": {
+      "accepted_take_id": null,
+      "audio_issue": false,
+      "context": {
+        "audio_sha256": "018807fe80637d269afa19e839f15b0b78925a3a65391fdb09fb666da183af85",
+        "end_seconds": 18.21,
+        "reference_end_word": 18,
+        "reference_sha256": "ee97b8485fedf9f38508952527cecb41e8a22b33717faa4936ed16b81cfe7e44",
+        "reference_start_word": 0,
+        "start_seconds": 0
+      },
+      "notes": "",
+      "retakes": [],
+      "status": "corrected",
+      "updated_at": "2026-11-05T19:35:42Z",
+      "words": "Het is vandaag 14 januari, half acht. Dit is mijn eerste opname in een serie en deze opname gaat"
+    },
+    "side-project-E02": {
+      "accepted_take_id": null,
+      "audio_issue": false,
+      "context": {
+        "audio_sha256": "018807fe80637d269afa19e839f15b0b78925a3a65391fdb09fb666da183af85",
+        "end_seconds": 45.11,
+        "reference_end_word": 64,
+        "reference_sha256": "ee97b8485fedf9f38508952527cecb41e8a22b33717faa4936ed16b81cfe7e44",
+        "reference_start_word": 47,
+        "start_seconds": 33.77
+      },
+      "notes": "",
+      "retakes": [],
+      "status": "corrected",
+      "updated_at": "2026-11-05T19:36:07Z",
+      "words": "side projects. Ik heb altijd van dit soort projectjes die ik maak op basis, meestal iets"
+    },
+    "side-project-E03": {
+      "accepted_take_id": null,
+      "audio_issue": false,
+      "context": {
+        "audio_sha256": "018807fe80637d269afa19e839f15b0b78925a3a65391fdb09fb666da183af85",
+        "end_seconds": 52.73,
+        "reference_end_word": 83,
+        "reference_sha256": "ee97b8485fedf9f38508952527cecb41e8a22b33717faa4936ed16b81cfe7e44",
+        "reference_start_word": 64,
+        "start_seconds": 43.61
+      },
+      "notes": "",
+      "retakes": [],
+      "status": "matches",
+      "updated_at": "2026-11-05T19:36:32Z",
+      "words": ""
+    },
+    "side-project-E04": {
+      "accepted_take_id": null,
+      "audio_issue": false,
+      "context": {
+        "audio_sha256": "018807fe80637d269afa19e839f15b0b78925a3a65391fdb09fb666da183af85",
+        "end_seconds": 56.97,
+        "reference_end_word": 108,
+        "reference_sha256": "ee97b8485fedf9f38508952527cecb41e8a22b33717faa4936ed16b81cfe7e44",
+        "reference_start_word": 83,
+        "start_seconds": 51.23
+      },
+      "notes": "audio is much shorter than text, doesn't contain disputed word",
+      "retakes": [],
+      "status": "corrected",
+      "updated_at": "2026-11-05T19:37:43Z",
+      "words": "see notes"
+    },
+    "durins-volk-E09": {
+      "accepted_take_id": null,
+      "audio_issue": false,
+      "context": {
+        "audio_sha256": "423df075a1d2efcdc74966cd24e5b09f02cc9012855715a1cb2fd12b0aae6e9b",
+        "end_seconds": 90.8,
+        "reference_end_word": 200,
+        "reference_sha256": "841d8ff3922985a94f1b92bd37684c75e7880d8972b72dc4977732ae6a0c4a3f",
+        "reference_start_word": 174,
+        "start_seconds": 76.03
+      },
+      "notes": "E09: There audio contains a lot more information the in reference and Whisper Large-v2.\nE10: different audio than expected text for all",
+      "retakes": [],
+      "status": "uncertain",
+      "updated_at": "2026-11-05T19:25:04Z",
+      "words": ""
+    }
+  },
+  "version": 1
+}
