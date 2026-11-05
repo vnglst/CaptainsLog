@@ -14,7 +14,7 @@ BASE ?=
 HEAD ?= HEAD
 RUN_DIR ?=
 COMPARISON_RUN ?=
-PORT ?= 8777
+PORT ?=
 SHA256 ?=
 
 # Directory timestamps also invalidate the app when source files are added or removed.
@@ -28,7 +28,7 @@ help:
 	  'make build                    Build app, CLI and test executables' \
 	  'make tests                    Run deterministic tests in isolated storage' \
 	  'make evals                    Run all fixture evaluations sequentially' \
-	  'make evals-review RUN_DIR=...  Serve the saved audio/transcript listening review' \
+	  'make evals-review              Resume the latest transcript review in your browser' \
 	  'make packaging                Build the release app, CLI and ZIP' \
 	  'make release                  Prepare a release on clean main' \
 	  '' \
@@ -103,7 +103,7 @@ evals:
 	$(SWIFT) scripts/run-evals.swift $(if $(STAGE),--stage "$(STAGE)",$(if $(MODE),--$(MODE))) $(if $(CASE),--case "$(CASE)") $(ARGS)
 
 evals-review:
-	$(SWIFT) scripts/evals-review.swift $(if $(RUN_DIR),--run "$(RUN_DIR)") $(if $(COMPARISON_RUN),--comparison-run "$(COMPARISON_RUN)") --port "$(PORT)" $(ARGS)
+	$(SWIFT) scripts/evals-review.swift $(if $(RUN_DIR),--run "$(RUN_DIR)") $(if $(COMPARISON_RUN),--comparison-run "$(COMPARISON_RUN)") $(if $(PORT),--port "$(PORT)") $(ARGS)
 
 evals-list:
 	$(SWIFT) scripts/run-evals.swift --list $(if $(STAGE),--stage "$(STAGE)",$(if $(MODE),--$(MODE))) $(if $(CASE),--case "$(CASE)") $(ARGS)

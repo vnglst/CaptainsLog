@@ -58,6 +58,21 @@ extension Tools {
         var savedBytes = try Data(contentsOf: stateFile)
         let loaded = try JSONSerialization.jsonObject(with: request("GET", "/api/state").body) as! EvalItem
         try require((loaded["reviews"] as? [String: EvalItem])?.count == 1, "Saved review did not reload")
+        let sessionFile = run.appendingPathComponent("last-session.json")
+        let resumeServer = try EvalReviewServer(root: app, port: 0, sessionFile: sessionFile)
+        defer { resumeServer.stop() }
+        let resumeHost = "127.0.0.1:\(resumeServer.port)"
+        let resumeHeaders = ["host": resumeHost, "origin": "http://" + resumeHost]
+        let location: EvalItem = ["recording": first["id"]!, "passage": passages[0]["id"]!]
+        let locationBytes = try JSONSerialization.data(withJSONObject: location)
+        try require(resumeServer.response(method: "POST", path: "/api/location", headers: resumeHeaders, body: locationBytes).status == 200, "Current review location was not saved")
+        let resumed = try resumeServer.response(method: "GET", path: "/api/location", headers: ["host": resumeHost])
+        let resumedLocation = (try JSONSerialization.jsonObject(with: resumed.body) as! EvalItem)["location"] as! EvalItem
+        try require(resumedLocation["passage"] as? String == passages[0]["id"] as? String, "Review passage was not restored")
+        try require(resumeServer.response(method: "POST", path: "/api/location", headers: ["host": resumeHost, "origin": "http://other.example"], body: locationBytes).status == 403, "Remote page changed review session")
+        let invalidLocation = try JSONSerialization.data(withJSONObject: ["recording": "unknown", "passage": "unknown"])
+        try require(resumeServer.response(method: "POST", path: "/api/location", headers: resumeHeaders, body: invalidLocation).status == 400, "Unknown passage changed the session")
+        try require(Data(contentsOf: stateFile) == savedBytes, "Location tracking changed owner review decisions")
         let overview = try JSONSerialization.jsonObject(with: request("GET", "/api/reviews").body) as! EvalItem
         let entries = overview["reviews"] as! [EvalItem]
         try require(entries.count == 1 && entries[0]["verified"] as? Int == 1 && entries[0]["total"] as? Int == 12, "Overview lost live saved progress")

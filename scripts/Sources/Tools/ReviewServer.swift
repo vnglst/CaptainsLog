@@ -17,11 +17,13 @@ final class EvalReviewServer: @unchecked Sendable {
     let root: URL
     let port: UInt16
     let catalog: URL?
+    let sessionFile: URL?
     private let listener: Int32
     private let lock = NSLock()
     private var stopped = false
     private let tools = Tools()
-    init(root: URL, port: UInt16, catalog: URL? = nil) throws {
+    init(root: URL, port: UInt16, catalog: URL? = nil, sessionFile: URL? = nil) throws {
+        self.sessionFile = sessionFile
         self.catalog = catalog
         self.root = root.resolvingSymlinksInPath()
         let descriptor = socket(AF_INET, SOCK_STREAM, 0)
@@ -89,6 +91,25 @@ final class EvalReviewServer: @unchecked Sendable {
         guard ["127.0.0.1:\(port)", "localhost:\(port)"].contains(headers["host"] ?? "") else { return try jsonResponse(["error": "Invalid local host"], status: 400) }
         guard let path = String(rawPath.split(separator: "?", maxSplits: 1).first ?? "").removingPercentEncoding,
               !path.contains("\0"), !path.split(separator: "/").contains("..") else { return try jsonResponse(["error": "Invalid path"], status: 400) }
+        if path == "/api/location" {
+            guard let sessionFile else { return try jsonResponse(["error": "Session tracking unavailable"], status: 404) }
+            let run = root.deletingLastPathComponent()
+            if method == "GET" { return try jsonResponse(["location": tools.reviewSessionLocation(run, file: sessionFile)]) }
+            guard method == "POST" else { return try jsonResponse(["error": "Method not allowed"], status: 405) }
+            guard headers["origin"] == "http://" + (headers["host"] ?? "") else { return try jsonResponse(["error": "Invalid origin"], status: 403) }
+            guard body.count <= 2048, let value = (try? JSONSerialization.jsonObject(with: body)) as? EvalItem else { return try jsonResponse(["error": "Invalid location"], status: 400) }
+            let location: EvalItem
+            if value["view"] as? String == "overview" { location = ["view": "overview"] }
+            else {
+                let data = try tools.json(root.appendingPathComponent("recordings.json")) as! EvalItem
+                guard let id = value["recording"] as? String, let passage = value["passage"] as? String,
+                      let recording = (data["recordings"] as? [EvalItem])?.first(where: { $0["id"] as? String == id }),
+                      passage == "full" || (recording["passages"] as? [EvalItem] ?? []).contains(where: { $0["id"] as? String == passage }) else { return try jsonResponse(["error": "Unknown review location"], status: 400) }
+                location = ["recording": id, "passage": passage]
+            }
+            try tools.rememberReviewSession(run, port: port, location: location, file: sessionFile)
+            return try jsonResponse(["location": location])
+        }
         if path == "/api/reviews", method == "GET" {
             var sessions: [EvalItem] = [["root": root.path, "url": "http://127.0.0.1:\(port)"]]
             let currentData = (try? tools.json(root.appendingPathComponent("recordings.json"))) as? EvalItem
@@ -203,7 +224,7 @@ final class EvalReviewServer: @unchecked Sendable {
         }
         guard method == "GET" || method == "HEAD" else { return try jsonResponse(["error": "Method not allowed"], status: 405) }
         let relative = path == "/" ? "index.html" : String(path.dropFirst())
-        let allowed = ["index.html", "style.css", "app.js", "recordings.json", "audio-capture.mjs", "review-passages.mjs"].contains(relative) || ["assets/audio/", "assets/retakes/", "assets/consolidated/"].contains(where: relative.hasPrefix)
+        let allowed = ["index.html", "style.css", "app.js", "recordings.json", "audio-capture.mjs", "review-passages.mjs", "review-session.mjs"].contains(relative) || ["assets/audio/", "assets/retakes/", "assets/consolidated/"].contains(where: relative.hasPrefix)
         let file = root.appendingPathComponent(relative).resolvingSymlinksInPath()
         guard allowed, file.path.hasPrefix(root.path + "/"), tools.fm.fileExists(atPath: file.path),
               let size = (try tools.fm.attributesOfItem(atPath: file.path))[.size] as? UInt64 else { return try jsonResponse(["error": "Not found"], status: 404) }

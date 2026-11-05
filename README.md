@@ -253,6 +253,8 @@ Audio evaluation runs also prepare a local listening-review app. Reopen a saved 
 without loading models:
 
 ```sh
+make evals-review  # Reopen the last review and passage in your browser
+# Or choose a specific saved run:
 make evals-review RUN_DIR=tmp/evals-RUN
 # Optional: compare another saved run or a folder of per-recording .txt transcripts:
 make evals-review RUN_DIR=tmp/evals-RUN COMPARISON_RUN=tmp/comparison-RUN

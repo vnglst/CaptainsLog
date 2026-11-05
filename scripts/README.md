@@ -34,7 +34,7 @@ evaluations remain a separate `make evals` command.
 
 | Supporting command | Purpose / options |
 |---|---|
-| `make evals-review RUN_DIR=...` | Serve the selected saved run's audio/transcript review app on localhost. `COMPARISON_RUN=...` adds a saved eval run or a directory of per-recording `.txt` transcripts. `PORT=8777` selects the port; `ARGS=--prepare-only` skips serving. Use `ARGS=--differences` with pinned transcript/timestamp comparison files to select actual discrepancies from both models. Use `ARGS=--serve-saved` to reopen completed reviews without regenerating files. No inference. |
+| `make evals-review` | Reopen the last-used review session and passage in your browser, reusing a running server when possible. `RUN_DIR=...` selects another saved run. `COMPARISON_RUN=...` adds a saved eval run or a directory of per-recording `.txt` transcripts. `PORT=...` overrides the remembered port (8777 for a new session); `ARGS=--prepare-only` skips serving. Use `ARGS=--differences` with pinned transcript/timestamp comparison files to select actual discrepancies from both models. Use `ARGS=--serve-saved` to reopen completed reviews without regenerating files. `ARGS=--no-open` suppresses browser launch for headless use. No inference. |
 | `make evals-list` | List synthetic fixtures without loading models; accepts `STAGE` / `CASE`. |
 | `make evals-pipeline` / `make evals-suites` | Run the audio pipeline or all stage suites. The reviewed Dutch TNG recording is the default and only transcription pipeline input. |
 | `make evals ARGS="--validate-run RUN_DIR"` | Validate saved outputs without inference; `--baseline RUN_DIR` assembles comparison evidence. |

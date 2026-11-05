@@ -60,6 +60,14 @@ downstream references have not been verified as part of the audio-only baseline.
 
 ## Listening review
 
+Run **`make evals-review`** to reopen the last-used session and passage in your
+default browser. It remembers the port, reuses a matching running server, and
+opens saved reviews without regenerating them. `RUN_DIR=...` selects a specific
+review; `PORT=...` overrides its port. Session and navigation preferences live in
+ignored `tmp/`, separately from review decisions and eval fixtures. Explicit
+recording links override the saved location; removed passages return to overview.
+
+
 For a new comparison, generate passages from both full word alignments:
 
 ```sh

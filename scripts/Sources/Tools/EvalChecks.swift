@@ -56,6 +56,7 @@ extension Tools {
     }
     func testEvals() throws {
         try testTranscriptionScoring()
+        try testReviewSessions()
         try testEvalReview()
         try testReviewAudio()
         var checks = 0

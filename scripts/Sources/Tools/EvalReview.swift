@@ -41,7 +41,7 @@ extension Tools {
         let comparison = requestedComparison ?? (generateDifferences ? (previousData?["comparison_source"] as? String).map(path) : nil)
         let previousRecordings = previousData?["recordings"] as? [EvalItem] ?? []
         guard let source = Bundle.module.url(forResource: "EvalReview", withExtension: nil) else { throw ToolFailure("Missing evaluation review app resources") }
-        for name in ["index.html", "style.css", "app.js", "audio-capture.mjs", "review-passages.mjs"] { try copy(source.appendingPathComponent(name), app.appendingPathComponent(name)) }
+        for name in ["index.html", "style.css", "app.js", "audio-capture.mjs", "review-passages.mjs", "review-session.mjs"] { try copy(source.appendingPathComponent(name), app.appendingPathComponent(name)) }
         func requireRunFile(_ url: URL) throws {
             let resolved = url.resolvingSymlinksInPath().standardizedFileURL.path
             let roots = [path("eval"), path("tmp"), run] + (comparison.map { [$0] } ?? [])
@@ -163,7 +163,7 @@ extension Tools {
         }
         let data: EvalItem = ["selection": generateDifferences ? "aligned-differences" : "listening-checklist", "version": 1, "run": run.path, "app_source_hashes": try hashes(files(source)), "comparison_source": comparison?.path as Any? ?? previousData?["comparison_source"] ?? NSNull(), "recordings": recordings]
         try JSONSerialization.data(withJSONObject: data, options: [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]).write(to: app.appendingPathComponent("recordings.json"), options: .atomic)
-        try write(app.appendingPathComponent("README.txt"), "Run from the repository: make evals-review RUN_DIR=\(run.path)\nDecisions are saved in review-state.json. Regeneration preserves them. Audio/reference changes invalidate prior verification without discarding its saved text.\n")
+        try write(app.appendingPathComponent("README.txt"), "Resume the latest review: make evals-review\nOpen this review: make evals-review RUN_DIR=\(run.path)\nDecisions are saved in review-state.json. Regeneration preserves them. Audio/reference changes invalidate prior verification without discarding its saved text.\n")
         return app
     }
     func inheritedReviewPassages(passages: [EvalItem], source: [EvalItem], decisions: [String: EvalItem], edits: [EvalItem]) throws -> [String] {
@@ -185,22 +185,31 @@ extension Tools {
         return result
     }
     func evalsReview(_ args: [String]) throws {
-        var run: URL?, comparison: URL?, port: UInt16 = 8777, prepareOnly = false, differencesOnly = false, serveSaved = false, i = 0
+        var run: URL?, comparison: URL?, port: UInt16?, prepareOnly = false, differencesOnly = false, serveSaved = false, openBrowser = true, i = 0
         func value() throws -> String { i += 1; try require(i < args.count, "Missing review option value", status: 2); return args[i] }
         while i < args.count {
             switch args[i] {
             case "--run": run = path(try value()).standardizedFileURL
             case "--comparison-run": comparison = path(try value()).standardizedFileURL
             case "--port": guard let parsed = UInt16(try value()), parsed > 0 else { throw ToolFailure("Invalid review port", status: 2) }; port = parsed
+            case "--no-open": openBrowser = false
             case "--differences": differencesOnly = true
             case "--serve-saved": serveSaved = true
             case "--prepare-only": prepareOnly = true
-            case "--help", "-h": print("Usage: make evals-review RUN_DIR=RUN [COMPARISON_RUN=RUN_OR_TRANSCRIPT_DIR] [PORT=8777] [ARGS='--differences --prepare-only|--serve-saved']"); return
+            case "--help", "-h": print("Usage: make evals-review [RUN_DIR=RUN] [COMPARISON_RUN=RUN_OR_TRANSCRIPT_DIR] [PORT=...] [ARGS='--differences --prepare-only|--serve-saved|--no-open']"); return
             default: throw ToolFailure("Unknown review option: \(args[i])", status: 2)
             }
             i += 1
         }
-        try require(run != nil, "Specify a saved evaluation RUN_DIR", status: 2)
+        let sessionFile = path("tmp/eval-review-last-session.json"), catalog = path("tmp/eval-review-sessions.json")
+        if run == nil {
+            guard let latest = try latestReviewSession(file: sessionFile, catalog: catalog, searchRoots: [path("eval/transcribe/history"), path("tmp")]) else {
+                throw ToolFailure("No saved transcript review found. Specify RUN_DIR for the first review.", status: 2)
+            }
+            run = latest.run; port = port ?? latest.port
+            if !prepareOnly && !differencesOnly && comparison == nil { serveSaved = true }
+        }
+        let selectedPort = port ?? 8777
         let app: URL
         if serveSaved {
             try require(!prepareOnly && !differencesOnly && comparison == nil, "--serve-saved only opens existing review files; do not combine it with preparation options", status: 2)
@@ -211,17 +220,29 @@ extension Tools {
             app = prepared
         }
         if prepareOnly { print("Prepared review app: \(app.path)"); return }
-        let catalog = path("tmp/eval-review-sessions.json")
-        let server = try EvalReviewServer(root: app, port: port, catalog: catalog)
+        let running = try self.run(["/usr/bin/curl", "--fail", "--silent", "--max-time", "2", "http://127.0.0.1:\(selectedPort)/recordings.json"], quiet: true, allowFailure: true)
+        if running.status == 0, let data = running.output.data(using: .utf8), let active = try? JSONSerialization.jsonObject(with: data) as? EvalItem,
+           let activeRun = active["run"] as? String,
+           URL(fileURLWithPath: activeRun).resolvingSymlinksInPath().standardizedFileURL == run!.resolvingSymlinksInPath().standardizedFileURL {
+            try rememberReviewSession(run!, port: selectedPort, file: sessionFile)
+            let url = reviewBrowserURL(run: run!, port: selectedPort, file: sessionFile)
+            print("Reopening: " + url)
+            if openBrowser { try self.run(["/usr/bin/open", url], quiet: true) }
+            return
+        }
+        let server = try EvalReviewServer(root: app, port: selectedPort, catalog: catalog, sessionFile: sessionFile)
         var sessions = (try? json(catalog)) as? [EvalItem] ?? []
         let baseURL = "http://127.0.0.1:\(server.port)"
         sessions.removeAll { $0["url"] as? String == baseURL || $0["root"] as? String == app.resolvingSymlinksInPath().path }
         sessions.append(["root": app.resolvingSymlinksInPath().path, "url": baseURL])
         try mkdir(catalog.deletingLastPathComponent())
         try json(catalog, sessions)
-        print("Local: http://127.0.0.1:\(server.port)")
+        try rememberReviewSession(run!, port: server.port, file: sessionFile)
+        let browserURL = reviewBrowserURL(run: run!, port: server.port, file: sessionFile)
+        print("Local: " + browserURL)
         print("Review decisions: \(app.appendingPathComponent("review-state.json").path)")
         fflush(stdout)
+        if openBrowser { try self.run(["/usr/bin/open", browserURL], quiet: true) }
         try server.serve()
     }
 }

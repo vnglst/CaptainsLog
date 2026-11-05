@@ -9,7 +9,8 @@ Run fixtures through `make evals STAGE=transcribe`; see [the shared workflow](..
 
 ## Listening app
 
-Runs containing audio prepare a listening-review app. Reopen it with
+Runs containing audio prepare a listening-review app. `make evals-review` resumes
+the last-used review and passage in the default browser without regenerating it. Reopen it with
 `make evals-review RUN_DIR=...`; optionally add `COMPARISON_RUN=...` for a saved
 run or directory of per-recording `.txt` transcripts. This serves saved evidence
 without inference. Side-by-side text, clipped playback, replay, speed and loop

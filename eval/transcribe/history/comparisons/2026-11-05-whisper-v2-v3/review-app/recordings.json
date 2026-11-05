@@ -1,9 +1,10 @@
 {
   "app_source_hashes" : {
-    "/Users/vnglst/Code/CaptainsLog/scripts/.build/out/Products/Debug/CaptainsLogTools_Tools.bundle/Contents/Resources/EvalReview/app.js" : "1469ff676c1f5b6fb93a97a5204b95a4bb9456c5c92c3c86d4e5993441eba0a8",
+    "/Users/vnglst/Code/CaptainsLog/scripts/.build/out/Products/Debug/CaptainsLogTools_Tools.bundle/Contents/Resources/EvalReview/app.js" : "5489966ad76d30da7c45122865641e10cf9cd22b1eda37768c1091b1129479a2",
     "/Users/vnglst/Code/CaptainsLog/scripts/.build/out/Products/Debug/CaptainsLogTools_Tools.bundle/Contents/Resources/EvalReview/audio-capture.mjs" : "f13701df37c110306fb1dafd4eda9e524e8fe7f661f8a1f987a2059351fb0fa8",
     "/Users/vnglst/Code/CaptainsLog/scripts/.build/out/Products/Debug/CaptainsLogTools_Tools.bundle/Contents/Resources/EvalReview/index.html" : "72f71f697e42078573a251917be7b790ca15eb5ea4dc8e8e67de54a6af631b08",
     "/Users/vnglst/Code/CaptainsLog/scripts/.build/out/Products/Debug/CaptainsLogTools_Tools.bundle/Contents/Resources/EvalReview/review-passages.mjs" : "bfecbdd7e0cb7719c8bd8fdca7979b6420e6e47725d752919e6235edbfce1ade",
+    "/Users/vnglst/Code/CaptainsLog/scripts/.build/out/Products/Debug/CaptainsLogTools_Tools.bundle/Contents/Resources/EvalReview/review-session.mjs" : "e43540a7d6ecdefe45d5e6ae201d495fe1266cefb1a7dc8fc6506fba6981109b",
     "/Users/vnglst/Code/CaptainsLog/scripts/.build/out/Products/Debug/CaptainsLogTools_Tools.bundle/Contents/Resources/EvalReview/style.css" : "a902feef19fcde0c4fbfaf5092b6901484279094cd12188b168cff93589892b4"
   },
   "comparison_source" : "/Users/vnglst/Code/CaptainsLog/eval/transcribe/history/comparisons/2026-11-05-whisper-v2-v3/comparison",

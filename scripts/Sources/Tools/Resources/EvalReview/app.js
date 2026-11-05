@@ -1,7 +1,9 @@
 import { AudioCapture } from './audio-capture.mjs';
 import { textStatus, reviewQueue } from './review-passages.mjs';
+import { reviewLocation } from './review-session.mjs';
 'use strict';
 const $=id=>document.getElementById(id);
+let locationQueue=Promise.resolve(),lastLocation=null;
 let lifecycle={},data,reviews={},recording,selected=null,full=false,saveTimer=null,saveQueue=Promise.resolve(),dirty=new Set();
 let capture=null,draft=null,draftURL=null,capturePhase='idle',captureGeneration=0,uploading=false,building=false,consolidations=[];
 let previewWindow=null;
@@ -32,6 +34,7 @@ function reading(node,text,reference){
  const changed=new Set();let i=a.length,j=b.length;while(i||j){const d=trace[i*width+j];if(d===1){i--;j--;if(a[i].word!==b[j].word)changed.add(j)}else if(d===2)i--;else{j--;changed.add(j)}}
  let pos=0;for(let k=0;k<b.length;k++){const t=b[k];node.append(document.createTextNode(text.slice(pos,t.start)));if(changed.has(k)){const mark=document.createElement('mark');mark.textContent=text.slice(t.start,t.end);node.append(mark)}else node.append(document.createTextNode(text.slice(t.start,t.end)));pos=t.end}node.append(document.createTextNode(text.slice(pos)));
 }
+function rememberLocation(location){const key=JSON.stringify(location);if(key===lastLocation)return;lastLocation=key;locationQueue=locationQueue.catch(()=>{}).then(async()=>{const response=await fetch('/api/location',{method:'POST',headers:{'Content-Type':'application/json'},body:key,keepalive:true});if(!response.ok)throw new Error('Location not saved')}).catch(()=>{if(lastLocation===key)lastLocation=null})}
 function queue(){return reviewQueue(recording.passages)}
 function renderRail(){
  const replaced=new Set([...(lifecycle[recording.id]?.replaced_passages||[]),...(lifecycle[recording.id]?.carried_passages||[])]);const done=recording.passages.filter(p=>replaced.has(p.id)||['matches','corrected'].includes(review(p.id).status)&&!review(p.id).audio_issue).length;
@@ -63,7 +66,7 @@ function render(){
  $('reviewForm').hidden=full;$('fullNotice').hidden=!full;
  if(!full){const r=review(selected);el.words.value=r.words;el.notes.value=r.notes;updateDecision()}
  const list=queue(),index=list.findIndex(x=>x.id===selected);$('previous').disabled=!full&&index<=0;$('next').disabled=!full&&(index<0||index>=list.length-1);
- renderRail();renderRepair();renderConsolidations();applyLifecycle();history.replaceState(null,'',`#recording=${encodeURIComponent(recording.id)}&passage=${full?'full':encodeURIComponent(selected)}`);
+ renderRail();renderRepair();renderConsolidations();applyLifecycle();rememberLocation({recording:recording.id,passage:full?'full':selected});history.replaceState(null,'',`#recording=${encodeURIComponent(recording.id)}&passage=${full?'full':encodeURIComponent(selected)}`);
 }
 async function persist(id){
  const value={id,...review(id),context:passageContext(id)};if(value.status==='corrected'&&!value.words.trim()){saveMessage('Add the corrected wording before saving',true);throw new Error('Missing corrected words')}
@@ -87,7 +90,7 @@ el.words.addEventListener('input',changed);el.notes.addEventListener('input',cha
 $('saveNext').addEventListener('click',async()=>{if(review(selected).status==='pending'&&!review(selected).audio_issue){$('formHelp').textContent='Choose a decision after listening.';$('formHelp').classList.add('error');return}try{await flush()}catch{return}if(queue().at(-1)?.id===selected){await showOverview();return}await step(1)});
 $('export').addEventListener('click',async()=>{try{await flush()}catch{return}const savedState=await(await fetch('/api/state')).json();const result={version:1,archived_reviews:savedState.archived_reviews||{},consolidations:savedState.consolidations||[],exported_at:new Date().toISOString(),recordings:data.recordings.map(r=>({id:r.id,name:r.name,reference_sha256:r.reference_sha256,audio_sha256:r.audio_sha256,passages:r.passages.map(p=>({id:p.id,start_seconds:p.start_seconds,end_seconds:p.end_seconds,reference:p.reference,...review(p.id)}))}))};const url=URL.createObjectURL(new Blob([JSON.stringify(result,null,2)+'\n'],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='captainslog-transcription-review.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)});
 window.addEventListener('beforeunload',event=>{if(dirty.size||audioBusy()){event.preventDefault();event.returnValue=''}});
-(async()=>{try{const results=await Promise.all([fetch('recordings.json',{cache:'no-store'}),fetch('/api/state',{cache:'no-store'})]);for(const r of results)if(!r.ok)throw new Error('Could not load the local review');data=await results[0].json();const state=await results[1].json();reviews=state.reviews||{};consolidations=state.consolidations||[];await refreshLifecycle();for(const r of data.recordings){const option=document.createElement('option');option.value=r.id;option.textContent=r.title;$('recording').append(option)}const hash=new URLSearchParams(location.hash.slice(1));recording=data.recordings.find(r=>r.id===hash.get('recording'))||data.recordings[0];full=hash.get('passage')==='full';selected=recording.passages.some(p=>p.id===hash.get('passage'))?hash.get('passage'):recording.passages[0]?.id;if(!queue().some(p=>p.id===selected))selected=queue()[0]?.id;if(!selected)full=true;if(hash.get('recording'))render();else await showOverview(false);saveMessage('Saved on this Mac')}catch(error){saveMessage(error.message,true);$('passageTitle').textContent='Could not open the review';$('question').textContent='Keep the local server running and reload this page.'}})();
+(async()=>{try{const results=await Promise.all([fetch('recordings.json',{cache:'no-store'}),fetch('/api/state',{cache:'no-store'})]);for(const r of results)if(!r.ok)throw new Error('Could not load the local review');data=await results[0].json();const state=await results[1].json();reviews=state.reviews||{};consolidations=state.consolidations||[];await refreshLifecycle();for(const r of data.recordings){const option=document.createElement('option');option.value=r.id;option.textContent=r.title;$('recording').append(option)}let hash=new URLSearchParams(location.hash.slice(1)),savedLocation=null;if(!hash.has('recording')&&!hash.has('view')){try{const response=await fetch('/api/location',{cache:'no-store'});if(response.ok)savedLocation=(await response.json()).location}catch{}}hash=reviewLocation(hash,savedLocation,data.recordings);recording=data.recordings.find(r=>r.id===hash.get('recording'))||data.recordings[0];full=hash.get('passage')==='full';selected=recording.passages.some(p=>p.id===hash.get('passage'))?hash.get('passage'):recording.passages[0]?.id;if(!queue().some(p=>p.id===selected))selected=queue()[0]?.id;if(!selected)full=true;if(hash.get('recording'))render();else await showOverview(false);saveMessage('Saved on this Mac')}catch(error){saveMessage(error.message,true);$('passageTitle').textContent='Could not open the review';$('question').textContent='Keep the local server running and reload this page.'}})();
 
 function mergeTakes(a=[],b=[]){const result=new Map();for(const take of [...b,...a]){const prior=result.get(take.id);if(!prior||(take.range_revision||0)>=(prior.range_revision||0))result.set(take.id,take)}return [...result.values()]}
 function pauseOtherAudio(active){if(active!==el.audio)el.audio.pause();for(const player of document.querySelectorAll('.retake-player'))if(player!==active)player.pause()}
@@ -226,7 +229,7 @@ async function showOverview(push=true){
     const target=item;const targetPassage=passage;const link=document.createElement('a');link.className=primary?'button-link primary':'button-link';link.textContent=text;link.href=`${target.url}/#recording=${encodeURIComponent(target.recording_id)}&passage=${encodeURIComponent(targetPassage)}`;
     if(item.current&&target===item)link.addEventListener('click',async event=>{event.preventDefault();recording=data.recordings.find(r=>r.id===item.recording_id);await navigateTo(passage==='full'?recording.passages[0]?.id:passage,passage==='full')});actions.append(link);
    }card.append(actions);cards.append(card);
-  }$('overviewStatus').textContent=result.reviews.length?'':'No reviews are available.';
+  }rememberLocation({view:'overview'});$('overviewStatus').textContent=result.reviews.length?'':'No reviews are available.';
  }catch(error){$('overviewStatus').textContent=error.message}
 }
 $('overviewButton').addEventListener('click',()=>showOverview());$('backOverview').addEventListener('click',()=>showOverview());
