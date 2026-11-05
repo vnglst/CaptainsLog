@@ -26,7 +26,7 @@ entry. Git links provide the complete commit history for each release.
 
 ### Added
 
-- Add the owner-reviewed Alle mensen zijn sterfelijk, Durins volk, and World War Z recordings to the transcription suite and record a fresh four-case WER baseline.
+- Add the owner-reviewed Alle mensen zijn sterfelijk, Durins volk, and World War Z recordings to the transcription suite and record a fresh four-case WER baseline. Preserve the reviewed Enterprise end-to-end eval and its search readback.
 
 - Resume the latest transcript review at its saved passage with `make evals-review` and open the browser automatically.
 

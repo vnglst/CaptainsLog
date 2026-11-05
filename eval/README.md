@@ -4,7 +4,7 @@ Active stages are `transcribe`, `cleanup`, `categorize`, `filename` and `enrich`
 Transcription inputs live in `transcribe/audio/`; text-stage inputs live in each
 stage's `input/`. Expected outputs are semantic references, not the only valid
 wording. The transcription suite includes four owner-reviewed recordings.
-End-to-end evaluation remains separate follow-up work (TASK-82).
+The end-to-end pipeline uses the reviewed Enterprise recording.
 
 Use the runner from the repository root:
 
@@ -38,7 +38,7 @@ after listening to the discrepancy passages in the two-model comparison on
 - Manifest: `transcribe/cases.json` pins both hashes and `audio-reviewed` status.
 - Passage timing and provenance: matching files in `transcribe/review/`.
 
-Run `make evals STAGE=transcribe` to score all four WER cases. Full pipeline evaluation is separate follow-up work (TASK-82). Every run snapshots
+Run `make evals STAGE=transcribe` to score all four WER cases. Every run snapshots
 inputs, raw output and an aligned WER report. WER measures word edits; semantic
 review still matters, especially for hallucinations and changed meaning.
 
@@ -57,8 +57,10 @@ make evals-review RUN_DIR=eval/transcribe/history/review-2
 The [TNG scripts](tng-reference/README.md) preserve the original script separately
 from the verbatim reference. English and German recordings are still to be supplied.
 The development demo copies the reviewed Dutch audio into its isolated runtime.
-The existing pipeline configuration is retained in `pipeline/cases.json`; its
-downstream references have not been verified as part of the audio-only baseline.
+Run `make evals-pipeline` for transcription through search using `pipeline/cases.json`.
+The [2026-11-05 Enterprise run](pipeline/history/2026-11-05-enterprise/README.md)
+records stage outputs, mechanical validation, resume and search checks, and
+semantic findings for owner review.
 
 ## Listening review
 

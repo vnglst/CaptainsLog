@@ -1,0 +1,208 @@
+{
+  "baseline" : null,
+  "binary_sha256" : "d37e577cd4ceca721f16173ad6097a64237092d5760cc79ad12d3d99fe5f0506",
+  "dirty_status" : " M \"backlog/tasks/task-82 - Full-pipeline-eval.md\"\n?? eval/transcribe/history/baselines/2026-11-05-whisper-large-v2/\n?? eval/transcribe/history/generated/2026-11-05_21-30-16_63292_openai_whisper-large-v2_alle-mensen-zijn-sterfelijk.md\n?? eval/transcribe/history/generated/2026-11-05_21-30-16_63292_openai_whisper-large-v2_durins-volk.md\n?? eval/transcribe/history/generated/2026-11-05_21-30-16_63292_openai_whisper-large-v2_tng-nl01-vrije-dag-enterprise-corrected.md\n?? eval/transcribe/history/generated/2026-11-05_21-30-16_63292_openai_whisper-large-v2_world-war-z.md\n",
+  "elapsed_seconds" : 451.18516083333816,
+  "fixture_hashes" : {
+    "/Users/vnglst/Code/CaptainsLog/tmp/enterprise-pipeline-2026-11-05/fixtures/pipeline/categorize/expected.category" : "f4f5c214177557f4f89e58733cd59a01bedbda3b6c0ac4b823333db3c6df7a00",
+    "/Users/vnglst/Code/CaptainsLog/tmp/enterprise-pipeline-2026-11-05/fixtures/pipeline/cleanup/expected.md" : "b82391127acdbd43fbfdd34f35f1fcb952003b04fa59a07cebd124a39496bfc1",
+    "/Users/vnglst/Code/CaptainsLog/tmp/enterprise-pipeline-2026-11-05/fixtures/pipeline/enrich/expected.md" : "04071874eba42271bdc299557701ccbe8f0d8442ea945bdd215786bc0bd31b82",
+    "/Users/vnglst/Code/CaptainsLog/tmp/enterprise-pipeline-2026-11-05/fixtures/pipeline/filename/expected.md" : "212d634be067ee1bb644288e1553a3e4982ee3244dc63c19e14b5347b66f24bd",
+    "/Users/vnglst/Code/CaptainsLog/tmp/enterprise-pipeline-2026-11-05/fixtures/pipeline/transcribe/expected.md" : "37a5afd505cea14c707ae0e4d041e0e1537588531c3acedf54c228a698ec87bf",
+    "/Users/vnglst/Code/CaptainsLog/tmp/enterprise-pipeline-2026-11-05/fixtures/pipeline/transcribe/tng-nl01-vrije-dag-enterprise-corrected.m4a" : "731efc1781210e0717e9952bcea5ab761793810b7f4f0fcd7d607fff6fa3c990"
+  },
+  "generation" : {
+    "categorize" : {
+      "context_policy" : "LLM.plannedContextSize; fresh context per call",
+      "dry" : null,
+      "max_tokens" : 64,
+      "parameter_scope" : "stage defaults; date/time are per-case manifest values",
+      "prevent_repetition" : false,
+      "seed_policy" : "LLAMA_DEFAULT_SEED (random per fresh sampler)",
+      "temperature" : 0.10000000000000001,
+      "top_k" : 40,
+      "top_p" : 0.90000000000000002
+    },
+    "cleanup" : {
+      "context_policy" : "LLM.plannedContextSize; fresh context per call",
+      "dry" : null,
+      "max_tokens" : 0,
+      "parameter_scope" : "stage defaults; date/time are per-case manifest values",
+      "prevent_repetition" : false,
+      "seed_policy" : "LLAMA_DEFAULT_SEED (random per fresh sampler)",
+      "temperature" : 0.59999999999999998,
+      "top_k" : 40,
+      "top_p" : 0.90000000000000002
+    },
+    "enrich" : {
+      "context_policy" : "LLM.plannedContextSize; fresh context per call",
+      "dry" : "0.8, 1.75, 4, 512, nil, 0",
+      "max_tokens" : 4096,
+      "parameter_scope" : "stage defaults; date/time are per-case manifest values",
+      "prevent_repetition" : true,
+      "seed_policy" : "per-case manifest seed; pipeline uses random default",
+      "temperature" : 0.29999999999999999,
+      "top_k" : 40,
+      "top_p" : 0.90000000000000002
+    },
+    "filename" : {
+      "context_policy" : "LLM.plannedContextSize; fresh context per call",
+      "dry" : null,
+      "max_tokens" : 0,
+      "parameter_scope" : "stage defaults; date/time are per-case manifest values",
+      "prevent_repetition" : false,
+      "seed_policy" : "LLAMA_DEFAULT_SEED (random per fresh sampler)",
+      "temperature" : 0.29999999999999999,
+      "top_k" : 40,
+      "top_p" : 0.90000000000000002
+    },
+    "transcribe" : {
+      "audio_encoder_compute" : "cpuAndNeuralEngine",
+      "language" : "auto-detect",
+      "mel_compute" : "cpuOnly",
+      "skip_special_tokens" : true,
+      "text_decoder_compute" : "cpuAndNeuralEngine"
+    }
+  },
+  "mode" : "--pipeline",
+  "models" : {
+    "embeddings" : {
+      "bytes" : 132439008,
+      "path" : "/Users/vnglst/Library/Application Support/CaptainsLog/models/embeddings/multilingual-e5-small-q8_0.gguf",
+      "sha256" : "e011debc1208e31bf7b6aebee2d9fc8bd2ca11694a77ed66ac9d0c9d0a877c93"
+    },
+    "qwen" : {
+      "bytes" : 6169341984,
+      "path" : "/Users/vnglst/Library/Application Support/CaptainsLog/models/Qwen_Qwen3.5-9B-Q4_K_M.gguf",
+      "sha256" : "d784ce9eda1a5a7b51e8f705a9e6310844bf4f173654d115823c775fdea56d43"
+    },
+    "whisper" : {
+      "file_hashes" : {
+        "/Users/vnglst/Library/Caches/CaptainsLog/models/whisper/models/argmaxinc/whisperkit-coreml/openai_whisper-large-v2/AudioEncoder.mlmodelc/analytics/coremldata.bin" : "de2b5efcacf4692f361df9f63ca24864b8c7dc2522aa7afe5bb9fbf5b66ee402",
+        "/Users/vnglst/Library/Caches/CaptainsLog/models/whisper/models/argmaxinc/whisperkit-coreml/openai_whisper-large-v2/AudioEncoder.mlmodelc/coremldata.bin" : "14e8fc08c06019606e9ccadc55f7357f8ca7a136b5cdb0fc58ba3bf2512fc057",
+        "/Users/vnglst/Library/Caches/CaptainsLog/models/whisper/models/argmaxinc/whisperkit-coreml/openai_whisper-large-v2/AudioEncoder.mlmodelc/metadata.json" : "8809240be8531b42b457db739ae67962cd6659d94d2fb6adcf789995e87feea8",
+        "/Users/vnglst/Library/Caches/CaptainsLog/models/whisper/models/argmaxinc/whisperkit-coreml/openai_whisper-large-v2/AudioEncoder.mlmodelc/model.mil" : "7308c5b632452d85e89e6a58f959ff63b5fbc75550567226163bc8fcfb328f16",
+        "/Users/vnglst/Library/Caches/CaptainsLog/models/whisper/models/argmaxinc/whisperkit-coreml/openai_whisper-large-v2/AudioEncoder.mlmodelc/model.mlmodel" : "45880e77405bbbfe5cbc2f5bdd1ed0d7b752b1d1108c870b1dc9048bdb64fe0f",
+        "/Users/vnglst/Library/Caches/CaptainsLog/models/whisper/models/argmaxinc/whisperkit-coreml/openai_whisper-large-v2/AudioEncoder.mlmodelc/weights/weight.bin" : "afa6721eafbd25ca528e603c68461f993e36ef1d7ffc8cd6a2ab17db1adb9756",
+        "/Users/vnglst/Library/Caches/CaptainsLog/models/whisper/models/argmaxinc/whisperkit-coreml/openai_whisper-large-v2/config.json" : "2aaca1c2c3a39e8fca1fe39ea812966b9c10e0c07da9f5c68b03b423532fd5eb",
+        "/Users/vnglst/Library/Caches/CaptainsLog/models/whisper/models/argmaxinc/whisperkit-coreml/openai_whisper-large-v2/generation_config.json" : "4778d87a1035c01386302c43a74fd0304de9eaf49b24f21a102d90d0e42c0c80",
+        "/Users/vnglst/Library/Caches/CaptainsLog/models/whisper/models/argmaxinc/whisperkit-coreml/openai_whisper-large-v2/MelSpectrogram.mlmodelc/analytics/coremldata.bin" : "7f77e6457285248f99cd7aa3fd4cc2efbb17733e63e7023ac53abe1f95785d07",
+        "/Users/vnglst/Library/Caches/CaptainsLog/models/whisper/models/argmaxinc/whisperkit-coreml/openai_whisper-large-v2/MelSpectrogram.mlmodelc/coremldata.bin" : "dabdc5aa69f6ef4d97dc9499f5c30514e00e96b53b750b33a5a6471363c71662",
+        "/Users/vnglst/Library/Caches/CaptainsLog/models/whisper/models/argmaxinc/whisperkit-coreml/openai_whisper-large-v2/MelSpectrogram.mlmodelc/metadata.json" : "f2b08d80d9cdd39fc0ccdbb5fac86a5f8dd9bcaa839706c3568be6fe8abd82d4",
+        "/Users/vnglst/Library/Caches/CaptainsLog/models/whisper/models/argmaxinc/whisperkit-coreml/openai_whisper-large-v2/MelSpectrogram.mlmodelc/model.mil" : "b8063d8e57c113472ac7c2d248e44383568a018978a753c1884ac406b997a374",
+        "/Users/vnglst/Library/Caches/CaptainsLog/models/whisper/models/argmaxinc/whisperkit-coreml/openai_whisper-large-v2/MelSpectrogram.mlmodelc/weights/weight.bin" : "554dc9cba10908cf2a327a5905f1762460c77e31b7887cfb3ef1e2e189acab5d",
+        "/Users/vnglst/Library/Caches/CaptainsLog/models/whisper/models/argmaxinc/whisperkit-coreml/openai_whisper-large-v2/TextDecoder.mlmodelc/analytics/coremldata.bin" : "a6af9e171205accbaa44f180c9c41e5a431b457c6c8c912ce491a063f097fb7a",
+        "/Users/vnglst/Library/Caches/CaptainsLog/models/whisper/models/argmaxinc/whisperkit-coreml/openai_whisper-large-v2/TextDecoder.mlmodelc/coremldata.bin" : "da569359853965d3a29f001e7529cb5a64c5ce1549c0862091650f5f63f61b10",
+        "/Users/vnglst/Library/Caches/CaptainsLog/models/whisper/models/argmaxinc/whisperkit-coreml/openai_whisper-large-v2/TextDecoder.mlmodelc/metadata.json" : "f235ffe7e5cf8136dd8fe08263d0cb52bb6d669eadc3d9655d0e25fcbb362a8c",
+        "/Users/vnglst/Library/Caches/CaptainsLog/models/whisper/models/argmaxinc/whisperkit-coreml/openai_whisper-large-v2/TextDecoder.mlmodelc/model.mil" : "3ace28888de0aa029f305f1569f270d0d4020ad9c352787b73c136d37ea5f4ff",
+        "/Users/vnglst/Library/Caches/CaptainsLog/models/whisper/models/argmaxinc/whisperkit-coreml/openai_whisper-large-v2/TextDecoder.mlmodelc/model.mlmodel" : "422429d8b627b8a8fdb92b59211036fd6e60f9d588a22303b06a323088c3de89",
+        "/Users/vnglst/Library/Caches/CaptainsLog/models/whisper/models/argmaxinc/whisperkit-coreml/openai_whisper-large-v2/TextDecoder.mlmodelc/weights/weight.bin" : "0468364412cab461492ccdff1f10d663833d7ac091a3dcbaf8c9f1b4fd8d31ac"
+      },
+      "model" : "openai_whisper-large-v2",
+      "path" : "/Users/vnglst/Library/Caches/CaptainsLog/models/whisper/models/argmaxinc/whisperkit-coreml/openai_whisper-large-v2"
+    }
+  },
+  "pipeline_parameters" : [
+    {
+      "date" : "2026-11-05",
+      "recording_time" : "09:25",
+      "stage" : "transcribe"
+    },
+    {
+      "date" : "2026-11-05",
+      "recording_time" : "09:25",
+      "stage" : "cleanup"
+    },
+    {
+      "date" : "2026-11-05",
+      "recording_time" : "09:25",
+      "stage" : "categorize"
+    },
+    {
+      "date" : "2026-11-05",
+      "recording_time" : "09:25",
+      "stage" : "filename"
+    },
+    {
+      "date" : "2026-11-05",
+      "recording_time" : "09:25",
+      "stage" : "enrich"
+    }
+  ],
+  "prompt_hashes" : {
+    "/Users/vnglst/Code/CaptainsLog/prompts/categorize.md" : "f474c78a8dbf0e1b368c8def92f1f8226f3124a9e57f6b49c8c3bb47286a00b1",
+    "/Users/vnglst/Code/CaptainsLog/prompts/cleanup.md" : "50978f65dd54169a5a77af32350b2107b8545c0ff1b7695cdf43079aa4ec891a",
+    "/Users/vnglst/Code/CaptainsLog/prompts/enrich.md" : "10e17b8d0314f6649e0dbc2714a52eef3a42c9df970e9610890a8b34f870bb84",
+    "/Users/vnglst/Code/CaptainsLog/prompts/filename.md" : "cb56a05d927ce8069fab29b9c9bbc2e2f927603c718b04a92e8d3d8486df6ee5",
+    "/Users/vnglst/Code/CaptainsLog/prompts/metadata.md" : "3aae3a4991c9a07a8eb6c56f1e6f6ef2133676de3ee3c4a6493e3b9dd0d3f40b"
+  },
+  "revision" : "93abde3656e17717273270d0cec9d02b5f2836e4",
+  "runtime" : "/Users/vnglst/Code/CaptainsLog/.build/out/Products/Debug/cl:\n\t@rpath/llama.framework/Versions/Current/llama (compatibility version 0.0.0, current version 0.0.0)\n\t/usr/lib/libsqlite3.dylib (compatibility version 9.0.0, current version 406.0.0)\n\t/System/Library/Frameworks/Foundation.framework/Versions/C/Foundation (compatibility version 300.0.0, current version 5027.0.69)\n\t/usr/lib/libobjc.A.dylib (compatibility version 1.0.0, current version 228.0.0)\n\t/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1359.0.0)\n\t/System/Library/Frameworks/AVFAudio.framework/Versions/A/AVFAudio (compatibility version 1.0.0, current version 1.0.0)\n\t/System/Library/Frameworks/AVFoundation.framework/Versions/A/AVFoundation (compatibility version 1.0.0, current version 2.0.0)\n\t/System/Library/Frameworks/Accelerate.framework/Versions/A/Accelerate (compatibility version 1.0.0, current version 4.0.0)\n\t/System/Library/Frameworks/AppKit.framework/Versions/C/AppKit (compatibility version 45.0.0, current version 2775.10.103)\n\t/System/Library/Frameworks/AudioToolbox.framework/Versions/A/AudioToolbox (compatibility version 1.0.0, current version 1000.0.0)\n\t/System/Library/Frameworks/CoreAudio.framework/Versions/A/CoreAudio (compatibility version 1.0.0, current version 1.0.0)\n\t/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation (compatibility version 150.0.0, current version 5027.0.69)\n\t/System/Library/Frameworks/CoreGraphics.framework/Versions/A/CoreGraphics (compatibility version 64.0.0, current version 2050.0.0)\n\t/System/Library/Frameworks/CoreML.framework/Versions/A/CoreML (compatibility version 1.0.0, current version 1.0.0)\n\t/System/Library/Frameworks/CoreVideo.framework/Versions/A/CoreVideo (compatibility version 1.2.0, current version 758.27.0)\n\t/System/Library/Frameworks/CryptoKit.framework/Versions/A/CryptoKit (compatibility version 1.0.0, current version 1.0.0)\n\t/System/Library/Frameworks/Metal.framework/Versions/A/Metal (compatibility version 1.0.0, current version 382.5.3)\n\t/System/Library/Frameworks/NaturalLanguage.framework/Versions/A/NaturalLanguage (compatibility version 1.0.0, current version 114.0.0)\n\t/System/Library/Frameworks/Network.framework/Versions/A/Network (compatibility version 1.0.0, current version 6681.1.1)\n\t/System/Library/Frameworks/Security.framework/Versions/A/Security (compatibility version 1.0.0, current version 62460.1.2)\n\t/usr/lib/libc++.1.dylib (compatibility version 1.0.0, current version 2200.27.0)\n\t/usr/lib/swift/libswiftAVFoundation.dylib (compatibility version 1.0.0, current version 2450.77.5)\n\t/usr/lib/swift/libswiftAccelerate.dylib (compatibility version 1.0.0, current version 82.0.0)\n\t/usr/lib/swift/libswiftCore.dylib (compatibility version 0.0.0, current version 0.0.0)\n\t/usr/lib/swift/libswiftCoreAudio.dylib (compatibility version 1.0.0, current version 482.102.10)\n\t/usr/lib/swift/libswiftCoreFoundation.dylib (compatibility version 1.0.0, current version 120.100.0)\n\t/usr/lib/swift/libswiftCoreImage.dylib (compatibility version 1.0.0, current version 3.0.0, weak)\n\t/usr/lib/swift/libswiftCoreMIDI.dylib (compatibility version 1.0.0, current version 6.0.0, weak)\n\t/usr/lib/swift/libswiftDarwin.dylib (compatibility version 1.0.0, current version 428.0.10)\n\t/usr/lib/swift/libswiftDispatch.dylib (compatibility version 1.0.0, current version 1605.0.2)\n\t/usr/lib/swift/libswiftIOKit.dylib (compatibility version 1.0.0, current version 1.0.0, weak)\n\t/usr/lib/swift/libswiftMetal.dylib (compatibility version 1.0.0, current version 382.5.3, weak)\n\t/usr/lib/swift/libswiftNaturalLanguage.dylib (compatibility version 1.0.0, current version 4.3.0, weak)\n\t/usr/lib/swift/libswiftOSLog.dylib (compatibility version 1.0.0, current version 10.0.0, weak)\n\t/usr/lib/swift/libswiftObjectiveC.dylib (compatibility version 1.0.0, current version 973.1.0)\n\t/usr/lib/swift/libswiftQuartzCore.dylib (compatibility version 1.0.0, current version 5.0.0, weak)\n\t/usr/lib/swift/libswiftRegexBuilder.dylib (compatibility version 0.0.0, current version 0.0.0)\n\t/usr/lib/swift/libswiftSpatial.dylib (compatibility version 1.0.0, current version 1.0.0, weak)\n\t/usr/lib/swift/libswiftUniformTypeIdentifiers.dylib (compatibility version 1.0.0, current version 917.0.1)\n\t/usr/lib/swift/libswiftXPC.dylib (compatibility version 1.0.0, current version 167.0.2, weak)\n\t/usr/lib/swift/libswift_Builtin_float.dylib (compatibility version 0.0.0, current version 0.0.0, weak)\n\t/usr/lib/swift/libswift_Concurrency.dylib (compatibility version 0.0.0, current version 0.0.0)\n\t/usr/lib/swift/libswift_DarwinFoundation1.dylib (compatibility version 1.0.0, current version 428.0.10)\n\t/usr/lib/swift/libswift_DarwinFoundation2.dylib (compatibility version 1.0.0, current version 428.0.10)\n\t/usr/lib/swift/libswift_DarwinFoundation3.dylib (compatibility version 1.0.0, current version 428.0.10)\n\t/usr/lib/swift/libswift_StringProcessing.dylib (compatibility version 0.0.0, current version 0.0.0)\n\t/usr/lib/swift/libswiftos.dylib (compatibility version 1.0.0, current version 1090.0.0)\n\t/usr/lib/swift/libswiftsimd.dylib (compatibility version 1.0.0, current version 25.0.0, weak)",
+  "runtime_hashes" : {
+    "/Users/vnglst/Code/CaptainsLog/.build/out/Products/Debug/llama.framework/Versions/Current/llama" : "86b400056f1e2b6f94247d3300dee6e6470017540bccdd4ce0cab2e082677c68"
+  },
+  "runtime_manifest_sha256" : "19b30234df7df3f957dfb9588f5ba2a0cc30353781c16181d108129b4a9bb281",
+  "source_hashes" : {
+    "/Users/vnglst/Code/CaptainsLog/Package.resolved" : "423acd571551ed9c2b7659524ebb76097b2e21cefb20c7544f215a1a88a2da2a",
+    "/Users/vnglst/Code/CaptainsLog/scripts/Package.resolved" : "a318291f478b580109e79302bc497d7578972fc7b583f26cabc803dafac90e81",
+    "/Users/vnglst/Code/CaptainsLog/scripts/Package.swift" : "6e03224ffcfcbf98501096226af70829b483893b4b1805e5dcc1373a5783ac70",
+    "/Users/vnglst/Code/CaptainsLog/scripts/Sources/Tools/Checks.swift" : "5d9ee4fdbbd7ad9c1fa55b70be41e1e39e8b7f8937f40aa130f378dfd73e9b1d",
+    "/Users/vnglst/Code/CaptainsLog/scripts/Sources/Tools/Common.swift" : "9453a7e49e628dc0e6ca7699eca7f550f9cf88168ad0c2da82a2fdaeb5aa6d0b",
+    "/Users/vnglst/Code/CaptainsLog/scripts/Sources/Tools/Coverage.swift" : "c170854976e7c046ebda0f2fd21dc25c2898dbec85a63a311d834ff5842517f5",
+    "/Users/vnglst/Code/CaptainsLog/scripts/Sources/Tools/EnrichValidation.swift" : "907757a6fe4717ce247fe7c9ebfbacb4803385fc5dde0b79512a52ed419ad66e",
+    "/Users/vnglst/Code/CaptainsLog/scripts/Sources/Tools/EvalChecks.swift" : "ea81531ad8de3b534ac4cdc9fe07e261b90c14ed3b23fc732ff26d621ad436fd",
+    "/Users/vnglst/Code/CaptainsLog/scripts/Sources/Tools/EvalReview.swift" : "bdfa7ceb312c3c5f20b501e90d0d0537372ad6de8372ca6fbf5b264f0c606e79",
+    "/Users/vnglst/Code/CaptainsLog/scripts/Sources/Tools/Evals.swift" : "1f3bbfc34e51381cdc2c5a05189d9c5356b3a40b362b5b8cffc27cd87212b0a6",
+    "/Users/vnglst/Code/CaptainsLog/scripts/Sources/Tools/Main.swift" : "3d783d63f4b55550886e949d08df0bd04b49cfd83ab8362b5503e8a0a75a422f",
+    "/Users/vnglst/Code/CaptainsLog/scripts/Sources/Tools/Native.swift" : "a4a1cd5cf44ef1ab0ca5facc955247a23adb9e956e1bc419e033509e43357452",
+    "/Users/vnglst/Code/CaptainsLog/scripts/Sources/Tools/ReleaseChecks.swift" : "d3bd8fdae52c15c74b957ba77b92ca928c5420868de2608deca22973ede5143b",
+    "/Users/vnglst/Code/CaptainsLog/scripts/Sources/Tools/ReviewAudio.swift" : "6a7a70adbaf6e66f3aa235a576c61764081cf43f0ae44a91718851cf5bc59109",
+    "/Users/vnglst/Code/CaptainsLog/scripts/Sources/Tools/ReviewAudioChecks.swift" : "fae05af21fd5774cc829786e4a8d1f5b9513eac568bc8f47886609c68b68df98",
+    "/Users/vnglst/Code/CaptainsLog/scripts/Sources/Tools/ReviewChecks.swift" : "956b7be3bcdf7cbdfe9cd37b6ba3f713754e5ce30fe7ce941281065173883984",
+    "/Users/vnglst/Code/CaptainsLog/scripts/Sources/Tools/ReviewDifferences.swift" : "e692308bfbbaf45aec910732970da18ed6c4f4e5fd131288511116b579df434d",
+    "/Users/vnglst/Code/CaptainsLog/scripts/Sources/Tools/ReviewServer.swift" : "2cbde5d12496c994f4f75b6a769ba55878474fe1ff59bfce277495b4f15cdbb5",
+    "/Users/vnglst/Code/CaptainsLog/scripts/Sources/Tools/ReviewSessionChecks.swift" : "4e0280a4b2f80ed2959704c5cd2a5d7c4ecb13e22d5f4f07a7c7306c31f12655",
+    "/Users/vnglst/Code/CaptainsLog/scripts/Sources/Tools/ReviewSessions.swift" : "a384efe0c292e1ee8fcfb89af7f4065656d4b041a4e7f16fe9503ee21ce75b09",
+    "/Users/vnglst/Code/CaptainsLog/scripts/Sources/Tools/TranscriptionCases.swift" : "9669b2a40958a20695ca98d8ce351e6e981d48fca2c5febba3ce7a90ea1bb07a",
+    "/Users/vnglst/Code/CaptainsLog/scripts/Sources/Tools/TranscriptionChecks.swift" : "db44f2ce513fd61319666eb17f0871532854718fb4ea7e9d1faf8c130e24ece8",
+    "/Users/vnglst/Code/CaptainsLog/scripts/Sources/Tools/TranscriptionScore.swift" : "a0352cfa9a3899ec99a94a1174a559148c9e308d3ba73ef73c7e9e6c41f7d6de",
+    "/Users/vnglst/Code/CaptainsLog/scripts/tooling.swift" : "b7853c951efcf18d1eb5c80e97760e016ec05b69974c80072c30cf5a1513ff73",
+    "/Users/vnglst/Code/CaptainsLog/Sources/CaptainsLogCore/AppPerformanceTrace.swift" : "ec6c57171d1eaa7098e6aaf5fd4c4d16b373e61c320e9be1376530bd02c3246a",
+    "/Users/vnglst/Code/CaptainsLog/Sources/CaptainsLogCore/AppUpdater.swift" : "7857cad452dc4273002bf739cba2c1a3c6f4e241d69ed1c273536f4225cc2565",
+    "/Users/vnglst/Code/CaptainsLog/Sources/CaptainsLogCore/AudioLevel.swift" : "8431e6c4dd2a1d9878a9e88e0921277e70906adeb820c8ea4183a3a197e2fcaa",
+    "/Users/vnglst/Code/CaptainsLog/Sources/CaptainsLogCore/CaptainsLogCore.swift" : "3e3dbad5ec3511788cfa645d81fc83592cb6ecdba0c5d2ed8e4f80a497985615",
+    "/Users/vnglst/Code/CaptainsLog/Sources/CaptainsLogCore/Categorize.swift" : "955a4a4b99ee6edf1f7efa2371905a0d9eb1daa20a62ae10dddb0c0c8b849762",
+    "/Users/vnglst/Code/CaptainsLog/Sources/CaptainsLogCore/Cleanup.swift" : "fdf35eb820818a7302b1bda30694ef41ec53c9c62006cfb5536b748613009c3d",
+    "/Users/vnglst/Code/CaptainsLog/Sources/CaptainsLogCore/Config.swift" : "03a44ceebc117a3617475b9da85e3d85c388ec72c2c3d1af97a18fdd72bd1251",
+    "/Users/vnglst/Code/CaptainsLog/Sources/CaptainsLogCore/Embeddings.swift" : "bedf7386490b0a95d4284bda20893d85e0741a3aaf0b30c2e7852c6d9bdbb5ab",
+    "/Users/vnglst/Code/CaptainsLog/Sources/CaptainsLogCore/Enrich.swift" : "87075850f8fe10adc4e681c49f55b0390468710baea0cce97aeabc28a4acf415",
+    "/Users/vnglst/Code/CaptainsLog/Sources/CaptainsLogCore/EntryDate.swift" : "2fdd2a64e1cadae3d8c13938cbb5fb2d493f4abba30800fe7e2fdedcec508f83",
+    "/Users/vnglst/Code/CaptainsLog/Sources/CaptainsLogCore/Filename.swift" : "d7beea623527da5cdb20423ac65e92d40538ab5e1296c9584a0e3df65dc7b7be",
+    "/Users/vnglst/Code/CaptainsLog/Sources/CaptainsLogCore/FileSystemGuard.swift" : "2d6308b2d016ce560e89eaf267c9548f2fc141b5733816e5a705de26f9c9624b",
+    "/Users/vnglst/Code/CaptainsLog/Sources/CaptainsLogCore/FixtureRecordingEngine.swift" : "22db2295ea5e54e50e3f78a7904fb1363adbfd8bab698ee6200886bd7b14681c",
+    "/Users/vnglst/Code/CaptainsLog/Sources/CaptainsLogCore/LLM.swift" : "bf198131b99d87d2dabba2ccca94bbdac562e3d01d4557788eee1704a0a0935b",
+    "/Users/vnglst/Code/CaptainsLog/Sources/CaptainsLogCore/Logging.swift" : "6d0d95fe8d5f542eefc7f2e01e7f812485c64e13e2033db1f5d85ac143df990d",
+    "/Users/vnglst/Code/CaptainsLog/Sources/CaptainsLogCore/Metadata.swift" : "f29df45b5011a571f26ea21f95e5ebb33c8d5fdbcc5b2443f030511304d48015",
+    "/Users/vnglst/Code/CaptainsLog/Sources/CaptainsLogCore/ModelStorage.swift" : "a4068d18ca13be52550cd31141d6617c049aa7eabc7485a3913a72cbf4d918f9",
+    "/Users/vnglst/Code/CaptainsLog/Sources/CaptainsLogCore/NativeInferenceLifecycle.swift" : "02444a9cd8248f60e1e8e9f32e19947ec8cda8337b3564851bec2c92cb86b45f",
+    "/Users/vnglst/Code/CaptainsLog/Sources/CaptainsLogCore/Pipeline.swift" : "64cf7f86d78844e40eac7f616fa799aee52f1fd142655d2e9219f4e1c50be7eb",
+    "/Users/vnglst/Code/CaptainsLog/Sources/CaptainsLogCore/PromptDebug.swift" : "c240490bf71546cfe2b621e5de20781eba7832372c83ec4aab1f24a1740aa3fb",
+    "/Users/vnglst/Code/CaptainsLog/Sources/CaptainsLogCore/PromptLoader.swift" : "b6e12c07887097527947d51caef379ab9369554558038616bed4afb3682785d2",
+    "/Users/vnglst/Code/CaptainsLog/Sources/CaptainsLogCore/PromptResolver.swift" : "c328fb043f7853829d1546579ba41e43b47d60e32cd778ed6e8fb4715445ecd8",
+    "/Users/vnglst/Code/CaptainsLog/Sources/CaptainsLogCore/PromptXML.swift" : "3d3a98deaef1fa77364bce23790dfb06e99750c645a325f5bea749befc745283",
+    "/Users/vnglst/Code/CaptainsLog/Sources/CaptainsLogCore/Recorder.swift" : "330a0f46d60cde36d7994549ac35b26bfd4872138e3d90ff3f69b260c7d52694",
+    "/Users/vnglst/Code/CaptainsLog/Sources/CaptainsLogCore/RecorderOperations.swift" : "1542aac85e1f7e036043372f6d3df428ce52e421b86bca4a4ca2ea96bbb485dc",
+    "/Users/vnglst/Code/CaptainsLog/Sources/CaptainsLogCore/RecordingTranscription.swift" : "459fbb66ae2a8044f7d6e10ba678c254c46d6398cbec75169c8cda1b199861d2",
+    "/Users/vnglst/Code/CaptainsLog/Sources/CaptainsLogCore/Search.swift" : "1c4fc328b006c626bd6097df59f24f79c5a7fe7245d50ab906da98a7d2ff997c",
+    "/Users/vnglst/Code/CaptainsLog/Sources/CaptainsLogCore/SystemRequirements.swift" : "fc3c4b933e66be241b0c88e8b2d6b5c6f06522ac1e534787d3ceef7f9fe016aa",
+    "/Users/vnglst/Code/CaptainsLog/Sources/CaptainsLogCore/Transcriber.swift" : "3716c84e64ff592fe86b1b8c967f905ee706998de3521a9adf445b6d582fa33b",
+    "/Users/vnglst/Code/CaptainsLog/Sources/CaptainsLogCore/WhisperModelRecovery.swift" : "df2843383619ab289ed32012e8e3b5f89666fd12810d6011ba529e36a1a42d5c",
+    "/Users/vnglst/Code/CaptainsLog/Sources/cl/CL.swift" : "36cd45bce1d980f33afea928f7a720ec251fa1a46ae1d3c41d12e49c2f9414e2",
+    "/Users/vnglst/Code/CaptainsLog/Sources/cl/EvalBatch.swift" : "f730fe553092d8cdca088f4fc7434023e0f3eb0c39cc18d8cc601c62d07112dc"
+  },
+  "stamp" : "2026-11-05_21-38-07_64503",
+  "started_at" : "2026-11-05T20:38:07Z",
+  "status" : "passed-mechanical-checks",
+  "swift_version" : "Apple Swift version 6.4 (swiftlang-6.4.0.34.1 clang-2100.3.34.1)\nTarget: arm64-apple-macosx26.0",
+  "transcription_cases_sha256" : "dad4337cace369d0be6b052866b23ee17e6f3611e6712c4d404c34185f5d18f9"
+}

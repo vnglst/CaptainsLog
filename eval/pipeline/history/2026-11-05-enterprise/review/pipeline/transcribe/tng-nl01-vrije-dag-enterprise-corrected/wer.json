@@ -1,0 +1,327 @@
+{
+  "alignment" : "unit-cost-levenshtein-diagonal-delete-insert-v1",
+  "audio_sha256" : "731efc1781210e0717e9952bcea5ab761793810b7f4f0fcd7d607fff6fa3c990",
+  "deletions" : 2,
+  "edits" : [
+    {
+      "hypothesis" : "onderzoekstation",
+      "hypothesis_index" : 12,
+      "operation" : "substitution",
+      "reference" : "onderzoeksstation",
+      "reference_index" : 12
+    },
+    {
+      "hypothesis" : "voor",
+      "hypothesis_index" : 81,
+      "operation" : "insertion",
+      "reference" : "",
+      "reference_index" : 81
+    },
+    {
+      "hypothesis" : "morgen",
+      "hypothesis_index" : 82,
+      "operation" : "substitution",
+      "reference" : "vanmorgen",
+      "reference_index" : 81
+    },
+    {
+      "hypothesis" : "",
+      "hypothesis_index" : 91,
+      "operation" : "deletion",
+      "reference" : "gewoon",
+      "reference_index" : 90
+    },
+    {
+      "hypothesis" : "gewone",
+      "hypothesis_index" : 91,
+      "operation" : "substitution",
+      "reference" : "een",
+      "reference_index" : 91
+    },
+    {
+      "hypothesis" : "ingewikkelde",
+      "hypothesis_index" : 103,
+      "operation" : "substitution",
+      "reference" : "ingewikkeld",
+      "reference_index" : 103
+    },
+    {
+      "hypothesis" : "avonturen",
+      "hypothesis_index" : 104,
+      "operation" : "substitution",
+      "reference" : "avontuur",
+      "reference_index" : 104
+    },
+    {
+      "hypothesis" : "voor",
+      "hypothesis_index" : 143,
+      "operation" : "substitution",
+      "reference" : "van",
+      "reference_index" : 143
+    },
+    {
+      "hypothesis" : "al",
+      "hypothesis_index" : 163,
+      "operation" : "insertion",
+      "reference" : "",
+      "reference_index" : 163
+    },
+    {
+      "hypothesis" : "verwegen",
+      "hypothesis_index" : 164,
+      "operation" : "substitution",
+      "reference" : "halverwege",
+      "reference_index" : 163
+    },
+    {
+      "hypothesis" : "",
+      "hypothesis_index" : 254,
+      "operation" : "deletion",
+      "reference" : "klingon",
+      "reference_index" : 253
+    },
+    {
+      "hypothesis" : "klingonschip",
+      "hypothesis_index" : 254,
+      "operation" : "substitution",
+      "reference" : "schip",
+      "reference_index" : 254
+    },
+    {
+      "hypothesis" : "klemmertje",
+      "hypothesis_index" : 297,
+      "operation" : "substitution",
+      "reference" : "klemmetje",
+      "reference_index" : 297
+    },
+    {
+      "hypothesis" : "mollie",
+      "hypothesis_index" : 337,
+      "operation" : "substitution",
+      "reference" : "molly",
+      "reference_index" : 337
+    },
+    {
+      "hypothesis" : "aborreëtem",
+      "hypothesis_index" : 345,
+      "operation" : "substitution",
+      "reference" : "arboretum",
+      "reference_index" : 345
+    },
+    {
+      "hypothesis" : "onderhoudsdroon",
+      "hypothesis_index" : 389,
+      "operation" : "substitution",
+      "reference" : "onderhoudsdrone",
+      "reference_index" : 389
+    },
+    {
+      "hypothesis" : "guynen",
+      "hypothesis_index" : 422,
+      "operation" : "substitution",
+      "reference" : "guinan",
+      "reference_index" : 422
+    },
+    {
+      "hypothesis" : "onderzoekstation",
+      "hypothesis_index" : 486,
+      "operation" : "substitution",
+      "reference" : "onderzoeksstation",
+      "reference_index" : 486
+    },
+    {
+      "hypothesis" : "kijk",
+      "hypothesis_index" : 520,
+      "operation" : "insertion",
+      "reference" : "",
+      "reference_index" : 520
+    },
+    {
+      "hypothesis" : "ho",
+      "hypothesis_index" : 521,
+      "operation" : "insertion",
+      "reference" : "",
+      "reference_index" : 520
+    },
+    {
+      "hypothesis" : "haal",
+      "hypothesis_index" : 522,
+      "operation" : "substitution",
+      "reference" : "keiko",
+      "reference_index" : 520
+    },
+    {
+      "hypothesis" : "de",
+      "hypothesis_index" : 523,
+      "operation" : "substitution",
+      "reference" : "haalde",
+      "reference_index" : 521
+    },
+    {
+      "hypothesis" : "kainan",
+      "hypothesis_index" : 536,
+      "operation" : "substitution",
+      "reference" : "guinan",
+      "reference_index" : 534
+    },
+    {
+      "hypothesis" : "me",
+      "hypothesis_index" : 583,
+      "operation" : "insertion",
+      "reference" : "",
+      "reference_index" : 581
+    },
+    {
+      "hypothesis" : "zelf",
+      "hypothesis_index" : 584,
+      "operation" : "substitution",
+      "reference" : "mezelf",
+      "reference_index" : 581
+    },
+    {
+      "hypothesis" : "jordi",
+      "hypothesis_index" : 588,
+      "operation" : "substitution",
+      "reference" : "geordi",
+      "reference_index" : 585
+    },
+    {
+      "hypothesis" : "12",
+      "hypothesis_index" : 612,
+      "operation" : "substitution",
+      "reference" : "twaalf",
+      "reference_index" : 609
+    },
+    {
+      "hypothesis" : "dan",
+      "hypothesis_index" : 639,
+      "operation" : "substitution",
+      "reference" : "aan",
+      "reference_index" : 636
+    },
+    {
+      "hypothesis" : "jordi",
+      "hypothesis_index" : 654,
+      "operation" : "substitution",
+      "reference" : "geordi",
+      "reference_index" : 651
+    },
+    {
+      "hypothesis" : "wijzigingen",
+      "hypothesis_index" : 698,
+      "operation" : "substitution",
+      "reference" : "wijziging",
+      "reference_index" : 695
+    },
+    {
+      "hypothesis" : "de",
+      "hypothesis_index" : 733,
+      "operation" : "substitution",
+      "reference" : "het",
+      "reference_index" : 730
+    },
+    {
+      "hypothesis" : "deda",
+      "hypothesis_index" : 814,
+      "operation" : "substitution",
+      "reference" : "data",
+      "reference_index" : 811
+    },
+    {
+      "hypothesis" : "meting",
+      "hypothesis_index" : 889,
+      "operation" : "insertion",
+      "reference" : "",
+      "reference_index" : 886
+    },
+    {
+      "hypothesis" : "hebben",
+      "hypothesis_index" : 890,
+      "operation" : "substitution",
+      "reference" : "metingen",
+      "reference_index" : 886
+    },
+    {
+      "hypothesis" : "invloed",
+      "hypothesis_index" : 891,
+      "operation" : "substitution",
+      "reference" : "beïnvloedt",
+      "reference_index" : 887
+    },
+    {
+      "hypothesis" : "orv",
+      "hypothesis_index" : 947,
+      "operation" : "substitution",
+      "reference" : "worf",
+      "reference_index" : 943
+    },
+    {
+      "hypothesis" : "jordi",
+      "hypothesis_index" : 968,
+      "operation" : "substitution",
+      "reference" : "geordi",
+      "reference_index" : 964
+    },
+    {
+      "hypothesis" : "duidelijk",
+      "hypothesis_index" : 983,
+      "operation" : "substitution",
+      "reference" : "tijdelijk",
+      "reference_index" : 979
+    },
+    {
+      "hypothesis" : "jordi",
+      "hypothesis_index" : 1020,
+      "operation" : "substitution",
+      "reference" : "geordi",
+      "reference_index" : 1016
+    },
+    {
+      "hypothesis" : "week",
+      "hypothesis_index" : 1081,
+      "operation" : "substitution",
+      "reference" : "weken",
+      "reference_index" : 1077
+    },
+    {
+      "hypothesis" : "rijker",
+      "hypothesis_index" : 1116,
+      "operation" : "substitution",
+      "reference" : "riker",
+      "reference_index" : 1112
+    },
+    {
+      "hypothesis" : "mbc",
+      "hypothesis_index" : 1207,
+      "operation" : "insertion",
+      "reference" : "",
+      "reference_index" : 1203
+    },
+    {
+      "hypothesis" : "뉴스",
+      "hypothesis_index" : 1208,
+      "operation" : "insertion",
+      "reference" : "",
+      "reference_index" : 1203
+    },
+    {
+      "hypothesis" : "김재경입니다",
+      "hypothesis_index" : 1209,
+      "operation" : "insertion",
+      "reference" : "",
+      "reference_index" : 1203
+    }
+  ],
+  "errors" : 44,
+  "hypothesis_sha256" : "0747560e67c239ad09c14f2eb856cbed970867e0c9eb49dc816315a128bccb0b",
+  "hypothesis_words" : 1210,
+  "insertions" : 9,
+  "normalization" : "unicode-words-v1",
+  "provisional" : false,
+  "reference_sha256" : "37a5afd505cea14c707ae0e4d041e0e1537588531c3acedf54c228a698ec87bf",
+  "reference_status" : "audio-reviewed",
+  "reference_words" : 1203,
+  "substitutions" : 33,
+  "wer" : 0.03657522859517872,
+  "wer_percent" : 3.6575228595178721
+}

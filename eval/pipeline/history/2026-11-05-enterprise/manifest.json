@@ -1,0 +1,72 @@
+[
+  {
+    "audio_sha256": "731efc1781210e0717e9952bcea5ab761793810b7f4f0fcd7d607fff6fa3c990",
+    "category": "personal",
+    "date": "2026-11-05",
+    "expected": "eval/pipeline/history/2026-11-05-enterprise/review/pipeline/transcribe/tng-nl01-vrije-dag-enterprise-corrected/expected.md",
+    "input": "eval/pipeline/history/2026-11-05-enterprise/review/pipeline/transcribe/tng-nl01-vrije-dag-enterprise-corrected/input.m4a",
+    "language": "Dutch",
+    "name": "tng-nl01-vrije-dag-enterprise-corrected",
+    "output": "eval/pipeline/history/2026-11-05-enterprise/review/pipeline/transcribe/tng-nl01-vrije-dag-enterprise-corrected/output.md",
+    "recording_time": "09:25",
+    "reference_check": {
+      "date": "2026-10-30",
+      "derived_from": "tng-nl01-vrije-dag-enterprise",
+      "owner_audio_verification": "Accepted by owner after two review rounds, 2026-10-30",
+      "source": "Owner first-round wording corrections and explicitly selected replacement takes"
+    },
+    "reference_sha256": "37a5afd505cea14c707ae0e4d041e0e1537588531c3acedf54c228a698ec87bf",
+    "reference_status": "audio-reviewed",
+    "scope": "pipeline",
+    "search_query": "holodeck Alexander Molly replicators sensoren",
+    "stage": "transcribe"
+  },
+  {
+    "category": "personal",
+    "date": "2026-11-05",
+    "expected": "eval/pipeline/history/2026-11-05-enterprise/review/pipeline/cleanup/tng-nl01-vrije-dag-enterprise-corrected/expected.md",
+    "input": "eval/pipeline/history/2026-11-05-enterprise/review/pipeline/cleanup/tng-nl01-vrije-dag-enterprise-corrected/input.md",
+    "name": "tng-nl01-vrije-dag-enterprise-corrected",
+    "output": "eval/pipeline/history/2026-11-05-enterprise/review/pipeline/cleanup/tng-nl01-vrije-dag-enterprise-corrected/output.md",
+    "recording_time": "09:25",
+    "scope": "pipeline",
+    "search_query": "holodeck Alexander Molly replicators sensoren",
+    "stage": "cleanup"
+  },
+  {
+    "category": "personal",
+    "date": "2026-11-05",
+    "expected": "eval/pipeline/history/2026-11-05-enterprise/review/pipeline/categorize/tng-nl01-vrije-dag-enterprise-corrected/expected.category",
+    "input": "eval/pipeline/history/2026-11-05-enterprise/review/pipeline/categorize/tng-nl01-vrije-dag-enterprise-corrected/input.md",
+    "name": "tng-nl01-vrije-dag-enterprise-corrected",
+    "output": "eval/pipeline/history/2026-11-05-enterprise/review/pipeline/categorize/tng-nl01-vrije-dag-enterprise-corrected/output.json",
+    "recording_time": "09:25",
+    "scope": "pipeline",
+    "search_query": "holodeck Alexander Molly replicators sensoren",
+    "stage": "categorize"
+  },
+  {
+    "category": "personal",
+    "date": "2026-11-05",
+    "expected": "eval/pipeline/history/2026-11-05-enterprise/review/pipeline/filename/tng-nl01-vrije-dag-enterprise-corrected/expected.md",
+    "input": "eval/pipeline/history/2026-11-05-enterprise/review/pipeline/filename/tng-nl01-vrije-dag-enterprise-corrected/input.md",
+    "name": "tng-nl01-vrije-dag-enterprise-corrected",
+    "output": "eval/pipeline/history/2026-11-05-enterprise/review/pipeline/filename/tng-nl01-vrije-dag-enterprise-corrected/output.txt",
+    "recording_time": "09:25",
+    "scope": "pipeline",
+    "search_query": "holodeck Alexander Molly replicators sensoren",
+    "stage": "filename"
+  },
+  {
+    "category": "personal",
+    "date": "2026-11-05",
+    "expected": "eval/pipeline/history/2026-11-05-enterprise/review/pipeline/enrich/tng-nl01-vrije-dag-enterprise-corrected/expected.md",
+    "input": "eval/pipeline/history/2026-11-05-enterprise/review/pipeline/enrich/tng-nl01-vrije-dag-enterprise-corrected/input.md",
+    "name": "tng-nl01-vrije-dag-enterprise-corrected",
+    "output": "eval/pipeline/history/2026-11-05-enterprise/review/pipeline/enrich/tng-nl01-vrije-dag-enterprise-corrected/output.md",
+    "recording_time": "09:25",
+    "scope": "pipeline",
+    "search_query": "holodeck Alexander Molly replicators sensoren",
+    "stage": "enrich"
+  }
+]

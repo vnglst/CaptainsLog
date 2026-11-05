@@ -235,9 +235,9 @@ model job concurrently. The [TNG reference folder](eval/tng-reference/README.md)
 contains three personal log scripts aboard the Enterprise, each about ten
 minutes long, in English, Dutch and German, with paired expected outputs.
 The transcription suite includes three owner-reviewed Dutch recordings and one English recording.
-The preserved Enterprise baseline measures transcription only. End-to-end evaluation and
-verification of downstream references are deferred to TASK-82. Other recordings
-and earlier review rounds are preserved under `eval/transcribe/history/`; English
+The [fresh transcription baseline](eval/transcribe/history/baselines/2026-11-05-whisper-large-v2/README.md) measures all four recordings.
+The [Enterprise pipeline run](eval/pipeline/history/2026-11-05-enterprise/README.md) covers audio through search. Earlier review rounds live under
+`eval/transcribe/history/`; English
 and German TNG audio are still to be recorded by the owner.
 
 For opt-in native startup and quit performance checks, close the installed app,

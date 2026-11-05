@@ -1,0 +1,29 @@
+PASS: valid fixture
+PASS: wrong date
+PASS: wrong time
+PASS: body mutation
+PASS: missing summary
+PASS: unexpected key
+PASS: empty summary
+PASS: repeated summary
+PASS: unquoted colon becomes mapping
+PASS: nested empty list
+PASS: scalar list
+PASS: duplicate list item
+PASS: cross-field duplicate
+PASS: runaway entity list
+PASS: oversized metadata
+PASS: invalid category
+PASS: empty categories
+PASS: legal category differences require semantic review
+PASS: wrong language
+PASS: too many tags
+PASS: duplicate schema key
+PASS: missing completion/body delimiter
+PASS: multiple YAML documents
+PASS: recorded fixture fingerprint
+PASS: even a trailing newline changes regression fixture identity
+PASS: every input must have recorded case settings
+26 enrichment validation checks passed.
+PASS: enrichment case manifest and regression fixture fingerprints
+PASS: seed boundaries and reserved random-seed rejection; no model loaded.
