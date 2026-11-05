@@ -32,5 +32,17 @@
       "source": "Owner listening review of both Whisper comparisons",
       "owner_audio_verification": "Owner confirmed the reference for all 9 discrepancy passages"
     }
+  },
+  "world-war-z": {
+    "language": "English",
+    "reference_status": "audio-reviewed",
+    "audio_sha256": "6f419da2feeb93596b095aa544dd70ad8c8cdef2f0816f2c458dedb0914740d6",
+    "reference_sha256": "ddc4c9b372939ddecec534d49322624336fa95108c79e8e3c22847771d2e15f2",
+    "reference_check": {
+      "date": "2026-11-05",
+      "source": "Owner listening review of both Whisper comparisons, with overlapping wording corrections applied once",
+      "owner_audio_verification": "Owner completed all 11 discrepancy passages",
+      "source_reference_sha256": "c235024887c363a203d4e2728f63a8f85b1f4f415b67f32d87019c4b816d5812"
+    }
   }
 }

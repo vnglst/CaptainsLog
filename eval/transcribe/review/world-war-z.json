@@ -1,0 +1,119 @@
+{
+  "id": "world-war-z",
+  "title": "World War Z",
+  "audio_sha256": "6f419da2feeb93596b095aa544dd70ad8c8cdef2f0816f2c458dedb0914740d6",
+  "reference_sha256": "ddc4c9b372939ddecec534d49322624336fa95108c79e8e3c22847771d2e15f2",
+  "timing_source": "Owner-reviewed passage boundaries from the 2026-11-05 two-model comparison, with word offsets mapped to the corrected reference.",
+  "passages": [
+    {
+      "id": "world-war-z-E01",
+      "short_id": "E01",
+      "title": "Prewar population: numbers and joined words",
+      "start_seconds": 5.15,
+      "end_seconds": 14.33,
+      "check": "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
+      "reference_start_word": 7,
+      "reference_end_word": 22
+    },
+    {
+      "id": "world-war-z-E02",
+      "short_id": "E02",
+      "title": "Remaining population: words or digits",
+      "start_seconds": 13.47,
+      "end_seconds": 17.81,
+      "check": "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
+      "reference_start_word": 22,
+      "reference_end_word": 28
+    },
+    {
+      "id": "world-war-z-E03",
+      "short_id": "E03",
+      "title": "Densely populated coast: singular or plural",
+      "start_seconds": 21.41,
+      "end_seconds": 27.61,
+      "check": "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
+      "reference_start_word": 41,
+      "reference_end_word": 51
+    },
+    {
+      "id": "world-war-z-E04",
+      "short_id": "E04",
+      "title": "Postwar outbreaks: joined or separate words",
+      "start_seconds": 32.27,
+      "end_seconds": 41.41,
+      "check": "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
+      "reference_start_word": 64,
+      "reference_end_word": 81
+    },
+    {
+      "id": "world-war-z-E05",
+      "short_id": "E05",
+      "title": "Kwang Jing-shu: name spelling",
+      "start_seconds": 41.23,
+      "end_seconds": 48.17,
+      "check": "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
+      "reference_start_word": 81,
+      "reference_end_word": 90
+    },
+    {
+      "id": "world-war-z-E06",
+      "short_id": "E06",
+      "title": "Destruction of Dachang: possible repeated or added words",
+      "start_seconds": 78.7,
+      "end_seconds": 93.88,
+      "check": "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
+      "reference_start_word": 168,
+      "reference_end_word": 195
+    },
+    {
+      "id": "world-war-z-E07",
+      "short_id": "E07",
+      "title": "Dismantling Dachang: “had” / “has”",
+      "start_seconds": 85.71,
+      "end_seconds": 93.88,
+      "check": "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
+      "reference_start_word": 182,
+      "reference_end_word": 195
+    },
+    {
+      "id": "world-war-z-E08",
+      "short_id": "E08",
+      "title": "Naming the new homes: possible repeated “name”",
+      "start_seconds": 110.93,
+      "end_seconds": 130.61,
+      "check": "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
+      "reference_start_word": 236,
+      "reference_end_word": 266
+    },
+    {
+      "id": "world-war-z-E09",
+      "short_id": "E09",
+      "title": "Older New Dachang: possibly omitted or changed place name",
+      "start_seconds": 122.75,
+      "end_seconds": 130.61,
+      "check": "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
+      "reference_start_word": 266,
+      "reference_end_word": 275
+    },
+    {
+      "id": "world-war-z-E10",
+      "short_id": "E10",
+      "title": "Harley-Davidsons and G.I.s: word boundaries and spelling",
+      "start_seconds": 145.26,
+      "end_seconds": 154.27,
+      "check": "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
+      "reference_start_word": 312,
+      "reference_end_word": 334
+    },
+    {
+      "id": "world-war-z-E11",
+      "short_id": "E11",
+      "title": "Sending help: possible invented ending",
+      "start_seconds": 179.29,
+      "end_seconds": 183.63,
+      "check": "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
+      "reference_start_word": 404,
+      "reference_end_word": 409
+    }
+  ]
+}

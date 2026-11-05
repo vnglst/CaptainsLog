@@ -814,9 +814,9 @@
       },
       "notes": "",
       "retakes": [],
-      "status": "misaligned",
-      "updated_at": "2026-11-05T20:02:03Z",
-      "words": ""
+      "status": "corrected",
+      "updated_at": "2026-11-05T20:08:57Z",
+      "words": "When the Three Gorges Dam was completed, and reservoir waters began to rise, much of Dachang has been disassembled, brick by brick, then rebuilt on higher ground"
     },
     "world-war-z-E07": {
       "accepted_take_id": null,
@@ -848,8 +848,8 @@
       },
       "notes": "",
       "retakes": [],
-      "status": "misaligned",
-      "updated_at": "2026-11-05T20:02:23Z",
+      "status": "matches",
+      "updated_at": "2026-11-05T20:09:25Z",
       "words": ""
     },
     "world-war-z-E09": {
