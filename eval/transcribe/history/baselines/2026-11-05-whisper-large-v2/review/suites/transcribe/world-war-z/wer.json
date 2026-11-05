@@ -1,0 +1,131 @@
+{
+  "alignment" : "unit-cost-levenshtein-diagonal-delete-insert-v1",
+  "audio_sha256" : "6f419da2feeb93596b095aa544dd70ad8c8cdef2f0816f2c458dedb0914740d6",
+  "deletions" : 1,
+  "edits" : [
+    {
+      "hypothesis" : "pre",
+      "hypothesis_index" : 9,
+      "operation" : "insertion",
+      "reference" : "",
+      "reference_index" : 9
+    },
+    {
+      "hypothesis" : "war",
+      "hypothesis_index" : 10,
+      "operation" : "substitution",
+      "reference" : "prewar",
+      "reference_index" : 9
+    },
+    {
+      "hypothesis" : "",
+      "hypothesis_index" : 19,
+      "operation" : "deletion",
+      "reference" : "thirty",
+      "reference_index" : 18
+    },
+    {
+      "hypothesis" : "35",
+      "hypothesis_index" : 19,
+      "operation" : "substitution",
+      "reference" : "five",
+      "reference_index" : 19
+    },
+    {
+      "hypothesis" : "50",
+      "hypothesis_index" : 26,
+      "operation" : "substitution",
+      "reference" : "fifty",
+      "reference_index" : 26
+    },
+    {
+      "hypothesis" : "000",
+      "hypothesis_index" : 27,
+      "operation" : "substitution",
+      "reference" : "thousand",
+      "reference_index" : 27
+    },
+    {
+      "hypothesis" : "coasts",
+      "hypothesis_index" : 50,
+      "operation" : "substitution",
+      "reference" : "coast",
+      "reference_index" : 50
+    },
+    {
+      "hypothesis" : "post",
+      "hypothesis_index" : 79,
+      "operation" : "insertion",
+      "reference" : "",
+      "reference_index" : 79
+    },
+    {
+      "hypothesis" : "war",
+      "hypothesis_index" : 80,
+      "operation" : "substitution",
+      "reference" : "postwar",
+      "reference_index" : 79
+    },
+    {
+      "hypothesis" : "kuang",
+      "hypothesis_index" : 88,
+      "operation" : "substitution",
+      "reference" : "kwang",
+      "reference_index" : 87
+    },
+    {
+      "hypothesis" : "ying",
+      "hypothesis_index" : 89,
+      "operation" : "substitution",
+      "reference" : "jing",
+      "reference_index" : 88
+    },
+    {
+      "hypothesis" : "choo",
+      "hypothesis_index" : 90,
+      "operation" : "substitution",
+      "reference" : "shu",
+      "reference_index" : 89
+    },
+    {
+      "hypothesis" : "the",
+      "hypothesis_index" : 245,
+      "operation" : "insertion",
+      "reference" : "",
+      "reference_index" : 244
+    },
+    {
+      "hypothesis" : "name",
+      "hypothesis_index" : 246,
+      "operation" : "insertion",
+      "reference" : "",
+      "reference_index" : 244
+    },
+    {
+      "hypothesis" : "davidson",
+      "hypothesis_index" : 322,
+      "operation" : "substitution",
+      "reference" : "davidsons",
+      "reference_index" : 319
+    },
+    {
+      "hypothesis" : "skilled",
+      "hypothesis_index" : 323,
+      "operation" : "substitution",
+      "reference" : "killed",
+      "reference_index" : 320
+    }
+  ],
+  "errors" : 16,
+  "hypothesis_sha256" : "5df7d789b5dd2b880d83df8180be5bba229130581a7841a7dfc15d28b150f33a",
+  "hypothesis_words" : 412,
+  "insertions" : 4,
+  "normalization" : "unicode-words-v1",
+  "provisional" : false,
+  "reference_sha256" : "ddc4c9b372939ddecec534d49322624336fa95108c79e8e3c22847771d2e15f2",
+  "reference_status" : "audio-reviewed",
+  "reference_words" : 409,
+  "substitutions" : 11,
+  "wer" : 0.039119804400977995,
+  "wer_percent" : 3.9119804400977993
+}

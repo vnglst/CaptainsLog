@@ -1,0 +1,89 @@
+{
+  "alignment" : "unit-cost-levenshtein-diagonal-delete-insert-v1",
+  "audio_sha256" : "423df075a1d2efcdc74966cd24e5b09f02cc9012855715a1cb2fd12b0aae6e9b",
+  "deletions" : 1,
+  "edits" : [
+    {
+      "hypothesis" : "kelet",
+      "hypothesis_index" : 89,
+      "operation" : "substitution",
+      "reference" : "kheled",
+      "reference_index" : 89
+    },
+    {
+      "hypothesis" : "zaram",
+      "hypothesis_index" : 90,
+      "operation" : "substitution",
+      "reference" : "zâram",
+      "reference_index" : 90
+    },
+    {
+      "hypothesis" : "lideren",
+      "hypothesis_index" : 110,
+      "operation" : "substitution",
+      "reference" : "liederen",
+      "reference_index" : 110
+    },
+    {
+      "hypothesis" : "wijt",
+      "hypothesis_index" : 118,
+      "operation" : "substitution",
+      "reference" : "wijd",
+      "reference_index" : 118
+    },
+    {
+      "hypothesis" : "zeit",
+      "hypothesis_index" : 120,
+      "operation" : "substitution",
+      "reference" : "zijd",
+      "reference_index" : 120
+    },
+    {
+      "hypothesis" : "",
+      "hypothesis_index" : 124,
+      "operation" : "deletion",
+      "reference" : "durin",
+      "reference_index" : 124
+    },
+    {
+      "hypothesis" : "durende",
+      "hypothesis_index" : 124,
+      "operation" : "substitution",
+      "reference" : "de",
+      "reference_index" : 125
+    },
+    {
+      "hypothesis" : "kazad",
+      "hypothesis_index" : 142,
+      "operation" : "substitution",
+      "reference" : "khazad",
+      "reference_index" : 143
+    },
+    {
+      "hypothesis" : "dürin",
+      "hypothesis_index" : 171,
+      "operation" : "substitution",
+      "reference" : "durin",
+      "reference_index" : 172
+    },
+    {
+      "hypothesis" : "onsterflijke",
+      "hypothesis_index" : 180,
+      "operation" : "substitution",
+      "reference" : "onsterfelijke",
+      "reference_index" : 181
+    }
+  ],
+  "errors" : 10,
+  "hypothesis_sha256" : "73ad4cd98be0223275e9b645f3cf0acf2b6d7b983a69ad8e6f3365a0715b5f64",
+  "hypothesis_words" : 199,
+  "insertions" : 0,
+  "normalization" : "unicode-words-v1",
+  "provisional" : false,
+  "reference_sha256" : "841d8ff3922985a94f1b92bd37684c75e7880d8972b72dc4977732ae6a0c4a3f",
+  "reference_status" : "audio-reviewed",
+  "reference_words" : 200,
+  "substitutions" : 9,
+  "wer" : 0.050000000000000003,
+  "wer_percent" : 5
+}

@@ -1,0 +1,76 @@
+[
+  {
+    "audio_sha256": "f8a977f21028036d9b88496bb87da3dcfcc0ad731732b41f29d782da4fd992ca",
+    "date": "2025-01-15",
+    "expected": "eval/transcribe/history/baselines/2026-11-05-whisper-large-v2/review/suites/transcribe/alle-mensen-zijn-sterfelijk/expected.md",
+    "input": "eval/transcribe/history/baselines/2026-11-05-whisper-large-v2/review/suites/transcribe/alle-mensen-zijn-sterfelijk/input.m4a",
+    "language": "Dutch",
+    "name": "alle-mensen-zijn-sterfelijk",
+    "output": "eval/transcribe/history/baselines/2026-11-05-whisper-large-v2/review/suites/transcribe/alle-mensen-zijn-sterfelijk/output.md",
+    "recording_time": "12:00",
+    "reference_check": {
+      "date": "2026-11-05",
+      "owner_audio_verification": "Owner confirmed the reference for all 15 discrepancy passages",
+      "source": "Owner listening review of both Whisper comparisons"
+    },
+    "reference_sha256": "68240648e0c0fd312608cb1f13adf81f952dc3c0fbeebba9daaa48990150dc6f",
+    "reference_status": "audio-reviewed",
+    "stage": "transcribe"
+  },
+  {
+    "audio_sha256": "423df075a1d2efcdc74966cd24e5b09f02cc9012855715a1cb2fd12b0aae6e9b",
+    "date": "2025-01-15",
+    "expected": "eval/transcribe/history/baselines/2026-11-05-whisper-large-v2/review/suites/transcribe/durins-volk/expected.md",
+    "input": "eval/transcribe/history/baselines/2026-11-05-whisper-large-v2/review/suites/transcribe/durins-volk/input.m4a",
+    "language": "Dutch",
+    "name": "durins-volk",
+    "output": "eval/transcribe/history/baselines/2026-11-05-whisper-large-v2/review/suites/transcribe/durins-volk/output.md",
+    "recording_time": "12:00",
+    "reference_check": {
+      "date": "2026-11-05",
+      "owner_audio_verification": "Owner confirmed the reference for all 9 discrepancy passages",
+      "source": "Owner listening review of both Whisper comparisons"
+    },
+    "reference_sha256": "841d8ff3922985a94f1b92bd37684c75e7880d8972b72dc4977732ae6a0c4a3f",
+    "reference_status": "audio-reviewed",
+    "stage": "transcribe"
+  },
+  {
+    "audio_sha256": "731efc1781210e0717e9952bcea5ab761793810b7f4f0fcd7d607fff6fa3c990",
+    "date": "2025-01-15",
+    "expected": "eval/transcribe/history/baselines/2026-11-05-whisper-large-v2/review/suites/transcribe/tng-nl01-vrije-dag-enterprise-corrected/expected.md",
+    "input": "eval/transcribe/history/baselines/2026-11-05-whisper-large-v2/review/suites/transcribe/tng-nl01-vrije-dag-enterprise-corrected/input.m4a",
+    "language": "Dutch",
+    "name": "tng-nl01-vrije-dag-enterprise-corrected",
+    "output": "eval/transcribe/history/baselines/2026-11-05-whisper-large-v2/review/suites/transcribe/tng-nl01-vrije-dag-enterprise-corrected/output.md",
+    "recording_time": "12:00",
+    "reference_check": {
+      "date": "2026-10-30",
+      "derived_from": "tng-nl01-vrije-dag-enterprise",
+      "owner_audio_verification": "Accepted by owner after two review rounds, 2026-10-30",
+      "source": "Owner first-round wording corrections and explicitly selected replacement takes"
+    },
+    "reference_sha256": "37a5afd505cea14c707ae0e4d041e0e1537588531c3acedf54c228a698ec87bf",
+    "reference_status": "audio-reviewed",
+    "stage": "transcribe"
+  },
+  {
+    "audio_sha256": "6f419da2feeb93596b095aa544dd70ad8c8cdef2f0816f2c458dedb0914740d6",
+    "date": "2025-01-15",
+    "expected": "eval/transcribe/history/baselines/2026-11-05-whisper-large-v2/review/suites/transcribe/world-war-z/expected.md",
+    "input": "eval/transcribe/history/baselines/2026-11-05-whisper-large-v2/review/suites/transcribe/world-war-z/input.m4a",
+    "language": "English",
+    "name": "world-war-z",
+    "output": "eval/transcribe/history/baselines/2026-11-05-whisper-large-v2/review/suites/transcribe/world-war-z/output.md",
+    "recording_time": "12:00",
+    "reference_check": {
+      "date": "2026-11-05",
+      "owner_audio_verification": "Owner completed all 11 discrepancy passages",
+      "source": "Owner listening review of both Whisper comparisons, with overlapping wording corrections applied once",
+      "source_reference_sha256": "c235024887c363a203d4e2728f63a8f85b1f4f415b67f32d87019c4b816d5812"
+    },
+    "reference_sha256": "ddc4c9b372939ddecec534d49322624336fa95108c79e8e3c22847771d2e15f2",
+    "reference_status": "audio-reviewed",
+    "stage": "transcribe"
+  }
+]

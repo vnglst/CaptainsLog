@@ -42,6 +42,8 @@ Run `make evals STAGE=transcribe` to score all four WER cases. Full pipeline eva
 inputs, raw output and an aligned WER report. WER measures word edits; semantic
 review still matters, especially for hallucinations and changed meaning.
 
+The [2026-11-05 baseline](transcribe/history/baselines/2026-11-05-whisper-large-v2/README.md) records the fresh four-case measurement.
+
 Historical audio, references and review evidence live in `transcribe/history/`.
 
 The two preserved review rounds in `transcribe/history/review-1/` and `review-2/`
