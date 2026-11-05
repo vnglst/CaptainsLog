@@ -27,6 +27,18 @@ recording action exports an M4A plus an edit map; it rejects overlapping ranges 
 preserves the original fixture. Do not start real microphone capture during agent
 verification; use synthetic capture tests and repository audio fixtures.
 
+For a new two-model discrepancy review, use `make evals-review RUN_DIR=...
+COMPARISON_RUN=... ARGS=--differences` (on one command line). The comparison folder
+contains per-recording `.txt`, whisper.cpp full JSON timestamps and `.run.json`
+with matching audio/output hashes. Timestamped comparisons automatically select
+this mode; saved reviews remember it. Passages are selected from both complete
+word alignments, including omissions and final insertions. Each clip must contain
+a difference in at least one model; per-model edit counts distinguish shared and
+model-specific discrepancies. Matching segments are not generated as error items.
+Keep the older completed checklists and their owner decisions as history; generate
+a separate comparison run rather than replacing their passage contexts. Times
+are approximate model segment boundaries with listening context.
+
 ## Stage review
 
 Read the expected text and original uncleaned generated transcript word by word. Never substitute cleaned output for raw transcription.

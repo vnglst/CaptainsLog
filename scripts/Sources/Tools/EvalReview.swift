@@ -20,7 +20,7 @@ extension Tools {
     /// Materialize an isolated review app from the selected saved run, never from
     /// a machine-specific glob of unrelated generated files or personal audio.
     @discardableResult
-    func prepareEvalReview(_ run: URL, items supplied: [EvalItem]? = nil, comparison: URL? = nil) throws -> URL? {
+    func prepareEvalReview(_ run: URL, items supplied: [EvalItem]? = nil, comparison requestedComparison: URL? = nil, differencesOnly: Bool = false) throws -> URL? {
         let evaluator = Evaluator(self)
         let items = try supplied ?? (json(run.appendingPathComponent("manifest.json")) as? [EvalItem] ?? [])
         let audioCases = items.filter { evaluator.string($0, "stage") == "transcribe" }
@@ -30,6 +30,15 @@ extension Tools {
         try mkdir(assets)
         let previousFile = app.appendingPathComponent("recordings.json")
         let previousData = fm.fileExists(atPath: previousFile.path) ? try json(previousFile) as? EvalItem : nil
+        let timestampedComparison = requestedComparison.map { folder in
+            audioCases.allSatisfy { item in
+                let name = evaluator.string(item, "name")
+                return fm.fileExists(atPath: folder.appendingPathComponent(name + ".json").path)
+                    && fm.fileExists(atPath: folder.appendingPathComponent(name + ".run.json").path)
+            }
+        } ?? false
+        let generateDifferences = differencesOnly || timestampedComparison || previousData?["selection"] as? String == "aligned-differences"
+        let comparison = requestedComparison ?? (generateDifferences ? (previousData?["comparison_source"] as? String).map(path) : nil)
         let previousRecordings = previousData?["recordings"] as? [EvalItem] ?? []
         guard let source = Bundle.module.url(forResource: "EvalReview", withExtension: nil) else { throw ToolFailure("Missing evaluation review app resources") }
         for name in ["index.html", "style.css", "app.js", "audio-capture.mjs", "review-passages.mjs"] { try copy(source.appendingPathComponent(name), app.appendingPathComponent(name)) }
@@ -93,7 +102,23 @@ extension Tools {
             if let definition, definition["audio_sha256"] as? String == audioHash, definition["reference_sha256"] as? String == referenceHash {
                 definitions = definition["passages"] as? [EvalItem] ?? []
             } else if definition != nil { print("Review passage reference changed for \(name); using the full recording until timings are updated.") }
-            if definitions.isEmpty { definitions = [["id": identifier + "-full", "short_id": "Full", "title": "Full recording", "start_seconds": 0.0, "end_seconds": duration, "reference_start_word": 0, "reference_end_word": ref.ranges.count, "check": "Listen to the recording and verify the reference against the spoken words."]] }
+            if generateDifferences {
+                guard let transcript, let second, let comparison else { throw ToolFailure("Difference selection requires both model transcripts and timestamped comparison evidence") }
+                let identityURL = comparison.appendingPathComponent(name + ".run.json")
+                let timingURL = comparison.appendingPathComponent(name + ".json")
+                let identity = try json(identityURL) as? EvalItem ?? [:]
+                try require(identity["audio_sha256"] as? String == audioHash, "Comparison used different audio: " + name)
+                if let timingHash = identity["timing_sha256"] as? String {
+                    try require(timingHash == hash(timingURL), "Comparison timing hash mismatch: " + name)
+                }
+                let comparisonText = comparison.appendingPathComponent(name + ".txt")
+                try require(identity["output_sha256"] as? String == hash(comparisonText), "Comparison transcript hash mismatch: " + name)
+                try require(read(comparisonText) == second, "Comparison timing source does not match the selected output")
+                definitions = try differencePassages(reference: reference, transcript: transcript, comparison: second,
+                    timing: json(timingURL) as? EvalItem ?? [:], identifier: identifier, duration: duration)
+                comparisonLabel = "Whisper Large-v3 · timestamped comparison"
+            }
+            if definitions.isEmpty && !generateDifferences { definitions = [["id": identifier + "-full", "short_id": "Full", "title": "Full recording", "start_seconds": 0.0, "end_seconds": duration, "reference_start_word": 0, "reference_end_word": ref.ranges.count, "check": "Listen to the recording and verify the reference against the spoken words."]] }
             var passages: [EvalItem] = []
             for (offset, p) in definitions.enumerated() {
                 guard let start = p["start_seconds"] as? Double, let end = p["end_seconds"] as? Double,
@@ -101,7 +126,7 @@ extension Tools {
                 try require(start >= 0 && start < end && end <= duration + 0.25 && a >= 0 && (a < b || ref.ranges.isEmpty) && b <= ref.ranges.count, "Invalid listening bounds: \(name)/\(offset)")
                 let id = evaluator.string(p, "id", identifier + "-\(offset)") + (duplicate ? "-\(scope)" : "")
                 let context: EvalItem = ["audio_sha256": audioHash, "reference_sha256": referenceHash, "start_seconds": start, "end_seconds": end, "reference_start_word": a, "reference_end_word": b]
-                passages.append(["id": id, "short_id": evaluator.string(p, "short_id", "\(offset + 1)"), "title": evaluator.string(p, "title", "Passage \(offset + 1)"), "start_seconds": start, "end_seconds": min(end, duration), "clip_start": start, "clip_end": min(end, duration), "audio": audioPath, "reference": ref.excerpt(a, b), "app_transcript": generatedBoundaries.map { generated!.excerpt($0[a], $0[b]) } as Any? ?? NSNull(), "second_transcript": comparedBoundaries.map { compared!.excerpt($0[a], $0[b]) } as Any? ?? NSNull(), "context": context, "check": evaluator.string(p, "check", "Listen for the exact words and any restarts. Text alignment is approximate; use the full transcript for context.")])
+                passages.append(["id": id, "short_id": evaluator.string(p, "short_id", "\(offset + 1)"), "title": evaluator.string(p, "title", "Passage \(offset + 1)"), "start_seconds": start, "end_seconds": min(end, duration), "clip_start": start, "clip_end": min(end, duration), "audio": audioPath, "reference": ref.excerpt(a, b), "app_transcript": generatedBoundaries.map { generated!.excerpt($0[a], $0[b]) } as Any? ?? NSNull(), "second_transcript": comparedBoundaries.map { compared!.excerpt($0[a], $0[b]) } as Any? ?? NSNull(), "context": context, "model_errors": p["model_errors"] ?? NSNull(), "check": evaluator.string(p, "check", "Listen for the exact words and any restarts. Text alignment is approximate; use the full transcript for context.")])
             }
             var carried: [String] = []
             let provenanceURL = path("eval/transcribe/review/\(name).provenance.json")
@@ -118,9 +143,9 @@ extension Tools {
                 }
                 carried = try inheritedReviewPassages(passages: passages, source: originals, decisions: provenance["owner_decisions"] as? [String: EvalItem] ?? [:], edits: editMap["edits"] as? [EvalItem] ?? [])
             }
-            recordings.append(["id": identifier, "name": name, "title": title, "language": evaluator.string(fixture, "language"), "duration": duration, "audio": audioPath, "reference": reference, "app_transcript": transcript as Any? ?? NSNull(), "second_transcript": second as Any? ?? NSNull(), "app_label": evaluator.string(item, "model_label", "Saved evaluation transcript"), "comparison_label": comparisonLabel, "reference_sha256": referenceHash, "audio_sha256": audioHash, "output_sha256": (try? hash(output)) as Any? ?? NSNull(), "passages": passages, "carried_passages": carried])
+            recordings.append(["selection": generateDifferences ? "aligned-differences" : "listening-checklist", "id": identifier, "name": name, "title": title + (generateDifferences ? " · Whisper differences" : ""), "language": evaluator.string(fixture, "language"), "duration": duration, "audio": audioPath, "reference": reference, "app_transcript": transcript as Any? ?? NSNull(), "second_transcript": second as Any? ?? NSNull(), "app_label": evaluator.string(item, "model_label", "Saved evaluation transcript"), "comparison_label": comparisonLabel, "reference_sha256": referenceHash, "audio_sha256": audioHash, "output_sha256": (try? hash(output)) as Any? ?? NSNull(), "passages": passages, "carried_passages": carried])
         }
-        let data: EvalItem = ["version": 1, "run": run.path, "app_source_hashes": try hashes(files(source)), "comparison_source": comparison?.path as Any? ?? previousData?["comparison_source"] ?? NSNull(), "recordings": recordings]
+        let data: EvalItem = ["selection": generateDifferences ? "aligned-differences" : "listening-checklist", "version": 1, "run": run.path, "app_source_hashes": try hashes(files(source)), "comparison_source": comparison?.path as Any? ?? previousData?["comparison_source"] ?? NSNull(), "recordings": recordings]
         try JSONSerialization.data(withJSONObject: data, options: [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]).write(to: app.appendingPathComponent("recordings.json"), options: .atomic)
         try write(app.appendingPathComponent("README.txt"), "Run from the repository: make evals-review RUN_DIR=\(run.path)\nDecisions are saved in review-state.json. Regeneration preserves them. Audio/reference changes invalidate prior verification without discarding its saved text.\n")
         return app
@@ -144,21 +169,22 @@ extension Tools {
         return result
     }
     func evalsReview(_ args: [String]) throws {
-        var run: URL?, comparison: URL?, port: UInt16 = 8777, prepareOnly = false, i = 0
+        var run: URL?, comparison: URL?, port: UInt16 = 8777, prepareOnly = false, differencesOnly = false, i = 0
         func value() throws -> String { i += 1; try require(i < args.count, "Missing review option value", status: 2); return args[i] }
         while i < args.count {
             switch args[i] {
             case "--run": run = path(try value()).standardizedFileURL
             case "--comparison-run": comparison = path(try value()).standardizedFileURL
             case "--port": guard let parsed = UInt16(try value()), parsed > 0 else { throw ToolFailure("Invalid review port", status: 2) }; port = parsed
+            case "--differences": differencesOnly = true
             case "--prepare-only": prepareOnly = true
-            case "--help", "-h": print("Usage: make evals-review RUN_DIR=RUN [COMPARISON_RUN=RUN_OR_TRANSCRIPT_DIR] [PORT=8777] [ARGS=--prepare-only]"); return
+            case "--help", "-h": print("Usage: make evals-review RUN_DIR=RUN [COMPARISON_RUN=RUN_OR_TRANSCRIPT_DIR] [PORT=8777] [ARGS='--differences --prepare-only']"); return
             default: throw ToolFailure("Unknown review option: \(args[i])", status: 2)
             }
             i += 1
         }
         try require(run != nil, "Specify a saved evaluation RUN_DIR", status: 2)
-        guard let app = try prepareEvalReview(run!, comparison: comparison) else { throw ToolFailure("No transcription cases in the selected evaluation run", status: 2) }
+        guard let app = try prepareEvalReview(run!, comparison: comparison, differencesOnly: differencesOnly) else { throw ToolFailure("No transcription cases in the selected evaluation run", status: 2) }
         if prepareOnly { print("Prepared review app: \(app.path)"); return }
         let catalog = path("tmp/eval-review-sessions.json")
         let server = try EvalReviewServer(root: app, port: port, catalog: catalog)

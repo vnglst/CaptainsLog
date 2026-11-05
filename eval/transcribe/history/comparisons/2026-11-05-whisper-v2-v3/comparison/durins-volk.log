@@ -1,0 +1,140 @@
+load_backend: loaded BLAS backend from /opt/homebrew/Cellar/ggml/0.27.0/libexec/libggml-blas.so
+ggml_metal_device_init: tensor API disabled for pre-M5 and pre-A19 devices
+ggml_metal_library_init: using embedded metal library
+ggml_metal_library_compile_all: compiled 'fa_aux' library in 0.001 sec
+ggml_metal_library_compile_all: compiled 'fa_f16' library in 0.003 sec
+ggml_metal_library_compile_all: compiled 'fa_f32' library in 0.001 sec
+ggml_metal_library_compile_all: compiled 'fa_q4_0' library in 0.002 sec
+ggml_metal_library_compile_all: compiled 'fa_q4_1' library in 0.013 sec
+ggml_metal_library_compile_all: compiled 'fa_q5_0' library in 0.002 sec
+ggml_metal_library_compile_all: compiled 'fa_q5_1' library in 0.006 sec
+ggml_metal_library_compile_all: compiled 'fa_q8_0' library in 0.009 sec
+ggml_metal_library_compile_all: compiled 'fa_tensor' library in 0.002 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_f16' library in 0.007 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_f32' library in 0.005 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q4_0' library in 0.012 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q4_1' library in 0.010 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q5_0' library in 0.005 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q5_1' library in 0.004 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q8_0' library in 0.008 sec
+ggml_metal_library_compile_all: compiled 'mul_mv' library in 0.003 sec
+ggml_metal_library_compile_all: compiled 'mul_mv_mma' library in 0.009 sec
+ggml_metal_library_compile_all: compiled 'mul_mm' library in 0.011 sec
+ggml_metal_library_compile_all: compiled 'quantize' library in 0.007 sec
+ggml_metal_library_compile_all: compiled 'softmax' library in 0.002 sec
+ggml_metal_library_compile_all: compiled 'norm' library in 0.002 sec
+ggml_metal_library_compile_all: compiled 'unary' library in 0.003 sec
+ggml_metal_library_compile_all: compiled 'binbcast' library in 0.000 sec
+ggml_metal_library_compile_all: compiled 'reduce' library in 0.003 sec
+ggml_metal_library_compile_all: compiled 'tri' library in 0.001 sec
+ggml_metal_library_compile_all: compiled 'ssm' library in 0.011 sec
+ggml_metal_library_compile_all: compiled 'wkv' library in 0.011 sec
+ggml_metal_library_compile_all: compiled 'gated_delta_net' library in 0.011 sec
+ggml_metal_library_compile_all: compiled 'solve_tri' library in 0.011 sec
+ggml_metal_library_compile_all: compiled 'rope' library in 0.002 sec
+ggml_metal_library_compile_all: compiled 'conv' library in 0.002 sec
+ggml_metal_library_compile_all: compiled 'upscale' library in 0.002 sec
+ggml_metal_library_compile_all: compiled 'argsort' library in 0.011 sec
+ggml_metal_library_compile_all: compiled 'pool' library in 0.002 sec
+ggml_metal_library_compile_all: compiled 'misc' library in 0.002 sec
+ggml_metal_library_compile_all: loaded 36 libraries from embedded data in 0.013 sec (max single = 0.013 sec)
+ggml_metal_rsets_init: creating a residency set collection (keep_alive = 180 s)
+ggml_metal_device_init: GPU name:   MTL0 (Apple M4)
+ggml_metal_device_init: GPU family: MTLGPUFamilyApple9  (1009)
+ggml_metal_device_init: GPU family: MTLGPUFamilyMetal4  (5002)
+ggml_metal_device_init: simdgroup reduction   = true
+ggml_metal_device_init: simdgroup matrix mul. = true
+ggml_metal_device_init: has unified memory    = true
+ggml_metal_device_init: has bfloat            = true
+ggml_metal_device_init: has tensor            = false
+ggml_metal_device_init: use residency sets    = true
+ggml_metal_device_init: use shared buffers    = true
+ggml_metal_device_init: recommendedMaxWorkingSetSize  = 12713.12 MB
+load_backend: loaded MTL backend from /opt/homebrew/Cellar/ggml/0.27.0/libexec/libggml-metal.so
+load_backend: loaded CPU backend from /opt/homebrew/Cellar/ggml/0.27.0/libexec/libggml-cpu-apple_m4.so
+whisper_init_from_file_with_params_no_state: loading model from '/Users/vnglst/Code/CaptainsLog/tmp/task-77-independent/ggml-large-v3-q5_0.bin'
+whisper_init_with_params_no_state: use gpu    = 1
+whisper_init_with_params_no_state: flash attn = 1
+whisper_init_with_params_no_state: gpu_device = 0
+whisper_init_with_params_no_state: dtw        = 0
+whisper_init_with_params_no_state: devices    = 3
+whisper_init_with_params_no_state: backends   = 3
+whisper_model_load: loading model
+whisper_model_load: n_vocab       = 51866
+whisper_model_load: n_audio_ctx   = 1500
+whisper_model_load: n_audio_state = 1280
+whisper_model_load: n_audio_head  = 20
+whisper_model_load: n_audio_layer = 32
+whisper_model_load: n_text_ctx    = 448
+whisper_model_load: n_text_state  = 1280
+whisper_model_load: n_text_head   = 20
+whisper_model_load: n_text_layer  = 32
+whisper_model_load: n_mels        = 128
+whisper_model_load: ftype         = 8
+whisper_model_load: qntvr         = 2
+whisper_model_load: type          = 5 (large v3)
+whisper_model_load: adding 1609 extra tokens
+whisper_model_load: n_langs       = 100
+whisper_model_load:         MTL0 total size =  1080.47 MB
+whisper_model_load: model size    = 1080.47 MB
+whisper_backend_init_gpu: device 0: BLAS (type: 3)
+whisper_backend_init_gpu: device 1: MTL0 (type: 1)
+whisper_backend_init_gpu: found GPU device 1: MTL0 (type: 1, cnt: 0)
+whisper_backend_init_gpu: using MTL0 backend
+ggml_metal_init: allocating
+ggml_metal_init: found device: Apple M4
+ggml_metal_init: picking default device: Apple M4
+ggml_metal_init: use fusion         = true
+ggml_metal_init: use concurrency    = true
+ggml_metal_init: use graph optimize = true
+whisper_backend_init: using BLAS backend
+whisper_init_state: kv self size  =   83.89 MB
+whisper_init_state: kv cross size =  251.66 MB
+whisper_init_state: kv pad  size  =    7.86 MB
+whisper_init_state: compute buffer (conv)   =   37.69 MB
+whisper_init_state: compute buffer (encode) =   67.49 MB
+whisper_init_state: compute buffer (cross)  =  132.15 MB
+whisper_init_state: compute buffer (decode) =  100.04 MB
+read_audio_data: reading audio data from '/Users/vnglst/Code/CaptainsLog/tmp/task-77-independent/durins-volk.wav' ...
+read_audio_data: trying to decode with miniaudio
+
+system_info: n_threads = 4 / 10 | WHISPER : VITISAI = 0 | COREML = 0 | OPENVINO = 0 | MTL : EMBED_LIBRARY = 1 | CPU : NEON = 1 | ARM_FMA = 1 | FP16_VA = 1 | MATMUL_INT8 = 1 | DOTPROD = 1 | SME = 1 | ACCELERATE = 1 | OPENMP = 1 | REPACK = 1 | 
+
+main: processing '/Users/vnglst/Code/CaptainsLog/tmp/task-77-independent/durins-volk.wav' (1452800 samples, 90.8 sec), 4 threads, 1 processors, 5 beams + best of 5, lang = nl, task = transcribe, timestamps = 1 ...
+
+
+[00:00:00.000 --> 00:00:15.880]   over het begin van de dwergen doen vreemde verhalen de ronde zowel onder de eldar als bij de dwergen zelf maar aangezien deze dingen ver voor onze tijd liggen wordt er hier weinig over medegedeeld
+[00:00:15.880 --> 00:00:26.720]   durin is de naam die de dwergen gebruikten voor de oudsten van de zeven vaders van hun ras en de voorvader van alle koningen van de langbaarden
+[00:00:26.720 --> 00:00:44.480]   hij sliep alleen tot hij in de diepten van de tijd en bij het ontwaken van dat volk naar azanulbizar ging en in de grotten boven het keletzaram in het oosten van de nevelbergen vestigde hij zijn woonplaats
+[00:00:44.480 --> 00:00:45.520]   waarnaar de hand
+[00:00:45.520 --> 00:00:47.140]   de mijnen van moria waren
+[00:00:47.140 --> 00:00:48.520]   beroemd uit liederen
+[00:00:48.520 --> 00:00:50.900]   daar woonde hij zo lang
+[00:00:50.900 --> 00:00:53.240]   dat hij wijd en zijt bekend stond
+[00:00:53.240 --> 00:00:55.220]   als durin de onsterfelijke
+[00:00:55.220 --> 00:00:57.780]   maar tenslotte stierf hij toch
+[00:00:57.780 --> 00:00:59.780]   voordat de oudste tijden
+[00:00:59.780 --> 00:01:00.660]   voorbij waren
+[00:01:00.660 --> 00:01:02.220]   en zijn graftombe
+[00:01:02.220 --> 00:01:05.180]   stond in kazadum
+[00:01:05.180 --> 00:01:08.140]   maar zijn lijn stierf nooit uit
+[00:01:08.140 --> 00:01:09.680]   en vijf keer werd er
+[00:01:09.680 --> 00:01:11.940]   een erfgenaam van zijn huis geboren
+[00:01:11.940 --> 00:01:14.120]   die zozeer op zijn voorvader
+[00:01:14.120 --> 00:01:15.160]   leek dat hij
+[00:01:15.160 --> 00:01:16.780]   de naam durin kreeg
+[00:01:16.780 --> 00:01:26.800]   de dwergen beschouwden hem werkelijk als de onsterfelijke die terugkeerde want zij hebben vele vreemde verhalen en opvattingen over zichzelf en hun lot in de wereld
+[00:01:26.800 --> 00:01:30.900]   de dwergen beschouwden hem werkelijk als de onsterfelijke die terugkeerde want zij hebben vele vreemde verhalen en opvattingen over zichzelf en hun lot in de wereld
+output_txt: saving output to '/Users/vnglst/Code/CaptainsLog/tmp/task-77-independent/durins-volk.txt'
+output_json: saving output to '/Users/vnglst/Code/CaptainsLog/tmp/task-77-independent/durins-volk.json'
+
+whisper_print_timings:     load time =   269.77 ms
+whisper_print_timings:     fallbacks =   0 p /   0 h
+whisper_print_timings:      mel time =    31.57 ms
+whisper_print_timings:   sample time =   797.30 ms /  2759 runs (     0.29 ms per run)
+whisper_print_timings:   encode time =  8554.41 ms /     4 runs (  2138.60 ms per run)
+whisper_print_timings:   decode time =     0.00 ms /     1 runs (     0.00 ms per run)
+whisper_print_timings:   batchd time = 19900.19 ms /  2746 runs (     7.25 ms per run)
+whisper_print_timings:   prompt time =   808.10 ms /   473 runs (     1.71 ms per run)
+whisper_print_timings:    total time = 30631.40 ms
+ggml_metal_free: deallocating

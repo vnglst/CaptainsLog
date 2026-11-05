@@ -1,0 +1,217 @@
+load_backend: loaded BLAS backend from /opt/homebrew/Cellar/ggml/0.27.0/libexec/libggml-blas.so
+ggml_metal_device_init: tensor API disabled for pre-M5 and pre-A19 devices
+ggml_metal_library_init: using embedded metal library
+ggml_metal_library_compile_all: compiled 'fa_aux' library in 0.004 sec
+ggml_metal_library_compile_all: compiled 'fa_f16' library in 0.009 sec
+ggml_metal_library_compile_all: compiled 'fa_f32' library in 0.054 sec
+ggml_metal_library_compile_all: compiled 'fa_q4_0' library in 0.013 sec
+ggml_metal_library_compile_all: compiled 'fa_q4_1' library in 0.055 sec
+ggml_metal_library_compile_all: compiled 'fa_q5_0' library in 0.005 sec
+ggml_metal_library_compile_all: compiled 'fa_q5_1' library in 0.011 sec
+ggml_metal_library_compile_all: compiled 'fa_q8_0' library in 0.041 sec
+ggml_metal_library_compile_all: compiled 'fa_tensor' library in 0.002 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_f16' library in 0.062 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_f32' library in 0.031 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q4_0' library in 0.029 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q4_1' library in 0.036 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q5_0' library in 0.075 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q5_1' library in 0.049 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q8_0' library in 0.044 sec
+ggml_metal_library_compile_all: compiled 'mul_mv' library in 0.023 sec
+ggml_metal_library_compile_all: compiled 'mul_mv_mma' library in 0.067 sec
+ggml_metal_library_compile_all: compiled 'mul_mm' library in 0.016 sec
+ggml_metal_library_compile_all: compiled 'quantize' library in 0.018 sec
+ggml_metal_library_compile_all: compiled 'softmax' library in 0.009 sec
+ggml_metal_library_compile_all: compiled 'norm' library in 0.068 sec
+ggml_metal_library_compile_all: compiled 'unary' library in 0.067 sec
+ggml_metal_library_compile_all: compiled 'binbcast' library in 0.053 sec
+ggml_metal_library_compile_all: compiled 'reduce' library in 0.051 sec
+ggml_metal_library_compile_all: compiled 'tri' library in 0.074 sec
+ggml_metal_library_compile_all: compiled 'ssm' library in 0.066 sec
+ggml_metal_library_compile_all: compiled 'wkv' library in 0.048 sec
+ggml_metal_library_compile_all: compiled 'gated_delta_net' library in 0.048 sec
+ggml_metal_library_compile_all: compiled 'solve_tri' library in 0.047 sec
+ggml_metal_library_compile_all: compiled 'rope' library in 0.035 sec
+ggml_metal_library_compile_all: compiled 'conv' library in 0.035 sec
+ggml_metal_library_compile_all: compiled 'upscale' library in 0.035 sec
+ggml_metal_library_compile_all: compiled 'argsort' library in 0.074 sec
+ggml_metal_library_compile_all: compiled 'pool' library in 0.073 sec
+ggml_metal_library_compile_all: compiled 'misc' library in 0.022 sec
+ggml_metal_library_compile_all: loaded 36 libraries from embedded data in 0.079 sec (max single = 0.075 sec)
+ggml_metal_rsets_init: creating a residency set collection (keep_alive = 180 s)
+ggml_metal_device_init: GPU name:   MTL0 (Apple M4)
+ggml_metal_device_init: GPU family: MTLGPUFamilyApple9  (1009)
+ggml_metal_device_init: GPU family: MTLGPUFamilyMetal4  (5002)
+ggml_metal_device_init: simdgroup reduction   = true
+ggml_metal_device_init: simdgroup matrix mul. = true
+ggml_metal_device_init: has unified memory    = true
+ggml_metal_device_init: has bfloat            = true
+ggml_metal_device_init: has tensor            = false
+ggml_metal_device_init: use residency sets    = true
+ggml_metal_device_init: use shared buffers    = true
+ggml_metal_device_init: recommendedMaxWorkingSetSize  = 12713.12 MB
+load_backend: loaded MTL backend from /opt/homebrew/Cellar/ggml/0.27.0/libexec/libggml-metal.so
+load_backend: loaded CPU backend from /opt/homebrew/Cellar/ggml/0.27.0/libexec/libggml-cpu-apple_m4.so
+whisper_init_from_file_with_params_no_state: loading model from '/Users/vnglst/Code/CaptainsLog/tmp/task-77-independent/ggml-large-v3-q5_0.bin'
+whisper_init_with_params_no_state: use gpu    = 1
+whisper_init_with_params_no_state: flash attn = 1
+whisper_init_with_params_no_state: gpu_device = 0
+whisper_init_with_params_no_state: dtw        = 0
+whisper_init_with_params_no_state: devices    = 3
+whisper_init_with_params_no_state: backends   = 3
+whisper_model_load: loading model
+whisper_model_load: n_vocab       = 51866
+whisper_model_load: n_audio_ctx   = 1500
+whisper_model_load: n_audio_state = 1280
+whisper_model_load: n_audio_head  = 20
+whisper_model_load: n_audio_layer = 32
+whisper_model_load: n_text_ctx    = 448
+whisper_model_load: n_text_state  = 1280
+whisper_model_load: n_text_head   = 20
+whisper_model_load: n_text_layer  = 32
+whisper_model_load: n_mels        = 128
+whisper_model_load: ftype         = 8
+whisper_model_load: qntvr         = 2
+whisper_model_load: type          = 5 (large v3)
+whisper_model_load: adding 1609 extra tokens
+whisper_model_load: n_langs       = 100
+whisper_model_load:         MTL0 total size =  1080.47 MB
+whisper_model_load: model size    = 1080.47 MB
+whisper_backend_init_gpu: device 0: BLAS (type: 3)
+whisper_backend_init_gpu: device 1: MTL0 (type: 1)
+whisper_backend_init_gpu: found GPU device 1: MTL0 (type: 1, cnt: 0)
+whisper_backend_init_gpu: using MTL0 backend
+ggml_metal_init: allocating
+ggml_metal_init: found device: Apple M4
+ggml_metal_init: picking default device: Apple M4
+ggml_metal_init: use fusion         = true
+ggml_metal_init: use concurrency    = true
+ggml_metal_init: use graph optimize = true
+whisper_backend_init: using BLAS backend
+whisper_init_state: kv self size  =   83.89 MB
+whisper_init_state: kv cross size =  251.66 MB
+whisper_init_state: kv pad  size  =    7.86 MB
+whisper_init_state: compute buffer (conv)   =   37.69 MB
+whisper_init_state: compute buffer (encode) =   67.49 MB
+whisper_init_state: compute buffer (cross)  =  132.15 MB
+whisper_init_state: compute buffer (decode) =  100.04 MB
+read_audio_data: reading audio data from '/Users/vnglst/Code/CaptainsLog/tmp/task-77-independent/tng-nl01-vrije-dag-enterprise-corrected.wav' ...
+read_audio_data: trying to decode with miniaudio
+
+system_info: n_threads = 4 / 10 | WHISPER : VITISAI = 0 | COREML = 0 | OPENVINO = 0 | MTL : EMBED_LIBRARY = 1 | CPU : NEON = 1 | ARM_FMA = 1 | FP16_VA = 1 | MATMUL_INT8 = 1 | DOTPROD = 1 | SME = 1 | ACCELERATE = 1 | OPENMP = 1 | REPACK = 1 | 
+
+main: processing '/Users/vnglst/Code/CaptainsLog/tmp/task-77-independent/tng-nl01-vrije-dag-enterprise-corrected.wav' (7827040 samples, 489.2 sec), 4 threads, 1 processors, 5 beams + best of 5, lang = nl, task = transcribe, timestamps = 1 ...
+
+
+[00:00:00.000 --> 00:00:14.580]   persoonlijk logboek mijn dienst zit erop we zijn nog onderweg naar het onderzoeksstation en de enterprise vliegt voorlopig gewoon op kruissnelheid
+[00:00:14.580 --> 00:00:28.580]   ik zit in mijn verblijf met een kop thee uit de replicator er staat geen werk meer op mijn scherm en dat wil ik vanavond even zo houden de afgelopen dagen bleef ik na mijn dienst steeds nog iets controleren
+[00:00:28.580 --> 00:00:42.020]   voor ik het wist was het weer tijd om te slapen vandaag heb ik bewust wat tijd voor mezelf genomen vanmorgen had ik een uur op het holodeck gereserveerd gewone wandeling door een bosch met een pad langs een meer
+[00:00:42.020 --> 00:00:54.520]   geen ingewikkelde avontuur en ook geen tegenstanders die ineens achter een boom vandaan springen ik wilde even ergens zijn waar ik niet voortdurend de ventilatie van het schip hoorde
+[00:00:54.520 --> 00:01:07.640]   het programma had zelfs natte bladeren op het pad gelegd dat had voor mij niet gehoeven maar het rook wel goed na een kwartier merkte ik pas hoe moe ik eigenlijk was
+[00:01:07.640 --> 00:01:24.880]   halverwege ging mijn communicator ik dacht meteen dat er iets in de machinekamer was maar het was whorf hij moest naar een overleg op de brug en vroeg of alexander wat eerder bij mij kon komen we hadden afgesproken dat ik die middag op hem zou letten
+[00:01:24.880 --> 00:01:29.460]   Ik ben teruggelopen naar de uitgang en heb het programma afgesloten.
+[00:01:30.700 --> 00:01:34.660]   Het meer liep vlak langs de deur door toen die verscheen.
+[00:01:35.860 --> 00:01:39.040]   Dat blijft vreemd, ook al weet je precies hoe het werkt.
+[00:01:40.780 --> 00:01:44.160]   Alexander stond in de gang met een model van een klingonschip.
+[00:01:45.000 --> 00:01:49.640]   Een onderdeel zat los en hij wilde weten of we dat in de machinekamer konden repareren.
+[00:01:50.040 --> 00:01:58.780]   Ik heb gezegd dat we daar niet zomaar heen konden, maar dat ik in mijn verblijf wel wat gereedschap had.
+[00:01:59.600 --> 00:02:02.180]   Uiteindelijk was het met een klein klemmetje opgelost.
+[00:02:02.700 --> 00:02:04.900]   Hij wilde eerst de hele vleugel vervangen.
+[00:02:05.460 --> 00:02:09.600]   Toen ik vroeg waarom, zei hij dat een gerepareerd schip minder sterk was.
+[00:02:10.660 --> 00:02:13.540]   Daar hebben we nog even over doorgepraat.
+[00:02:14.040 --> 00:02:17.160]   Volgens mij denkt zijn vader daar iets anders over.
+[00:02:19.260 --> 00:02:20.020]   Later kwam hij naar de machinekamer.
+[00:02:20.020 --> 00:02:20.780]   Toen kwam Molly erbij.
+[00:02:21.520 --> 00:02:29.060]   Keiko had nog werk in het aboretum en we zouden met z'n drieën naar ten voorwoord gaan.
+[00:02:29.820 --> 00:02:31.780]   Dat leek me een rustig plan.
+[00:02:32.460 --> 00:02:38.340]   Onderweg wilde Alexander bij elk raam blijven staan omdat hij dacht dat hij een ander schip zag.
+[00:02:39.060 --> 00:02:41.320]   Meestal was het een weerspiegeling.
+[00:02:42.040 --> 00:02:46.020]   Eén keer was het een onderhoudsdroon vlak langs de romp.
+[00:02:46.800 --> 00:02:49.200]   Daar hebben we wel even naar gekeken.
+[00:02:50.000 --> 00:02:53.760]   Molly vroeg of de mensen buiten het schip ook hun lunch meenamen.
+[00:02:54.240 --> 00:02:56.660]   Ik wist eigenlijk niet wat ik daarop moest zeggen.
+[00:02:58.440 --> 00:03:01.760]   Guinen had een tafel bij het raam voor ons vrij.
+[00:03:02.500 --> 00:03:07.660]   We hebben niets gegeten en naar een vrachtschip gekeken dat een tijdje naast ons vloog.
+[00:03:08.440 --> 00:03:12.440]   Het ging dezelfde kant op, maar kon onze snelheid niet lang bijhouden.
+[00:03:15.880 --> 00:03:19.400]   Alexander wilde weten waarom de Enterprise niet gewoon langzamer ging,
+[00:03:19.400 --> 00:03:21.400]   zodat we samen konden blijven.
+[00:03:22.100 --> 00:03:27.020]   Ik heb geprobeerd uit te leggen dat wij op tijd bij het onderzoekstation moeten zijn.
+[00:03:27.960 --> 00:03:29.960]   Dat vond hij geen goed antwoord.
+[00:03:30.360 --> 00:03:34.400]   Hij wilde vooral weten of er ook kinderen op dat andere schip zaten.
+[00:03:36.680 --> 00:03:40.000]   Toen Worf hem kwam halen, was het ineens heel stil aan tafel.
+[00:03:40.600 --> 00:03:42.960]   Keiko haalde Molly even later op.
+[00:03:43.960 --> 00:03:45.640]   Ik ben nog een paar minuten blijven zitten.
+[00:03:46.100 --> 00:03:49.100]   Kainan vroeg of ik nu weer aan het werk ging.
+[00:03:49.400 --> 00:03:52.400]   Kennelijk zag ik eruit alsof ik dat van plan was.
+[00:03:52.400 --> 00:03:53.900]   Ik heb gezegd van niet.
+[00:03:53.900 --> 00:03:55.900]   Dat was ook echt mijn bedoeling.
+[00:03:55.900 --> 00:04:01.900]   Toch liep ik op de terugweg bijna vanzelf richting de turbolift naar de machinekamer.
+[00:04:01.900 --> 00:04:06.900]   Ik moet mezelf eraan herinneren dat Geordi daar een volledige ploeg heeft staan.
+[00:04:06.900 --> 00:04:08.900]   Ook als ik vrij ben.
+[00:04:09.900 --> 00:04:15.900]   Gisteren hadden we namelijk een storing in een paar replicators op dek 12.
+[00:04:15.900 --> 00:04:17.900]   Niet alles viel uit.
+[00:04:17.900 --> 00:04:22.900]   Vooral warme dranken kwamen er lauw uit, terwijl de maaltijden normaal waren.
+[00:04:23.400 --> 00:04:25.900]   Eerst dacht ik aan de energieverdeling.
+[00:04:25.900 --> 00:04:31.400]   Er waren werkzaamheden geweest aan een leiding in die sectie, dus dat leek logisch.
+[00:04:31.900 --> 00:04:33.400]   Maar de metingen waren goed.
+[00:04:33.400 --> 00:04:37.400]   Geordi stelde voor om de opgeslagen patronen te vergelijken.
+[00:04:38.400 --> 00:04:44.400]   Daar bleek een verkeerde temperatuurinstelling in te zitten, die door meerdere drankpatronen werd gebruikt.
+[00:04:46.400 --> 00:04:50.400]   We hebben de instelling aangepast en daarna verschillende bestellingen geprobeerd.
+[00:04:50.400 --> 00:04:54.400]   Thee, koffie, soep voor de zekerheid.
+[00:04:54.400 --> 00:04:57.400]   De soep was voor de wijziging al goed en bleef goed.
+[00:04:57.400 --> 00:05:02.400]   Daarna hebben we de mensen die de storing hebben gemeld gevraagd of ze nog problemen merkten.
+[00:05:02.400 --> 00:05:04.400]   Tot nu toe niet.
+[00:05:04.400 --> 00:05:08.400]   Ik moet morgen alleen nog de laatste metingen in de onderhoudslog zetten.
+[00:05:08.400 --> 00:05:14.400]   Ik had dat meteen willen doen, maar toen kwam er een oproep over een sensor bij het shuttle ruim.
+[00:05:14.400 --> 00:05:18.400]   En ben ik weggelopen zonder mijn verslag af te maken.
+[00:05:18.400 --> 00:05:20.400]   Dat is iets waar ik op moet letten.
+[00:05:20.400 --> 00:05:26.400]   Ik heb vaak wel onthouden wat er gebeurd is, maar iemand van de volgende dienst kan daar niets mee.
+[00:05:26.400 --> 00:05:34.400]   Die ziet alleen dat ik een onderdeel heb gecontroleerd, niet wat ik gemeten heb of waarom ik daarna iets anders ben gaan bekijken.
+[00:05:34.400 --> 00:05:42.400]   Deda heeft me daar laatst op gewezen, heel rustig, gewoon met de vraag waar hij de meetwaarde kon vinden.
+[00:05:42.400 --> 00:05:45.400]   Die stonden nog op mijn persoonlijke scherm.
+[00:05:45.400 --> 00:05:47.400]   Dat was dus niet handig.
+[00:05:47.400 --> 00:05:51.400]   Morgen eerst die gegevens overzetten, voordat ik aan iets nieuws begin.
+[00:05:51.400 --> 00:05:57.400]   Voor de komende dienst staat er ook een controle van de sensoren aan de buitenkant van de romp gepland.
+[00:05:57.400 --> 00:06:04.400]   We vliegen langs een nevel en de wetenschapsafdeling wil weten of de straling onze metingen beïnvloedt.
+[00:06:04.400 --> 00:06:07.400]   De Enterprise gaat de nevel niet in.
+[00:06:07.400 --> 00:06:10.400]   Er is een sonde naartoe gestuurd.
+[00:06:10.400 --> 00:06:14.400]   En daar zijn de signalen van die sonde met wat het schip op afstand meet.
+[00:06:14.400 --> 00:06:17.400]   Ik vind dat eigenlijk wel mooi werk.
+[00:06:17.400 --> 00:06:25.400]   Je bent bezig met onderhoud, maar je ziet tegelijk iets waar nog niemand eerder van zo dichtbij naar heeft gekeken.
+[00:06:25.400 --> 00:06:29.400]   Orf heeft gevraagd of we daarbij ook de afscherming van de sensoren controleren.
+[00:06:29.400 --> 00:06:34.400]   Dat doen we, maar ik wil eerst met Jordi bespreken in welke volgorde.
+[00:06:34.400 --> 00:06:37.400]   We kunnen niet alles tegelijk uitschakelen.
+[00:06:37.400 --> 00:06:39.400]   Dan heeft de brug duidelijk te weinig betrouwbare informatie.
+[00:06:39.400 --> 00:06:46.400]   Ik wil per sensor een controle doen, het resultaat bevestigen en pas daarna doorgaan naar de volgende.
+[00:06:46.400 --> 00:06:51.400]   Het duurt misschien langer, maar dan weten we ook waar een afwijking vandaan komt.
+[00:06:51.400 --> 00:06:55.400]   Of Jordi die aanpak goed vindt, moet ik nog bespreken.
+[00:06:55.400 --> 00:06:59.400]   Ik heb deze week ook een gesprek met Commandant William Riker.
+[00:06:59.400 --> 00:07:05.400]   Hij wil weten hoe het gaat met de nieuwe bemanningsleden tijdens de nachtdienst.
+[00:07:05.400 --> 00:07:08.400]   Ik heb er twee ingewerkt.
+[00:07:08.400 --> 00:07:16.400]   Ze kennen de procedures, maar aarzelen nog om iemand wakker te maken als een meting vreemd is.
+[00:07:16.400 --> 00:07:19.400]   Dat herken ik van mijn eerste weekje hier.
+[00:07:19.400 --> 00:07:22.400]   Je wilt niet degene zijn die voor niets alarm slaat.
+[00:07:22.400 --> 00:07:29.400]   Alleen heb ik liever dat ze een keer te vaak bellen dan dat ze een echte afwijking laten zitten.
+[00:07:29.400 --> 00:07:32.400]   Dat wil ik met Riker bespreken.
+[00:07:32.400 --> 00:07:35.400]   En ik wil een nieuw uur op het holodeck boeken.
+[00:07:35.400 --> 00:07:37.400]   Die wandeling van vanmorgen was prettig.
+[00:07:37.400 --> 00:07:40.400]   Maar dan heb ik het einde niet gehaald.
+[00:07:40.400 --> 00:07:47.400]   Misschien hetzelfde programma, maar dan zonder communicator die meteen mijn hele hoofd weer naar het werk trekt.
+[00:07:47.400 --> 00:07:52.400]   Helemaal uitzetten kan natuurlijk niet als ik oproepbaar ben.
+[00:07:52.400 --> 00:07:55.400]   Ik kijk wel op welke vrije dag het past.
+[00:07:55.400 --> 00:07:58.400]   Voor nu is de thee op.
+[00:07:58.400 --> 00:08:04.400]   Hoor ik alleen het zachte geluid van het schip en hoef ik nergens heen.
+[00:08:04.400 --> 00:08:07.700]   Ik denk dat ik daar nog even van ga genieten.
+output_txt: saving output to '/Users/vnglst/Code/CaptainsLog/tmp/task-77-independent/tng-nl01-vrije-dag-enterprise-corrected.txt'
+output_json: saving output to '/Users/vnglst/Code/CaptainsLog/tmp/task-77-independent/tng-nl01-vrije-dag-enterprise-corrected.json'
+
+whisper_print_timings:     load time =   446.88 ms
+whisper_print_timings:     fallbacks =   3 p /   0 h
+whisper_print_timings:      mel time =   148.45 ms
+whisper_print_timings:   sample time =  3050.40 ms / 16410 runs (     0.19 ms per run)
+whisper_print_timings:   encode time = 26101.60 ms /    19 runs (  1373.77 ms per run)
+whisper_print_timings:   decode time =   899.04 ms /    56 runs (    16.05 ms per run)
+whisper_print_timings:   batchd time = 83367.45 ms / 16268 runs (     5.12 ms per run)
+whisper_print_timings:   prompt time =  4353.40 ms /  3959 runs (     1.10 ms per run)
+whisper_print_timings:    total time = 119023.65 ms
+ggml_metal_free: deallocating

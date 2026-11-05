@@ -2,6 +2,18 @@ import Foundation
 
 extension Tools {
     func testEvalReview() throws {
+        let timing: EvalItem = ["transcription": [
+            ["text": "one two", "offsets": ["from": 0, "to": 2000]],
+            ["text": "three four", "offsets": ["from": 2000, "to": 4000]],
+            ["text": "five six", "offsets": ["from": 4000, "to": 6000]]]]
+        let clean = "one two three four five six"
+        try require(differencePassages(reference: clean, transcript: clean, comparison: clean, timing: timing, identifier: "test", duration: 6).isEmpty, "Clean transcripts generated error passages")
+        let differences = try differencePassages(reference: clean, transcript: "one changed three four five six", comparison: clean, timing: timing, identifier: "test", duration: 6)
+        try require(differences.count == 1 && differences[0]["reference_end_word"] as? Int == 2 && differences[0]["model_errors"] as? [Int] == [1, 0], "Difference outside the old checklist was not selected precisely")
+        let tail = try differencePassages(reference: clean, transcript: clean + " invented tail", comparison: clean, timing: timing, identifier: "test", duration: 6)
+        try require(tail.count == 1 && tail[0]["reference_start_word"] as? Int == 4, "Final insertion was omitted")
+        let secondTiming: EvalItem = ["transcription": [["text": "one two three changed five six", "offsets": ["from": 0, "to": 6000]]]]
+        try require(differencePassages(reference: clean, transcript: clean, comparison: "one two three changed five six", timing: secondTiming, identifier: "test", duration: 6)[0]["model_errors"] as? [Int] == [0, 1], "Comparison-only difference was omitted")
         let run = try temporary("captainslog-listening-review-")
         defer { try? fm.removeItem(at: run) }
         let eval = Evaluator(self)
@@ -103,6 +115,37 @@ extension Tools {
         try require(recordings()[0]["second_transcript"] as? String == "Separate comparison transcript", "Comparison import failed")
         _ = try prepareEvalReview(run)
         try require(recordings()[0]["second_transcript"] as? String == "Separate comparison transcript", "Regeneration lost a saved comparison")
+        let derived = run.appendingPathComponent("differences")
+        try mkdir(derived)
+        var derivedItem = item
+        for key in ["expected", "output"] {
+            let copyURL = derived.appendingPathComponent(key + ".md")
+            try copy(eval.file(item, key), copyURL); derivedItem[key] = copyURL.path
+        }
+        try json(derived.appendingPathComponent("manifest.json"), [derivedItem])
+        let comparisonText = comparison.appendingPathComponent("tng-nl01-vrije-dag-enterprise-corrected.txt")
+        let timingFile = comparison.appendingPathComponent("tng-nl01-vrije-dag-enterprise-corrected.json")
+        let identityFile = comparison.appendingPathComponent("tng-nl01-vrije-dag-enterprise-corrected.run.json")
+        try json(timingFile, ["transcription": [["text": "Separate comparison transcript", "offsets": ["from": 0, "to": (first["duration"] as! Double) * 1000]]]])
+        var identity: EvalItem = ["audio_sha256": try hash(eval.file(item, "input")), "output_sha256": try hash(comparisonText), "timing_sha256": try hash(timingFile)]
+        try json(identityFile, identity)
+        let generatedApp = try prepareEvalReview(derived, comparison: comparison, differencesOnly: true)!
+        let generatedRecordings = (try json(generatedApp.appendingPathComponent("recordings.json")) as! EvalItem)["recordings"] as! [EvalItem]
+        let generated = generatedRecordings[0]["passages"] as! [EvalItem]
+        try require(generated.count == 1 && generated[0]["short_id"] as? String == "E01", "Difference mode reused the fixed checklist")
+        try require(Data(contentsOf: stateFile) == savedBytes, "Derived difference review changed completed owner decisions")
+        _ = try prepareEvalReview(derived)
+        try copy(expected, eval.file(derivedItem, "output"))
+        try write(comparisonText, read(expected))
+        try json(timingFile, ["transcription": [["text": try read(expected), "offsets": ["from": 0, "to": (first["duration"] as! Double) * 1000]]]])
+        identity["output_sha256"] = try hash(comparisonText); identity["timing_sha256"] = try hash(timingFile)
+        try json(identityFile, identity)
+        _ = try prepareEvalReview(derived)
+        let matchingData = (try json(generatedApp.appendingPathComponent("recordings.json")) as! EvalItem)["recordings"] as! [EvalItem]
+        try require((matchingData[0]["passages"] as! [EvalItem]).isEmpty, "Matching models fell back to a fixed checklist")
+        identity["audio_sha256"] = "wrong-audio"; try json(identityFile, identity)
+        do { _ = try prepareEvalReview(derived); throw ToolFailure("Wrong comparison audio was accepted") }
+        catch { try require(String(describing: error).contains("different audio"), "Wrong audio comparison failure") }
         try write(expected, read(expected) + " A changed reference.")
         _ = try prepareEvalReview(run)
         let changed = try recordings()[0]["passages"] as! [EvalItem]

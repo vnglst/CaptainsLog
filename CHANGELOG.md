@@ -14,7 +14,7 @@ entry. Git links provide the complete commit history for each release.
 
 ### Fixed
 
-- Show current text differences in the transcription review queue, with matching passages available separately and stale dispute labels removed. Preserve audio verification decisions.
+- Generate transcription review clips from complete reference alignments of both Whisper models, pin comparison audio/output/timing evidence, and label model-specific differences. Preserve earlier review decisions and keep matching passages out of the differences queue.
 
 ### Changed
 

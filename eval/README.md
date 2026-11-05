@@ -60,6 +60,25 @@ downstream references have not been verified as part of the audio-only baseline.
 
 ## Listening review
 
+For a new comparison, generate passages from both full word alignments:
+
+```sh
+make evals-review RUN_DIR=RUN COMPARISON_RUN=COMPARISON PORT=8779 ARGS=--differences
+```
+
+The comparison directory must retain each recording’s `.txt`, whisper.cpp full
+JSON timestamps and `.run.json` with matching audio and output hashes. New
+comparison reviews remember this mode on reopening. Every selected clip contains
+at least one word difference in one or both models; matching segments are not
+created as review items. Clip boundaries follow timestamped comparison segments
+with context padding. Both models’ substitutions, omissions and insertions,
+including invented endings, contribute to selection across the whole recording.
+The prior completed checklists remain preserved as history.
+
+The pinned [two-model discrepancy review](transcribe/history/comparisons/2026-11-05-whisper-v2-v3/README.md)
+includes the corrected Dutch Large-v3 rerun and saved comparisons for the other
+recordings; these historical comparisons do not add active transcription evals.
+
 Every saved run containing transcription prepares `review-app/`. Use
 `make evals-review RUN_DIR=...` to serve it locally, optionally adding
 `COMPARISON_RUN=...` for another eval run or a directory of per-recording `.txt`

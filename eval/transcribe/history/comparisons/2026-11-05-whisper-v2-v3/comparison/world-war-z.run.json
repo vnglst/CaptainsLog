@@ -1,0 +1,27 @@
+{
+  "args": [
+    "/opt/homebrew/Cellar/whisper.cpp/1.9.5/bin/whisper-cli",
+    "-m",
+    "/Users/vnglst/Code/CaptainsLog/tmp/task-77-independent/ggml-large-v3-q5_0.bin",
+    "-f",
+    "/Users/vnglst/Code/CaptainsLog/tmp/task-77-independent/world-war-z.wav",
+    "-l",
+    "en",
+    "-bs",
+    "5",
+    "-bo",
+    "5",
+    "-tp",
+    "0",
+    "-tpi",
+    "0.2",
+    "-otxt",
+    "-ojf",
+    "-of",
+    "/Users/vnglst/Code/CaptainsLog/tmp/task-77-independent/world-war-z"
+  ],
+  "elapsed_seconds": 46.18456770799821,
+  "audio_sha256": "6f419da2feeb93596b095aa544dd70ad8c8cdef2f0816f2c458dedb0914740d6",
+  "output_sha256": "87b90d0977c8be36dca6781b9f9975e5fc70a7d599829f63723eefece90b0492",
+  "timing_sha256": "90651a3ff7ca78ebe53cbd2adbd507c78df1423c8b46cb808b88fd29d39f351d"
+}

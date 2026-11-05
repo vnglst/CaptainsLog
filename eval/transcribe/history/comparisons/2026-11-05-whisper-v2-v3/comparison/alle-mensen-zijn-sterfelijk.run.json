@@ -1,0 +1,27 @@
+{
+  "args": [
+    "/opt/homebrew/Cellar/whisper.cpp/1.9.5/bin/whisper-cli",
+    "-m",
+    "/Users/vnglst/Code/CaptainsLog/tmp/task-77-independent/ggml-large-v3-q5_0.bin",
+    "-f",
+    "/Users/vnglst/Code/CaptainsLog/tmp/task-77-independent/alle-mensen-zijn-sterfelijk.wav",
+    "-l",
+    "nl",
+    "-bs",
+    "5",
+    "-bo",
+    "5",
+    "-tp",
+    "0",
+    "-tpi",
+    "0.2",
+    "-otxt",
+    "-ojf",
+    "-of",
+    "/Users/vnglst/Code/CaptainsLog/tmp/task-77-independent/alle-mensen-zijn-sterfelijk"
+  ],
+  "elapsed_seconds": 37.14239516599628,
+  "audio_sha256": "f8a977f21028036d9b88496bb87da3dcfcc0ad731732b41f29d782da4fd992ca",
+  "output_sha256": "fdb7f5a4382ad30611251b14f6713ce5a74b173770f36ea7dff5321f33d928b1",
+  "timing_sha256": "5f3f3dad46a38e9a11db26f910e45b894aa9faaaccdcfb5fad78bd0fd081bd1d"
+}

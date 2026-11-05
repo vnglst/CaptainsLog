@@ -1,0 +1,27 @@
+{
+  "model": {
+    "repository": "ggerganov/whisper.cpp",
+    "revision": "5359861c739e955e79d9a303bcbc70fb988958b1",
+    "file": "ggml-large-v3-q5_0.bin",
+    "lfs": {
+      "sha256": "d75795ecff3f83b5faa89d1900604ad8c780abd5739fae406de19f23ecd98ad1",
+      "size": 1081140203,
+      "pointerSize": 135
+    }
+  },
+  "binary": "/opt/homebrew/Cellar/whisper.cpp/1.9.5/bin/whisper-cli",
+  "binary_sha256": "e23dcdf55fdff2dfc085902b00cac93aba09e0373422e40ddd69d7c67d725f16",
+  "audio_upload": false,
+  "prompt": null,
+  "language": "nl (Dutch); en for world-war-z",
+  "options": [
+    "-bs",
+    "5",
+    "-bo",
+    "5",
+    "-tp",
+    "0",
+    "-tpi",
+    "0.2"
+  ]
+}

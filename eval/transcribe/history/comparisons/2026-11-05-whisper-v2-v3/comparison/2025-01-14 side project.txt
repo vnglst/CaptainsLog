@@ -1,0 +1,41 @@
+Het is vandaag 14 januari, half acht. Dit is mijn eerste opname in een serie en deze opname gaat
+vooral over het project zelf, waarbij ik steeds audioberichten ga opnemen waarin ik over een
+bepaald onderwerp iets ga vertellen. In dit specifieke geval is het het onderwerp van
+side projects. Ik heb altijd van dit soort projectjes die ik maak op basis, meestal iets
+met computer, waarbij ik iets programmeer op basis van een idee dat ik heb. Dit is een van
+die side projects, dus ik wil ook dat deze daaronder gaat.
+Het project dat ik nu voor ogen heb is eigenlijk geïnspireerd op Star Trek. Ik heet dan altijd
+Star Trek: The Next Generation. En daarin heeft Captain Jean-Luc Picard, dat is de onderscheidende
+ontwikkelaar van Star Trek. Dat is een ontwikkelaar ontwikkelaar van Star Trek: The Next Generation.
+Dat is een ontwikkelaar ontwikkelaar van Star Trek. Dat is een ontwikkelaar ontwikkelaar van Star Trek.
+Dat is een ontwikkelaar ontwikkelaar van Star Trek. Dat is een ontwikkelaar ontwikkelaar van Star Trek.
+Dat is een ontwikkelaar ontwikkelaar van Star Trek. Dat is een ontwikkelaar ontwikkelaar van Star Trek.
+Dat is een ontwikkelaar ontwikkelaar van Star Trek.
+Captain Jean-Luc Picard begint dan iedere uitzending met stardate zo en zo zoveel,
+waar ze zijn en wat er gebeurt. En houdt hij zo het logboek van de kapitein van het schip bij.
+En dat doet hij met audioberichten. Datzelfde wil ik nu ook gaan doen,
+waarbij ik dan vertel over iets wat ik mee bezig houd,
+mijn schip. En dat doe ik nu ook gaan doen, waarbij ik dan vertel over iets wat ik mee bezig houd,
+mijn schip. En dat doe ik nu ook gaan doen, waarbij ik dan vertel over iets wat ik mee bezig houd,
+mijn schip. En dat doe ik nu ook gaan doen, waarbij ik dan vertel over iets wat ik mee bezig houd,
+misschien iets persoonlijks, iets over werk of over zoals nu over een science project.
+En dat was het oorspronkelijke idee. Alleen wat ik er aan toe wil voegen is dat deze audioberichten
+automatisch worden opgepikt op mijn computer. En dat ze worden geconverteerd naar tekst,
+door bijvoorbeeld het Whisper model. En dat ze vervolgens worden gelezen,
+door bijvoorbeeld het Whisper model. En dat ze worden gelezen,
+door bijvoorbeeld het Whisper model. En dat ze worden gelezen,
+door een Large Language Model, een liefdelokaal model, zo slim mogelijk natuurlijk,
+waarin de tekst een beetje recht wordt gezet. Want zoals je nu zal merken is dat ik steeds allemaal
+bijgeluiden maak of dat ik even de draad kwijtraak en dat het soms een onsamenhangend verhaal wordt.
+En ik wil dan een Large Language Model gebruiken om dat verhaal recht te zetten en een mooi,
+ja, samenhangend verhaal van te maken, zonder teveel af te wijken van wat ik nu vertel.
+Dus dat is het idee voor dit site project. Ik had al gekeken hoe ik dat zou op kunnen zetten.
+En dat is volgens mij vrij eenvoudig, want deze audioopnames die worden opgeslagen in een bepaalde
+folder. En die folder staat op iedere computer die aangesloten is op dat iCloud account.
+Dus die audioberichten verschijnen daar automatisch. Die zou ik dan kunnen oppakken,
+kunnen verwerken. En op het moment dat ze verwerkt zijn, kan ik mezelf een berichtje sturen of een
+e-mail met daarin de verwerking. En ik kan de verwerking ook ergens opslaan naast het audiobestand.
+Dus dan zou het gevolg zijn dat je een soort output folder hebt, of een soort folder voor site project,
+waarin dan dit audiobestand staat. De transcriptie, gemaakt door Whisper,
+en wat de LLM ervan gemaakt heeft in een mooie, samenhangende, goedlopende tekst.
+En dit is het eerste experiment daarvoor. En ik ben benieuwd waar dit toe gaat leiden.
