@@ -24,7 +24,7 @@ entry. Git links provide the complete commit history for each release.
 
 ### Added
 
-- Add the owner-reviewed Alle mensen zijn sterfelijk, Durins volk, and World War Z recordings to the transcription suite.
+- Add the owner-reviewed Alle mensen zijn sterfelijk, Durins volk, and World War Z recordings to the transcription suite. Archive Side project outside the review queue.
 
 - Resume the latest transcript review at its saved passage with `make evals-review` and open the browser automatically.
 

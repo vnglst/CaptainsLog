@@ -1,35 +1,9 @@
-# Passages to review
+# Comparison passages
 
-Pending review contains only the four remaining recordings. Completed TNG remains visible in the overview and is unchanged. Every pending item is named Topic: specific issue to check.
+The comparison contains three completed recordings. Passage names identify the topic and the issue checked.
 
 | Recording | Passage | Time (seconds) | Review item |
 |---|---|---|---|
-| Side project | E01 | 0.00–18.21 | Eerste opname: possible extra conjunction |
-| Side project | E02 | 33.77–45.11 | Side projects: “van” / “meestal” and missing “dus” |
-| Side project | E03 | 43.61–52.73 | Met de computer: possibly omitted “de” |
-| Side project | E04 | 51.23–56.97 | Categorisering en foldertje: possible omissions or stumble |
-| Side project | E05 | 55.49–76.61 | Projectidee en Star Trek: “wat” / “dat” and “keek” / “heet” |
-| Side project | E06 | 75.11–82.49 | Star Trek: possible added or repeated words |
-| Side project | E07 | 80.99–94.39 | Jean-Luc Picard: possible long repetition |
-| Side project | E08 | 92.89–102.29 | Kapiteinslogboek: “een” / “het” |
-| Side project | E09 | 100.79–112.07 | Zelf audioberichten opnemen: possible repeated passage |
-| Side project | E10 | 110.57–112.07 | Waar ik me mee bezighoud: possible added or repeated words |
-| Side project | E11 | 110.57–117.65 | Side project: “side” / “science” |
-| Side project | E12 | 116.15–125.81 | Oorspronkelijke idee: possible extra “en” |
-| Side project | E13 | 132.89–142.19 | Transcripties lezen: possible repeated phrase |
-| Side project | E14 | 140.69–142.19 | Verwerking van transcripties: possible added repetition |
-| Side project | E15 | 140.69–149.75 | Lokaal taalmodel: possible stumble or reordered words |
-| Side project | E16 | 148.25–157.01 | Bijgeluiden: possible extra “al” |
-| Side project | E17 | 155.51–164.49 | Bijgeluiden: wording and extra “maken” |
-| Side project | E18 | 162.99–171.13 | Onsamenhangend verhaal: possible added or omitted words |
-| Side project | E19 | 169.63–177.85 | Samenhangend verhaal: possible extra “ja” |
-| Side project | E20 | 176.35–184.93 | Side-project: “side” / “site” |
-| Side project | E21 | 183.43–193.69 | Audio-opnames: joined or separate words |
-| Side project | E22 | 192.19–200.61 | Folder op iedere Mac: possible extra “en” |
-| Side project | E23 | 199.11–205.59 | Audioberichten: joined words and “dan” / “daar” |
-| Side project | E24 | 213.09–220.17 | Verwerking: “je” / “ik” |
-| Side project | E25 | 218.67–230.09 | Outputfolder en side projects: word boundaries and plural |
-| Side project | E26 | 241.55–250.49 | Einde van de opname: possible invented ending |
 | Alle mensen zijn sterfelijk | E01 | 0.00–18.89 | Régine op het toneel: name spelling |
 | Alle mensen zijn sterfelijk | E02 | 17.83–39.75 | Publiek in de zaal: “stuwde” / “stuurde” and “hare” / “haren” |
 | Alle mensen zijn sterfelijk | E03 | 40.83–48.39 | Provinciezaal: possible extra “s” |
