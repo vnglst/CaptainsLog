@@ -1,0 +1,26 @@
+{
+  "purpose": "Navigation timing only; original evaluation hypotheses and reference are unchanged.",
+  "audio_sha256": "018807fe80637d269afa19e839f15b0b78925a3a65391fdb09fb666da183af85",
+  "timing_sha256": "a3750fcfb507e6c47fe06e8e0348a0bfd078206d8bc4da24bdd18291127ebe93",
+  "args": [
+    "/opt/homebrew/bin/whisper-cli",
+    "-m",
+    "tmp/task-77-independent/ggml-large-v3-q5_0.bin",
+    "-f",
+    "tmp/task-77-independent/2025-01-14 side project.wav",
+    "-l",
+    "nl",
+    "-mc",
+    "0",
+    "-nf",
+    "-ml",
+    "100",
+    "-sow",
+    "-ojf",
+    "-of",
+    "tmp/task-77-side-review-timing"
+  ],
+  "model_sha256": "d75795ecff3f83b5faa89d1900604ad8c780abd5739fae406de19f23ecd98ad1",
+  "binary_sha256": "e23dcdf55fdff2dfc085902b00cac93aba09e0373422e40ddd69d7c67d725f16",
+  "created_at": "2026-11-05"
+}

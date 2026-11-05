@@ -134,6 +134,19 @@ extension Tools {
                 }
                 comparisonLabel = "Whisper Large-v3 · timestamped comparison"
             }
+            let navigationURL = run.appendingPathComponent("review-timing.json")
+            if fm.fileExists(atPath: navigationURL.path),
+               let records = try json(navigationURL) as? [String: EvalItem], let navigation = records[name] {
+                try require(navigation["audio_sha256"] as? String == audioHash
+                    && navigation["reference_sha256"] as? String == referenceHash,
+                    "Navigation timing used different audio or reference: " + name)
+                guard let source = navigation["source"] as? String else { throw ToolFailure("Missing navigation timing source") }
+                let timingURL = run.appendingPathComponent(source)
+                try requireRunFile(timingURL)
+                try require(navigation["timing_sha256"] as? String == hash(timingURL), "Navigation timing hash mismatch: " + name)
+                definitions = try retimeReviewPassages(definitions, reference: reference,
+                    timing: json(timingURL) as? EvalItem ?? [:], duration: duration)
+            }
             if definitions.isEmpty && !generateDifferences { definitions = [["id": identifier + "-full", "short_id": "Full", "title": "Full recording", "start_seconds": 0.0, "end_seconds": duration, "reference_start_word": 0, "reference_end_word": ref.ranges.count, "check": "Listen to the recording and verify the reference against the spoken words."]] }
             var passages: [EvalItem] = []
             for (offset, p) in definitions.enumerated() {
@@ -142,7 +155,12 @@ extension Tools {
                 try require(start >= 0 && start < end && end <= duration + 0.25 && a >= 0 && (a < b || ref.ranges.isEmpty) && b <= ref.ranges.count, "Invalid listening bounds: \(name)/\(offset)")
                 let id = evaluator.string(p, "id", identifier + "-\(offset)") + (duplicate ? "-\(scope)" : "")
                 let context: EvalItem = ["audio_sha256": audioHash, "reference_sha256": referenceHash, "start_seconds": start, "end_seconds": end, "reference_start_word": a, "reference_end_word": b]
-                passages.append(["id": id, "short_id": evaluator.string(p, "short_id", "\(offset + 1)"), "title": evaluator.string(p, "title", "Passage \(offset + 1)"), "start_seconds": start, "end_seconds": min(end, duration), "clip_start": start, "clip_end": min(end, duration), "audio": audioPath, "reference": ref.excerpt(a, b), "app_transcript": generatedBoundaries.map { generated!.excerpt($0[a], $0[b]) } as Any? ?? NSNull(), "second_transcript": comparedBoundaries.map { compared!.excerpt($0[a], $0[b]) } as Any? ?? NSNull(), "context": context, "model_errors": p["model_errors"] ?? NSNull(), "check": evaluator.string(p, "check", "Listen for the exact words and any restarts. Text alignment is approximate; use the full transcript for context.")])
+                var modelErrors = p["model_errors"] ?? NSNull()
+                if generateDifferences, let generated, let compared, let generatedBoundaries, let comparedBoundaries {
+                    modelErrors = try [TranscriptionScore(reference: ref.excerpt(a, b), hypothesis: generated.excerpt(generatedBoundaries[a], generatedBoundaries[b])).errors,
+                        TranscriptionScore(reference: ref.excerpt(a, b), hypothesis: compared.excerpt(comparedBoundaries[a], comparedBoundaries[b])).errors]
+                }
+                passages.append(["id": id, "short_id": evaluator.string(p, "short_id", "\(offset + 1)"), "title": evaluator.string(p, "title", "Passage \(offset + 1)"), "start_seconds": start, "end_seconds": min(end, duration), "clip_start": start, "clip_end": min(end, duration), "audio": audioPath, "reference": ref.excerpt(a, b), "app_transcript": generatedBoundaries.map { generated!.excerpt($0[a], $0[b]) } as Any? ?? NSNull(), "second_transcript": comparedBoundaries.map { compared!.excerpt($0[a], $0[b]) } as Any? ?? NSNull(), "context": context, "model_errors": modelErrors, "check": evaluator.string(p, "check", "Listen for the exact words and any restarts. Text alignment is approximate; use the full transcript for context.")])
             }
             var carried: [String] = []
             let provenanceURL = path("eval/transcribe/review/\(name).provenance.json")

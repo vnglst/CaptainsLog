@@ -33,6 +33,176 @@
       "status": "corrected",
       "updated_at": "2026-11-05T19:25:13Z",
       "words": "see notes"
+    },
+    "side-project-E02@before-navigation-timing-fix": {
+      "accepted_take_id": null,
+      "audio_issue": false,
+      "context": {
+        "audio_sha256": "018807fe80637d269afa19e839f15b0b78925a3a65391fdb09fb666da183af85",
+        "end_seconds": 45.11,
+        "reference_end_word": 64,
+        "reference_sha256": "ee97b8485fedf9f38508952527cecb41e8a22b33717faa4936ed16b81cfe7e44",
+        "reference_start_word": 47,
+        "start_seconds": 33.77
+      },
+      "notes": "",
+      "retakes": [],
+      "status": "corrected",
+      "updated_at": "2026-11-05T19:36:07Z",
+      "words": "side projects. Ik heb altijd van dit soort projectjes die ik maak op basis, meestal iets"
+    },
+    "side-project-E03@before-navigation-timing-fix": {
+      "accepted_take_id": null,
+      "audio_issue": false,
+      "context": {
+        "audio_sha256": "018807fe80637d269afa19e839f15b0b78925a3a65391fdb09fb666da183af85",
+        "end_seconds": 52.73,
+        "reference_end_word": 83,
+        "reference_sha256": "ee97b8485fedf9f38508952527cecb41e8a22b33717faa4936ed16b81cfe7e44",
+        "reference_start_word": 64,
+        "start_seconds": 43.61
+      },
+      "notes": "",
+      "retakes": [],
+      "status": "matches",
+      "updated_at": "2026-11-05T19:36:32Z",
+      "words": ""
+    },
+    "side-project-E04@before-navigation-timing-fix": {
+      "accepted_take_id": null,
+      "audio_issue": false,
+      "context": {
+        "audio_sha256": "018807fe80637d269afa19e839f15b0b78925a3a65391fdb09fb666da183af85",
+        "end_seconds": 56.97,
+        "reference_end_word": 108,
+        "reference_sha256": "ee97b8485fedf9f38508952527cecb41e8a22b33717faa4936ed16b81cfe7e44",
+        "reference_start_word": 83,
+        "start_seconds": 51.23
+      },
+      "notes": "audio is much shorter than text, doesn't contain disputed word",
+      "retakes": [],
+      "status": "corrected",
+      "updated_at": "2026-11-05T19:37:43Z",
+      "words": "see notes"
+    },
+    "world-war-z-E01@before-navigation-timing-fix": {
+      "accepted_take_id": null,
+      "audio_issue": false,
+      "context": {
+        "audio_sha256": "6f419da2feeb93596b095aa544dd70ad8c8cdef2f0816f2c458dedb0914740d6",
+        "end_seconds": 14.43,
+        "reference_end_word": 22,
+        "reference_sha256": "c235024887c363a203d4e2728f63a8f85b1f4f415b67f32d87019c4b816d5812",
+        "reference_start_word": 7,
+        "start_seconds": 5.15
+      },
+      "notes": "",
+      "retakes": [],
+      "status": "matches",
+      "updated_at": "2026-11-05T19:39:52Z",
+      "words": ""
+    },
+    "world-war-z-E03@before-navigation-timing-fix": {
+      "accepted_take_id": null,
+      "audio_issue": false,
+      "context": {
+        "audio_sha256": "6f419da2feeb93596b095aa544dd70ad8c8cdef2f0816f2c458dedb0914740d6",
+        "end_seconds": 27.91,
+        "reference_end_word": 51,
+        "reference_sha256": "c235024887c363a203d4e2728f63a8f85b1f4f415b67f32d87019c4b816d5812",
+        "reference_start_word": 41,
+        "start_seconds": 21.41
+      },
+      "notes": "",
+      "retakes": [],
+      "status": "matches",
+      "updated_at": "2026-11-05T19:40:26Z",
+      "words": ""
+    },
+    "world-war-z-E04@before-navigation-timing-fix": {
+      "accepted_take_id": null,
+      "audio_issue": false,
+      "context": {
+        "audio_sha256": "6f419da2feeb93596b095aa544dd70ad8c8cdef2f0816f2c458dedb0914740d6",
+        "end_seconds": 41.63,
+        "reference_end_word": 81,
+        "reference_sha256": "c235024887c363a203d4e2728f63a8f85b1f4f415b67f32d87019c4b816d5812",
+        "reference_start_word": 64,
+        "start_seconds": 32.59
+      },
+      "notes": "",
+      "retakes": [],
+      "status": "matches",
+      "updated_at": "2026-11-05T19:40:37Z",
+      "words": ""
+    },
+    "world-war-z-E05@before-navigation-timing-fix": {
+      "accepted_take_id": null,
+      "audio_issue": false,
+      "context": {
+        "audio_sha256": "6f419da2feeb93596b095aa544dd70ad8c8cdef2f0816f2c458dedb0914740d6",
+        "end_seconds": 46.17,
+        "reference_end_word": 90,
+        "reference_sha256": "c235024887c363a203d4e2728f63a8f85b1f4f415b67f32d87019c4b816d5812",
+        "reference_start_word": 81,
+        "start_seconds": 40.97
+      },
+      "notes": "",
+      "retakes": [],
+      "status": "matches",
+      "updated_at": "2026-11-05T19:40:47Z",
+      "words": ""
+    },
+    "world-war-z-E07@before-navigation-timing-fix": {
+      "accepted_take_id": null,
+      "audio_issue": false,
+      "context": {
+        "audio_sha256": "6f419da2feeb93596b095aa544dd70ad8c8cdef2f0816f2c458dedb0914740d6",
+        "end_seconds": 94.17,
+        "reference_end_word": 195,
+        "reference_sha256": "c235024887c363a203d4e2728f63a8f85b1f4f415b67f32d87019c4b816d5812",
+        "reference_start_word": 182,
+        "start_seconds": 85.31
+      },
+      "notes": "",
+      "retakes": [],
+      "status": "corrected",
+      "updated_at": "2026-11-05T19:42:01Z",
+      "words": "of Dachang has been disassembled, brick by brick, then rebuilt on higher ground"
+    },
+    "world-war-z-E09@before-navigation-timing-fix": {
+      "accepted_take_id": null,
+      "audio_issue": false,
+      "context": {
+        "audio_sha256": "6f419da2feeb93596b095aa544dd70ad8c8cdef2f0816f2c458dedb0914740d6",
+        "end_seconds": 131.05,
+        "reference_end_word": 276,
+        "reference_sha256": "c235024887c363a203d4e2728f63a8f85b1f4f415b67f32d87019c4b816d5812",
+        "reference_start_word": 266,
+        "start_seconds": 124.85
+      },
+      "notes": "",
+      "retakes": [],
+      "status": "corrected",
+      "updated_at": "2026-11-05T19:42:46Z",
+      "words": "I personally didn't know that this older Dachang existed"
+    },
+    "world-war-z-E10@before-navigation-timing-fix": {
+      "accepted_take_id": null,
+      "audio_issue": false,
+      "context": {
+        "audio_sha256": "6f419da2feeb93596b095aa544dd70ad8c8cdef2f0816f2c458dedb0914740d6",
+        "end_seconds": 154.07,
+        "reference_end_word": 335,
+        "reference_sha256": "c235024887c363a203d4e2728f63a8f85b1f4f415b67f32d87019c4b816d5812",
+        "reference_start_word": 313,
+        "start_seconds": 145.15
+      },
+      "notes": "",
+      "retakes": [],
+      "status": "matches",
+      "updated_at": "2026-11-05T19:43:07Z",
+      "words": ""
     }
   },
   "reviews": {
@@ -427,6 +597,23 @@
       "updated_at": "2026-11-05T19:22:16Z",
       "words": ""
     },
+    "durins-volk-E09": {
+      "accepted_take_id": null,
+      "audio_issue": false,
+      "context": {
+        "audio_sha256": "423df075a1d2efcdc74966cd24e5b09f02cc9012855715a1cb2fd12b0aae6e9b",
+        "end_seconds": 90.8,
+        "reference_end_word": 200,
+        "reference_sha256": "841d8ff3922985a94f1b92bd37684c75e7880d8972b72dc4977732ae6a0c4a3f",
+        "reference_start_word": 174,
+        "start_seconds": 76.03
+      },
+      "notes": "E09: There audio contains a lot more information the in reference and Whisper Large-v2.\nE10: different audio than expected text for all",
+      "retakes": [],
+      "status": "matches",
+      "updated_at": "2026-11-05T19:39:32Z",
+      "words": ""
+    },
     "side-project-E01": {
       "accepted_take_id": null,
       "audio_issue": false,
@@ -453,7 +640,7 @@
         "reference_end_word": 64,
         "reference_sha256": "ee97b8485fedf9f38508952527cecb41e8a22b33717faa4936ed16b81cfe7e44",
         "reference_start_word": 47,
-        "start_seconds": 33.77
+        "start_seconds": 33.84
       },
       "notes": "",
       "retakes": [],
@@ -466,11 +653,11 @@
       "audio_issue": false,
       "context": {
         "audio_sha256": "018807fe80637d269afa19e839f15b0b78925a3a65391fdb09fb666da183af85",
-        "end_seconds": 52.73,
+        "end_seconds": 52.71,
         "reference_end_word": 83,
         "reference_sha256": "ee97b8485fedf9f38508952527cecb41e8a22b33717faa4936ed16b81cfe7e44",
         "reference_start_word": 64,
-        "start_seconds": 43.61
+        "start_seconds": 43.68
       },
       "notes": "",
       "retakes": [],
@@ -483,33 +670,152 @@
       "audio_issue": false,
       "context": {
         "audio_sha256": "018807fe80637d269afa19e839f15b0b78925a3a65391fdb09fb666da183af85",
-        "end_seconds": 56.97,
+        "end_seconds": 64.98,
         "reference_end_word": 108,
         "reference_sha256": "ee97b8485fedf9f38508952527cecb41e8a22b33717faa4936ed16b81cfe7e44",
         "reference_start_word": 83,
-        "start_seconds": 51.23
+        "start_seconds": 51.21
       },
       "notes": "audio is much shorter than text, doesn't contain disputed word",
       "retakes": [],
-      "status": "corrected",
+      "status": "misaligned",
       "updated_at": "2026-11-05T19:37:43Z",
-      "words": "see notes"
+      "words": ""
     },
-    "durins-volk-E09": {
+    "world-war-z-E01": {
       "accepted_take_id": null,
       "audio_issue": false,
       "context": {
-        "audio_sha256": "423df075a1d2efcdc74966cd24e5b09f02cc9012855715a1cb2fd12b0aae6e9b",
-        "end_seconds": 90.8,
-        "reference_end_word": 200,
-        "reference_sha256": "841d8ff3922985a94f1b92bd37684c75e7880d8972b72dc4977732ae6a0c4a3f",
-        "reference_start_word": 174,
-        "start_seconds": 76.03
+        "audio_sha256": "6f419da2feeb93596b095aa544dd70ad8c8cdef2f0816f2c458dedb0914740d6",
+        "end_seconds": 14.33,
+        "reference_end_word": 22,
+        "reference_sha256": "c235024887c363a203d4e2728f63a8f85b1f4f415b67f32d87019c4b816d5812",
+        "reference_start_word": 7,
+        "start_seconds": 5.15
       },
-      "notes": "E09: There audio contains a lot more information the in reference and Whisper Large-v2.\nE10: different audio than expected text for all",
+      "notes": "",
       "retakes": [],
-      "status": "uncertain",
-      "updated_at": "2026-11-05T19:25:04Z",
+      "status": "matches",
+      "updated_at": "2026-11-05T19:39:52Z",
+      "words": ""
+    },
+    "world-war-z-E02": {
+      "accepted_take_id": null,
+      "audio_issue": false,
+      "context": {
+        "audio_sha256": "6f419da2feeb93596b095aa544dd70ad8c8cdef2f0816f2c458dedb0914740d6",
+        "end_seconds": 17.81,
+        "reference_end_word": 28,
+        "reference_sha256": "c235024887c363a203d4e2728f63a8f85b1f4f415b67f32d87019c4b816d5812",
+        "reference_start_word": 22,
+        "start_seconds": 13.47
+      },
+      "notes": "",
+      "retakes": [],
+      "status": "matches",
+      "updated_at": "2026-11-05T19:40:00Z",
+      "words": ""
+    },
+    "world-war-z-E03": {
+      "accepted_take_id": null,
+      "audio_issue": false,
+      "context": {
+        "audio_sha256": "6f419da2feeb93596b095aa544dd70ad8c8cdef2f0816f2c458dedb0914740d6",
+        "end_seconds": 27.61,
+        "reference_end_word": 51,
+        "reference_sha256": "c235024887c363a203d4e2728f63a8f85b1f4f415b67f32d87019c4b816d5812",
+        "reference_start_word": 41,
+        "start_seconds": 21.41
+      },
+      "notes": "",
+      "retakes": [],
+      "status": "matches",
+      "updated_at": "2026-11-05T19:40:26Z",
+      "words": ""
+    },
+    "world-war-z-E04": {
+      "accepted_take_id": null,
+      "audio_issue": false,
+      "context": {
+        "audio_sha256": "6f419da2feeb93596b095aa544dd70ad8c8cdef2f0816f2c458dedb0914740d6",
+        "end_seconds": 41.41,
+        "reference_end_word": 81,
+        "reference_sha256": "c235024887c363a203d4e2728f63a8f85b1f4f415b67f32d87019c4b816d5812",
+        "reference_start_word": 64,
+        "start_seconds": 32.27
+      },
+      "notes": "",
+      "retakes": [],
+      "status": "matches",
+      "updated_at": "2026-11-05T19:40:37Z",
+      "words": ""
+    },
+    "world-war-z-E05": {
+      "accepted_take_id": null,
+      "audio_issue": false,
+      "context": {
+        "audio_sha256": "6f419da2feeb93596b095aa544dd70ad8c8cdef2f0816f2c458dedb0914740d6",
+        "end_seconds": 48.17,
+        "reference_end_word": 90,
+        "reference_sha256": "c235024887c363a203d4e2728f63a8f85b1f4f415b67f32d87019c4b816d5812",
+        "reference_start_word": 81,
+        "start_seconds": 41.23
+      },
+      "notes": "",
+      "retakes": [],
+      "status": "matches",
+      "updated_at": "2026-11-05T19:40:47Z",
+      "words": ""
+    },
+    "world-war-z-E07": {
+      "accepted_take_id": null,
+      "audio_issue": false,
+      "context": {
+        "audio_sha256": "6f419da2feeb93596b095aa544dd70ad8c8cdef2f0816f2c458dedb0914740d6",
+        "end_seconds": 93.88,
+        "reference_end_word": 195,
+        "reference_sha256": "c235024887c363a203d4e2728f63a8f85b1f4f415b67f32d87019c4b816d5812",
+        "reference_start_word": 182,
+        "start_seconds": 85.71
+      },
+      "notes": "",
+      "retakes": [],
+      "status": "corrected",
+      "updated_at": "2026-11-05T19:42:01Z",
+      "words": "of Dachang has been disassembled, brick by brick, then rebuilt on higher ground"
+    },
+    "world-war-z-E09": {
+      "accepted_take_id": null,
+      "audio_issue": false,
+      "context": {
+        "audio_sha256": "6f419da2feeb93596b095aa544dd70ad8c8cdef2f0816f2c458dedb0914740d6",
+        "end_seconds": 130.61,
+        "reference_end_word": 276,
+        "reference_sha256": "c235024887c363a203d4e2728f63a8f85b1f4f415b67f32d87019c4b816d5812",
+        "reference_start_word": 266,
+        "start_seconds": 122.75
+      },
+      "notes": "",
+      "retakes": [],
+      "status": "corrected",
+      "updated_at": "2026-11-05T19:42:46Z",
+      "words": "I personally didn't know that this older Dachang existed"
+    },
+    "world-war-z-E10": {
+      "accepted_take_id": null,
+      "audio_issue": false,
+      "context": {
+        "audio_sha256": "6f419da2feeb93596b095aa544dd70ad8c8cdef2f0816f2c458dedb0914740d6",
+        "end_seconds": 154.27,
+        "reference_end_word": 335,
+        "reference_sha256": "c235024887c363a203d4e2728f63a8f85b1f4f415b67f32d87019c4b816d5812",
+        "reference_start_word": 313,
+        "start_seconds": 145.26
+      },
+      "notes": "",
+      "retakes": [],
+      "status": "matches",
+      "updated_at": "2026-11-05T19:43:07Z",
       "words": ""
     }
   },

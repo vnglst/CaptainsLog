@@ -34,6 +34,37 @@ extension Tools {
         try require(tail.count == 1 && tail[0]["reference_start_word"] as? Int == 4, "Final insertion was omitted")
         let secondTiming: EvalItem = ["transcription": [["text": "one two three changed five six", "offsets": ["from": 0, "to": 6000]]]]
         try require(differencePassages(reference: clean, transcript: clean, comparison: "one two three changed five six", timing: secondTiming, identifier: "test", duration: 6)[0]["model_errors"] as? [Int] == [0, 1], "Comparison-only difference was omitted")
+        let navigationTiming: EvalItem = ["transcription": [
+            ["text": "one two", "offsets": ["from": 0, "to": 2000]],
+            ["text": "three four", "offsets": ["from": 2000, "to": 4000]],
+            ["text": "five six", "offsets": ["from": 4000, "to": 6000]]]]
+        let mistimed: EvalItem = ["id": "omission", "title": "Middle: omitted words",
+            "reference_start_word": 2, "reference_end_word": 4,
+            "start_seconds": 0.0, "end_seconds": 1.0]
+        let retimed = try retimeReviewPassages([mistimed], reference: clean, timing: navigationTiming, duration: 6)[0]
+        try require(retimed["start_seconds"] as? Double == 1.25 && retimed["end_seconds"] as? Double == 4.75
+            && retimed["id"] as? String == "omission" && retimed["reference_end_word"] as? Int == 4,
+            "Independent navigation timing lost an omitted phrase or changed its review identity")
+        let tokenTiming: EvalItem = ["transcription": [["text": "one two three four five six",
+            "offsets": ["from": 0, "to": 6000], "tokens": [
+                ["text": "one two ", "offsets": ["from": 0, "to": 2000]],
+                ["text": "three four", "offsets": ["from": 2000, "to": 4000]],
+                ["text": " five six", "offsets": ["from": 4000, "to": 6000]]]]]]
+        let preciseTiming = try retimeReviewPassages([mistimed], reference: clean, timing: tokenTiming, duration: 6)[0]
+        try require(preciseTiming["start_seconds"] as? Double == 1.25 && preciseTiming["end_seconds"] as? Double == 4.75,
+            "Token timing was replaced by an unrelated segment opening")
+        var malformedTiming = tokenTiming
+        var malformedSegments = malformedTiming["transcription"] as! [EvalItem]
+        var malformedTokens = malformedSegments[0]["tokens"] as! [EvalItem]
+        malformedTokens[0]["offsets"] = ["from": 100, "to": 0]
+        malformedSegments[0]["tokens"] = malformedTokens; malformedTiming["transcription"] = malformedSegments
+        let fallbackTiming = try retimeReviewPassages([mistimed], reference: clean, timing: malformedTiming, duration: 6)[0]
+        try require(fallbackTiming["start_seconds"] as? Double == 0 && fallbackTiming["end_seconds"] as? Double == 6,
+            "Invalid word timestamps did not fall back to their valid segment")
+        var anchor = mistimed; anchor["reference_end_word"] = 3
+        let expanded = try retimeReviewPassages([anchor], reference: clean, timing: tokenTiming, duration: 6)[0]
+        try require(expanded["reference_start_word"] as? Int == 0 && expanded["reference_end_word"] as? Int == 6,
+            "Insertion-only review still showed an isolated anchor word")
         let run = try temporary("captainslog-listening-review-")
         defer { try? fm.removeItem(at: run) }
         let eval = Evaluator(self)
@@ -70,6 +101,15 @@ extension Tools {
         var savedBytes = try Data(contentsOf: stateFile)
         let loaded = try JSONSerialization.jsonObject(with: request("GET", "/api/state").body) as! EvalItem
         try require((loaded["reviews"] as? [String: EvalItem])?.count == 1, "Saved review did not reload")
+        var mismatch = value
+        mismatch["id"] = passages[1]["id"]
+        mismatch["context"] = passages[1]["context"]
+        mismatch["status"] = "misaligned"; mismatch["words"] = ""; mismatch["notes"] = ""
+        try require(request("POST", "/api/state", mismatch).status == 200, "Audio/text mismatch flag required an explanation")
+        let mismatchState = try JSONSerialization.jsonObject(with: request("GET", "/api/state").body) as! EvalItem
+        let mismatchSaved = mismatchState["reviews"] as! [String: EvalItem]
+        try require(mismatchSaved[passages[1]["id"] as! String]?["status"] as? String == "misaligned", "Mismatch flag did not persist")
+        savedBytes = try Data(contentsOf: stateFile)
         let sessionFile = run.appendingPathComponent("last-session.json")
         let resumeServer = try EvalReviewServer(root: app, port: 0, sessionFile: sessionFile)
         defer { resumeServer.stop() }
@@ -87,7 +127,7 @@ extension Tools {
         try require(Data(contentsOf: stateFile) == savedBytes, "Location tracking changed owner review decisions")
         let overview = try JSONSerialization.jsonObject(with: request("GET", "/api/reviews").body) as! EvalItem
         let entries = overview["reviews"] as! [EvalItem]
-        try require(entries.count == 1 && entries[0]["verified"] as? Int == 1 && entries[0]["total"] as? Int == 12, "Overview lost live saved progress")
+        try require(entries.count == 1 && entries[0]["verified"] as? Int == 1 && entries[0]["complete"] as? Bool == false && entries[0]["next_passage"] as? String == passages[1]["id"] as? String && entries[0]["total"] as? Int == 12, "Overview lost live saved progress")
         let sibling = run.appendingPathComponent("second-review"); try mkdir(sibling)
         try json(sibling.appendingPathComponent("recordings.json"), ["recordings": [["id": "second", "title": "Second review", "passages": [["id": "second-passage"]]]]])
         let catalog = run.appendingPathComponent("sessions.json")
@@ -217,7 +257,7 @@ extension Tools {
         let changed = try recordings()[0]["passages"] as! [EvalItem]
         try require(changed.count == 1 && changed[0]["short_id"] as? String == "Full", "Stale reference timing offsets were reused")
         let after = try JSONSerialization.jsonObject(with: request("GET", "/api/state").body) as! EvalItem
-        try require((after["reviews"] as? [String: EvalItem])?.isEmpty == true && (after["archived_reviews"] as? [String: EvalItem])?.count == 1 && Data(contentsOf: stateFile) == savedBytes, "Reference changes reused or discarded saved verification")
+        try require((after["reviews"] as? [String: EvalItem])?.isEmpty == true && (after["archived_reviews"] as? [String: EvalItem])?.count == 2 && Data(contentsOf: stateFile) == savedBytes, "Reference changes reused or discarded saved verification")
         value["id"] = changed[0]["id"]; value["context"] = changed[0]["context"]
         try require(request("POST", "/api/state", value).status == 200, "New reference review could not save")
         let outputSnapshot = run.appendingPathComponent("review/suites/transcribe/tng-nl01-vrije-dag-enterprise-corrected/output.md")

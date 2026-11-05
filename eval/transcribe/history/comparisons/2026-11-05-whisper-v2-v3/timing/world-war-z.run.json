@@ -1,0 +1,26 @@
+{
+  "purpose": "Navigation timing only; original evaluation hypotheses and reference are unchanged.",
+  "audio_sha256": "6f419da2feeb93596b095aa544dd70ad8c8cdef2f0816f2c458dedb0914740d6",
+  "timing_sha256": "fc60cb093c220ed4d04aa418312744e5d8134550392130c6123569f8e01414fb",
+  "args": [
+    "/opt/homebrew/bin/whisper-cli",
+    "-m",
+    "tmp/task-77-independent/ggml-large-v3-q5_0.bin",
+    "-f",
+    "tmp/task-77-independent/world-war-z.wav",
+    "-l",
+    "en",
+    "-mc",
+    "0",
+    "-nf",
+    "-ml",
+    "100",
+    "-sow",
+    "-ojf",
+    "-of",
+    "tmp/task-77-world-review-timing"
+  ],
+  "model_sha256": "d75795ecff3f83b5faa89d1900604ad8c780abd5739fae406de19f23ecd98ad1",
+  "binary_sha256": "e23dcdf55fdff2dfc085902b00cac93aba09e0373422e40ddd69d7c67d725f16",
+  "created_at": "2026-11-05"
+}

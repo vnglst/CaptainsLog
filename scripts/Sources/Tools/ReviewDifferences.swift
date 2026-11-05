@@ -18,6 +18,79 @@ extension Tools {
         return topic.prefix(1).uppercased() + topic.dropFirst() + ": " + issue
     }
 
+    /// Navigation timing is independent of the hypotheses being evaluated.
+    /// An omitted phrase cannot be timed from a model that never emitted it.
+    func retimeReviewPassages(_ passages: [EvalItem], reference: String, timing: EvalItem,
+                              duration: Double) throws -> [EvalItem] {
+        let segments = timing["transcription"] as? [EvalItem] ?? []
+        let texts = segments.map { $0["text"] as? String ?? "" }
+        let score = try TranscriptionScore(reference: reference, hypothesis: texts.joined(separator: " "))
+        var bounds: [(a: Int, b: Int, start: Double, end: Double)] = [], offset = 0
+        for (segment, text) in zip(segments, texts) {
+            guard let times = segment["offsets"] as? EvalItem,
+                  let start = times["from"] as? NSNumber, let end = times["to"] as? NSNumber else {
+                throw ToolFailure("Missing navigation timing offsets")
+            }
+            let count = TranscriptionScore.words(text).count
+            let from = start.doubleValue / 1000, to = min(duration, end.doubleValue / 1000)
+            try require(from >= 0 && to >= from && to <= duration && (bounds.last?.start ?? 0) <= from,
+                        "Invalid navigation timing offsets")
+            let tokens = (segment["tokens"] as? [EvalItem] ?? []).filter {
+                !($0["text"] as? String ?? "").hasPrefix("[_")
+            }
+            let tokenText = tokens.map { $0["text"] as? String ?? "" }.joined()
+            let validTokenTimes = tokens.allSatisfy { token in
+                guard let times = token["offsets"] as? EvalItem,
+                      let start = times["from"] as? NSNumber, let end = times["to"] as? NSNumber else { return false }
+                return start.doubleValue / 1000 >= from && end.doubleValue >= start.doubleValue
+                    && end.doubleValue / 1000 <= to
+            }
+            // whisper.cpp can emit backwards token ranges at segment starts.
+            // Fall back to that segment instead of manufacturing word precision.
+            if !tokens.isEmpty && validTokenTimes && TranscriptionScore.words(tokenText) == TranscriptionScore.words(text) {
+                var character = 0
+                let tokenRanges: [(NSRange, Double, Double)] = try tokens.map { token in
+                    let length = ((token["text"] as? String ?? "") as NSString).length
+                    defer { character += length }
+                    guard let times = token["offsets"] as? EvalItem,
+                          let start = times["from"] as? NSNumber, let end = times["to"] as? NSNumber else {
+                        throw ToolFailure("Missing navigation token timing")
+                    }
+                    let a = start.doubleValue / 1000, b = min(duration, end.doubleValue / 1000)
+                    try require(a >= from && b >= a && b <= to, "Invalid navigation token timing")
+                    return (NSRange(location: character, length: length), a, b)
+                }
+                for (index, word) in ReviewText(tokenText).ranges.enumerated() {
+                    let overlapping = tokenRanges.filter { NSIntersectionRange($0.0, word).length > 0 }
+                    bounds.append((offset + index, offset + index + 1,
+                        overlapping.map { $0.1 }.min() ?? from, overlapping.map { $0.2 }.max() ?? to))
+                }
+            } else if count > 0 { bounds.append((offset, offset + count, from, to)) }
+            offset += count
+        }
+        try require(!bounds.isEmpty, "Navigation timing has no words")
+        return try passages.map { passage in
+            guard var a = passage["reference_start_word"] as? Int,
+                  var b = passage["reference_end_word"] as? Int,
+                  a >= 0, a < b, b < score.referenceBoundaries.count else {
+                throw ToolFailure("Invalid navigation reference range")
+            }
+            // Insertion-only alignments can collapse a whole disputed phrase
+            // onto one anchor word. Include enough reference to hear it in context.
+            if b - a == 1 {
+                a = max(0, a - 4); b = min(score.referenceWords, b + 4)
+            }
+            let firstWord = score.referenceBoundaries[a], lastWord = score.referenceBoundaries[b]
+            let first = bounds.firstIndex { firstWord < $0.b } ?? bounds.count - 1
+            let last = bounds.lastIndex { $0.a < max(firstWord + 1, lastWord) } ?? first
+            var updated = passage
+            updated["reference_start_word"] = a; updated["reference_end_word"] = b
+            updated["start_seconds"] = max(0, bounds[first].start - 0.75)
+            updated["end_seconds"] = min(duration, bounds[max(first, last)].end + 0.75)
+            return updated
+        }
+    }
+
     func differencePassages(reference: String, transcript: String, comparison: String,
                             timing: EvalItem, identifier: String, duration: Double) throws -> [EvalItem] {
         let ref = ReviewText(reference)

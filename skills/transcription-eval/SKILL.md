@@ -38,7 +38,13 @@ a difference in at least one model; per-model edit counts distinguish shared and
 model-specific discrepancies. Matching segments are not generated as error items.
 Keep the older completed checklists and their owner decisions as history; generate
 a separate comparison run rather than replacing their passage contexts. Times
-are approximate model segment boundaries with listening context.
+are approximate model segment boundaries with listening context. If omitted or
+repeated output makes those boundaries unreliable, use a separate navigation
+transcription in the run's `review-timing.json`, pinning its audio, reference and
+timing hashes. It changes clip timing, not either scored hypothesis or the
+reference. Prefer word/token timing and include context for isolated insertion
+anchors. The **Audio and text don’t line up** decision saves an unresolved
+alignment flag without requiring corrected words or notes.
 
 ## Review item names
 

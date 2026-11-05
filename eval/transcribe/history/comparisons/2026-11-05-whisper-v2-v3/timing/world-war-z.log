@@ -1,0 +1,146 @@
+load_backend: loaded BLAS backend from /opt/homebrew/Cellar/ggml/0.27.0/libexec/libggml-blas.so
+ggml_metal_device_init: tensor API disabled for pre-M5 and pre-A19 devices
+ggml_metal_library_init: using embedded metal library
+ggml_metal_library_compile_all: compiled 'fa_aux' library in 0.002 sec
+ggml_metal_library_compile_all: compiled 'fa_f16' library in 0.002 sec
+ggml_metal_library_compile_all: compiled 'fa_f32' library in 0.002 sec
+ggml_metal_library_compile_all: compiled 'fa_q4_0' library in 0.002 sec
+ggml_metal_library_compile_all: compiled 'fa_q4_1' library in 0.002 sec
+ggml_metal_library_compile_all: compiled 'fa_q5_0' library in 0.007 sec
+ggml_metal_library_compile_all: compiled 'fa_q5_1' library in 0.006 sec
+ggml_metal_library_compile_all: compiled 'fa_q8_0' library in 0.004 sec
+ggml_metal_library_compile_all: compiled 'fa_tensor' library in 0.006 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_f16' library in 0.006 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_f32' library in 0.010 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q4_0' library in 0.003 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q4_1' library in 0.010 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q5_0' library in 0.009 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q5_1' library in 0.012 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q8_0' library in 0.008 sec
+ggml_metal_library_compile_all: compiled 'mul_mv' library in 0.004 sec
+ggml_metal_library_compile_all: compiled 'mul_mv_mma' library in 0.011 sec
+ggml_metal_library_compile_all: compiled 'mul_mm' library in 0.007 sec
+ggml_metal_library_compile_all: compiled 'quantize' library in 0.005 sec
+ggml_metal_library_compile_all: compiled 'softmax' library in 0.006 sec
+ggml_metal_library_compile_all: compiled 'norm' library in 0.009 sec
+ggml_metal_library_compile_all: compiled 'unary' library in 0.009 sec
+ggml_metal_library_compile_all: compiled 'binbcast' library in 0.010 sec
+ggml_metal_library_compile_all: compiled 'reduce' library in 0.009 sec
+ggml_metal_library_compile_all: compiled 'tri' library in 0.005 sec
+ggml_metal_library_compile_all: compiled 'ssm' library in 0.005 sec
+ggml_metal_library_compile_all: compiled 'wkv' library in 0.005 sec
+ggml_metal_library_compile_all: compiled 'gated_delta_net' library in 0.006 sec
+ggml_metal_library_compile_all: compiled 'solve_tri' library in 0.006 sec
+ggml_metal_library_compile_all: compiled 'rope' library in 0.005 sec
+ggml_metal_library_compile_all: compiled 'conv' library in 0.003 sec
+ggml_metal_library_compile_all: compiled 'upscale' library in 0.005 sec
+ggml_metal_library_compile_all: compiled 'argsort' library in 0.003 sec
+ggml_metal_library_compile_all: compiled 'pool' library in 0.004 sec
+ggml_metal_library_compile_all: compiled 'misc' library in 0.003 sec
+ggml_metal_library_compile_all: loaded 36 libraries from embedded data in 0.013 sec (max single = 0.012 sec)
+ggml_metal_rsets_init: creating a residency set collection (keep_alive = 180 s)
+ggml_metal_device_init: GPU name:   MTL0 (Apple M4)
+ggml_metal_device_init: GPU family: MTLGPUFamilyApple9  (1009)
+ggml_metal_device_init: GPU family: MTLGPUFamilyMetal4  (5002)
+ggml_metal_device_init: simdgroup reduction   = true
+ggml_metal_device_init: simdgroup matrix mul. = true
+ggml_metal_device_init: has unified memory    = true
+ggml_metal_device_init: has bfloat            = true
+ggml_metal_device_init: has tensor            = false
+ggml_metal_device_init: use residency sets    = true
+ggml_metal_device_init: use shared buffers    = true
+ggml_metal_device_init: recommendedMaxWorkingSetSize  = 12713.12 MB
+load_backend: loaded MTL backend from /opt/homebrew/Cellar/ggml/0.27.0/libexec/libggml-metal.so
+load_backend: loaded CPU backend from /opt/homebrew/Cellar/ggml/0.27.0/libexec/libggml-cpu-apple_m4.so
+whisper_init_from_file_with_params_no_state: loading model from 'tmp/task-77-independent/ggml-large-v3-q5_0.bin'
+whisper_init_with_params_no_state: use gpu    = 1
+whisper_init_with_params_no_state: flash attn = 1
+whisper_init_with_params_no_state: gpu_device = 0
+whisper_init_with_params_no_state: dtw        = 0
+whisper_init_with_params_no_state: devices    = 3
+whisper_init_with_params_no_state: backends   = 3
+whisper_model_load: loading model
+whisper_model_load: n_vocab       = 51866
+whisper_model_load: n_audio_ctx   = 1500
+whisper_model_load: n_audio_state = 1280
+whisper_model_load: n_audio_head  = 20
+whisper_model_load: n_audio_layer = 32
+whisper_model_load: n_text_ctx    = 448
+whisper_model_load: n_text_state  = 1280
+whisper_model_load: n_text_head   = 20
+whisper_model_load: n_text_layer  = 32
+whisper_model_load: n_mels        = 128
+whisper_model_load: ftype         = 8
+whisper_model_load: qntvr         = 2
+whisper_model_load: type          = 5 (large v3)
+whisper_model_load: adding 1609 extra tokens
+whisper_model_load: n_langs       = 100
+whisper_model_load:         MTL0 total size =  1080.47 MB
+whisper_model_load: model size    = 1080.47 MB
+whisper_backend_init_gpu: device 0: BLAS (type: 3)
+whisper_backend_init_gpu: device 1: MTL0 (type: 1)
+whisper_backend_init_gpu: found GPU device 1: MTL0 (type: 1, cnt: 0)
+whisper_backend_init_gpu: using MTL0 backend
+ggml_metal_init: allocating
+ggml_metal_init: found device: Apple M4
+ggml_metal_init: picking default device: Apple M4
+ggml_metal_init: use fusion         = true
+ggml_metal_init: use concurrency    = true
+ggml_metal_init: use graph optimize = true
+whisper_backend_init: using BLAS backend
+whisper_init_state: kv self size  =   83.89 MB
+whisper_init_state: kv cross size =  251.66 MB
+whisper_init_state: kv pad  size  =    7.86 MB
+whisper_init_state: compute buffer (conv)   =   37.69 MB
+whisper_init_state: compute buffer (encode) =   67.49 MB
+whisper_init_state: compute buffer (cross)  =  132.15 MB
+whisper_init_state: compute buffer (decode) =  100.04 MB
+read_audio_data: reading audio data from 'tmp/task-77-independent/world-war-z.wav' ...
+read_audio_data: trying to decode with miniaudio
+
+system_info: n_threads = 4 / 10 | WHISPER : VITISAI = 0 | COREML = 0 | OPENVINO = 0 | MTL : EMBED_LIBRARY = 1 | CPU : NEON = 1 | ARM_FMA = 1 | FP16_VA = 1 | MATMUL_INT8 = 1 | DOTPROD = 1 | SME = 1 | ACCELERATE = 1 | OPENMP = 1 | REPACK = 1 | 
+
+main: processing 'tmp/task-77-independent/world-war-z.wav' (2955200 samples, 184.7 sec), 4 threads, 1 processors, 5 beams + best of 5, lang = en, task = transcribe, timestamps = 1 ...
+
+
+[00:00:00.000 --> 00:00:05.900]   Greater Chongqing, the United Federation of China
+[00:00:05.900 --> 00:00:13.680]   At its pre-war height, this region boasted a population of over 35 million people.
+[00:00:14.220 --> 00:00:17.060]   Now, there are barely 50,000.
+[00:00:18.100 --> 00:00:22.160]   Reconstruction funds have been slow to arrive in this part of the country,
+[00:00:22.160 --> 00:00:27.160]   the government choosing to concentrate on more densely populated coasts.
+[00:00:28.620 --> 00:00:33.020]   There is no central power grid, no running water besides the Yangtze River,
+[00:00:33.020 --> 00:00:40.370]   but the streets are clear of rubble and the local security council has prevented any post-war
+[00:00:40.370 --> 00:00:40.880]   outbreaks.
+[00:00:41.980 --> 00:00:47.420]   The chairman of that council is Kuang Ying-Chu, a medical doctor who,
+[00:00:47.780 --> 00:00:54.170]   despite his advanced age and wartime injuries, still manages to make house calls to all his
+[00:00:54.170 --> 00:00:55.240]   patients.
+[00:00:57.240 --> 00:01:04.000]   the first outbreak i saw was in a remote village that officially had no name the residents called
+[00:01:04.000 --> 00:01:11.120]   it new dachang but this was more out of nostalgia than anything else their former home old dachang
+[00:01:11.120 --> 00:01:18.200]   had stood since the period of the three kingdoms with farms and houses and even trees said to be
+[00:01:18.200 --> 00:01:25.960]   centuries old when the three gorges dam was completed and reservoir waters began to rise
+[00:01:25.960 --> 00:01:33.380]   much of Dachang has been disassembled, brick by brick, then rebuilt on higher ground.
+[00:01:34.280 --> 00:01:40.720]   This new Dachang, however, was not a town anymore, but a National Historic Museum.
+[00:01:41.280 --> 00:01:48.200]   It must have been a heartbreaking irony for those poor peasants to see their town saved,
+[00:01:48.400 --> 00:01:55.400]   but then only being able to visit it as a tourist. Maybe that is why some of them choose the name
+[00:01:55.400 --> 00:02:02.820]   to name their newly constructed hamlet New Dachang, to preserve some connection to their heritage,
+[00:02:03.500 --> 00:02:09.860]   even if it was only in name. I personally didn't know that this Old Dachang existed,
+[00:02:10.500 --> 00:02:16.820]   so you can imagine how confused I was when the call came in. The hospital was quiet.
+[00:02:17.760 --> 00:02:22.660]   It had been a slow night, even for the increasing number of drunk driving accidents.
+[00:02:23.360 --> 00:02:29.840]   motorcycles were becoming very popular. We used to say that your Harley Davidsons killed more
+[00:02:29.840 --> 00:02:37.060]   young Chinese than all the G.I.s in the Korean War. That's why I was so grateful for a quiet shift.
+[00:02:37.580 --> 00:02:44.160]   I was tired. My back and feet ached. I was on my way out to smoke a cigarette and watch the dawn
+[00:02:44.160 --> 00:02:51.560]   when I heard my name being paged. The receptionist that night was new and couldn't quite understand
+[00:02:51.560 --> 00:02:59.220]   the dialect. There had been an accident or an illness. It was an emergency. That part was obvious.
+[00:03:00.040 --> 00:03:02.880]   And could we please send help at once?
+output_json: saving output to 'tmp/task-77-world-review-timing.json'
+
+whisper_print_timings:     load time =   531.90 ms
+whisper_print_timings:     fallbacks =   0 p /   0 h
+whisper_print_timings:      mel time =    74.20 ms
+whisper_print_timings:   sample time =   676.12 ms /  2821 runs (     0.24 ms per run)
+whisper_print_timings:   encode time = 10215.68 ms /     7 runs (  1459.38 ms per run)
+whisper_print_timings:   decode time =     0.00 ms /     1 runs (     0.00 ms per run)
+whisper_print_timings:   batchd time = 14962.83 ms /  2807 runs (     5.33 ms per run)
+whisper_print_timings:   prompt time =     0.00 ms /     1 runs (     0.00 ms per run)
+whisper_print_timings:    total time = 26772.21 ms
+ggml_metal_free: deallocating

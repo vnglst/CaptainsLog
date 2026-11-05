@@ -193,7 +193,7 @@ final class EvalReviewServer: @unchecked Sendable {
                   headers["origin"].map({ $0 == "http://" + headers["host"]! }) ?? true else { return try jsonResponse(["error": "Invalid local JSON request"], status: 403) }
             guard body.count <= 100_000, let value = (try? JSONSerialization.jsonObject(with: body)) as? EvalItem,
                   let id = value["id"] as? String, let context = currentContexts[id],
-                  let status = value["status"] as? String, ["pending", "matches", "corrected", "uncertain"].contains(status),
+                  let status = value["status"] as? String, ["pending", "matches", "corrected", "uncertain", "misaligned"].contains(status),
                   let words = value["words"] as? String, let notes = value["notes"] as? String,
                   words.count <= 30_000, notes.count <= 30_000,
                   status != "corrected" || !words.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return try jsonResponse(["error": "Choose a valid passage and write any corrected wording first"], status: 400) }
