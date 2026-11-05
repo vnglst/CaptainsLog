@@ -1,25 +1,5 @@
 [
   {
-    "audio_sha256": "731efc1781210e0717e9952bcea5ab761793810b7f4f0fcd7d607fff6fa3c990",
-    "date": "2025-01-15",
-    "expected": "eval/transcribe/history/comparisons/2026-11-05-whisper-v2-v3/expected/tng-nl01-vrije-dag-enterprise-corrected.md",
-    "input": "eval/transcribe/history/comparisons/2026-11-05-whisper-v2-v3/audio/tng-nl01-vrije-dag-enterprise-corrected.m4a",
-    "language": "Dutch",
-    "name": "tng-nl01-vrije-dag-enterprise-corrected",
-    "output": "eval/transcribe/history/comparisons/2026-11-05-whisper-v2-v3/native/tng-nl01-vrije-dag-enterprise-corrected.md",
-    "recording_time": "12:00",
-    "reference_check": {
-      "date": "2026-10-30",
-      "derived_from": "tng-nl01-vrije-dag-enterprise",
-      "owner_audio_verification": "second round pending",
-      "source": "Owner first-round wording corrections and explicitly selected replacement takes"
-    },
-    "reference_sha256": "37a5afd505cea14c707ae0e4d041e0e1537588531c3acedf54c228a698ec87bf",
-    "reference_status": "model-assisted",
-    "stage": "transcribe",
-    "model_label": "Whisper Large-v2 · preserved native output"
-  },
-  {
     "audio_sha256": "018807fe80637d269afa19e839f15b0b78925a3a65391fdb09fb666da183af85",
     "date": "2025-01-15",
     "expected": "eval/transcribe/history/comparisons/2026-11-05-whisper-v2-v3/expected/2025-01-14 side project.md",

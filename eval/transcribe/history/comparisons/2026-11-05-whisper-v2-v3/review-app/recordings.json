@@ -1,923 +1,17 @@
 {
   "app_source_hashes" : {
-    "/Users/vnglst/Code/CaptainsLog/scripts/.build/out/Products/Debug/CaptainsLogTools_Tools.bundle/Contents/Resources/EvalReview/app.js" : "70ecc4e166331c6ee43d6810e7aeb2c132ba68732308eb1da92065ea5da0d418",
+    "/Users/vnglst/Code/CaptainsLog/scripts/.build/out/Products/Debug/CaptainsLogTools_Tools.bundle/Contents/Resources/EvalReview/app.js" : "1469ff676c1f5b6fb93a97a5204b95a4bb9456c5c92c3c86d4e5993441eba0a8",
     "/Users/vnglst/Code/CaptainsLog/scripts/.build/out/Products/Debug/CaptainsLogTools_Tools.bundle/Contents/Resources/EvalReview/audio-capture.mjs" : "f13701df37c110306fb1dafd4eda9e524e8fe7f661f8a1f987a2059351fb0fa8",
-    "/Users/vnglst/Code/CaptainsLog/scripts/.build/out/Products/Debug/CaptainsLogTools_Tools.bundle/Contents/Resources/EvalReview/index.html" : "acb4ec20e6c3fb83008f49f55559c97f4a88b649541096924fa72a04bc55686b",
-    "/Users/vnglst/Code/CaptainsLog/scripts/.build/out/Products/Debug/CaptainsLogTools_Tools.bundle/Contents/Resources/EvalReview/review-passages.mjs" : "ac75c0ea3707a69b75c2a5b69620f8dae6be7cdb34fcb0faebc5e7771246226f",
+    "/Users/vnglst/Code/CaptainsLog/scripts/.build/out/Products/Debug/CaptainsLogTools_Tools.bundle/Contents/Resources/EvalReview/index.html" : "72f71f697e42078573a251917be7b790ca15eb5ea4dc8e8e67de54a6af631b08",
+    "/Users/vnglst/Code/CaptainsLog/scripts/.build/out/Products/Debug/CaptainsLogTools_Tools.bundle/Contents/Resources/EvalReview/review-passages.mjs" : "bfecbdd7e0cb7719c8bd8fdca7979b6420e6e47725d752919e6235edbfce1ade",
     "/Users/vnglst/Code/CaptainsLog/scripts/.build/out/Products/Debug/CaptainsLogTools_Tools.bundle/Contents/Resources/EvalReview/style.css" : "a902feef19fcde0c4fbfaf5092b6901484279094cd12188b168cff93589892b4"
   },
   "comparison_source" : "/Users/vnglst/Code/CaptainsLog/eval/transcribe/history/comparisons/2026-11-05-whisper-v2-v3/comparison",
   "recordings" : [
     {
       "app_label" : "Whisper Large-v2 · preserved native output",
-      "app_transcript" : "Persoonlijk logboek. Mijn dienst zit erop. We zijn nog onderweg naar het onderzoekstation en de Enterprise vliegt voorlopig gewoon op kruissnelheid. Ik zit in mijn verblijf met een kop thee uit de Replicator. Er staat geen werk meer op mijn scherm en dat wil ik vanavond even zo houden. De afgelopen dagen bleef ik na mijn dienst steeds nog iets controleren Voor ik het wist was het weer tijd om te slapen. Vandaag heb ik bewust wat tijd voor mezelf genomen. Voor morgen had ik een uur op het holodeck gereserveerd. Gewone wandeling door een bos met een pad langs een meer. Geen ingewikkelde avonturen en ook geen tegenstanders die ineens achter een boom vandaan springen. Ik wilde even ergens zijn waar ik niet voortdurend de ventilatie van het schip hoorde. Het programma had zelfs natte bladeren op het pad gelegd, dat had voor mij niet gehoeven, maar het rook wel goed. Na een kwartier merkte ik pas hoe moe ik eigenlijk was. Al verwegen ging mijn communicator. Ik dacht meteen dat er iets in de machinekamer was, maar het was Worf. Hij moest naar een overleg op de brug en vroeg of Alexander wat eerder bij mij kon komen. We hadden afgesproken dat ik die middag op hem zou letten. Ik ben teruggelopen naar de uitgang en heb het programma afgesloten. Het meer liep vlak langs de deur door toen die verscheen. Dat blijft vreemd, ook al weet je precies hoe het werkt. Alexander stond in de gang met een model van een klingonschip. Een onderdeel zat los en hij wilde weten of we dat in de machinekamer konden repareren. Ik heb gezegd dat we daar niet zomaar heen konden, maar dat ik in mijn verblijf wel wat gereedschap had. Uiteindelijk was het met een klein klemmertje opgelost. Hij wilde eerst de hele vleugel vervangen. Toen ik vroeg waarom, zei hij dat een gerepareerd schip minder sterk was. Daar hebben we nog even over doorgepraat. Volgens mij denkt zijn vader daar iets anders over. Later kwam Mollie erbij. Keiko had nog werk in het aborreëtem en we zouden met z'n drieën naar Ten Forward gaan. Dat leek me een rustig plan. Onderweg wilde Alexander bij elk raam blijven staan omdat hij dacht dat hij een ander schip zag, meestal was het een weerspiegeling. Eén keer was het een onderhoudsdroon vlak langs de romp. Daar hebben we wel even naar gekeken. Molly vroeg of de mensen buiten het schip ook hun lunch meenamen. Ik wist eigenlijk niet wat ik daarop moest zeggen. \"Guynen had een tafel bij het raam voor ons vrij. We hebben iets gegeten en naar een vrachtschip gekeken dat een tijdje naast ons vloog. Het ging dezelfde kant op maar kon onze snelheid niet lang bijhouden.\" Alexander wilde weten waarom de Enterprise niet gewoon langzamer ging zodat we samen konden blijven. Ik heb geprobeerd uit te leggen dat wij op tijd bij het onderzoekstation moeten zijn. Dat vond hij geen goed antwoord. Hij wilde vooral weten of er ook kinderen op dat andere schip zaten. Toen Worf hem kwam halen was het ineens heel stil aan tafel. Kijk ho, haal de molly even later op.\" Ik ben nog een paar minuten blijven zitten. Kainan vroeg of ik nu weer aan het werk ging. Kennelijk zag ik eruit alsof ik dat van plan was. Ik heb gezegd van niet. Dat was ook echt mijn bedoeling. Toch liep ik op de terugweg bijna vanzelf richting de turbolift naar de machinekamer. Ik moet me zelf eraan herinneren dat Jordi daar een volledige ploeg heeft staan, ook als ik vrij ben. Gisteren hadden we namelijk een storing in een paar replicators op dek 12. Niet alles viel uit. Vooral warme dranken kwamen er lauw uit terwijl de maaltijden normaal waren. Eerst dacht ik aan de energieverdeling. Er waren werkzaamheden geweest dan een leiding in die sectie dus dat leek logisch. Maar de metingen waren goed. Jordi stelde voor om de opgeslagen patronen te vergelijken. Daar bleek een verkeerde temperatuurinstelling in te zitten die door meerdere drankpatronen werd gebruikt. We hebben de instelling aangepast en daarna verschillende bestellingen geprobeerd. Thee, koffie, soep, voor de zekerheid. De soep was voor de wijzigingen al goed en bleef goed. Daarna hebben we de mensen die de storing hebben gemeld gevraagd of ze nog problemen merkten. Tot nu toe niet. Ik moet morgen alleen nog de laatste metingen in de onderhoudslog zetten. Ik had dat meteen willen doen, maar toen kwam er een oproep over een sensor bij het shuttleruim en ben ik weggelopen zonder mijn verslag af te maken. Dat is iets waar ik op moet letten. Ik heb vaak wel onthouden wat er gebeurd is, maar iemand van de volgende dienst kan daar niets mee. Die ziet alleen dat ik een onderdeel heb gecontroleerd, niet wat ik gemeten heb of waarom ik daarna iets anders ben gaan bekijken. Deda heeft me daar laatst op gewezen, heel rustig, gewoon met de vraag waar hij de meetwaarden kon vinden. Die stonden nog op mijn persoonlijke scherm. Dat was dus niet handig. Morgen eerst die gegevens overzetten, voordat ik aan iets nieuws begin. Voor de komende dienst staat er ook een controle van de sensoren aan de buitenkant van de romp gepland. We vliegen langs een nevel en de wetenschapsafdeling wil weten of de straling onze meting hebben invloed. De Enterprise gaat de nevel niet in. Er is een sonde naartoe gestuurd en wij vergelijken de signalen van die sonde met wat het schip op afstand meet. Ik vind dat eigenlijk wel mooi werk. Je bent bezig met onderhoud, maar je ziet tegelijk iets waar nog niemand eerder van zo dichtbij naar heeft gekeken. Orv heeft gevraagd of we daarbij ook de afscherming van de sensoren controleren. Dat doen we, maar ik wil eerst met Jordi bespreken in welke volgorde. We kunnen niet alles tegelijk uitschakelen. Dan heeft de brug duidelijk te weinig betrouwbare informatie. Ik wil per sensor een controle doen, het resultaat bevestigen en pas daarna doorgaan naar de volgende. Het duurt misschien langer, maar dan weten we ook waar een afwijking vandaan komt. Of Jordi die aanpak goed vindt moet ik nog bespreken. Ik heb deze week ook een gesprek met commandant William Riker. Hij wil weten hoe het gaat met de nieuwe bemanningsleden tijdens de nachtdienst. Ik heb er twee ingewerkt. Ze kennen de procedures maar aarzelen nog om iemand wakker te maken als een meting vreemd is. Dat herken ik van mijn eerste week hier. Je wilt niet degene zijn die voor niets alarm slaat. Alleen heb ik liever dat ze een keer te vaak bellen dan dat ze een echte afwijking laten zitten. Dat wil ik met Rijker bespreken. En ik wil een nieuw uur op het holodeck boeken. Die wandeling van vanmorgen was prettig, ook al heb ik het einde niet gehaald. Misschien hetzelfde programma, maar dan zonder communicator die meteen mijn hele hoofd weer naar het werk trekt. Helemaal uitzetten kan natuurlijk niet als ik oproepbaar ben. Ik kijk wel op welke vrije dag het past. Voor nu is de thee op. Hoor ik alleen het zachte geluid van het schip en hoef ik nergens heen. Ik denk dat ik daar nog even van ga genieten. MBC 뉴스 김재경입니다.",
-      "audio" : "assets/audio/0.m4a",
-      "audio_sha256" : "731efc1781210e0717e9952bcea5ab761793810b7f4f0fcd7d607fff6fa3c990",
-      "carried_passages" : [
-
-      ],
-      "comparison_label" : "Whisper Large-v3 · timestamped comparison",
-      "duration" : 489.18997916666666,
-      "id" : "tng-nl01-r2",
-      "language" : "Dutch",
-      "name" : "tng-nl01-vrije-dag-enterprise-corrected",
-      "output_sha256" : "0747560e67c239ad09c14f2eb856cbed970867e0c9eb49dc816315a128bccb0b",
-      "passages" : [
-        {
-          "app_transcript" : "Persoonlijk logboek. Mijn dienst zit erop. We zijn nog onderweg naar het onderzoekstation en de Enterprise vliegt voorlopig gewoon op kruissnelheid",
-          "audio" : "assets/audio/0.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 1 edit(s), Large-v3 0 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
-          "clip_end" : 15.33,
-          "clip_start" : 0,
-          "context" : {
-            "audio_sha256" : "731efc1781210e0717e9952bcea5ab761793810b7f4f0fcd7d607fff6fa3c990",
-            "end_seconds" : 15.33,
-            "reference_end_word" : 21,
-            "reference_sha256" : "37a5afd505cea14c707ae0e4d041e0e1537588531c3acedf54c228a698ec87bf",
-            "reference_start_word" : 0,
-            "start_seconds" : 0
-          },
-          "end_seconds" : 15.33,
-          "id" : "tng-nl01-r2-E01",
-          "model_errors" : [
-            1,
-            0
-          ],
-          "reference" : "Persoonlijk logboek. Mijn dienst zit erop. We zijn nog onderweg naar het onderzoeksstation en de Enterprise vliegt voorlopig gewoon op kruissnelheid",
-          "second_transcript" : "persoonlijk logboek mijn dienst zit erop we zijn nog onderweg naar het onderzoeksstation en de enterprise vliegt voorlopig gewoon op kruissnelheid",
-          "short_id" : "E01",
-          "start_seconds" : 0,
-          "title" : "Whisper Large-v2 differs"
-        },
-        {
-          "app_transcript" : "Voor ik het wist was het weer tijd om te slapen. Vandaag heb ik bewust wat tijd voor mezelf genomen. Voor morgen had ik een uur op het holodeck gereserveerd. Gewone wandeling door een bos met een pad langs een meer",
-          "audio" : "assets/audio/0.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 4 edit(s), Large-v3 3 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
-          "clip_end" : 42.770000000000003,
-          "clip_start" : 27.829999999999998,
-          "context" : {
-            "audio_sha256" : "731efc1781210e0717e9952bcea5ab761793810b7f4f0fcd7d607fff6fa3c990",
-            "end_seconds" : 42.770000000000003,
-            "reference_end_word" : 102,
-            "reference_sha256" : "37a5afd505cea14c707ae0e4d041e0e1537588531c3acedf54c228a698ec87bf",
-            "reference_start_word" : 61,
-            "start_seconds" : 27.829999999999998
-          },
-          "end_seconds" : 42.770000000000003,
-          "id" : "tng-nl01-r2-E02",
-          "model_errors" : [
-            4,
-            3
-          ],
-          "reference" : "Voor ik het wist, was het weer tijd om te slapen. Vandaag heb ik bewust wat tijd voor mezelf genomen.\n\nVanmorgen had ik een uur op het holodeck gereserveerd. Gewoon een wandeling door een bos, met een pad langs een meer",
-          "second_transcript" : "voor ik het wist was het weer tijd om te slapen vandaag heb ik bewust wat tijd voor mezelf genomen vanmorgen had ik een uur op het holodeck gereserveerd gewone wandeling door een bosch met een pad langs een meer",
-          "short_id" : "E02",
-          "start_seconds" : 27.829999999999998,
-          "title" : "Whisper Large-v2 and Whisper Large-v3 differs"
-        },
-        {
-          "app_transcript" : "Geen ingewikkelde avonturen en ook geen tegenstanders die ineens achter een boom vandaan springen. Ik wilde even ergens zijn waar ik niet voortdurend de ventilatie van het schip hoorde",
-          "audio" : "assets/audio/0.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 2 edit(s), Large-v3 1 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
-          "clip_end" : 55.270000000000003,
-          "clip_start" : 41.270000000000003,
-          "context" : {
-            "audio_sha256" : "731efc1781210e0717e9952bcea5ab761793810b7f4f0fcd7d607fff6fa3c990",
-            "end_seconds" : 55.270000000000003,
-            "reference_end_word" : 131,
-            "reference_sha256" : "37a5afd505cea14c707ae0e4d041e0e1537588531c3acedf54c228a698ec87bf",
-            "reference_start_word" : 102,
-            "start_seconds" : 41.270000000000003
-          },
-          "end_seconds" : 55.270000000000003,
-          "id" : "tng-nl01-r2-E03",
-          "model_errors" : [
-            2,
-            1
-          ],
-          "reference" : "Geen ingewikkeld avontuur en ook geen tegenstanders die ineens achter een boom vandaan springen. Ik wilde even ergens zijn waar ik niet voortdurend de ventilatie van het schip hoorde",
-          "second_transcript" : "geen ingewikkelde avontuur en ook geen tegenstanders die ineens achter een boom vandaan springen ik wilde even ergens zijn waar ik niet voortdurend de ventilatie van het schip hoorde",
-          "short_id" : "E03",
-          "start_seconds" : 41.270000000000003,
-          "title" : "Whisper Large-v2 and Whisper Large-v3 differs"
-        },
-        {
-          "app_transcript" : "Het programma had zelfs natte bladeren op het pad gelegd, dat had voor mij niet gehoeven, maar het rook wel goed. Na een kwartier merkte ik pas hoe moe ik eigenlijk was",
-          "audio" : "assets/audio/0.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 1 edit(s), Large-v3 1 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
-          "clip_end" : 68.390000000000001,
-          "clip_start" : 53.770000000000003,
-          "context" : {
-            "audio_sha256" : "731efc1781210e0717e9952bcea5ab761793810b7f4f0fcd7d607fff6fa3c990",
-            "end_seconds" : 68.390000000000001,
-            "reference_end_word" : 163,
-            "reference_sha256" : "37a5afd505cea14c707ae0e4d041e0e1537588531c3acedf54c228a698ec87bf",
-            "reference_start_word" : 131,
-            "start_seconds" : 53.770000000000003
-          },
-          "end_seconds" : 68.390000000000001,
-          "id" : "tng-nl01-r2-E04",
-          "model_errors" : [
-            1,
-            1
-          ],
-          "reference" : "Het programma had zelfs natte bladeren op het pad gelegd. Dat had van mij niet gehoeven, maar het rook wel goed. Na een kwartier merkte ik pas hoe moe ik eigenlijk was",
-          "second_transcript" : "het programma had zelfs natte bladeren op het pad gelegd dat had voor mij niet gehoeven maar het rook wel goed na een kwartier merkte ik pas hoe moe ik eigenlijk was",
-          "short_id" : "E04",
-          "start_seconds" : 53.770000000000003,
-          "title" : "Whisper Large-v2 and Whisper Large-v3 differs"
-        },
-        {
-          "app_transcript" : "Al verwegen ging mijn communicator. Ik dacht meteen dat er iets in de machinekamer was, maar het was Worf. Hij moest naar een overleg op de brug en vroeg of Alexander wat eerder bij mij kon komen. We hadden afgesproken dat ik die middag op hem zou letten",
-          "audio" : "assets/audio/0.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 2 edit(s), Large-v3 1 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
-          "clip_end" : 85.629999999999995,
-          "clip_start" : 66.890000000000001,
-          "context" : {
-            "audio_sha256" : "731efc1781210e0717e9952bcea5ab761793810b7f4f0fcd7d607fff6fa3c990",
-            "end_seconds" : 85.629999999999995,
-            "reference_end_word" : 210,
-            "reference_sha256" : "37a5afd505cea14c707ae0e4d041e0e1537588531c3acedf54c228a698ec87bf",
-            "reference_start_word" : 163,
-            "start_seconds" : 66.890000000000001
-          },
-          "end_seconds" : 85.629999999999995,
-          "id" : "tng-nl01-r2-E05",
-          "model_errors" : [
-            2,
-            1
-          ],
-          "reference" : "Halverwege ging mijn communicator. Ik dacht meteen dat er iets in de machinekamer was, maar het was Worf. Hij moest naar een overleg op de brug en vroeg of Alexander wat eerder bij mij kon komen. We hadden afgesproken dat ik die middag op hem zou letten",
-          "second_transcript" : "halverwege ging mijn communicator ik dacht meteen dat er iets in de machinekamer was maar het was whorf hij moest naar een overleg op de brug en vroeg of alexander wat eerder bij mij kon komen we hadden afgesproken dat ik die middag op hem zou letten",
-          "short_id" : "E05",
-          "start_seconds" : 66.890000000000001,
-          "title" : "Whisper Large-v2 and Whisper Large-v3 differs"
-        },
-        {
-          "app_transcript" : "Alexander stond in de gang met een model van een klingonschip",
-          "audio" : "assets/audio/0.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 2 edit(s), Large-v3 2 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
-          "clip_end" : 104.91,
-          "clip_start" : 100.03,
-          "context" : {
-            "audio_sha256" : "731efc1781210e0717e9952bcea5ab761793810b7f4f0fcd7d607fff6fa3c990",
-            "end_seconds" : 104.91,
-            "reference_end_word" : 255,
-            "reference_sha256" : "37a5afd505cea14c707ae0e4d041e0e1537588531c3acedf54c228a698ec87bf",
-            "reference_start_word" : 243,
-            "start_seconds" : 100.03
-          },
-          "end_seconds" : 104.91,
-          "id" : "tng-nl01-r2-E06",
-          "model_errors" : [
-            2,
-            2
-          ],
-          "reference" : "Alexander stond in de gang met een model van een Klingon-schip",
-          "second_transcript" : "Alexander stond in de gang met een model van een klingonschip",
-          "short_id" : "E06",
-          "start_seconds" : 100.03,
-          "title" : "Whisper Large-v2 and Whisper Large-v3 differs"
-        },
-        {
-          "app_transcript" : "Uiteindelijk was het met een klein klemmertje opgelost",
-          "audio" : "assets/audio/0.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 1 edit(s), Large-v3 0 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
-          "clip_end" : 122.93000000000001,
-          "clip_start" : 118.84999999999999,
-          "context" : {
-            "audio_sha256" : "731efc1781210e0717e9952bcea5ab761793810b7f4f0fcd7d607fff6fa3c990",
-            "end_seconds" : 122.93000000000001,
-            "reference_end_word" : 299,
-            "reference_sha256" : "37a5afd505cea14c707ae0e4d041e0e1537588531c3acedf54c228a698ec87bf",
-            "reference_start_word" : 291,
-            "start_seconds" : 118.84999999999999
-          },
-          "end_seconds" : 122.93000000000001,
-          "id" : "tng-nl01-r2-E07",
-          "model_errors" : [
-            1,
-            0
-          ],
-          "reference" : "Uiteindelijk was het met een klein klemmetje opgelost",
-          "second_transcript" : "Uiteindelijk was het met een klein klemmetje opgelost",
-          "short_id" : "E07",
-          "start_seconds" : 118.84999999999999,
-          "title" : "Whisper Large-v2 differs"
-        },
-        {
-          "app_transcript" : "Later kwam",
-          "audio" : "assets/audio/0.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 0 edit(s), Large-v3 6 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
-          "clip_end" : 140.77000000000001,
-          "clip_start" : 138.50999999999999,
-          "context" : {
-            "audio_sha256" : "731efc1781210e0717e9952bcea5ab761793810b7f4f0fcd7d607fff6fa3c990",
-            "end_seconds" : 140.77000000000001,
-            "reference_end_word" : 337,
-            "reference_sha256" : "37a5afd505cea14c707ae0e4d041e0e1537588531c3acedf54c228a698ec87bf",
-            "reference_start_word" : 335,
-            "start_seconds" : 138.50999999999999
-          },
-          "end_seconds" : 140.77000000000001,
-          "id" : "tng-nl01-r2-E08",
-          "model_errors" : [
-            0,
-            6
-          ],
-          "reference" : "Later kwam",
-          "second_transcript" : "Later kwam hij naar de machinekamer.\nToen kwam",
-          "short_id" : "E08",
-          "start_seconds" : 138.50999999999999,
-          "title" : "Whisper Large-v3 differs"
-        },
-        {
-          "app_transcript" : "kwam Mollie erbij",
-          "audio" : "assets/audio/0.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 1 edit(s), Large-v3 6 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
-          "clip_end" : 141.53,
-          "clip_start" : 139.27000000000001,
-          "context" : {
-            "audio_sha256" : "731efc1781210e0717e9952bcea5ab761793810b7f4f0fcd7d607fff6fa3c990",
-            "end_seconds" : 141.53,
-            "reference_end_word" : 339,
-            "reference_sha256" : "37a5afd505cea14c707ae0e4d041e0e1537588531c3acedf54c228a698ec87bf",
-            "reference_start_word" : 336,
-            "start_seconds" : 139.27000000000001
-          },
-          "end_seconds" : 141.53,
-          "id" : "tng-nl01-r2-E09",
-          "model_errors" : [
-            1,
-            6
-          ],
-          "reference" : "kwam Molly erbij",
-          "second_transcript" : "kwam hij naar de machinekamer.\nToen kwam Molly erbij",
-          "short_id" : "E09",
-          "start_seconds" : 139.27000000000001,
-          "title" : "Whisper Large-v2 and Whisper Large-v3 differs"
-        },
-        {
-          "app_transcript" : "Keiko had nog werk in het aborreëtem en we zouden met z'n drieën naar Ten Forward gaan",
-          "audio" : "assets/audio/0.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 1 edit(s), Large-v3 2 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
-          "clip_end" : 149.81,
-          "clip_start" : 140.77000000000001,
-          "context" : {
-            "audio_sha256" : "731efc1781210e0717e9952bcea5ab761793810b7f4f0fcd7d607fff6fa3c990",
-            "end_seconds" : 149.81,
-            "reference_end_word" : 356,
-            "reference_sha256" : "37a5afd505cea14c707ae0e4d041e0e1537588531c3acedf54c228a698ec87bf",
-            "reference_start_word" : 339,
-            "start_seconds" : 140.77000000000001
-          },
-          "end_seconds" : 149.81,
-          "id" : "tng-nl01-r2-E10",
-          "model_errors" : [
-            1,
-            2
-          ],
-          "reference" : "Keiko had nog werk in het arboretum en we zouden met z'n drieën naar Ten Forward gaan",
-          "second_transcript" : "Keiko had nog werk in het aboretum en we zouden met z'n drieën naar ten voorwoord gaan",
-          "short_id" : "E10",
-          "start_seconds" : 140.77000000000001,
-          "title" : "Whisper Large-v2 and Whisper Large-v3 differs"
-        },
-        {
-          "app_transcript" : "Eén keer was het een onderhoudsdroon vlak langs de romp",
-          "audio" : "assets/audio/0.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 1 edit(s), Large-v3 1 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
-          "clip_end" : 166.77000000000001,
-          "clip_start" : 161.28999999999999,
-          "context" : {
-            "audio_sha256" : "731efc1781210e0717e9952bcea5ab761793810b7f4f0fcd7d607fff6fa3c990",
-            "end_seconds" : 166.77000000000001,
-            "reference_end_word" : 394,
-            "reference_sha256" : "37a5afd505cea14c707ae0e4d041e0e1537588531c3acedf54c228a698ec87bf",
-            "reference_start_word" : 384,
-            "start_seconds" : 161.28999999999999
-          },
-          "end_seconds" : 166.77000000000001,
-          "id" : "tng-nl01-r2-E11",
-          "model_errors" : [
-            1,
-            1
-          ],
-          "reference" : "Eén keer was het een onderhoudsdrone, vlak langs de romp",
-          "second_transcript" : "Eén keer was het een onderhoudsdroon vlak langs de romp",
-          "short_id" : "E11",
-          "start_seconds" : 161.28999999999999,
-          "title" : "Whisper Large-v2 and Whisper Large-v3 differs"
-        },
-        {
-          "app_transcript" : "Guynen had een tafel bij het raam voor ons vrij",
-          "audio" : "assets/audio/0.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 1 edit(s), Large-v3 1 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
-          "clip_end" : 182.50999999999999,
-          "clip_start" : 177.69,
-          "context" : {
-            "audio_sha256" : "731efc1781210e0717e9952bcea5ab761793810b7f4f0fcd7d607fff6fa3c990",
-            "end_seconds" : 182.50999999999999,
-            "reference_end_word" : 432,
-            "reference_sha256" : "37a5afd505cea14c707ae0e4d041e0e1537588531c3acedf54c228a698ec87bf",
-            "reference_start_word" : 422,
-            "start_seconds" : 177.69
-          },
-          "end_seconds" : 182.50999999999999,
-          "id" : "tng-nl01-r2-E12",
-          "model_errors" : [
-            1,
-            1
-          ],
-          "reference" : "Guinan had een tafel bij het raam voor ons vrij",
-          "second_transcript" : "Guinen had een tafel bij het raam voor ons vrij",
-          "short_id" : "E12",
-          "start_seconds" : 177.69,
-          "title" : "Whisper Large-v2 and Whisper Large-v3 differs"
-        },
-        {
-          "app_transcript" : "We hebben iets gegeten en naar een vrachtschip gekeken dat een tijdje naast ons vloog",
-          "audio" : "assets/audio/0.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 0 edit(s), Large-v3 1 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
-          "clip_end" : 188.41,
-          "clip_start" : 181.75,
-          "context" : {
-            "audio_sha256" : "731efc1781210e0717e9952bcea5ab761793810b7f4f0fcd7d607fff6fa3c990",
-            "end_seconds" : 188.41,
-            "reference_end_word" : 447,
-            "reference_sha256" : "37a5afd505cea14c707ae0e4d041e0e1537588531c3acedf54c228a698ec87bf",
-            "reference_start_word" : 432,
-            "start_seconds" : 181.75
-          },
-          "end_seconds" : 188.41,
-          "id" : "tng-nl01-r2-E13",
-          "model_errors" : [
-            0,
-            1
-          ],
-          "reference" : "We hebben iets gegeten en naar een vrachtschip gekeken dat een tijdje naast ons vloog",
-          "second_transcript" : "We hebben niets gegeten en naar een vrachtschip gekeken dat een tijdje naast ons vloog",
-          "short_id" : "E13",
-          "start_seconds" : 181.75,
-          "title" : "Whisper Large-v3 differs"
-        },
-        {
-          "app_transcript" : "Ik heb geprobeerd uit te leggen dat wij op tijd bij het onderzoekstation moeten zijn",
-          "audio" : "assets/audio/0.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 1 edit(s), Large-v3 1 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
-          "clip_end" : 207.77000000000001,
-          "clip_start" : 201.34999999999999,
-          "context" : {
-            "audio_sha256" : "731efc1781210e0717e9952bcea5ab761793810b7f4f0fcd7d607fff6fa3c990",
-            "end_seconds" : 207.77000000000001,
-            "reference_end_word" : 489,
-            "reference_sha256" : "37a5afd505cea14c707ae0e4d041e0e1537588531c3acedf54c228a698ec87bf",
-            "reference_start_word" : 474,
-            "start_seconds" : 201.34999999999999
-          },
-          "end_seconds" : 207.77000000000001,
-          "id" : "tng-nl01-r2-E14",
-          "model_errors" : [
-            1,
-            1
-          ],
-          "reference" : "Ik heb geprobeerd uit te leggen dat wij op tijd bij het onderzoeksstation moeten zijn",
-          "second_transcript" : "Ik heb geprobeerd uit te leggen dat wij op tijd bij het onderzoekstation moeten zijn",
-          "short_id" : "E14",
-          "start_seconds" : 201.34999999999999,
-          "title" : "Whisper Large-v2 and Whisper Large-v3 differs"
-        },
-        {
-          "app_transcript" : "Kijk ho, haal de molly even later op",
-          "audio" : "assets/audio/0.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 4 edit(s), Large-v3 0 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
-          "clip_end" : 223.71000000000001,
-          "clip_start" : 219.84999999999999,
-          "context" : {
-            "audio_sha256" : "731efc1781210e0717e9952bcea5ab761793810b7f4f0fcd7d607fff6fa3c990",
-            "end_seconds" : 223.71000000000001,
-            "reference_end_word" : 526,
-            "reference_sha256" : "37a5afd505cea14c707ae0e4d041e0e1537588531c3acedf54c228a698ec87bf",
-            "reference_start_word" : 520,
-            "start_seconds" : 219.84999999999999
-          },
-          "end_seconds" : 223.71000000000001,
-          "id" : "tng-nl01-r2-E15",
-          "model_errors" : [
-            4,
-            0
-          ],
-          "reference" : "Keiko haalde Molly even later op",
-          "second_transcript" : "Keiko haalde Molly even later op",
-          "short_id" : "E15",
-          "start_seconds" : 219.84999999999999,
-          "title" : "Whisper Large-v2 differs"
-        },
-        {
-          "app_transcript" : "Kainan vroeg of ik nu weer aan het werk ging",
-          "audio" : "assets/audio/0.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 1 edit(s), Large-v3 1 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
-          "clip_end" : 229.84999999999999,
-          "clip_start" : 225.34999999999999,
-          "context" : {
-            "audio_sha256" : "731efc1781210e0717e9952bcea5ab761793810b7f4f0fcd7d607fff6fa3c990",
-            "end_seconds" : 229.84999999999999,
-            "reference_end_word" : 544,
-            "reference_sha256" : "37a5afd505cea14c707ae0e4d041e0e1537588531c3acedf54c228a698ec87bf",
-            "reference_start_word" : 534,
-            "start_seconds" : 225.34999999999999
-          },
-          "end_seconds" : 229.84999999999999,
-          "id" : "tng-nl01-r2-E16",
-          "model_errors" : [
-            1,
-            1
-          ],
-          "reference" : "Guinan vroeg of ik nu weer aan het werk ging",
-          "second_transcript" : "Kainan vroeg of ik nu weer aan het werk ging",
-          "short_id" : "E16",
-          "start_seconds" : 225.34999999999999,
-          "title" : "Whisper Large-v2 and Whisper Large-v3 differs"
-        },
-        {
-          "app_transcript" : "Ik moet me zelf eraan herinneren dat Jordi daar een volledige ploeg heeft staan",
-          "audio" : "assets/audio/0.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 3 edit(s), Large-v3 0 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
-          "clip_end" : 247.65000000000001,
-          "clip_start" : 241.15000000000001,
-          "context" : {
-            "audio_sha256" : "731efc1781210e0717e9952bcea5ab761793810b7f4f0fcd7d607fff6fa3c990",
-            "end_seconds" : 247.65000000000001,
-            "reference_end_word" : 592,
-            "reference_sha256" : "37a5afd505cea14c707ae0e4d041e0e1537588531c3acedf54c228a698ec87bf",
-            "reference_start_word" : 579,
-            "start_seconds" : 241.15000000000001
-          },
-          "end_seconds" : 247.65000000000001,
-          "id" : "tng-nl01-r2-E17",
-          "model_errors" : [
-            3,
-            0
-          ],
-          "reference" : "Ik moet mezelf eraan herinneren dat Geordi daar een volledige ploeg heeft staan",
-          "second_transcript" : "Ik moet mezelf eraan herinneren dat Geordi daar een volledige ploeg heeft staan",
-          "short_id" : "E17",
-          "start_seconds" : 241.15000000000001,
-          "title" : "Whisper Large-v2 differs"
-        },
-        {
-          "app_transcript" : "Gisteren hadden we namelijk een storing in een paar replicators op dek 12",
-          "audio" : "assets/audio/0.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 1 edit(s), Large-v3 1 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
-          "clip_end" : 256.64999999999998,
-          "clip_start" : 249.15000000000001,
-          "context" : {
-            "audio_sha256" : "731efc1781210e0717e9952bcea5ab761793810b7f4f0fcd7d607fff6fa3c990",
-            "end_seconds" : 256.64999999999998,
-            "reference_end_word" : 610,
-            "reference_sha256" : "37a5afd505cea14c707ae0e4d041e0e1537588531c3acedf54c228a698ec87bf",
-            "reference_start_word" : 597,
-            "start_seconds" : 249.15000000000001
-          },
-          "end_seconds" : 256.64999999999998,
-          "id" : "tng-nl01-r2-E18",
-          "model_errors" : [
-            1,
-            1
-          ],
-          "reference" : "Gisteren hadden we namelijk een storing in een paar replicators op dek twaalf",
-          "second_transcript" : "Gisteren hadden we namelijk een storing in een paar replicators op dek 12",
-          "short_id" : "E18",
-          "start_seconds" : 249.15000000000001,
-          "title" : "Whisper Large-v2 and Whisper Large-v3 differs"
-        },
-        {
-          "app_transcript" : "Er waren werkzaamheden geweest dan een leiding in die sectie dus dat leek logisch",
-          "audio" : "assets/audio/0.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 1 edit(s), Large-v3 0 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
-          "clip_end" : 272.14999999999998,
-          "clip_start" : 265.14999999999998,
-          "context" : {
-            "audio_sha256" : "731efc1781210e0717e9952bcea5ab761793810b7f4f0fcd7d607fff6fa3c990",
-            "end_seconds" : 272.14999999999998,
-            "reference_end_word" : 646,
-            "reference_sha256" : "37a5afd505cea14c707ae0e4d041e0e1537588531c3acedf54c228a698ec87bf",
-            "reference_start_word" : 632,
-            "start_seconds" : 265.14999999999998
-          },
-          "end_seconds" : 272.14999999999998,
-          "id" : "tng-nl01-r2-E19",
-          "model_errors" : [
-            1,
-            0
-          ],
-          "reference" : "Er waren werkzaamheden geweest aan een leiding in die sectie, dus dat leek logisch",
-          "second_transcript" : "Er waren werkzaamheden geweest aan een leiding in die sectie, dus dat leek logisch",
-          "short_id" : "E19",
-          "start_seconds" : 265.14999999999998,
-          "title" : "Whisper Large-v2 differs"
-        },
-        {
-          "app_transcript" : "Jordi stelde voor om de opgeslagen patronen te vergelijken",
-          "audio" : "assets/audio/0.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 1 edit(s), Large-v3 0 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
-          "clip_end" : 278.14999999999998,
-          "clip_start" : 272.64999999999998,
-          "context" : {
-            "audio_sha256" : "731efc1781210e0717e9952bcea5ab761793810b7f4f0fcd7d607fff6fa3c990",
-            "end_seconds" : 278.14999999999998,
-            "reference_end_word" : 660,
-            "reference_sha256" : "37a5afd505cea14c707ae0e4d041e0e1537588531c3acedf54c228a698ec87bf",
-            "reference_start_word" : 651,
-            "start_seconds" : 272.64999999999998
-          },
-          "end_seconds" : 278.14999999999998,
-          "id" : "tng-nl01-r2-E20",
-          "model_errors" : [
-            1,
-            0
-          ],
-          "reference" : "Geordi stelde voor om de opgeslagen patronen te vergelijken",
-          "second_transcript" : "Geordi stelde voor om de opgeslagen patronen te vergelijken",
-          "short_id" : "E20",
-          "start_seconds" : 272.64999999999998,
-          "title" : "Whisper Large-v2 differs"
-        },
-        {
-          "app_transcript" : "De soep was voor de wijzigingen al goed en bleef goed",
-          "audio" : "assets/audio/0.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 1 edit(s), Large-v3 0 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
-          "clip_end" : 298.14999999999998,
-          "clip_start" : 293.64999999999998,
-          "context" : {
-            "audio_sha256" : "731efc1781210e0717e9952bcea5ab761793810b7f4f0fcd7d607fff6fa3c990",
-            "end_seconds" : 298.14999999999998,
-            "reference_end_word" : 701,
-            "reference_sha256" : "37a5afd505cea14c707ae0e4d041e0e1537588531c3acedf54c228a698ec87bf",
-            "reference_start_word" : 690,
-            "start_seconds" : 293.64999999999998
-          },
-          "end_seconds" : 298.14999999999998,
-          "id" : "tng-nl01-r2-E21",
-          "model_errors" : [
-            1,
-            0
-          ],
-          "reference" : "De soep was voor de wijziging al goed, en bleef goed",
-          "second_transcript" : "De soep was voor de wijziging al goed en bleef goed",
-          "short_id" : "E21",
-          "start_seconds" : 293.64999999999998,
-          "title" : "Whisper Large-v2 differs"
-        },
-        {
-          "app_transcript" : "Ik moet morgen alleen nog de laatste metingen in de onderhoudslog zetten",
-          "audio" : "assets/audio/0.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 1 edit(s), Large-v3 1 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
-          "clip_end" : 309.14999999999998,
-          "clip_start" : 303.64999999999998,
-          "context" : {
-            "audio_sha256" : "731efc1781210e0717e9952bcea5ab761793810b7f4f0fcd7d607fff6fa3c990",
-            "end_seconds" : 309.14999999999998,
-            "reference_end_word" : 733,
-            "reference_sha256" : "37a5afd505cea14c707ae0e4d041e0e1537588531c3acedf54c228a698ec87bf",
-            "reference_start_word" : 721,
-            "start_seconds" : 303.64999999999998
-          },
-          "end_seconds" : 309.14999999999998,
-          "id" : "tng-nl01-r2-E22",
-          "model_errors" : [
-            1,
-            1
-          ],
-          "reference" : "Ik moet morgen alleen nog de laatste metingen in het onderhoudslog zetten",
-          "second_transcript" : "Ik moet morgen alleen nog de laatste metingen in de onderhoudslog zetten",
-          "short_id" : "E22",
-          "start_seconds" : 303.64999999999998,
-          "title" : "Whisper Large-v2 and Whisper Large-v3 differs"
-        },
-        {
-          "app_transcript" : "Ik had dat meteen willen doen, maar toen kwam er een oproep over een sensor bij het shuttleruim",
-          "audio" : "assets/audio/0.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 0 edit(s), Large-v3 2 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
-          "clip_end" : 315.14999999999998,
-          "clip_start" : 307.64999999999998,
-          "context" : {
-            "audio_sha256" : "731efc1781210e0717e9952bcea5ab761793810b7f4f0fcd7d607fff6fa3c990",
-            "end_seconds" : 315.14999999999998,
-            "reference_end_word" : 751,
-            "reference_sha256" : "37a5afd505cea14c707ae0e4d041e0e1537588531c3acedf54c228a698ec87bf",
-            "reference_start_word" : 733,
-            "start_seconds" : 307.64999999999998
-          },
-          "end_seconds" : 315.14999999999998,
-          "id" : "tng-nl01-r2-E23",
-          "model_errors" : [
-            0,
-            2
-          ],
-          "reference" : "Ik had dat meteen willen doen, maar toen kwam er een oproep over een sensor bij het shuttleruim",
-          "second_transcript" : "Ik had dat meteen willen doen, maar toen kwam er een oproep over een sensor bij het shuttle ruim",
-          "short_id" : "E23",
-          "start_seconds" : 307.64999999999998,
-          "title" : "Whisper Large-v3 differs"
-        },
-        {
-          "app_transcript" : "Deda heeft me daar laatst op gewezen, heel rustig, gewoon met de vraag waar hij de meetwaarden kon vinden",
-          "audio" : "assets/audio/0.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 1 edit(s), Large-v3 2 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
-          "clip_end" : 343.14999999999998,
-          "clip_start" : 333.64999999999998,
-          "context" : {
-            "audio_sha256" : "731efc1781210e0717e9952bcea5ab761793810b7f4f0fcd7d607fff6fa3c990",
-            "end_seconds" : 343.14999999999998,
-            "reference_end_word" : 830,
-            "reference_sha256" : "37a5afd505cea14c707ae0e4d041e0e1537588531c3acedf54c228a698ec87bf",
-            "reference_start_word" : 811,
-            "start_seconds" : 333.64999999999998
-          },
-          "end_seconds" : 343.14999999999998,
-          "id" : "tng-nl01-r2-E24",
-          "model_errors" : [
-            1,
-            2
-          ],
-          "reference" : "Data heeft me daar laatst op gewezen. Heel rustig, gewoon met de vraag waar hij de meetwaarden kon vinden",
-          "second_transcript" : "Deda heeft me daar laatst op gewezen, heel rustig, gewoon met de vraag waar hij de meetwaarde kon vinden",
-          "short_id" : "E24",
-          "start_seconds" : 333.64999999999998,
-          "title" : "Whisper Large-v2 and Whisper Large-v3 differs"
-        },
-        {
-          "app_transcript" : "We vliegen langs een nevel en de wetenschapsafdeling wil weten of de straling onze meting hebben invloed",
-          "audio" : "assets/audio/0.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 3 edit(s), Large-v3 0 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
-          "clip_end" : 365.14999999999998,
-          "clip_start" : 356.64999999999998,
-          "context" : {
-            "audio_sha256" : "731efc1781210e0717e9952bcea5ab761793810b7f4f0fcd7d607fff6fa3c990",
-            "end_seconds" : 365.14999999999998,
-            "reference_end_word" : 888,
-            "reference_sha256" : "37a5afd505cea14c707ae0e4d041e0e1537588531c3acedf54c228a698ec87bf",
-            "reference_start_word" : 872,
-            "start_seconds" : 356.64999999999998
-          },
-          "end_seconds" : 365.14999999999998,
-          "id" : "tng-nl01-r2-E25",
-          "model_errors" : [
-            3,
-            0
-          ],
-          "reference" : "We vliegen langs een nevel en de wetenschapsafdeling wil weten of de straling onze metingen beïnvloedt",
-          "second_transcript" : "We vliegen langs een nevel en de wetenschapsafdeling wil weten of de straling onze metingen beïnvloedt",
-          "short_id" : "E25",
-          "start_seconds" : 356.64999999999998,
-          "title" : "Whisper Large-v2 differs"
-        },
-        {
-          "app_transcript" : "en wij vergelijken de signalen van die sonde met wat het schip op afstand meet",
-          "audio" : "assets/audio/0.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 0 edit(s), Large-v3 2 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
-          "clip_end" : 375.14999999999998,
-          "clip_start" : 369.64999999999998,
-          "context" : {
-            "audio_sha256" : "731efc1781210e0717e9952bcea5ab761793810b7f4f0fcd7d607fff6fa3c990",
-            "end_seconds" : 375.14999999999998,
-            "reference_end_word" : 916,
-            "reference_sha256" : "37a5afd505cea14c707ae0e4d041e0e1537588531c3acedf54c228a698ec87bf",
-            "reference_start_word" : 901,
-            "start_seconds" : 369.64999999999998
-          },
-          "end_seconds" : 375.14999999999998,
-          "id" : "tng-nl01-r2-E26",
-          "model_errors" : [
-            0,
-            2
-          ],
-          "reference" : "en wij vergelijken de signalen van die sonde met wat het schip op afstand meet",
-          "second_transcript" : "En daar zijn de signalen van die sonde met wat het schip op afstand meet",
-          "short_id" : "E26",
-          "start_seconds" : 369.64999999999998,
-          "title" : "Whisper Large-v3 differs"
-        },
-        {
-          "app_transcript" : "Orv heeft gevraagd of we daarbij ook de afscherming van de sensoren controleren",
-          "audio" : "assets/audio/0.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 1 edit(s), Large-v3 1 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
-          "clip_end" : 390.14999999999998,
-          "clip_start" : 384.64999999999998,
-          "context" : {
-            "audio_sha256" : "731efc1781210e0717e9952bcea5ab761793810b7f4f0fcd7d607fff6fa3c990",
-            "end_seconds" : 390.14999999999998,
-            "reference_end_word" : 956,
-            "reference_sha256" : "37a5afd505cea14c707ae0e4d041e0e1537588531c3acedf54c228a698ec87bf",
-            "reference_start_word" : 943,
-            "start_seconds" : 384.64999999999998
-          },
-          "end_seconds" : 390.14999999999998,
-          "id" : "tng-nl01-r2-E27",
-          "model_errors" : [
-            1,
-            1
-          ],
-          "reference" : "Worf heeft gevraagd of we daarbij ook de afscherming van de sensoren controleren",
-          "second_transcript" : "Orf heeft gevraagd of we daarbij ook de afscherming van de sensoren controleren",
-          "short_id" : "E27",
-          "start_seconds" : 384.64999999999998,
-          "title" : "Whisper Large-v2 and Whisper Large-v3 differs"
-        },
-        {
-          "app_transcript" : "Dat doen we, maar ik wil eerst met Jordi bespreken in welke volgorde",
-          "audio" : "assets/audio/0.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 1 edit(s), Large-v3 1 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
-          "clip_end" : 395.14999999999998,
-          "clip_start" : 388.64999999999998,
-          "context" : {
-            "audio_sha256" : "731efc1781210e0717e9952bcea5ab761793810b7f4f0fcd7d607fff6fa3c990",
-            "end_seconds" : 395.14999999999998,
-            "reference_end_word" : 969,
-            "reference_sha256" : "37a5afd505cea14c707ae0e4d041e0e1537588531c3acedf54c228a698ec87bf",
-            "reference_start_word" : 956,
-            "start_seconds" : 388.64999999999998
-          },
-          "end_seconds" : 395.14999999999998,
-          "id" : "tng-nl01-r2-E28",
-          "model_errors" : [
-            1,
-            1
-          ],
-          "reference" : "Dat doen we, maar ik wil eerst met Geordi bespreken in welke volgorde",
-          "second_transcript" : "Dat doen we, maar ik wil eerst met Jordi bespreken in welke volgorde",
-          "short_id" : "E28",
-          "start_seconds" : 388.64999999999998,
-          "title" : "Whisper Large-v2 and Whisper Large-v3 differs"
-        },
-        {
-          "app_transcript" : "Dan heeft de brug duidelijk te weinig betrouwbare informatie",
-          "audio" : "assets/audio/0.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 1 edit(s), Large-v3 1 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
-          "clip_end" : 400.14999999999998,
-          "clip_start" : 396.64999999999998,
-          "context" : {
-            "audio_sha256" : "731efc1781210e0717e9952bcea5ab761793810b7f4f0fcd7d607fff6fa3c990",
-            "end_seconds" : 400.14999999999998,
-            "reference_end_word" : 984,
-            "reference_sha256" : "37a5afd505cea14c707ae0e4d041e0e1537588531c3acedf54c228a698ec87bf",
-            "reference_start_word" : 975,
-            "start_seconds" : 396.64999999999998
-          },
-          "end_seconds" : 400.14999999999998,
-          "id" : "tng-nl01-r2-E29",
-          "model_errors" : [
-            1,
-            1
-          ],
-          "reference" : "Dan heeft de brug tijdelijk te weinig betrouwbare informatie",
-          "second_transcript" : "Dan heeft de brug duidelijk te weinig betrouwbare informatie",
-          "short_id" : "E29",
-          "start_seconds" : 396.64999999999998,
-          "title" : "Whisper Large-v2 and Whisper Large-v3 differs"
-        },
-        {
-          "app_transcript" : "Of Jordi die aanpak goed vindt moet ik nog bespreken",
-          "audio" : "assets/audio/0.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 1 edit(s), Large-v3 1 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
-          "clip_end" : 416.14999999999998,
-          "clip_start" : 410.64999999999998,
-          "context" : {
-            "audio_sha256" : "731efc1781210e0717e9952bcea5ab761793810b7f4f0fcd7d607fff6fa3c990",
-            "end_seconds" : 416.14999999999998,
-            "reference_end_word" : 1025,
-            "reference_sha256" : "37a5afd505cea14c707ae0e4d041e0e1537588531c3acedf54c228a698ec87bf",
-            "reference_start_word" : 1015,
-            "start_seconds" : 410.64999999999998
-          },
-          "end_seconds" : 416.14999999999998,
-          "id" : "tng-nl01-r2-E30",
-          "model_errors" : [
-            1,
-            1
-          ],
-          "reference" : "Of Geordi die aanpak goed vindt, moet ik nog bespreken",
-          "second_transcript" : "Of Jordi die aanpak goed vindt, moet ik nog bespreken",
-          "short_id" : "E30",
-          "start_seconds" : 410.64999999999998,
-          "title" : "Whisper Large-v2 and Whisper Large-v3 differs"
-        },
-        {
-          "app_transcript" : "Dat herken ik van mijn eerste week hier",
-          "audio" : "assets/audio/0.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 1 edit(s), Large-v3 1 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
-          "clip_end" : 440.14999999999998,
-          "clip_start" : 435.64999999999998,
-          "context" : {
-            "audio_sha256" : "731efc1781210e0717e9952bcea5ab761793810b7f4f0fcd7d607fff6fa3c990",
-            "end_seconds" : 440.14999999999998,
-            "reference_end_word" : 1079,
-            "reference_sha256" : "37a5afd505cea14c707ae0e4d041e0e1537588531c3acedf54c228a698ec87bf",
-            "reference_start_word" : 1071,
-            "start_seconds" : 435.64999999999998
-          },
-          "end_seconds" : 440.14999999999998,
-          "id" : "tng-nl01-r2-E31",
-          "model_errors" : [
-            1,
-            1
-          ],
-          "reference" : "Dat herken ik van mijn eerste weken hier",
-          "second_transcript" : "Dat herken ik van mijn eerste weekje hier",
-          "short_id" : "E31",
-          "start_seconds" : 435.64999999999998,
-          "title" : "Whisper Large-v2 and Whisper Large-v3 differs"
-        },
-        {
-          "app_transcript" : "Dat wil ik met Rijker bespreken",
-          "audio" : "assets/audio/0.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 1 edit(s), Large-v3 0 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
-          "clip_end" : 453.14999999999998,
-          "clip_start" : 448.64999999999998,
-          "context" : {
-            "audio_sha256" : "731efc1781210e0717e9952bcea5ab761793810b7f4f0fcd7d607fff6fa3c990",
-            "end_seconds" : 453.14999999999998,
-            "reference_end_word" : 1114,
-            "reference_sha256" : "37a5afd505cea14c707ae0e4d041e0e1537588531c3acedf54c228a698ec87bf",
-            "reference_start_word" : 1108,
-            "start_seconds" : 448.64999999999998
-          },
-          "end_seconds" : 453.14999999999998,
-          "id" : "tng-nl01-r2-E32",
-          "model_errors" : [
-            1,
-            0
-          ],
-          "reference" : "Dat wil ik met Riker bespreken",
-          "second_transcript" : "Dat wil ik met Riker bespreken",
-          "short_id" : "E32",
-          "start_seconds" : 448.64999999999998,
-          "title" : "Whisper Large-v2 differs"
-        },
-        {
-          "app_transcript" : "ook al heb ik het einde niet gehaald",
-          "audio" : "assets/audio/0.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 0 edit(s), Large-v3 2 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
-          "clip_end" : 461.14999999999998,
-          "clip_start" : 456.64999999999998,
-          "context" : {
-            "audio_sha256" : "731efc1781210e0717e9952bcea5ab761793810b7f4f0fcd7d607fff6fa3c990",
-            "end_seconds" : 461.14999999999998,
-            "reference_end_word" : 1138,
-            "reference_sha256" : "37a5afd505cea14c707ae0e4d041e0e1537588531c3acedf54c228a698ec87bf",
-            "reference_start_word" : 1130,
-            "start_seconds" : 456.64999999999998
-          },
-          "end_seconds" : 461.14999999999998,
-          "id" : "tng-nl01-r2-E33",
-          "model_errors" : [
-            0,
-            2
-          ],
-          "reference" : "ook al heb ik het einde niet gehaald",
-          "second_transcript" : "Maar dan heb ik het einde niet gehaald",
-          "short_id" : "E33",
-          "start_seconds" : 456.64999999999998,
-          "title" : "Whisper Large-v3 differs"
-        },
-        {
-          "app_transcript" : "Ik denk dat ik daar nog even van ga genieten. MBC 뉴스 김재경입니다",
-          "audio" : "assets/audio/0.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 3 edit(s), Large-v3 0 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
-          "clip_end" : 488.44999999999999,
-          "clip_start" : 483.64999999999998,
-          "context" : {
-            "audio_sha256" : "731efc1781210e0717e9952bcea5ab761793810b7f4f0fcd7d607fff6fa3c990",
-            "end_seconds" : 488.44999999999999,
-            "reference_end_word" : 1203,
-            "reference_sha256" : "37a5afd505cea14c707ae0e4d041e0e1537588531c3acedf54c228a698ec87bf",
-            "reference_start_word" : 1193,
-            "start_seconds" : 483.64999999999998
-          },
-          "end_seconds" : 488.44999999999999,
-          "id" : "tng-nl01-r2-E34",
-          "model_errors" : [
-            3,
-            0
-          ],
-          "reference" : "Ik denk dat ik daar nog even van ga genieten",
-          "second_transcript" : "Ik denk dat ik daar nog even van ga genieten",
-          "short_id" : "E34",
-          "start_seconds" : 483.64999999999998,
-          "title" : "Whisper Large-v2 differs"
-        }
-      ],
-      "reference" : "Persoonlijk logboek. Mijn dienst zit erop. We zijn nog onderweg naar het onderzoeksstation en de Enterprise vliegt voorlopig gewoon op kruissnelheid. Ik zit in mijn verblijf met een kop thee uit de replicator. Er staat geen werk meer op mijn scherm en dat wil ik vanavond even zo houden. De afgelopen dagen bleef ik na mijn dienst steeds nog iets controleren. Voor ik het wist, was het weer tijd om te slapen. Vandaag heb ik bewust wat tijd voor mezelf genomen.\n\nVanmorgen had ik een uur op het holodeck gereserveerd. Gewoon een wandeling door een bos, met een pad langs een meer. Geen ingewikkeld avontuur en ook geen tegenstanders die ineens achter een boom vandaan springen. Ik wilde even ergens zijn waar ik niet voortdurend de ventilatie van het schip hoorde. Het programma had zelfs natte bladeren op het pad gelegd. Dat had van mij niet gehoeven, maar het rook wel goed. Na een kwartier merkte ik pas hoe moe ik eigenlijk was.\n\nHalverwege ging mijn communicator. Ik dacht meteen dat er iets in de machinekamer was, maar het was Worf. Hij moest naar een overleg op de brug en vroeg of Alexander wat eerder bij mij kon komen. We hadden afgesproken dat ik die middag op hem zou letten. Ik ben teruggelopen naar de uitgang en heb het programma afgesloten. Het meer liep vlak langs de deur door toen die verscheen. Dat blijft vreemd, ook al weet je precies hoe het werkt.\n\nAlexander stond in de gang met een model van een Klingon-schip. Een onderdeel zat los en hij wilde weten of we dat in de machinekamer konden repareren. Ik heb gezegd dat we daar niet zomaar heen konden, maar dat ik in mijn verblijf wel wat gereedschap had. Uiteindelijk was het met een klein klemmetje opgelost. Hij wilde eerst de hele vleugel vervangen. Toen ik vroeg waarom, zei hij dat een gerepareerd schip minder sterk was. Daar hebben we nog even over doorgepraat. Volgens mij denkt zijn vader daar iets anders over.\n\nLater kwam Molly erbij. Keiko had nog werk in het arboretum en we zouden met z'n drieën naar Ten Forward gaan. Dat leek me een rustig plan. Onderweg wilde Alexander bij elk raam blijven staan omdat hij dacht dat hij een ander schip zag. Meestal was het een weerspiegeling. Eén keer was het een onderhoudsdrone, vlak langs de romp. Daar hebben we wel even naar gekeken. Molly vroeg of de mensen buiten het schip ook hun lunch meenamen. Ik wist eigenlijk niet wat ik daarop moest zeggen.\n\nGuinan had een tafel bij het raam voor ons vrij. We hebben iets gegeten en naar een vrachtschip gekeken dat een tijdje naast ons vloog. Het ging dezelfde kant op, maar kon onze snelheid niet lang bijhouden. Alexander wilde weten waarom de Enterprise niet gewoon langzamer ging, zodat we samen konden blijven. Ik heb geprobeerd uit te leggen dat wij op tijd bij het onderzoeksstation moeten zijn. Dat vond hij geen goed antwoord. Hij wilde vooral weten of er ook kinderen op dat andere schip zaten.\n\nToen Worf hem kwam halen, was het ineens heel stil aan tafel. Keiko haalde Molly even later op. Ik ben nog een paar minuten blijven zitten. Guinan vroeg of ik nu weer aan het werk ging. Kennelijk zag ik eruit alsof ik dat van plan was. Ik heb gezegd van niet. Dat was ook echt mijn bedoeling. Toch liep ik op de terugweg bijna vanzelf richting de turbolift naar de machinekamer. Ik moet mezelf eraan herinneren dat Geordi daar een volledige ploeg heeft staan, ook als ik vrij ben.\n\nGisteren hadden we namelijk een storing in een paar replicators op dek twaalf. Niet alles viel uit. Vooral warme dranken kwamen er lauw uit, terwijl de maaltijden normaal waren. Eerst dacht ik aan de energieverdeling. Er waren werkzaamheden geweest aan een leiding in die sectie, dus dat leek logisch. Maar de metingen waren goed. Geordi stelde voor om de opgeslagen patronen te vergelijken. Daar bleek een verkeerde temperatuurinstelling in te zitten die door meerdere drankpatronen werd gebruikt.\n\nWe hebben de instelling aangepast en daarna verschillende bestellingen geprobeerd. Thee, koffie, soep voor de zekerheid. De soep was voor de wijziging al goed, en bleef goed. Daarna hebben we de mensen die de storing hebben gemeld gevraagd of ze nog problemen merkten. Tot nu toe niet. Ik moet morgen alleen nog de laatste metingen in het onderhoudslog zetten. Ik had dat meteen willen doen, maar toen kwam er een oproep over een sensor bij het shuttleruim en ben ik weggelopen zonder mijn verslag af te maken.\n\nDat is iets waar ik op moet letten. Ik heb vaak wel onthouden wat er gebeurd is, maar iemand van de volgende dienst kan daar niets mee. Die ziet alleen dat ik een onderdeel heb gecontroleerd. Niet wat ik gemeten heb, of waarom ik daarna iets anders ben gaan bekijken. Data heeft me daar laatst op gewezen. Heel rustig, gewoon met de vraag waar hij de meetwaarden kon vinden. Die stonden nog op mijn persoonlijke scherm. Dat was dus niet handig. Morgen eerst die gegevens overzetten voordat ik aan iets nieuws begin.\n\nVoor de komende dienst staat er ook een controle van de sensoren aan de buitenkant van de romp gepland. We vliegen langs een nevel en de wetenschapsafdeling wil weten of de straling onze metingen beïnvloedt. De Enterprise gaat de nevel niet in. Er is een sonde naartoe gestuurd, en wij vergelijken de signalen van die sonde met wat het schip op afstand meet. Ik vind dat eigenlijk wel mooi werk. Je bent bezig met onderhoud, maar je ziet tegelijk iets waar nog niemand eerder van zo dichtbij naar heeft gekeken.\n\nWorf heeft gevraagd of we daarbij ook de afscherming van de sensoren controleren. Dat doen we, maar ik wil eerst met Geordi bespreken in welke volgorde. We kunnen niet alles tegelijk uitschakelen. Dan heeft de brug tijdelijk te weinig betrouwbare informatie. Ik wil per sensor een controle doen, het resultaat bevestigen en pas daarna doorgaan naar de volgende. Het duurt misschien langer, maar dan weten we ook waar een afwijking vandaan komt. Of Geordi die aanpak goed vindt, moet ik nog bespreken.\n\nIk heb deze week ook een gesprek met commandant William Riker. Hij wil weten hoe het gaat met de nieuwe bemanningsleden tijdens de nachtdienst. Ik heb er twee ingewerkt. Ze kennen de procedures, maar aarzelen nog om iemand wakker te maken als een meting vreemd is. Dat herken ik van mijn eerste weken hier. Je wilt niet degene zijn die voor niets alarm slaat. Alleen heb ik liever dat ze een keer te vaak bellen dan dat ze een echte afwijking laten zitten. Dat wil ik met Riker bespreken.\n\nEn ik wil een nieuw uur op het holodeck boeken. Die wandeling van vanmorgen was prettig, ook al heb ik het einde niet gehaald. Misschien hetzelfde programma, maar dan zonder communicator die meteen mijn hele hoofd weer naar het werk trekt. Helemaal uitzetten kan natuurlijk niet als ik oproepbaar ben. Ik kijk wel op welke vrije dag het past. Voor nu is de thee op, hoor ik alleen het zachte geluid van het schip en hoef ik nergens heen. Ik denk dat ik daar nog even van ga genieten.\n",
-      "reference_sha256" : "37a5afd505cea14c707ae0e4d041e0e1537588531c3acedf54c228a698ec87bf",
-      "second_transcript" : "persoonlijk logboek mijn dienst zit erop we zijn nog onderweg naar het onderzoeksstation en de enterprise vliegt voorlopig gewoon op kruissnelheid\nik zit in mijn verblijf met een kop thee uit de replicator er staat geen werk meer op mijn scherm en dat wil ik vanavond even zo houden de afgelopen dagen bleef ik na mijn dienst steeds nog iets controleren\nvoor ik het wist was het weer tijd om te slapen vandaag heb ik bewust wat tijd voor mezelf genomen vanmorgen had ik een uur op het holodeck gereserveerd gewone wandeling door een bosch met een pad langs een meer\ngeen ingewikkelde avontuur en ook geen tegenstanders die ineens achter een boom vandaan springen ik wilde even ergens zijn waar ik niet voortdurend de ventilatie van het schip hoorde\nhet programma had zelfs natte bladeren op het pad gelegd dat had voor mij niet gehoeven maar het rook wel goed na een kwartier merkte ik pas hoe moe ik eigenlijk was\nhalverwege ging mijn communicator ik dacht meteen dat er iets in de machinekamer was maar het was whorf hij moest naar een overleg op de brug en vroeg of alexander wat eerder bij mij kon komen we hadden afgesproken dat ik die middag op hem zou letten\nIk ben teruggelopen naar de uitgang en heb het programma afgesloten.\nHet meer liep vlak langs de deur door toen die verscheen.\nDat blijft vreemd, ook al weet je precies hoe het werkt.\nAlexander stond in de gang met een model van een klingonschip.\nEen onderdeel zat los en hij wilde weten of we dat in de machinekamer konden repareren.\nIk heb gezegd dat we daar niet zomaar heen konden, maar dat ik in mijn verblijf wel wat gereedschap had.\nUiteindelijk was het met een klein klemmetje opgelost.\nHij wilde eerst de hele vleugel vervangen.\nToen ik vroeg waarom, zei hij dat een gerepareerd schip minder sterk was.\nDaar hebben we nog even over doorgepraat.\nVolgens mij denkt zijn vader daar iets anders over.\nLater kwam hij naar de machinekamer.\nToen kwam Molly erbij.\nKeiko had nog werk in het aboretum en we zouden met z'n drieën naar ten voorwoord gaan.\nDat leek me een rustig plan.\nOnderweg wilde Alexander bij elk raam blijven staan omdat hij dacht dat hij een ander schip zag.\nMeestal was het een weerspiegeling.\nEén keer was het een onderhoudsdroon vlak langs de romp.\nDaar hebben we wel even naar gekeken.\nMolly vroeg of de mensen buiten het schip ook hun lunch meenamen.\nIk wist eigenlijk niet wat ik daarop moest zeggen.\nGuinen had een tafel bij het raam voor ons vrij.\nWe hebben niets gegeten en naar een vrachtschip gekeken dat een tijdje naast ons vloog.\nHet ging dezelfde kant op, maar kon onze snelheid niet lang bijhouden.\nAlexander wilde weten waarom de Enterprise niet gewoon langzamer ging,\nzodat we samen konden blijven.\nIk heb geprobeerd uit te leggen dat wij op tijd bij het onderzoekstation moeten zijn.\nDat vond hij geen goed antwoord.\nHij wilde vooral weten of er ook kinderen op dat andere schip zaten.\nToen Worf hem kwam halen, was het ineens heel stil aan tafel.\nKeiko haalde Molly even later op.\nIk ben nog een paar minuten blijven zitten.\nKainan vroeg of ik nu weer aan het werk ging.\nKennelijk zag ik eruit alsof ik dat van plan was.\nIk heb gezegd van niet.\nDat was ook echt mijn bedoeling.\nToch liep ik op de terugweg bijna vanzelf richting de turbolift naar de machinekamer.\nIk moet mezelf eraan herinneren dat Geordi daar een volledige ploeg heeft staan.\nOok als ik vrij ben.\nGisteren hadden we namelijk een storing in een paar replicators op dek 12.\nNiet alles viel uit.\nVooral warme dranken kwamen er lauw uit, terwijl de maaltijden normaal waren.\nEerst dacht ik aan de energieverdeling.\nEr waren werkzaamheden geweest aan een leiding in die sectie, dus dat leek logisch.\nMaar de metingen waren goed.\nGeordi stelde voor om de opgeslagen patronen te vergelijken.\nDaar bleek een verkeerde temperatuurinstelling in te zitten, die door meerdere drankpatronen werd gebruikt.\nWe hebben de instelling aangepast en daarna verschillende bestellingen geprobeerd.\nThee, koffie, soep voor de zekerheid.\nDe soep was voor de wijziging al goed en bleef goed.\nDaarna hebben we de mensen die de storing hebben gemeld gevraagd of ze nog problemen merkten.\nTot nu toe niet.\nIk moet morgen alleen nog de laatste metingen in de onderhoudslog zetten.\nIk had dat meteen willen doen, maar toen kwam er een oproep over een sensor bij het shuttle ruim.\nEn ben ik weggelopen zonder mijn verslag af te maken.\nDat is iets waar ik op moet letten.\nIk heb vaak wel onthouden wat er gebeurd is, maar iemand van de volgende dienst kan daar niets mee.\nDie ziet alleen dat ik een onderdeel heb gecontroleerd, niet wat ik gemeten heb of waarom ik daarna iets anders ben gaan bekijken.\nDeda heeft me daar laatst op gewezen, heel rustig, gewoon met de vraag waar hij de meetwaarde kon vinden.\nDie stonden nog op mijn persoonlijke scherm.\nDat was dus niet handig.\nMorgen eerst die gegevens overzetten, voordat ik aan iets nieuws begin.\nVoor de komende dienst staat er ook een controle van de sensoren aan de buitenkant van de romp gepland.\nWe vliegen langs een nevel en de wetenschapsafdeling wil weten of de straling onze metingen beïnvloedt.\nDe Enterprise gaat de nevel niet in.\nEr is een sonde naartoe gestuurd.\nEn daar zijn de signalen van die sonde met wat het schip op afstand meet.\nIk vind dat eigenlijk wel mooi werk.\nJe bent bezig met onderhoud, maar je ziet tegelijk iets waar nog niemand eerder van zo dichtbij naar heeft gekeken.\nOrf heeft gevraagd of we daarbij ook de afscherming van de sensoren controleren.\nDat doen we, maar ik wil eerst met Jordi bespreken in welke volgorde.\nWe kunnen niet alles tegelijk uitschakelen.\nDan heeft de brug duidelijk te weinig betrouwbare informatie.\nIk wil per sensor een controle doen, het resultaat bevestigen en pas daarna doorgaan naar de volgende.\nHet duurt misschien langer, maar dan weten we ook waar een afwijking vandaan komt.\nOf Jordi die aanpak goed vindt, moet ik nog bespreken.\nIk heb deze week ook een gesprek met Commandant William Riker.\nHij wil weten hoe het gaat met de nieuwe bemanningsleden tijdens de nachtdienst.\nIk heb er twee ingewerkt.\nZe kennen de procedures, maar aarzelen nog om iemand wakker te maken als een meting vreemd is.\nDat herken ik van mijn eerste weekje hier.\nJe wilt niet degene zijn die voor niets alarm slaat.\nAlleen heb ik liever dat ze een keer te vaak bellen dan dat ze een echte afwijking laten zitten.\nDat wil ik met Riker bespreken.\nEn ik wil een nieuw uur op het holodeck boeken.\nDie wandeling van vanmorgen was prettig.\nMaar dan heb ik het einde niet gehaald.\nMisschien hetzelfde programma, maar dan zonder communicator die meteen mijn hele hoofd weer naar het werk trekt.\nHelemaal uitzetten kan natuurlijk niet als ik oproepbaar ben.\nIk kijk wel op welke vrije dag het past.\nVoor nu is de thee op.\nHoor ik alleen het zachte geluid van het schip en hoef ik nergens heen.\nIk denk dat ik daar nog even van ga genieten.\n",
-      "selection" : "aligned-differences",
-      "title" : "Een vrije dag op de Enterprise · review 2 · Whisper differences"
-    },
-    {
-      "app_label" : "Whisper Large-v2 · preserved native output",
       "app_transcript" : "Het is vandaag 14 januari, half acht. Dit is mijn eerste opname in een serie. Deze opname gaat vooral over het project zelf. Waarbij ik steeds audioberichten ga opnemen, waarin ik over een bepaald onderwerp iets ga vertellen. In dit specifieke geval is het het onderwerp van side projects. Dus ik heb altijd van dit soort projectjes die ik maak op basis van iets met de computer waarbij ik iets programmeer. Op basis van een idee dat ik heb. Dit is een van die side projects. Ik wil ook dat deze daaronder gecategoriseerd wordt. Dus dat er een vollendje komt, maar daarin al mijn audioberichten over side projects. Het project wat ik nu voor ogen heb is eigenlijk geïnspireerd op Star Trek. Ik keek dan altijd naar Star Trek The Next Generation. En daarin heeft Captain Jean-Luc Picard, hij begint dan iedere uitzending met 'Star Date' zo en zo zoveel, waar ze zijn en wat er gebeurt. En houdt hij zo een logboek van de kapitein van het schip bij. En dat doet hij met audioberichten. Datzelfde wil ik nu ook gaan doen. Waarbij ik dan vertel over iets wat me bezighoudt. Misschien iets persoonlijks, iets over werk of zoals nu over een science project. Dat was het oorspronkelijke idee. Alleen wat ik eraan toe wil voegen is dat deze audioberichten automatisch worden opgepikt op mijn computer. En dat ze worden geconverteerd naar tekst door bijvoorbeeld het Whisper model. En dat ze vervolgens worden gelezen door een Large Language Model, een liefst lokaal model, zo slim mogelijk natuurlijk, waarin de tekst een beetje recht wordt gezet. Want zoals je nu zal merken is dat ik steeds al allemaal pijgeluiden maak, maken of dat ik even de draad kwijtraak en dat het soms een onsamenhangend verhaal wordt. Ik wil dan een large language model gebruiken om dat verhaal recht te zetten en er een mooi samenhangend verhaal van te maken zonder te veel af te wijken van wat ik nu vertel. Dus dat is het idee voor dit site project. Ik had al gekeken hoe ik dat zou op kunnen zetten. En dat is volgens mij vrij eenvoudig. Want deze audio opnames die worden opgeslagen in een bepaalde folder. En die folder staat op iedere computer die aangesloten is op dat iCloud account. Dus die audio berichten verschijnen dan automatisch. Die zou ik dan kunnen oppakken, kunnen verwerken. En op het moment dat ze verwerkt zijn, kan ik mezelf een berichtje sturen of een e-mail met daarin de verwerking. En ik kan de verwerking ook ergens opslaan naast het audiobestand. Dus dan zou het gevolg zijn dat je een soort output folder hebt. Of een soort folder voor side projects, waarin dan dit audiobestand staat. De transcriptie gemaakt door Whisper en wat de LLM ervan gemaakt heeft in een mooie samenhangende goedlopende tekst. Dit is het eerste experiment daarvoor en ik ben benieuwd waar dit toe gaat leiden. [BLANK_AUDIO]",
-      "audio" : "assets/audio/1.m4a",
+      "audio" : "assets/audio/0.m4a",
       "audio_sha256" : "018807fe80637d269afa19e839f15b0b78925a3a65391fdb09fb666da183af85",
       "carried_passages" : [
 
@@ -931,8 +25,8 @@
       "passages" : [
         {
           "app_transcript" : "Het is vandaag 14 januari, half acht. Dit is mijn eerste opname in een serie. Deze opname gaat",
-          "audio" : "assets/audio/1.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 0 edit(s), Large-v3 1 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/0.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 18.210000000000001,
           "clip_start" : 0,
           "context" : {
@@ -953,12 +47,12 @@
           "second_transcript" : "Het is vandaag 14 januari, half acht. Dit is mijn eerste opname in een serie en deze opname gaat",
           "short_id" : "E01",
           "start_seconds" : 0,
-          "title" : "Whisper Large-v3 differs"
+          "title" : "… in een serie. Deze opname gaat vooral over …"
         },
         {
           "app_transcript" : "side projects. Dus ik heb altijd van dit soort projectjes die ik maak op basis van iets",
-          "audio" : "assets/audio/1.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 0 edit(s), Large-v3 2 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/0.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 45.109999999999999,
           "clip_start" : 33.770000000000003,
           "context" : {
@@ -979,12 +73,12 @@
           "second_transcript" : "side projects. Ik heb altijd van dit soort projectjes die ik maak op basis, meestal iets",
           "short_id" : "E02",
           "start_seconds" : 33.770000000000003,
-          "title" : "Whisper Large-v3 differs"
+          "title" : "… van side projects. Dus ik heb altijd van …"
         },
         {
           "app_transcript" : "met de computer waarbij ik iets programmeer. Op basis van een idee dat ik heb. Dit is een van",
-          "audio" : "assets/audio/1.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 0 edit(s), Large-v3 1 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/0.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 52.729999999999997,
           "clip_start" : 43.609999999999999,
           "context" : {
@@ -1005,12 +99,12 @@
           "second_transcript" : "met computer, waarbij ik iets programmeer op basis van een idee dat ik heb. Dit is een van",
           "short_id" : "E03",
           "start_seconds" : 43.609999999999999,
-          "title" : "Whisper Large-v3 differs"
+          "title" : "… van iets met de computer waarbij ik iets …"
         },
         {
           "app_transcript" : "die side projects. Ik wil ook dat deze daaronder gecategoriseerd wordt. Dus dat er een vollendje komt, maar daarin al mijn audioberichten over side projects",
-          "audio" : "assets/audio/1.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 1 edit(s), Large-v3 17 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/0.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 56.969999999999999,
           "clip_start" : 51.229999999999997,
           "context" : {
@@ -1031,12 +125,12 @@
           "second_transcript" : "die side projects, dus ik wil ook dat deze daaronder gaat",
           "short_id" : "E04",
           "start_seconds" : 51.229999999999997,
-          "title" : "Whisper Large-v2 and Whisper Large-v3 differs"
+          "title" : "… die side projects. Ik wil ook dat deze …"
         },
         {
           "app_transcript" : "Het project wat ik nu voor ogen heb is eigenlijk geïnspireerd op Star Trek. Ik keek dan altijd naar",
-          "audio" : "assets/audio/1.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 0 edit(s), Large-v3 3 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/0.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 76.609999999999999,
           "clip_start" : 55.490000000000002,
           "context" : {
@@ -1057,23 +151,23 @@
           "second_transcript" : "Het project dat ik nu voor ogen heb is eigenlijk geïnspireerd op Star Trek. Ik heet dan altijd",
           "short_id" : "E05",
           "start_seconds" : 55.490000000000002,
-          "title" : "Whisper Large-v3 differs"
+          "title" : "… projects. Het project wat ik nu voor ogen …"
         },
         {
           "app_transcript" : "naar Star Trek The Next Generation. En daarin heeft Captain Jean-Luc Picard, hij",
-          "audio" : "assets/audio/1.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 0 edit(s), Large-v3 80 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
-          "clip_end" : 82.269999999999996,
+          "audio" : "assets/audio/0.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
+          "clip_end" : 82.489999999999995,
           "clip_start" : 75.109999999999999,
           "context" : {
             "audio_sha256" : "018807fe80637d269afa19e839f15b0b78925a3a65391fdb09fb666da183af85",
-            "end_seconds" : 82.269999999999996,
+            "end_seconds" : 82.489999999999995,
             "reference_end_word" : 140,
             "reference_sha256" : "ee97b8485fedf9f38508952527cecb41e8a22b33717faa4936ed16b81cfe7e44",
             "reference_start_word" : 126,
             "start_seconds" : 75.109999999999999
           },
-          "end_seconds" : 82.269999999999996,
+          "end_seconds" : 82.489999999999995,
           "id" : "side-project-E06",
           "model_errors" : [
             0,
@@ -1083,142 +177,12 @@
           "second_transcript" : "Star Trek: The Next Generation. En daarin heeft Captain Jean-Luc Picard, dat is de onderscheidende\nontwikkelaar van Star Trek. Dat is een ontwikkelaar ontwikkelaar van Star Trek: The Next Generation.\nDat is een ontwikkelaar ontwikkelaar van Star Trek. Dat is een ontwikkelaar ontwikkelaar van Star Trek.\nDat is een ontwikkelaar ontwikkelaar van Star Trek. Dat is een ontwikkelaar ontwikkelaar van Star Trek.\nDat is een ontwikkelaar ontwikkelaar van Star Trek. Dat is een ontwikkelaar ontwikkelaar van Star Trek.\nDat is een ontwikkelaar ontwikkelaar van Star Trek.\nCaptain Jean-Luc Picard",
           "short_id" : "E06",
           "start_seconds" : 75.109999999999999,
-          "title" : "Whisper Large-v3 differs"
-        },
-        {
-          "app_transcript" : "hij",
-          "audio" : "assets/audio/1.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 0 edit(s), Large-v3 79 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
-          "clip_end" : 82.269999999999996,
-          "clip_start" : 80.769999999999996,
-          "context" : {
-            "audio_sha256" : "018807fe80637d269afa19e839f15b0b78925a3a65391fdb09fb666da183af85",
-            "end_seconds" : 82.269999999999996,
-            "reference_end_word" : 140,
-            "reference_sha256" : "ee97b8485fedf9f38508952527cecb41e8a22b33717faa4936ed16b81cfe7e44",
-            "reference_start_word" : 139,
-            "start_seconds" : 80.769999999999996
-          },
-          "end_seconds" : 82.269999999999996,
-          "id" : "side-project-E07",
-          "model_errors" : [
-            0,
-            79
-          ],
-          "reference" : "hij",
-          "second_transcript" : "dat is de onderscheidende\nontwikkelaar van Star Trek. Dat is een ontwikkelaar ontwikkelaar van Star Trek: The Next Generation.\nDat is een ontwikkelaar ontwikkelaar van Star Trek. Dat is een ontwikkelaar ontwikkelaar van Star Trek.\nDat is een ontwikkelaar ontwikkelaar van Star Trek. Dat is een ontwikkelaar ontwikkelaar van Star Trek.\nDat is een ontwikkelaar ontwikkelaar van Star Trek. Dat is een ontwikkelaar ontwikkelaar van Star Trek.\nDat is een ontwikkelaar ontwikkelaar van Star Trek.\nCaptain Jean-Luc Picard",
-          "short_id" : "E07",
-          "start_seconds" : 80.769999999999996,
-          "title" : "Whisper Large-v3 differs"
-        },
-        {
-          "app_transcript" : "hij",
-          "audio" : "assets/audio/1.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 0 edit(s), Large-v3 79 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
-          "clip_end" : 82.269999999999996,
-          "clip_start" : 80.769999999999996,
-          "context" : {
-            "audio_sha256" : "018807fe80637d269afa19e839f15b0b78925a3a65391fdb09fb666da183af85",
-            "end_seconds" : 82.269999999999996,
-            "reference_end_word" : 140,
-            "reference_sha256" : "ee97b8485fedf9f38508952527cecb41e8a22b33717faa4936ed16b81cfe7e44",
-            "reference_start_word" : 139,
-            "start_seconds" : 80.769999999999996
-          },
-          "end_seconds" : 82.269999999999996,
-          "id" : "side-project-E08",
-          "model_errors" : [
-            0,
-            79
-          ],
-          "reference" : "hij",
-          "second_transcript" : "dat is de onderscheidende\nontwikkelaar van Star Trek. Dat is een ontwikkelaar ontwikkelaar van Star Trek: The Next Generation.\nDat is een ontwikkelaar ontwikkelaar van Star Trek. Dat is een ontwikkelaar ontwikkelaar van Star Trek.\nDat is een ontwikkelaar ontwikkelaar van Star Trek. Dat is een ontwikkelaar ontwikkelaar van Star Trek.\nDat is een ontwikkelaar ontwikkelaar van Star Trek. Dat is een ontwikkelaar ontwikkelaar van Star Trek.\nDat is een ontwikkelaar ontwikkelaar van Star Trek.\nCaptain Jean-Luc Picard",
-          "short_id" : "E08",
-          "start_seconds" : 80.769999999999996,
-          "title" : "Whisper Large-v3 differs"
-        },
-        {
-          "app_transcript" : "hij",
-          "audio" : "assets/audio/1.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 0 edit(s), Large-v3 79 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
-          "clip_end" : 82.329999999999998,
-          "clip_start" : 80.769999999999996,
-          "context" : {
-            "audio_sha256" : "018807fe80637d269afa19e839f15b0b78925a3a65391fdb09fb666da183af85",
-            "end_seconds" : 82.329999999999998,
-            "reference_end_word" : 140,
-            "reference_sha256" : "ee97b8485fedf9f38508952527cecb41e8a22b33717faa4936ed16b81cfe7e44",
-            "reference_start_word" : 139,
-            "start_seconds" : 80.769999999999996
-          },
-          "end_seconds" : 82.329999999999998,
-          "id" : "side-project-E09",
-          "model_errors" : [
-            0,
-            79
-          ],
-          "reference" : "hij",
-          "second_transcript" : "dat is de onderscheidende\nontwikkelaar van Star Trek. Dat is een ontwikkelaar ontwikkelaar van Star Trek: The Next Generation.\nDat is een ontwikkelaar ontwikkelaar van Star Trek. Dat is een ontwikkelaar ontwikkelaar van Star Trek.\nDat is een ontwikkelaar ontwikkelaar van Star Trek. Dat is een ontwikkelaar ontwikkelaar van Star Trek.\nDat is een ontwikkelaar ontwikkelaar van Star Trek. Dat is een ontwikkelaar ontwikkelaar van Star Trek.\nDat is een ontwikkelaar ontwikkelaar van Star Trek.\nCaptain Jean-Luc Picard",
-          "short_id" : "E09",
-          "start_seconds" : 80.769999999999996,
-          "title" : "Whisper Large-v3 differs"
-        },
-        {
-          "app_transcript" : "hij",
-          "audio" : "assets/audio/1.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 0 edit(s), Large-v3 79 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
-          "clip_end" : 82.390000000000001,
-          "clip_start" : 80.829999999999998,
-          "context" : {
-            "audio_sha256" : "018807fe80637d269afa19e839f15b0b78925a3a65391fdb09fb666da183af85",
-            "end_seconds" : 82.390000000000001,
-            "reference_end_word" : 140,
-            "reference_sha256" : "ee97b8485fedf9f38508952527cecb41e8a22b33717faa4936ed16b81cfe7e44",
-            "reference_start_word" : 139,
-            "start_seconds" : 80.829999999999998
-          },
-          "end_seconds" : 82.390000000000001,
-          "id" : "side-project-E10",
-          "model_errors" : [
-            0,
-            79
-          ],
-          "reference" : "hij",
-          "second_transcript" : "dat is de onderscheidende\nontwikkelaar van Star Trek. Dat is een ontwikkelaar ontwikkelaar van Star Trek: The Next Generation.\nDat is een ontwikkelaar ontwikkelaar van Star Trek. Dat is een ontwikkelaar ontwikkelaar van Star Trek.\nDat is een ontwikkelaar ontwikkelaar van Star Trek. Dat is een ontwikkelaar ontwikkelaar van Star Trek.\nDat is een ontwikkelaar ontwikkelaar van Star Trek. Dat is een ontwikkelaar ontwikkelaar van Star Trek.\nDat is een ontwikkelaar ontwikkelaar van Star Trek.\nCaptain Jean-Luc Picard",
-          "short_id" : "E10",
-          "start_seconds" : 80.829999999999998,
-          "title" : "Whisper Large-v3 differs"
-        },
-        {
-          "app_transcript" : "hij",
-          "audio" : "assets/audio/1.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 0 edit(s), Large-v3 79 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
-          "clip_end" : 82.489999999999995,
-          "clip_start" : 80.890000000000001,
-          "context" : {
-            "audio_sha256" : "018807fe80637d269afa19e839f15b0b78925a3a65391fdb09fb666da183af85",
-            "end_seconds" : 82.489999999999995,
-            "reference_end_word" : 140,
-            "reference_sha256" : "ee97b8485fedf9f38508952527cecb41e8a22b33717faa4936ed16b81cfe7e44",
-            "reference_start_word" : 139,
-            "start_seconds" : 80.890000000000001
-          },
-          "end_seconds" : 82.489999999999995,
-          "id" : "side-project-E11",
-          "model_errors" : [
-            0,
-            79
-          ],
-          "reference" : "hij",
-          "second_transcript" : "dat is de onderscheidende\nontwikkelaar van Star Trek. Dat is een ontwikkelaar ontwikkelaar van Star Trek: The Next Generation.\nDat is een ontwikkelaar ontwikkelaar van Star Trek. Dat is een ontwikkelaar ontwikkelaar van Star Trek.\nDat is een ontwikkelaar ontwikkelaar van Star Trek. Dat is een ontwikkelaar ontwikkelaar van Star Trek.\nDat is een ontwikkelaar ontwikkelaar van Star Trek. Dat is een ontwikkelaar ontwikkelaar van Star Trek.\nDat is een ontwikkelaar ontwikkelaar van Star Trek.\nCaptain Jean-Luc Picard",
-          "short_id" : "E11",
-          "start_seconds" : 80.890000000000001,
-          "title" : "Whisper Large-v3 differs"
+          "title" : "… keek dan altijd naar Star Trek The Next …"
         },
         {
           "app_transcript" : "hij begint dan iedere uitzending met 'Star Date' zo en zo zoveel",
-          "audio" : "assets/audio/1.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 0 edit(s), Large-v3 81 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/0.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 94.390000000000001,
           "clip_start" : 80.989999999999995,
           "context" : {
@@ -1230,21 +194,21 @@
             "start_seconds" : 80.989999999999995
           },
           "end_seconds" : 94.390000000000001,
-          "id" : "side-project-E12",
+          "id" : "side-project-E07",
           "model_errors" : [
             0,
             81
           ],
           "reference" : "hij begint dan iedere uitzending met 'Star Date' zo en zo zoveel",
           "second_transcript" : "dat is de onderscheidende\nontwikkelaar van Star Trek. Dat is een ontwikkelaar ontwikkelaar van Star Trek: The Next Generation.\nDat is een ontwikkelaar ontwikkelaar van Star Trek. Dat is een ontwikkelaar ontwikkelaar van Star Trek.\nDat is een ontwikkelaar ontwikkelaar van Star Trek. Dat is een ontwikkelaar ontwikkelaar van Star Trek.\nDat is een ontwikkelaar ontwikkelaar van Star Trek. Dat is een ontwikkelaar ontwikkelaar van Star Trek.\nDat is een ontwikkelaar ontwikkelaar van Star Trek.\nCaptain Jean-Luc Picard begint dan iedere uitzending met stardate zo en zo zoveel",
-          "short_id" : "E12",
+          "short_id" : "E07",
           "start_seconds" : 80.989999999999995,
-          "title" : "Whisper Large-v3 differs"
+          "title" : "… Jean-Luc Picard, hij begint dan iedere uitzending …"
         },
         {
           "app_transcript" : "waar ze zijn en wat er gebeurt. En houdt hij zo een logboek van de kapitein van het schip bij",
-          "audio" : "assets/audio/1.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 0 edit(s), Large-v3 1 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/0.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 102.29000000000001,
           "clip_start" : 92.890000000000001,
           "context" : {
@@ -1256,125 +220,47 @@
             "start_seconds" : 92.890000000000001
           },
           "end_seconds" : 102.29000000000001,
-          "id" : "side-project-E13",
+          "id" : "side-project-E08",
           "model_errors" : [
             0,
             1
           ],
           "reference" : "waar ze zijn en wat er gebeurt. En houdt hij zo een logboek van de kapitein van het schip bij",
           "second_transcript" : "waar ze zijn en wat er gebeurt. En houdt hij zo het logboek van de kapitein van het schip bij",
-          "short_id" : "E13",
+          "short_id" : "E08",
           "start_seconds" : 92.890000000000001,
-          "title" : "Whisper Large-v3 differs"
+          "title" : "… houdt hij zo een logboek van de kapitein …"
         },
         {
           "app_transcript" : "En dat doet hij met audioberichten. Datzelfde wil ik",
-          "audio" : "assets/audio/1.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 0 edit(s), Large-v3 63 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
-          "clip_end" : 108.25,
+          "audio" : "assets/audio/0.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
+          "clip_end" : 112.06999999999999,
           "clip_start" : 100.79000000000001,
           "context" : {
             "audio_sha256" : "018807fe80637d269afa19e839f15b0b78925a3a65391fdb09fb666da183af85",
-            "end_seconds" : 108.25,
+            "end_seconds" : 112.06999999999999,
             "reference_end_word" : 180,
             "reference_sha256" : "ee97b8485fedf9f38508952527cecb41e8a22b33717faa4936ed16b81cfe7e44",
             "reference_start_word" : 171,
             "start_seconds" : 100.79000000000001
           },
-          "end_seconds" : 108.25,
-          "id" : "side-project-E14",
+          "end_seconds" : 112.06999999999999,
+          "id" : "side-project-E09",
           "model_errors" : [
             0,
             63
           ],
           "reference" : "En dat doet hij met audioberichten. Datzelfde wil ik",
           "second_transcript" : "En dat doet hij met audioberichten. Datzelfde wil ik nu ook gaan doen,\nwaarbij ik dan vertel over iets wat ik mee bezig houd,\nmijn schip. En dat doe ik nu ook gaan doen, waarbij ik dan vertel over iets wat ik mee bezig houd,\nmijn schip. En dat doe ik nu ook gaan doen, waarbij ik dan vertel over iets wat ik mee bezig houd,\nmijn schip. En dat doe ik",
-          "short_id" : "E14",
+          "short_id" : "E09",
           "start_seconds" : 100.79000000000001,
-          "title" : "Whisper Large-v3 differs"
-        },
-        {
-          "app_transcript" : "ik",
-          "audio" : "assets/audio/1.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 0 edit(s), Large-v3 63 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
-          "clip_end" : 112.06999999999999,
-          "clip_start" : 106.75,
-          "context" : {
-            "audio_sha256" : "018807fe80637d269afa19e839f15b0b78925a3a65391fdb09fb666da183af85",
-            "end_seconds" : 112.06999999999999,
-            "reference_end_word" : 180,
-            "reference_sha256" : "ee97b8485fedf9f38508952527cecb41e8a22b33717faa4936ed16b81cfe7e44",
-            "reference_start_word" : 179,
-            "start_seconds" : 106.75
-          },
-          "end_seconds" : 112.06999999999999,
-          "id" : "side-project-E15",
-          "model_errors" : [
-            0,
-            63
-          ],
-          "reference" : "ik",
-          "second_transcript" : "ik nu ook gaan doen,\nwaarbij ik dan vertel over iets wat ik mee bezig houd,\nmijn schip. En dat doe ik nu ook gaan doen, waarbij ik dan vertel over iets wat ik mee bezig houd,\nmijn schip. En dat doe ik nu ook gaan doen, waarbij ik dan vertel over iets wat ik mee bezig houd,\nmijn schip. En dat doe ik",
-          "short_id" : "E15",
-          "start_seconds" : 106.75,
-          "title" : "Whisper Large-v3 differs"
-        },
-        {
-          "app_transcript" : "ik",
-          "audio" : "assets/audio/1.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 0 edit(s), Large-v3 63 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
-          "clip_end" : 112.06999999999999,
-          "clip_start" : 110.56999999999999,
-          "context" : {
-            "audio_sha256" : "018807fe80637d269afa19e839f15b0b78925a3a65391fdb09fb666da183af85",
-            "end_seconds" : 112.06999999999999,
-            "reference_end_word" : 180,
-            "reference_sha256" : "ee97b8485fedf9f38508952527cecb41e8a22b33717faa4936ed16b81cfe7e44",
-            "reference_start_word" : 179,
-            "start_seconds" : 110.56999999999999
-          },
-          "end_seconds" : 112.06999999999999,
-          "id" : "side-project-E16",
-          "model_errors" : [
-            0,
-            63
-          ],
-          "reference" : "ik",
-          "second_transcript" : "ik nu ook gaan doen,\nwaarbij ik dan vertel over iets wat ik mee bezig houd,\nmijn schip. En dat doe ik nu ook gaan doen, waarbij ik dan vertel over iets wat ik mee bezig houd,\nmijn schip. En dat doe ik nu ook gaan doen, waarbij ik dan vertel over iets wat ik mee bezig houd,\nmijn schip. En dat doe ik",
-          "short_id" : "E16",
-          "start_seconds" : 110.56999999999999,
-          "title" : "Whisper Large-v3 differs"
-        },
-        {
-          "app_transcript" : "ik",
-          "audio" : "assets/audio/1.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 0 edit(s), Large-v3 63 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
-          "clip_end" : 112.06999999999999,
-          "clip_start" : 110.56999999999999,
-          "context" : {
-            "audio_sha256" : "018807fe80637d269afa19e839f15b0b78925a3a65391fdb09fb666da183af85",
-            "end_seconds" : 112.06999999999999,
-            "reference_end_word" : 180,
-            "reference_sha256" : "ee97b8485fedf9f38508952527cecb41e8a22b33717faa4936ed16b81cfe7e44",
-            "reference_start_word" : 179,
-            "start_seconds" : 110.56999999999999
-          },
-          "end_seconds" : 112.06999999999999,
-          "id" : "side-project-E17",
-          "model_errors" : [
-            0,
-            63
-          ],
-          "reference" : "ik",
-          "second_transcript" : "ik nu ook gaan doen,\nwaarbij ik dan vertel over iets wat ik mee bezig houd,\nmijn schip. En dat doe ik nu ook gaan doen, waarbij ik dan vertel over iets wat ik mee bezig houd,\nmijn schip. En dat doe ik nu ook gaan doen, waarbij ik dan vertel over iets wat ik mee bezig houd,\nmijn schip. En dat doe ik",
-          "short_id" : "E17",
-          "start_seconds" : 110.56999999999999,
-          "title" : "Whisper Large-v3 differs"
+          "title" : "… audioberichten. Datzelfde wil ik nu ook gaan doen …"
         },
         {
           "app_transcript" : "ik nu ook gaan doen. Waarbij ik dan vertel over iets wat me bezighoudt",
-          "audio" : "assets/audio/1.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 0 edit(s), Large-v3 67 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/0.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 112.06999999999999,
           "clip_start" : 110.56999999999999,
           "context" : {
@@ -1386,21 +272,21 @@
             "start_seconds" : 110.56999999999999
           },
           "end_seconds" : 112.06999999999999,
-          "id" : "side-project-E18",
+          "id" : "side-project-E10",
           "model_errors" : [
             0,
             67
           ],
           "reference" : "ik nu ook gaan doen. Waarbij ik dan vertel over iets wat me bezighoudt",
           "second_transcript" : "ik nu ook gaan doen,\nwaarbij ik dan vertel over iets wat ik mee bezig houd,\nmijn schip. En dat doe ik nu ook gaan doen, waarbij ik dan vertel over iets wat ik mee bezig houd,\nmijn schip. En dat doe ik nu ook gaan doen, waarbij ik dan vertel over iets wat ik mee bezig houd,\nmijn schip. En dat doe ik nu ook gaan doen, waarbij ik dan vertel over iets wat ik mee bezig houd",
-          "short_id" : "E18",
+          "short_id" : "E10",
           "start_seconds" : 110.56999999999999,
-          "title" : "Whisper Large-v3 differs"
+          "title" : "… audioberichten. Datzelfde wil ik nu ook gaan doen …"
         },
         {
           "app_transcript" : "Misschien iets persoonlijks, iets over werk of zoals nu over een science project",
-          "audio" : "assets/audio/1.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 1 edit(s), Large-v3 2 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/0.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 117.65000000000001,
           "clip_start" : 110.56999999999999,
           "context" : {
@@ -1412,21 +298,21 @@
             "start_seconds" : 110.56999999999999
           },
           "end_seconds" : 117.65000000000001,
-          "id" : "side-project-E19",
+          "id" : "side-project-E11",
           "model_errors" : [
             1,
             2
           ],
           "reference" : "Misschien iets persoonlijks, iets over werk of zoals nu over een side-project",
           "second_transcript" : "misschien iets persoonlijks, iets over werk of over zoals nu over een science project",
-          "short_id" : "E19",
+          "short_id" : "E11",
           "start_seconds" : 110.56999999999999,
-          "title" : "Whisper Large-v2 and Whisper Large-v3 differs"
+          "title" : "… over werk of zoals nu over een side …"
         },
         {
           "app_transcript" : "Dat was het oorspronkelijke idee. Alleen wat ik eraan toe wil voegen is dat deze audioberichten",
-          "audio" : "assets/audio/1.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 0 edit(s), Large-v3 3 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/0.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 125.81,
           "clip_start" : 116.15000000000001,
           "context" : {
@@ -1438,73 +324,47 @@
             "start_seconds" : 116.15000000000001
           },
           "end_seconds" : 125.81,
-          "id" : "side-project-E20",
+          "id" : "side-project-E12",
           "model_errors" : [
             0,
             3
           ],
           "reference" : "Dat was het oorspronkelijke idee. Alleen wat ik eraan toe wil voegen is dat deze audioberichten",
           "second_transcript" : "En dat was het oorspronkelijke idee. Alleen wat ik er aan toe wil voegen is dat deze audioberichten",
-          "short_id" : "E20",
+          "short_id" : "E12",
           "start_seconds" : 116.15000000000001,
-          "title" : "Whisper Large-v3 differs"
+          "title" : "… een side-project. Dat was het oorspronkelijke idee …"
         },
         {
           "app_transcript" : "door bijvoorbeeld het Whisper model. En dat ze vervolgens worden",
-          "audio" : "assets/audio/1.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 0 edit(s), Large-v3 20 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
-          "clip_end" : 141.65000000000001,
+          "audio" : "assets/audio/0.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
+          "clip_end" : 142.19,
           "clip_start" : 132.88999999999999,
           "context" : {
             "audio_sha256" : "018807fe80637d269afa19e839f15b0b78925a3a65391fdb09fb666da183af85",
-            "end_seconds" : 141.65000000000001,
+            "end_seconds" : 142.19,
             "reference_end_word" : 245,
             "reference_sha256" : "ee97b8485fedf9f38508952527cecb41e8a22b33717faa4936ed16b81cfe7e44",
             "reference_start_word" : 235,
             "start_seconds" : 132.88999999999999
           },
-          "end_seconds" : 141.65000000000001,
-          "id" : "side-project-E21",
+          "end_seconds" : 142.19,
+          "id" : "side-project-E13",
           "model_errors" : [
             0,
             20
           ],
           "reference" : "door bijvoorbeeld het Whisper model. En dat ze vervolgens worden",
           "second_transcript" : "door bijvoorbeeld het Whisper model. En dat ze vervolgens worden gelezen,\ndoor bijvoorbeeld het Whisper model. En dat ze worden gelezen,\ndoor bijvoorbeeld het Whisper model. En dat ze worden",
-          "short_id" : "E21",
+          "short_id" : "E13",
           "start_seconds" : 132.88999999999999,
-          "title" : "Whisper Large-v3 differs"
-        },
-        {
-          "app_transcript" : "worden",
-          "audio" : "assets/audio/1.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 0 edit(s), Large-v3 20 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
-          "clip_end" : 142.19,
-          "clip_start" : 140.15000000000001,
-          "context" : {
-            "audio_sha256" : "018807fe80637d269afa19e839f15b0b78925a3a65391fdb09fb666da183af85",
-            "end_seconds" : 142.19,
-            "reference_end_word" : 245,
-            "reference_sha256" : "ee97b8485fedf9f38508952527cecb41e8a22b33717faa4936ed16b81cfe7e44",
-            "reference_start_word" : 244,
-            "start_seconds" : 140.15000000000001
-          },
-          "end_seconds" : 142.19,
-          "id" : "side-project-E22",
-          "model_errors" : [
-            0,
-            20
-          ],
-          "reference" : "worden",
-          "second_transcript" : "worden gelezen,\ndoor bijvoorbeeld het Whisper model. En dat ze worden gelezen,\ndoor bijvoorbeeld het Whisper model. En dat ze worden",
-          "short_id" : "E22",
-          "start_seconds" : 140.15000000000001,
-          "title" : "Whisper Large-v3 differs"
+          "title" : "… dat ze vervolgens worden gelezen door een large …"
         },
         {
           "app_transcript" : "worden gelezen",
-          "audio" : "assets/audio/1.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 0 edit(s), Large-v3 20 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/0.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 142.19,
           "clip_start" : 140.69,
           "context" : {
@@ -1516,21 +376,21 @@
             "start_seconds" : 140.69
           },
           "end_seconds" : 142.19,
-          "id" : "side-project-E23",
+          "id" : "side-project-E14",
           "model_errors" : [
             0,
             20
           ],
           "reference" : "worden gelezen",
           "second_transcript" : "worden gelezen,\ndoor bijvoorbeeld het Whisper model. En dat ze worden gelezen,\ndoor bijvoorbeeld het Whisper model. En dat ze worden gelezen",
-          "short_id" : "E23",
+          "short_id" : "E14",
           "start_seconds" : 140.69,
-          "title" : "Whisper Large-v3 differs"
+          "title" : "… dat ze vervolgens worden gelezen door een large …"
         },
         {
           "app_transcript" : "door een Large Language Model, een liefst lokaal model, zo slim mogelijk natuurlijk",
-          "audio" : "assets/audio/1.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 2 edit(s), Large-v3 2 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/0.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 149.75,
           "clip_start" : 140.69,
           "context" : {
@@ -1542,21 +402,21 @@
             "start_seconds" : 140.69
           },
           "end_seconds" : 149.75,
-          "id" : "side-project-E24",
+          "id" : "side-project-E15",
           "model_errors" : [
             2,
             2
           ],
           "reference" : "door een large language model. Liefst een lokaal model. Zo slim mogelijk natuurlijk",
           "second_transcript" : "door een Large Language Model, een liefdelokaal model, zo slim mogelijk natuurlijk",
-          "short_id" : "E24",
+          "short_id" : "E15",
           "start_seconds" : 140.69,
-          "title" : "Whisper Large-v2 and Whisper Large-v3 differs"
+          "title" : "… large language model. Liefst een lokaal model. Zo …"
         },
         {
           "app_transcript" : "waarin de tekst een beetje recht wordt gezet. Want zoals je nu zal merken is dat ik steeds al allemaal",
-          "audio" : "assets/audio/1.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 1 edit(s), Large-v3 0 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/0.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 157.00999999999999,
           "clip_start" : 148.25,
           "context" : {
@@ -1568,21 +428,21 @@
             "start_seconds" : 148.25
           },
           "end_seconds" : 157.00999999999999,
-          "id" : "side-project-E25",
+          "id" : "side-project-E16",
           "model_errors" : [
             1,
             0
           ],
           "reference" : "Waarin de tekst een beetje recht wordt gezet. Want zoals je nu zal merken is dat ik steeds allemaal",
           "second_transcript" : "waarin de tekst een beetje recht wordt gezet. Want zoals je nu zal merken is dat ik steeds allemaal",
-          "short_id" : "E25",
+          "short_id" : "E16",
           "start_seconds" : 148.25,
-          "title" : "Whisper Large-v2 differs"
+          "title" : "… dat ik steeds allemaal bijgeluiden maak. Of dat …"
         },
         {
           "app_transcript" : "pijgeluiden maak, maken of dat ik even de draad kwijtraak en dat het soms een onsamenhangend verhaal wordt",
-          "audio" : "assets/audio/1.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 2 edit(s), Large-v3 0 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/0.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 164.49000000000001,
           "clip_start" : 155.50999999999999,
           "context" : {
@@ -1594,21 +454,21 @@
             "start_seconds" : 155.50999999999999
           },
           "end_seconds" : 164.49000000000001,
-          "id" : "side-project-E26",
+          "id" : "side-project-E17",
           "model_errors" : [
             2,
             0
           ],
           "reference" : "bijgeluiden maak. Of dat ik even de draad kwijtraak. En dat het soms een onsamenhangend verhaal wordt",
           "second_transcript" : "bijgeluiden maak of dat ik even de draad kwijtraak en dat het soms een onsamenhangend verhaal wordt",
-          "short_id" : "E26",
+          "short_id" : "E17",
           "start_seconds" : 155.50999999999999,
-          "title" : "Whisper Large-v2 differs"
+          "title" : "… ik steeds allemaal bijgeluiden maak. Of dat ik …"
         },
         {
           "app_transcript" : "Ik wil dan een large language model gebruiken om dat verhaal recht te zetten en er een mooi",
-          "audio" : "assets/audio/1.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 0 edit(s), Large-v3 2 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/0.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 171.13,
           "clip_start" : 162.99000000000001,
           "context" : {
@@ -1620,21 +480,21 @@
             "start_seconds" : 162.99000000000001
           },
           "end_seconds" : 171.13,
-          "id" : "side-project-E27",
+          "id" : "side-project-E18",
           "model_errors" : [
             0,
             2
           ],
           "reference" : "Ik wil dan een large language model gebruiken om dat verhaal recht te zetten en er een mooi",
           "second_transcript" : "En ik wil dan een Large Language Model gebruiken om dat verhaal recht te zetten en een mooi",
-          "short_id" : "E27",
+          "short_id" : "E18",
           "start_seconds" : 162.99000000000001,
-          "title" : "Whisper Large-v3 differs"
+          "title" : "… onsamenhangend verhaal wordt. Ik wil dan een large …"
         },
         {
           "app_transcript" : "samenhangend verhaal van te maken zonder te veel af te wijken van wat ik nu vertel",
-          "audio" : "assets/audio/1.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 0 edit(s), Large-v3 3 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/0.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 177.84999999999999,
           "clip_start" : 169.63,
           "context" : {
@@ -1646,21 +506,21 @@
             "start_seconds" : 169.63
           },
           "end_seconds" : 177.84999999999999,
-          "id" : "side-project-E28",
+          "id" : "side-project-E19",
           "model_errors" : [
             0,
             3
           ],
           "reference" : "samenhangend verhaal van te maken, zonder te veel af te wijken van wat ik nu vertel",
           "second_transcript" : "ja, samenhangend verhaal van te maken, zonder teveel af te wijken van wat ik nu vertel",
-          "short_id" : "E28",
+          "short_id" : "E19",
           "start_seconds" : 169.63,
-          "title" : "Whisper Large-v3 differs"
+          "title" : "… er een mooi samenhangend verhaal van te maken …"
         },
         {
           "app_transcript" : "Dus dat is het idee voor dit site project. Ik had al gekeken hoe ik dat zou op kunnen zetten",
-          "audio" : "assets/audio/1.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 1 edit(s), Large-v3 1 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/0.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 184.93000000000001,
           "clip_start" : 176.34999999999999,
           "context" : {
@@ -1672,21 +532,21 @@
             "start_seconds" : 176.34999999999999
           },
           "end_seconds" : 184.93000000000001,
-          "id" : "side-project-E29",
+          "id" : "side-project-E20",
           "model_errors" : [
             1,
             1
           ],
           "reference" : "Dus dat is het idee voor dit side-project. Ik had al gekeken hoe ik dat zou op kunnen zetten",
           "second_transcript" : "Dus dat is het idee voor dit site project. Ik had al gekeken hoe ik dat zou op kunnen zetten",
-          "short_id" : "E29",
+          "short_id" : "E20",
           "start_seconds" : 176.34999999999999,
-          "title" : "Whisper Large-v2 and Whisper Large-v3 differs"
+          "title" : "… idee voor dit side-project. Ik had al …"
         },
         {
           "app_transcript" : "En dat is volgens mij vrij eenvoudig. Want deze audio opnames die worden opgeslagen in een bepaalde",
-          "audio" : "assets/audio/1.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 0 edit(s), Large-v3 2 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/0.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 193.69,
           "clip_start" : 183.43000000000001,
           "context" : {
@@ -1698,21 +558,21 @@
             "start_seconds" : 183.43000000000001
           },
           "end_seconds" : 193.69,
-          "id" : "side-project-E30",
+          "id" : "side-project-E21",
           "model_errors" : [
             0,
             2
           ],
           "reference" : "En dat is volgens mij vrij eenvoudig, want deze audio-opnames die worden opgeslagen in een bepaalde",
           "second_transcript" : "En dat is volgens mij vrij eenvoudig, want deze audioopnames die worden opgeslagen in een bepaalde",
-          "short_id" : "E30",
+          "short_id" : "E21",
           "start_seconds" : 183.43000000000001,
-          "title" : "Whisper Large-v3 differs"
+          "title" : "… eenvoudig, want deze audio-opnames die worden opgeslagen …"
         },
         {
           "app_transcript" : "folder. En die folder staat op iedere computer die aangesloten is op dat iCloud account",
-          "audio" : "assets/audio/1.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 1 edit(s), Large-v3 1 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/0.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 200.61000000000001,
           "clip_start" : 192.19,
           "context" : {
@@ -1724,21 +584,21 @@
             "start_seconds" : 192.19
           },
           "end_seconds" : 200.61000000000001,
-          "id" : "side-project-E31",
+          "id" : "side-project-E22",
           "model_errors" : [
             1,
             1
           ],
           "reference" : "folder. Die folder staat op iedere computer die aangesloten is op dat iCloud-account",
           "second_transcript" : "folder. En die folder staat op iedere computer die aangesloten is op dat iCloud account",
-          "short_id" : "E31",
+          "short_id" : "E22",
           "start_seconds" : 192.19,
-          "title" : "Whisper Large-v2 and Whisper Large-v3 differs"
+          "title" : "… een bepaalde folder. Die folder staat op iedere …"
         },
         {
           "app_transcript" : "Dus die audio berichten verschijnen dan automatisch. Die zou ik dan kunnen oppakken",
-          "audio" : "assets/audio/1.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 0 edit(s), Large-v3 3 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/0.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 205.59,
           "clip_start" : 199.11000000000001,
           "context" : {
@@ -1750,21 +610,21 @@
             "start_seconds" : 199.11000000000001
           },
           "end_seconds" : 205.59,
-          "id" : "side-project-E32",
+          "id" : "side-project-E23",
           "model_errors" : [
             0,
             3
           ],
           "reference" : "Dus die audio berichten verschijnen dan automatisch. Die zou ik dan kunnen oppakken",
           "second_transcript" : "Dus die audioberichten verschijnen daar automatisch. Die zou ik dan kunnen oppakken",
-          "short_id" : "E32",
+          "short_id" : "E23",
           "start_seconds" : 199.11000000000001,
-          "title" : "Whisper Large-v3 differs"
+          "title" : "… account. Dus die audio berichten verschijnen dan automatisch …"
         },
         {
           "app_transcript" : "e-mail met daarin de verwerking. En ik kan de verwerking ook ergens opslaan naast het audiobestand",
-          "audio" : "assets/audio/1.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 1 edit(s), Large-v3 1 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/0.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 220.16999999999999,
           "clip_start" : 213.09,
           "context" : {
@@ -1776,21 +636,21 @@
             "start_seconds" : 213.09
           },
           "end_seconds" : 220.16999999999999,
-          "id" : "side-project-E33",
+          "id" : "side-project-E24",
           "model_errors" : [
             1,
             1
           ],
           "reference" : "e-mail met daarin de verwerking. En je kan de verwerking ook ergens opslaan naast het audiobestand",
           "second_transcript" : "e-mail met daarin de verwerking. En ik kan de verwerking ook ergens opslaan naast het audiobestand",
-          "short_id" : "E33",
+          "short_id" : "E24",
           "start_seconds" : 213.09,
-          "title" : "Whisper Large-v2 and Whisper Large-v3 differs"
+          "title" : "… de verwerking. En je kan de verwerking ook …"
         },
         {
           "app_transcript" : "Dus dan zou het gevolg zijn dat je een soort output folder hebt. Of een soort folder voor side projects",
-          "audio" : "assets/audio/1.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 2 edit(s), Large-v3 4 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/0.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 230.09,
           "clip_start" : 218.66999999999999,
           "context" : {
@@ -1802,21 +662,21 @@
             "start_seconds" : 218.66999999999999
           },
           "end_seconds" : 230.09,
-          "id" : "side-project-E34",
+          "id" : "side-project-E25",
           "model_errors" : [
             2,
             4
           ],
           "reference" : "Dus dan zou het gevolg zijn dat je een soort outputfolder hebt, of een soort folder voor side-projects",
           "second_transcript" : "Dus dan zou het gevolg zijn dat je een soort output folder hebt, of een soort folder voor site project",
-          "short_id" : "E34",
+          "short_id" : "E25",
           "start_seconds" : 218.66999999999999,
-          "title" : "Whisper Large-v2 and Whisper Large-v3 differs"
+          "title" : "… je een soort outputfolder hebt, of een soort …"
         },
         {
           "app_transcript" : "Dit is het eerste experiment daarvoor en ik ben benieuwd waar dit toe gaat leiden. [BLANK_AUDIO",
-          "audio" : "assets/audio/1.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 2 edit(s), Large-v3 1 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/0.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 250.49000000000001,
           "clip_start" : 241.55000000000001,
           "context" : {
@@ -1828,28 +688,28 @@
             "start_seconds" : 241.55000000000001
           },
           "end_seconds" : 250.49000000000001,
-          "id" : "side-project-E35",
+          "id" : "side-project-E26",
           "model_errors" : [
             2,
             1
           ],
           "reference" : "Dit is het eerste experiment daarvoor en ik ben benieuwd waar dit toe gaat leiden",
           "second_transcript" : "En dit is het eerste experiment daarvoor. En ik ben benieuwd waar dit toe gaat leiden",
-          "short_id" : "E35",
+          "short_id" : "E26",
           "start_seconds" : 241.55000000000001,
-          "title" : "Whisper Large-v2 and Whisper Large-v3 differs"
+          "title" : "… samenhangende, goedlopende tekst. Dit is het eerste experiment …"
         }
       ],
       "reference" : "Het is vandaag 14 januari, half acht. Dit is mijn eerste opname in een serie. Deze opname gaat vooral over het project zelf. Waarbij ik steeds audioberichten ga opnemen, waarin ik over een bepaald onderwerp iets ga vertellen. In dit specifieke geval is het het onderwerp van side projects. Dus ik heb altijd van dit soort projectjes die ik maak op basis van iets met de computer waarbij ik iets programmeer op basis van een idee dat ik heb. Dit is een van die side projects. Ik wil ook dat deze daaronder gecategoriseerd wordt. Dus dat er een foldertje komt, maar daarin al mijn audioberichten over side projects. Het project wat ik nu voor ogen heb is eigenlijk geïnspireerd op Star Trek. Ik keek dan altijd naar Star Trek The Next Generation en daarin heeft Captain Jean-Luc Picard, hij begint dan iedere uitzending met 'Star Date' zo en zo zoveel, waar ze zijn en wat er gebeurt. En houdt hij zo een logboek van de kapitein van het schip bij. En dat doet hij met audioberichten. Datzelfde wil ik nu ook gaan doen. Waarbij ik dan vertel over iets wat me bezighoudt. Misschien iets persoonlijks, iets over werk of zoals nu over een side-project. Dat was het oorspronkelijke idee. Alleen wat ik eraan toe wil voegen is dat deze audioberichten automatisch worden opgepikt op mijn computer. En dat ze worden geconverteerd naar tekst door bijvoorbeeld het Whisper model. En dat ze vervolgens worden gelezen door een large language model. Liefst een lokaal model. Zo slim mogelijk natuurlijk. Waarin de tekst een beetje recht wordt gezet. Want zoals je nu zal merken is dat ik steeds allemaal bijgeluiden maak. Of dat ik even de draad kwijtraak. En dat het soms een onsamenhangend verhaal wordt. Ik wil dan een large language model gebruiken om dat verhaal recht te zetten en er een mooi samenhangend verhaal van te maken, zonder te veel af te wijken van wat ik nu vertel. Dus dat is het idee voor dit side-project. Ik had al gekeken hoe ik dat zou op kunnen zetten. En dat is volgens mij vrij eenvoudig, want deze audio-opnames die worden opgeslagen in een bepaalde folder. Die folder staat op iedere computer die aangesloten is op dat iCloud-account. Dus die audio berichten verschijnen dan automatisch. Die zou ik dan kunnen oppakken, kunnen verwerken en op het moment dat ze verwerkt zijn, kan ik mezelf een berichtje sturen of een e-mail met daarin de verwerking. En je kan de verwerking ook ergens opslaan naast het audiobestand. Dus dan zou het gevolg zijn dat je een soort outputfolder hebt, of een soort folder voor side-projects, waarin dan dit audiobestand staat, de transcriptie, gemaakt door Whisper, en wat de LLM ervan gemaakt heeft in een mooie, samenhangende, goedlopende tekst. Dit is het eerste experiment daarvoor en ik ben benieuwd waar dit toe gaat leiden.",
       "reference_sha256" : "ee97b8485fedf9f38508952527cecb41e8a22b33717faa4936ed16b81cfe7e44",
       "second_transcript" : "Het is vandaag 14 januari, half acht. Dit is mijn eerste opname in een serie en deze opname gaat\nvooral over het project zelf, waarbij ik steeds audioberichten ga opnemen waarin ik over een\nbepaald onderwerp iets ga vertellen. In dit specifieke geval is het het onderwerp van\nside projects. Ik heb altijd van dit soort projectjes die ik maak op basis, meestal iets\nmet computer, waarbij ik iets programmeer op basis van een idee dat ik heb. Dit is een van\ndie side projects, dus ik wil ook dat deze daaronder gaat.\nHet project dat ik nu voor ogen heb is eigenlijk geïnspireerd op Star Trek. Ik heet dan altijd\nStar Trek: The Next Generation. En daarin heeft Captain Jean-Luc Picard, dat is de onderscheidende\nontwikkelaar van Star Trek. Dat is een ontwikkelaar ontwikkelaar van Star Trek: The Next Generation.\nDat is een ontwikkelaar ontwikkelaar van Star Trek. Dat is een ontwikkelaar ontwikkelaar van Star Trek.\nDat is een ontwikkelaar ontwikkelaar van Star Trek. Dat is een ontwikkelaar ontwikkelaar van Star Trek.\nDat is een ontwikkelaar ontwikkelaar van Star Trek. Dat is een ontwikkelaar ontwikkelaar van Star Trek.\nDat is een ontwikkelaar ontwikkelaar van Star Trek.\nCaptain Jean-Luc Picard begint dan iedere uitzending met stardate zo en zo zoveel,\nwaar ze zijn en wat er gebeurt. En houdt hij zo het logboek van de kapitein van het schip bij.\nEn dat doet hij met audioberichten. Datzelfde wil ik nu ook gaan doen,\nwaarbij ik dan vertel over iets wat ik mee bezig houd,\nmijn schip. En dat doe ik nu ook gaan doen, waarbij ik dan vertel over iets wat ik mee bezig houd,\nmijn schip. En dat doe ik nu ook gaan doen, waarbij ik dan vertel over iets wat ik mee bezig houd,\nmijn schip. En dat doe ik nu ook gaan doen, waarbij ik dan vertel over iets wat ik mee bezig houd,\nmisschien iets persoonlijks, iets over werk of over zoals nu over een science project.\nEn dat was het oorspronkelijke idee. Alleen wat ik er aan toe wil voegen is dat deze audioberichten\nautomatisch worden opgepikt op mijn computer. En dat ze worden geconverteerd naar tekst,\ndoor bijvoorbeeld het Whisper model. En dat ze vervolgens worden gelezen,\ndoor bijvoorbeeld het Whisper model. En dat ze worden gelezen,\ndoor bijvoorbeeld het Whisper model. En dat ze worden gelezen,\ndoor een Large Language Model, een liefdelokaal model, zo slim mogelijk natuurlijk,\nwaarin de tekst een beetje recht wordt gezet. Want zoals je nu zal merken is dat ik steeds allemaal\nbijgeluiden maak of dat ik even de draad kwijtraak en dat het soms een onsamenhangend verhaal wordt.\nEn ik wil dan een Large Language Model gebruiken om dat verhaal recht te zetten en een mooi,\nja, samenhangend verhaal van te maken, zonder teveel af te wijken van wat ik nu vertel.\nDus dat is het idee voor dit site project. Ik had al gekeken hoe ik dat zou op kunnen zetten.\nEn dat is volgens mij vrij eenvoudig, want deze audioopnames die worden opgeslagen in een bepaalde\nfolder. En die folder staat op iedere computer die aangesloten is op dat iCloud account.\nDus die audioberichten verschijnen daar automatisch. Die zou ik dan kunnen oppakken,\nkunnen verwerken. En op het moment dat ze verwerkt zijn, kan ik mezelf een berichtje sturen of een\ne-mail met daarin de verwerking. En ik kan de verwerking ook ergens opslaan naast het audiobestand.\nDus dan zou het gevolg zijn dat je een soort output folder hebt, of een soort folder voor site project,\nwaarin dan dit audiobestand staat. De transcriptie, gemaakt door Whisper,\nen wat de LLM ervan gemaakt heeft in een mooie, samenhangende, goedlopende tekst.\nEn dit is het eerste experiment daarvoor. En ik ben benieuwd waar dit toe gaat leiden.\n",
       "selection" : "aligned-differences",
-      "title" : "Side project · Whisper differences"
+      "title" : "Side project"
     },
     {
       "app_label" : "Whisper Large-v2 · preserved native output",
       "app_transcript" : "Het doek ging op. Regine boog en glimlachte. In het licht van de grote kroonluchter dansten roze vlekken boven kleurige jurken en donkere pakken. Elk gezicht had ogen, en in al die ogen stond Regine te buigen en te glimlachen. Een donderende waterval, het geraas van een lawine, vulde de oude schouwburg. Een ontstuimige kracht tilde haar los van de aarde en stuwde haar op naar de hemel. Ze boog opnieuw. Het doek viel en ze voelde Florences hand in de haren. Ze liet haar snel los en liep naar de uitgang. \"Vijf keer halen, dat is niet gek,\" zei de regisseur. \"Voor een provincieszaal niet, nee.\" Ze liep het trapje af naar de foyer. Ze wachten haar met bloemen op, in één klap stond ze weer met beide benen op de grond. Als ze onzichtbaar en anoniem in het donker zaten, wist je niet wie ze waren. Je kon jezelf voor een zaal vol goden wanen, maar zodra je hen apart zag, stond je tegenover doodgewone, oninteressante mensen. Ze zeiden wat ze moesten zeggen. \"Het was geniaal!\" \"Het was indrukwekkend!\" en hun ogen straalden van geestdrift, een vlammertje dat ze alleen voor de gelegenheid ontstaken en dat zuinig gedoofd werd zodra het niet meer nodig was. Ze drongen ook om Florence heen. Ze hadden bloemen voor haar meegebracht en als ze tegen haar praten, ging het vlammertje in hun ogen aan. \"Alsof je van ons allebei tegelijk kunt houden,\" dacht Regine driftig. alsof we niet verschillen als dag en nacht.\" Florence glimlachte, niets belette haar te geloven dat ze evenveel talent had als Regine en dat ze even mooi was. Roger wachtte Regine op in haar kleedkamer. Hij nam haar in zijn armen. \"Je bent nog nooit zo goed gespeeld als vanavond,\" zei hij. \"Te goed voor een dergelijk publiek,\" zei Regine. \"Je kreeg een geweldig applaus,\" zei Annie. \"Pff, Florence kreeg evenveel applaus als ik.\" Ze ging aan de kaptafel zitten en begon haar haren te kammer terwijl Annie haar jurk loshaakte. \"Florence, Florence, bekommert zich niet om mij. Ik zal me ook niet van haar moeten aantrekken\", dacht ze. Maar ze trok zich wel iets van haar aan. En ze had een wrange smaak in haar keel. -네.",
-      "audio" : "assets/audio/2.m4a",
+      "audio" : "assets/audio/1.m4a",
       "audio_sha256" : "f8a977f21028036d9b88496bb87da3dcfcc0ad731732b41f29d782da4fd992ca",
       "carried_passages" : [
 
@@ -1863,8 +723,8 @@
       "passages" : [
         {
           "app_transcript" : "Het doek ging op. Regine boog en glimlachte. In het licht van de grote kroonluchter dansten roze vlekken boven kleurige jurken en donkere pakken. Elk gezicht had ogen, en in al die ogen stond Regine te buigen en te glimlachen",
-          "audio" : "assets/audio/2.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 2 edit(s), Large-v3 2 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/1.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 18.890000000000001,
           "clip_start" : 0,
           "context" : {
@@ -1885,12 +745,12 @@
           "second_transcript" : "Het doek ging op. Regine boog en glimlachte. In het licht van de grote kroonluchter dansten roze vlekken boven kleurige jurken en donkere pakken. Elk gezicht had ogen en in al die ogen stond Regine te buigen en te glimlachen",
           "short_id" : "E01",
           "start_seconds" : 0,
-          "title" : "Whisper Large-v2 and Whisper Large-v3 differs"
+          "title" : "… doek ging op. Régine boog en glimlachte; in …"
         },
         {
           "app_transcript" : "Een donderende waterval, het geraas van een lawine, vulde de oude schouwburg. Een ontstuimige kracht tilde haar los van de aarde en stuwde haar op naar de hemel. Ze boog opnieuw. Het doek viel en ze voelde Florences hand in de haren. Ze liet haar snel los en liep naar de uitgang",
-          "audio" : "assets/audio/2.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 1 edit(s), Large-v3 2 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/1.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 39.75,
           "clip_start" : 17.829999999999998,
           "context" : {
@@ -1911,12 +771,12 @@
           "second_transcript" : "Een donderende waterval, het geraas van een lawine, vulde de oude schouwburg. Een ontstuimige kracht tilde haar los van de aarde en stuurde haar op naar de hemel. Ze boog opnieuw. Het doek viel en ze voelde Florences hand in de haren. Ze liet haar snel los en liep naar de uitgang",
           "short_id" : "E02",
           "start_seconds" : 17.829999999999998,
-          "title" : "Whisper Large-v2 and Whisper Large-v3 differs"
+          "title" : "… de aarde en stuwde haar op naar de …"
         },
         {
           "app_transcript" : "Vijf keer halen, dat is niet gek,\" zei de regisseur. \"Voor een provincieszaal niet, nee",
-          "audio" : "assets/audio/2.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 1 edit(s), Large-v3 0 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/1.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 48.390000000000001,
           "clip_start" : 40.829999999999998,
           "context" : {
@@ -1937,12 +797,12 @@
           "second_transcript" : "Vijf keer halen, dat is niet gek, zei de regisseur. Voor een provinciezaal niet, nee",
           "short_id" : "E03",
           "start_seconds" : 40.829999999999998,
-          "title" : "Whisper Large-v2 differs"
+          "title" : "… regisseur.\n\"Voor een provinciezaal niet, nee.\"\nZe liep …"
         },
         {
           "app_transcript" : "Ze liep het trapje af naar de foyer. Ze wachten haar met bloemen op, in één klap stond ze weer met beide benen op de grond. Als ze onzichtbaar en anoniem in het donker zaten, wist je niet wie ze waren. Je kon jezelf voor een zaal vol goden wanen, maar zodra je hen apart zag, stond je tegenover doodgewone, oninteressante mensen",
-          "audio" : "assets/audio/2.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 1 edit(s), Large-v3 1 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/1.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 75.430000000000007,
           "clip_start" : 47.829999999999998,
           "context" : {
@@ -1963,12 +823,12 @@
           "second_transcript" : "Ze liep het trapje af naar de foyer. Ze wachtte haar met bloemen op. In één klap stond ze weer met beide benen op de grond. Als ze onzichtbaar en anoniem in het donker zaten, wist je niet wie ze waren. Je kon jezelf voor een zaal vol goden wanen. Maar zodra je hen apart zag, stond je tegenover doodgewone, oninteressante mensen",
           "short_id" : "E04",
           "start_seconds" : 47.829999999999998,
-          "title" : "Whisper Large-v2 and Whisper Large-v3 differs"
+          "title" : "… de foyer. Ze wachtten haar met bloemen op …"
         },
         {
           "app_transcript" : "Het was geniaal!\" \"Het was indrukwekkend!\" en hun ogen straalden van geestdrift, een vlammertje dat ze alleen voor de gelegenheid ontstaken en dat zuinig gedoofd werd zodra het niet meer nodig was. Ze drongen ook om Florence heen. Ze hadden bloemen voor haar meegebracht en als ze tegen haar praten, ging het vlammertje in hun ogen aan",
-          "audio" : "assets/audio/2.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 3 edit(s), Large-v3 1 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/1.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 104.63,
           "clip_start" : 77.829999999999998,
           "context" : {
@@ -1989,12 +849,12 @@
           "second_transcript" : "Het was geniaal. Het was indrukwekkend. En hun ogen straalden van geestdrift. Een vlammetje dat ze alleen voor de gelegenheid ontstaken en dat zuinig gedoofd werd zodra het niet meer nodig was. Ze drongen ook om Florence heen. Ze hadden bloemen voor haar meegebracht en als ze tegen haar praten, ging het vlammetje in hun ogen aan",
           "short_id" : "E05",
           "start_seconds" : 77.829999999999998,
-          "title" : "Whisper Large-v2 and Whisper Large-v3 differs"
+          "title" : "… van geestdrift: een vlammetje dat ze alleen voor …"
         },
         {
           "app_transcript" : "Alsof je van ons allebei tegelijk kunt houden,\" dacht Regine",
-          "audio" : "assets/audio/2.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 1 edit(s), Large-v3 1 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/1.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 109.31,
           "clip_start" : 103.93000000000001,
           "context" : {
@@ -2015,12 +875,12 @@
           "second_transcript" : "Alsof je van ons allebei tegelijk kunt houden, dacht Regina",
           "short_id" : "E06",
           "start_seconds" : 103.93000000000001,
-          "title" : "Whisper Large-v2 and Whisper Large-v3 differs"
+          "title" : "… kunt houden, dacht Régine driftig, alsof we niet …"
         },
         {
           "app_transcript" : "driftig. alsof we niet verschillen als dag en nacht",
-          "audio" : "assets/audio/2.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 0 edit(s), Large-v3 2 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/1.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 113.55,
           "clip_start" : 107.83,
           "context" : {
@@ -2041,12 +901,12 @@
           "second_transcript" : "Als of we niet verschillen als dag en nacht",
           "short_id" : "E07",
           "start_seconds" : 107.83,
-          "title" : "Whisper Large-v3 differs"
+          "title" : "… houden, dacht Régine driftig, alsof we niet verschillen …"
         },
         {
           "app_transcript" : "Florence glimlachte, niets belette haar te geloven dat ze evenveel talent had als Regine en dat ze even mooi was",
-          "audio" : "assets/audio/2.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 1 edit(s), Large-v3 1 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/1.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 123.33,
           "clip_start" : 113.23,
           "context" : {
@@ -2067,12 +927,12 @@
           "second_transcript" : "Florence glimlachte. Niets belette haar te geloven dat ze evenveel talent had als Regina en dat ze even mooi was",
           "short_id" : "E08",
           "start_seconds" : 113.23,
-          "title" : "Whisper Large-v2 and Whisper Large-v3 differs"
+          "title" : "… talent had als Régine en dat ze even …"
         },
         {
           "app_transcript" : "Roger wachtte Regine op in haar kleedkamer. Hij nam haar in zijn armen",
-          "audio" : "assets/audio/2.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 1 edit(s), Large-v3 1 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/1.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 132.59,
           "clip_start" : 125.43000000000001,
           "context" : {
@@ -2093,12 +953,12 @@
           "second_transcript" : "Roger wachtte Regina op in haar kleedkamer. Hij nam haar in zijn armen",
           "short_id" : "E09",
           "start_seconds" : 125.43000000000001,
-          "title" : "Whisper Large-v2 and Whisper Large-v3 differs"
+          "title" : "… was.\nRoger wachtte Régine op in haar kleedkamer …"
         },
         {
           "app_transcript" : "Je bent nog nooit zo goed gespeeld als vanavond,\" zei hij",
-          "audio" : "assets/audio/2.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 1 edit(s), Large-v3 0 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/1.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 139.31,
           "clip_start" : 131.87,
           "context" : {
@@ -2119,12 +979,12 @@
           "second_transcript" : "Je hebt nog nooit zo goed gespeeld als vanavond, zei hij",
           "short_id" : "E10",
           "start_seconds" : 131.87,
-          "title" : "Whisper Large-v2 differs"
+          "title" : "… zijn armen:\n\"Je hebt nog nooit zo goed …"
         },
         {
           "app_transcript" : "Te goed voor een dergelijk publiek,\" zei Regine",
-          "audio" : "assets/audio/2.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 1 edit(s), Large-v3 1 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/1.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 144.21000000000001,
           "clip_start" : 137.83000000000001,
           "context" : {
@@ -2145,12 +1005,12 @@
           "second_transcript" : "Te goed voor een dergelijk publiek, zei Regina",
           "short_id" : "E11",
           "start_seconds" : 137.83000000000001,
-          "title" : "Whisper Large-v2 and Whisper Large-v3 differs"
+          "title" : "… dergelijk publiek,\" zei Régine.\n\"Je kreeg een geweldig …"
         },
         {
           "app_transcript" : "Pff, Florence kreeg evenveel applaus als ik",
-          "audio" : "assets/audio/2.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 0 edit(s), Large-v3 1 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/1.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 154.55000000000001,
           "clip_start" : 150.81,
           "context" : {
@@ -2171,12 +1031,12 @@
           "second_transcript" : "Florence kreeg evenveel applaus als ik",
           "short_id" : "E12",
           "start_seconds" : 150.81,
-          "title" : "Whisper Large-v3 differs"
+          "title" : "… applaus,\" zei Annie.\n\"Pff, Florence kreeg evenveel applaus …"
         },
         {
           "app_transcript" : "Ze ging aan de kaptafel zitten en begon haar haren te kammer terwijl Annie haar jurk loshaakte",
-          "audio" : "assets/audio/2.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 1 edit(s), Large-v3 0 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/1.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 161.75,
           "clip_start" : 154.19,
           "context" : {
@@ -2197,12 +1057,12 @@
           "second_transcript" : "Ze ging aan de kaptafel zitten en begon haar haren te kammen terwijl Annie haar jurk loshaakte",
           "short_id" : "E13",
           "start_seconds" : 154.19,
-          "title" : "Whisper Large-v2 differs"
+          "title" : "… haar haren te kammen terwijl Annie haar jurk …"
         },
         {
           "app_transcript" : "Florence, Florence, bekommert zich niet om mij. Ik zal me ook niet van haar moeten aantrekken",
-          "audio" : "assets/audio/2.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 3 edit(s), Large-v3 2 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/1.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 168.75,
           "clip_start" : 162.66999999999999,
           "context" : {
@@ -2223,12 +1083,12 @@
           "second_transcript" : "Florence bekommerd zich niet om mij. Ik zou me ook niet van haar moeten aantrekken",
           "short_id" : "E14",
           "start_seconds" : 162.66999999999999,
-          "title" : "Whisper Large-v2 and Whisper Large-v3 differs"
+          "title" : "… haar jurk loshaakte. Florence bekommert zich niet om …"
         },
         {
           "app_transcript" : "En ze had een wrange smaak in haar keel. -네",
-          "audio" : "assets/audio/2.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 1 edit(s), Large-v3 0 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/1.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 177.38999999999999,
           "clip_start" : 172.91,
           "context" : {
@@ -2249,19 +1109,19 @@
           "second_transcript" : "En ze had een wrange smaak in haar keel",
           "short_id" : "E15",
           "start_seconds" : 172.91,
-          "title" : "Whisper Large-v2 differs"
+          "title" : "… smaak in haar keel"
         }
       ],
       "reference" : "Het doek ging op. Régine boog en glimlachte; in het licht van de grote kroonluchter dansten roze vlekken boven kleurige jurken en donkere pakken; elk gezicht had ogen en in al die ogen stond Régine te buigen en te glimlachen; een donderende waterval, het geraas van een lawine vulde de oude schouwburg; een ontstuimige kracht tilde haar los van de aarde en stuwde haar op naar de hemel. Ze boog opnieuw. Het doek viel en ze voelde Florences hand in de hare; ze liet haar snel los en liep naar de uitgang.\n\"Vijf keer halen, dat is niet gek,\" zei de regisseur.\n\"Voor een provinciezaal niet, nee.\"\nZe liep het trapje af naar de foyer. Ze wachtten haar met bloemen op; in één klap stond ze weer met beide benen op de grond. Als ze onzichtbaar en anoniem in het donker zaten, wist je niet wie ze waren; je kon jezelf voor een zaal vol goden wanen, maar zodra je hen apart zag, stond je tegenover doodgewone, oninteressante mensen. Ze zeiden wat ze moesten zeggen. 'Het was geniaal! Het was indrukwekkend!' En hun ogen straalden van geestdrift: een vlammetje dat ze alleen voor de gelegenheid ontstaken en dat zuinig gedoofd werd zodra het niet meer nodig was. Ze drongen ook om Florence heen; ze hadden bloemen voor haar meegebracht en als ze tegen haar praatten, ging het vlammetje in hun ogen aan. Alsof je van ons allebei tegelijk kunt houden, dacht Régine driftig, alsof we niet verschillen als dag en nacht. Florence glimlachte. Niets belette haar te geloven dat ze evenveel talent had als Régine en dat ze even mooi was.\nRoger wachtte Régine op in haar kleedkamer; hij nam haar in zijn armen:\n\"Je hebt nog nooit zo goed gespeeld als vanavond!\", zei hij.\n\"Te goed voor een dergelijk publiek,\" zei Régine.\n\"Je kreeg een geweldig applaus,\" zei Annie.\n\"Pff, Florence kreeg evenveel applaus als ik.\"\nZe ging aan de kaptafel zitten en begon haar haren te kammen terwijl Annie haar jurk loshaakte. Florence bekommert zich niet om mij, ik zou me ook niets van haar moeten aantrekken, dacht ze. Maar ze trok zich wel iets van haar aan, en ze had een wrange smaak in haar keel.",
       "reference_sha256" : "68240648e0c0fd312608cb1f13adf81f952dc3c0fbeebba9daaa48990150dc6f",
       "second_transcript" : "Het doek ging op. Regine boog en glimlachte. In het licht van de grote kroonluchter dansten roze vlekken boven kleurige jurken en donkere pakken. Elk gezicht had ogen en in al die ogen stond Regine te buigen en te glimlachen.\nEen donderende waterval, het geraas van een lawine, vulde de oude schouwburg. Een ontstuimige kracht tilde haar los van de aarde en stuurde haar op naar de hemel. Ze boog opnieuw. Het doek viel en ze voelde Florences hand in de haren. Ze liet haar snel los en liep naar de uitgang.\nVijf keer halen, dat is niet gek, zei de regisseur. Voor een provinciezaal niet, nee.\nZe liep het trapje af naar de foyer. Ze wachtte haar met bloemen op. In één klap stond ze weer met beide benen op de grond. Als ze onzichtbaar en anoniem in het donker zaten, wist je niet wie ze waren. Je kon jezelf voor een zaal vol goden wanen. Maar zodra je hen apart zag, stond je tegenover doodgewone, oninteressante mensen.\nZe zeiden wat ze moesten zeggen.\nHet was geniaal. Het was indrukwekkend. En hun ogen straalden van geestdrift. Een vlammetje dat ze alleen voor de gelegenheid ontstaken en dat zuinig gedoofd werd zodra het niet meer nodig was. Ze drongen ook om Florence heen. Ze hadden bloemen voor haar meegebracht en als ze tegen haar praten, ging het vlammetje in hun ogen aan.\nAlsof je van ons allebei tegelijk kunt houden, dacht Regina.\nAls of we niet verschillen als dag en nacht.\nFlorence glimlachte. Niets belette haar te geloven dat ze evenveel talent had als Regina en dat ze even mooi was.\nRoger wachtte Regina op in haar kleedkamer. Hij nam haar in zijn armen.\nJe hebt nog nooit zo goed gespeeld als vanavond, zei hij.\nTe goed voor een dergelijk publiek, zei Regina.\nJe kreeg een geweldig applaus, zei Annie.\nFlorence kreeg evenveel applaus als ik.\nZe ging aan de kaptafel zitten en begon haar haren te kammen terwijl Annie haar jurk loshaakte.\nFlorence bekommerd zich niet om mij. Ik zou me ook niet van haar moeten aantrekken.\nDacht ze. Maar ze trok zich wel iets van haar aan.\nEn ze had een wrange smaak in haar keel.\n",
       "selection" : "aligned-differences",
-      "title" : "Alle mensen zijn sterfelijk · Whisper differences"
+      "title" : "Alle mensen zijn sterfelijk"
     },
     {
       "app_label" : "Whisper Large-v2 · preserved native output",
       "app_transcript" : "Over het begin van de dwergen doen vreemde verhalen de ronde, zowel onder de eldar als bij de dwergen zelf, maar aangezien deze dingen ver voor onze tijd liggen, wordt er hier weinig over medegedeeld. Durin is de naam die de dwergen gebruikten voor de oudste van de zeven vaders van hun ras en de voorvader van alle koningen van de langbaarden. Hij sliep alleen, tot hij in de diepten van de tijd en bij het ontwaken van dat volk naar Azanulbizar ging en in de grotten boven het Kelet-Zaram in het oosten van de Nevelbergen vestigde hij zijn woonplaats, waar naderhand de mijnen van Moria waren, beroemd uit Lideren. Daar woonde hij zo lang, dat hij wijt en zeit bekend stond als durende onsterfelijke. Maar tenslotte stierf hij toch, voordat de oudste tijden voorbij waren, en zijn graftombe stond in Kazad-dûm. Maar zijn lijn stierf nooit uit en vijf keer werd er een erfgenaam van zijn huis geboren, die zozeer op zijn voorvader leek, dat hij de naam Dürin kreeg. De dwergen beschouwden hem werkelijk als de onsterflijke die terugkeerde, want zij hebben vele vreemde verhalen en opvattingen over zichzelf en hun lot in de wereld.",
-      "audio" : "assets/audio/3.m4a",
+      "audio" : "assets/audio/2.m4a",
       "audio_sha256" : "423df075a1d2efcdc74966cd24e5b09f02cc9012855715a1cb2fd12b0aae6e9b",
       "carried_passages" : [
 
@@ -2275,8 +1135,8 @@
       "passages" : [
         {
           "app_transcript" : "Durin is de naam die de dwergen gebruikten voor de oudste van de zeven vaders van hun ras en de voorvader van alle koningen van de langbaarden",
-          "audio" : "assets/audio/3.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 0 edit(s), Large-v3 1 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/2.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 27.469999999999999,
           "clip_start" : 15.130000000000001,
           "context" : {
@@ -2297,12 +1157,12 @@
           "second_transcript" : "durin is de naam die de dwergen gebruikten voor de oudsten van de zeven vaders van hun ras en de voorvader van alle koningen van de langbaarden",
           "short_id" : "E01",
           "start_seconds" : 15.130000000000001,
-          "title" : "Whisper Large-v3 differs"
+          "title" : "… gebruikten voor de oudste van de Zeven Vaders …"
         },
         {
           "app_transcript" : "Hij sliep alleen, tot hij in de diepten van de tijd en bij het ontwaken van dat volk naar Azanulbizar ging en in de grotten boven het Kelet-Zaram in het oosten van de Nevelbergen vestigde hij zijn woonplaats",
-          "audio" : "assets/audio/3.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 2 edit(s), Large-v3 2 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/2.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 45.229999999999997,
           "clip_start" : 25.969999999999999,
           "context" : {
@@ -2323,12 +1183,12 @@
           "second_transcript" : "hij sliep alleen tot hij in de diepten van de tijd en bij het ontwaken van dat volk naar azanulbizar ging en in de grotten boven het keletzaram in het oosten van de nevelbergen vestigde hij zijn woonplaats",
           "short_id" : "E02",
           "start_seconds" : 25.969999999999999,
-          "title" : "Whisper Large-v2 and Whisper Large-v3 differs"
+          "title" : "… grotten boven het Kheled-zâram in het oosten …"
         },
         {
           "app_transcript" : "waar naderhand",
-          "audio" : "assets/audio/3.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 0 edit(s), Large-v3 3 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/2.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 46.270000000000003,
           "clip_start" : 43.729999999999997,
           "context" : {
@@ -2349,12 +1209,12 @@
           "second_transcript" : "waarnaar de hand",
           "short_id" : "E03",
           "start_seconds" : 43.729999999999997,
-          "title" : "Whisper Large-v3 differs"
+          "title" : "… hij zijn woonplaats, waar naderhand de Mijnen van …"
         },
         {
           "app_transcript" : "beroemd uit Lideren",
-          "audio" : "assets/audio/3.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 1 edit(s), Large-v3 0 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/2.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 49.270000000000003,
           "clip_start" : 46.390000000000001,
           "context" : {
@@ -2375,12 +1235,12 @@
           "second_transcript" : "beroemd uit liederen",
           "short_id" : "E04",
           "start_seconds" : 46.390000000000001,
-          "title" : "Whisper Large-v2 differs"
+          "title" : "… waren, beroemd uit liederen. Daar woonde hij zo …"
         },
         {
           "app_transcript" : "dat hij wijt en zeit bekend stond",
-          "audio" : "assets/audio/3.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 2 edit(s), Large-v3 1 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/2.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 53.990000000000002,
           "clip_start" : 50.149999999999999,
           "context" : {
@@ -2401,12 +1261,12 @@
           "second_transcript" : "dat hij wijd en zijt bekend stond",
           "short_id" : "E05",
           "start_seconds" : 50.149999999999999,
-          "title" : "Whisper Large-v2 and Whisper Large-v3 differs"
+          "title" : "… lang dat hij wijd en zijd bekend stond …"
         },
         {
           "app_transcript" : "als durende onsterfelijke",
-          "audio" : "assets/audio/3.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 2 edit(s), Large-v3 0 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/2.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 55.969999999999999,
           "clip_start" : 52.490000000000002,
           "context" : {
@@ -2427,12 +1287,12 @@
           "second_transcript" : "als durin de onsterfelijke",
           "short_id" : "E06",
           "start_seconds" : 52.490000000000002,
-          "title" : "Whisper Large-v2 differs"
+          "title" : "… bekend stond als Durin de Onsterfelijke. Maar tenslotte …"
         },
         {
           "app_transcript" : "stond in Kazad-dûm",
-          "audio" : "assets/audio/3.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 1 edit(s), Large-v3 2 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/2.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 65.930000000000007,
           "clip_start" : 61.469999999999999,
           "context" : {
@@ -2453,12 +1313,12 @@
           "second_transcript" : "stond in kazadum",
           "short_id" : "E07",
           "start_seconds" : 61.469999999999999,
-          "title" : "Whisper Large-v2 and Whisper Large-v3 differs"
+          "title" : "… graftombe stond in Khazad-dûm; maar zijn lijn …"
         },
         {
           "app_transcript" : "de naam Dürin kreeg",
-          "audio" : "assets/audio/3.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 1 edit(s), Large-v3 0 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/2.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 77.530000000000001,
           "clip_start" : 74.409999999999997,
           "context" : {
@@ -2479,12 +1339,12 @@
           "second_transcript" : "de naam durin kreeg",
           "short_id" : "E08",
           "start_seconds" : 74.409999999999997,
-          "title" : "Whisper Large-v2 differs"
+          "title" : "… hij de naam Durin kreeg. De Dwergen beschouwden …"
         },
         {
           "app_transcript" : "De",
-          "audio" : "assets/audio/3.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 0 edit(s), Large-v3 26 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/2.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 87.549999999999997,
           "clip_start" : 76.030000000000001,
           "context" : {
@@ -2505,12 +1365,12 @@
           "second_transcript" : "de dwergen beschouwden hem werkelijk als de onsterfelijke die terugkeerde want zij hebben vele vreemde verhalen en opvattingen over zichzelf en hun lot in de wereld\nde",
           "short_id" : "E09",
           "start_seconds" : 76.030000000000001,
-          "title" : "Whisper Large-v3 differs"
+          "title" : "… naam Durin kreeg. De Dwergen beschouwden hem werkelijk …"
         },
         {
           "app_transcript" : "dwergen beschouwden hem werkelijk als de onsterflijke die terugkeerde, want zij hebben vele vreemde verhalen en opvattingen over zichzelf en hun lot in de wereld",
-          "audio" : "assets/audio/3.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 1 edit(s), Large-v3 0 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/2.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 90.799999999999997,
           "clip_start" : 86.049999999999997,
           "context" : {
@@ -2531,19 +1391,19 @@
           "second_transcript" : "dwergen beschouwden hem werkelijk als de onsterfelijke die terugkeerde want zij hebben vele vreemde verhalen en opvattingen over zichzelf en hun lot in de wereld",
           "short_id" : "E10",
           "start_seconds" : 86.049999999999997,
-          "title" : "Whisper Large-v2 differs"
+          "title" : "… werkelijk als de Onsterfelijke die terugkeerde; want zij …"
         }
       ],
       "reference" : "Over het begin van de Dwergen doen vreemde verhalen de ronde, zowel onder de Eldar als bij de Dwergen zelf; maar aangezien deze dingen ver voor onze tijd liggen, wordt er hier weinig over medegedeeld. Durin is de naam die de Dwergen gebruikten voor de oudste van de Zeven Vaders van hun ras en de voorvader van alle Koningen van de Langbaarden. Hij sliep alleen, tot hij in de diepten van de tijd en bij het ontwaken van dat volk naar Azanulbizar ging, en in de grotten boven het Kheled-zâram in het oosten van de Nevelbergen vestigde hij zijn woonplaats, waar naderhand de Mijnen van Moria waren, beroemd uit liederen. Daar woonde hij zo lang dat hij wijd en zijd bekend stond als Durin de Onsterfelijke. Maar tenslotte stierf hij toch voordat de Oudste Tijden voorbij waren, en zijn graftombe stond in Khazad-dûm; maar zijn lijn stierf nooit uit en vijf keer werd er een erfgenaam van zijn Huis geboren die zozeer op zijn voorvader leek dat hij de naam Durin kreeg. De Dwergen beschouwden hem werkelijk als de Onsterfelijke die terugkeerde; want zij hebben vele vreemde verhalen en opvattingen over zichzelf en hun lot in de wereld.",
       "reference_sha256" : "841d8ff3922985a94f1b92bd37684c75e7880d8972b72dc4977732ae6a0c4a3f",
       "second_transcript" : "over het begin van de dwergen doen vreemde verhalen de ronde zowel onder de eldar als bij de dwergen zelf maar aangezien deze dingen ver voor onze tijd liggen wordt er hier weinig over medegedeeld\ndurin is de naam die de dwergen gebruikten voor de oudsten van de zeven vaders van hun ras en de voorvader van alle koningen van de langbaarden\nhij sliep alleen tot hij in de diepten van de tijd en bij het ontwaken van dat volk naar azanulbizar ging en in de grotten boven het keletzaram in het oosten van de nevelbergen vestigde hij zijn woonplaats\nwaarnaar de hand\nde mijnen van moria waren\nberoemd uit liederen\ndaar woonde hij zo lang\ndat hij wijd en zijt bekend stond\nals durin de onsterfelijke\nmaar tenslotte stierf hij toch\nvoordat de oudste tijden\nvoorbij waren\nen zijn graftombe\nstond in kazadum\nmaar zijn lijn stierf nooit uit\nen vijf keer werd er\neen erfgenaam van zijn huis geboren\ndie zozeer op zijn voorvader\nleek dat hij\nde naam durin kreeg\nde dwergen beschouwden hem werkelijk als de onsterfelijke die terugkeerde want zij hebben vele vreemde verhalen en opvattingen over zichzelf en hun lot in de wereld\nde dwergen beschouwden hem werkelijk als de onsterfelijke die terugkeerde want zij hebben vele vreemde verhalen en opvattingen over zichzelf en hun lot in de wereld\n",
       "selection" : "aligned-differences",
-      "title" : "Durins volk · Whisper differences"
+      "title" : "Durins volk"
     },
     {
       "app_label" : "Whisper Large-v2 · preserved native output",
       "app_transcript" : "Greater Chongqing, the United Federation of China. At its pre-war height, this region boasted a population of over 35 million people. Now there are barely 50,000. Reconstruction funds have been slow to arrive in this part of the country, the government choosing to concentrate on more densely populated coasts. There is no central power grid, no running water besides the Yangtze River. But the streets are clear of rubble and the local security council has prevented any post-war outbreaks. The chairman of that council is Kuang Ying-choo, a medical doctor who, despite his advanced age and wartime injuries, still manages to make house calls to all his patients. The first outbreak I saw was in a remote village that officially had no name. The residents called it 'New Dachang', but this was more out of nostalgia than anything else. Their former home, 'Old Dachang', had stood since the period of the Three Kingdoms, with farms and houses, and even trees said to be centuries old. When the Three Gorges Dam was completed, and reservoir waters began to rise, much of Dachang has been disassembled, brick by brick, then rebuilt on higher ground. This new Dachang, however, was not a town anymore, but a national historic museum. It must have been a heartbreaking irony for those poor peasants to see their town saved, but then only being able to visit it as a tourist. Maybe that is why some of them choose the name to name their newly constructed hamlet 'New Dachang', to preserve some connection to their heritage, even if it was only in name. I personally didn't know that this older Dachang existed, so you can imagine how confused I was when the call came in. The hospital was quiet. It had been a slow night, even for the increasing number of drunk-driving accidents. Motorcycles were becoming very popular. We used to say that your Harley-Davidson skilled more young Chinese than all the G.I.s in the Korean War. That's why I was so grateful for a quiet shift. I was tired, my back and feet ached. I was on my way out to smoke a cigarette and watch the dawn when I heard my name being paged. The receptionist that night was new and couldn't quite understand the dialect. There had been an accident or an illness. It was an emergency. That part was obvious. And could we please send help at once?",
-      "audio" : "assets/audio/4.m4a",
+      "audio" : "assets/audio/3.m4a",
       "audio_sha256" : "6f419da2feeb93596b095aa544dd70ad8c8cdef2f0816f2c458dedb0914740d6",
       "carried_passages" : [
 
@@ -2557,8 +1417,8 @@
       "passages" : [
         {
           "app_transcript" : "At its pre-war height, this region boasted a population of over 35 million people",
-          "audio" : "assets/audio/4.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 4 edit(s), Large-v3 4 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/3.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 14.43,
           "clip_start" : 5.1500000000000004,
           "context" : {
@@ -2579,12 +1439,12 @@
           "second_transcript" : "At its pre-war height, this region boasted a population of over 35 million people",
           "short_id" : "E01",
           "start_seconds" : 5.1500000000000004,
-          "title" : "Whisper Large-v2 and Whisper Large-v3 differs"
+          "title" : "… CHINA\n\n[At its prewar height, this region boasted …"
         },
         {
           "app_transcript" : "Now there are barely 50,000",
-          "audio" : "assets/audio/4.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 2 edit(s), Large-v3 2 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/3.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 17.809999999999999,
           "clip_start" : 13.470000000000001,
           "context" : {
@@ -2605,12 +1465,12 @@
           "second_transcript" : "Now, there are barely 50,000",
           "short_id" : "E02",
           "start_seconds" : 13.470000000000001,
-          "title" : "Whisper Large-v2 and Whisper Large-v3 differs"
+          "title" : "… there are barely fifty thousand. Reconstruction funds have …"
         },
         {
           "app_transcript" : "the government choosing to concentrate on more densely populated coasts",
-          "audio" : "assets/audio/4.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 1 edit(s), Large-v3 1 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/3.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 27.91,
           "clip_start" : 21.41,
           "context" : {
@@ -2631,12 +1491,12 @@
           "second_transcript" : "the government choosing to concentrate on more densely populated coasts",
           "short_id" : "E03",
           "start_seconds" : 21.41,
-          "title" : "Whisper Large-v2 and Whisper Large-v3 differs"
+          "title" : "… more densely populated coast. There is no central …"
         },
         {
           "app_transcript" : "But the streets are clear of rubble and the local security council has prevented any post-war outbreaks",
-          "audio" : "assets/audio/4.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 2 edit(s), Large-v3 2 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/3.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 41.630000000000003,
           "clip_start" : 32.590000000000003,
           "context" : {
@@ -2657,12 +1517,12 @@
           "second_transcript" : "but the streets are clear of rubble and the local security council has prevented any post-war outbreaks",
           "short_id" : "E04",
           "start_seconds" : 32.590000000000003,
-          "title" : "Whisper Large-v2 and Whisper Large-v3 differs"
+          "title" : "… has prevented any postwar outbreaks. The chairman of …"
         },
         {
           "app_transcript" : "The chairman of that council is Kuang Ying-choo",
-          "audio" : "assets/audio/4.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 3 edit(s), Large-v3 3 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/3.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 46.170000000000002,
           "clip_start" : 40.969999999999999,
           "context" : {
@@ -2683,12 +1543,12 @@
           "second_transcript" : "The chairman of that council is Kuang Ying-chu",
           "short_id" : "E05",
           "start_seconds" : 40.969999999999999,
-          "title" : "Whisper Large-v2 and Whisper Large-v3 differs"
+          "title" : "… that council is Kwang Jing-shu, a medical …"
         },
         {
           "app_transcript" : "much",
-          "audio" : "assets/audio/4.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 0 edit(s), Large-v3 5 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/3.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 86.810000000000002,
           "clip_start" : 85.209999999999994,
           "context" : {
@@ -2709,12 +1569,12 @@
           "second_transcript" : "much of Dachang was destroyed.\nMuch",
           "short_id" : "E06",
           "start_seconds" : 85.209999999999994,
-          "title" : "Whisper Large-v3 differs"
+          "title" : "… began to rise, much of Dachang had been …"
         },
         {
           "app_transcript" : "of Dachang has been disassembled, brick by brick, then rebuilt on higher ground",
-          "audio" : "assets/audio/4.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 1 edit(s), Large-v3 1 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/3.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 94.170000000000002,
           "clip_start" : 85.310000000000002,
           "context" : {
@@ -2735,12 +1595,12 @@
           "second_transcript" : "of Dachang has been disassembled, brick by brick, then rebuilt on higher ground",
           "short_id" : "E07",
           "start_seconds" : 85.310000000000002,
-          "title" : "Whisper Large-v2 and Whisper Large-v3 differs"
+          "title" : "… much of Dachang had been disassembled, brick by …"
         },
         {
           "app_transcript" : "Maybe that is why some of them choose the name to",
-          "audio" : "assets/audio/4.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 2 edit(s), Large-v3 2 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/3.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 116.15000000000001,
           "clip_start" : 111.55,
           "context" : {
@@ -2761,12 +1621,12 @@
           "second_transcript" : "Maybe that is why some of them choose the name,\nto",
           "short_id" : "E08",
           "start_seconds" : 111.55,
-          "title" : "Whisper Large-v2 and Whisper Large-v3 differs"
+          "title" : "… of them choose to name their newly constructed …"
         },
         {
           "app_transcript" : "I personally didn't know that this older Dachang existed",
-          "audio" : "assets/audio/4.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 1 edit(s), Large-v3 2 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/3.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 131.05000000000001,
           "clip_start" : 124.84999999999999,
           "context" : {
@@ -2787,12 +1647,12 @@
           "second_transcript" : "I personally didn't know that this Old Dachang existed",
           "short_id" : "E09",
           "start_seconds" : 124.84999999999999,
-          "title" : "Whisper Large-v2 and Whisper Large-v3 differs"
+          "title" : "… know that this older New Dachang existed, so …"
         },
         {
           "app_transcript" : "We used to say that your Harley-Davidson skilled more young Chinese than all the G.I.s in the Korean War",
-          "audio" : "assets/audio/4.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 2 edit(s), Large-v3 3 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/3.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 154.06999999999999,
           "clip_start" : 145.15000000000001,
           "context" : {
@@ -2813,12 +1673,12 @@
           "second_transcript" : "We used to say that your Harley Davidsons killed more young Chinese than all the GIs in the Korean War",
           "short_id" : "E10",
           "start_seconds" : 145.15000000000001,
-          "title" : "Whisper Large-v2 and Whisper Large-v3 differs"
+          "title" : "… that your Harley-Davidsons killed more young Chinese …"
         },
         {
           "app_transcript" : "once",
-          "audio" : "assets/audio/4.m4a",
-          "check" : "Selected from word differences against the reference: Large-v2 0 edit(s), Large-v3 4 edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding.",
+          "audio" : "assets/audio/3.m4a",
+          "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
           "clip_end" : 184.69999999999999,
           "clip_start" : 181.94999999999999,
           "context" : {
@@ -2839,14 +1699,14 @@
           "second_transcript" : "once?\nA few days later",
           "short_id" : "E11",
           "start_seconds" : 181.94999999999999,
-          "title" : "Whisper Large-v3 differs"
+          "title" : "… send help at once"
         }
       ],
       "reference" : "GREATER CHONGQING, THE UNITED FEDERATION OF CHINA\n\n[At its prewar height, this region boasted a population of over thirty-five million people. Now, there are barely fifty thousand. Reconstruction funds have been slow to arrive in this part of the country, the government choosing to concentrate on more densely populated coast. There is no central power grid, no running water besides the Yangtze River. But the streets are clear of rubble and the local \"security council\" has prevented any postwar outbreaks. The chairman of that council is Kwang Jing-shu, a medical doctor who, despite his advanced age and wartime injuries, still manages to make house calls to all his patients.]\n\nThe first outbreak I saw was in a remote village that officially had no name. The residents called it \"New Dachang,\" but this was more out of nostalgia than anything else. Their former home, \"Old Dachang,\" had stood since the period of the Three Kingdoms, with farms and houses and even trees said to be centuries old. When the Three Gorges Dam was completed, and reservoir waters began to rise, much of Dachang had been disassembled, brick by brick, then rebuilt on higher ground. This New Dachang, however, was not a town anymore, but a \"national historic museum.\" It must have been a heartbreaking irony for those poor peasants, to see their town saved but then only being able to visit it as a tourist. Maybe that is why some of them choose to name their newly constructed hamlet \"New Dachang\" to preserve some connection to their heritage, even if it was only in name. I personally didn't know that this older New Dachang existed, so you can imagine how confused I was when the call came in.\n\nThe hospital was quiet; it had been a slow night, even for the increasing number of drunk-driving accidents. Motorcycles were becoming very popular. We used to say that your Harley-Davidsons killed more young Chinese than all the G.I.s in the Korean War. That's why I was so grateful for a quiet shift. I was tired, my back and feet ached. I was on my way out to smoke a cigarette and watch the dawn when I heard my name being paged. The receptionist that night was new and couldn't quite understand the dialect. There had been an accident, or an illness. It was an emergency, that part was obvious, and could we please send help at once.",
       "reference_sha256" : "c235024887c363a203d4e2728f63a8f85b1f4f415b67f32d87019c4b816d5812",
       "second_transcript" : "Greater Chongqing, the United Federation of China\nAt its pre-war height, this region boasted a population of over 35 million people.\nNow, there are barely 50,000.\nReconstruction funds have been slow to arrive in this part of the country,\nthe government choosing to concentrate on more densely populated coasts.\nThere is no central power grid, no running water besides the Yangtze River,\nbut the streets are clear of rubble and the local security council has prevented any post-war outbreaks.\nThe chairman of that council is Kuang Ying-chu,\na medical doctor who, despite his advanced age and wartime injuries,\nstill manages to make house calls to all his patients.\nThe first outbreak I saw was in a remote village that officially had no name.\nThe residents called it New Dachang, but this was more out of nostalgia than anything else.\nTheir former home, Old Dachang, had stood since the period of the Three Kingdoms,\nwith farms and houses and even trees said to be centuries old.\nWhen the Three Gorges Dam was completed and reservoir waters began to rise,\nmuch of Dachang was destroyed.\nMuch of Dachang has been disassembled, brick by brick, then rebuilt on higher ground.\nThis New Dachang, however, was not a town anymore, but a National Historic Museum.\nIt must have been a heartbreaking irony for those poor peasants to see their town saved,\nbut then only being able to visit it as a tourist.\nMaybe that is why some of them choose the name,\nto name their newly constructed hamlet New Dachang,\nto preserve some connection to their heritage, even if it was only in name.\nI personally didn't know that this Old Dachang existed,\nso you can imagine how confused I was when the call came in.\nThe hospital was quiet.\nIt had been a slow night, even for the increasing number of drunk driving accidents.\nMotorcycles were becoming very popular.\nWe used to say that your Harley Davidsons killed more young Chinese than all the GIs in the Korean War.\nThat's why I was so grateful for a quiet shift.\nI was tired, my back and feet ached.\nI was on my way out to smoke a cigarette and watch the dawn when I heard my name being paged.\nThe receptionist that night was new and couldn't quite understand the dialect.\nThere had been an accident, or an illness.\nIt was an emergency.\nThat part was obvious.\nAnd could we please send help at once?\nA few days later.\n",
       "selection" : "aligned-differences",
-      "title" : "World War Z · Whisper differences"
+      "title" : "World War Z"
     }
   ],
   "run" : "/Users/vnglst/Code/CaptainsLog/eval/transcribe/history/comparisons/2026-11-05-whisper-v2-v3",

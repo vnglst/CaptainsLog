@@ -1,141 +1,76 @@
-# Generated discrepancy clips
+# Passages to review
 
-Every listed clip contains a normalized word difference in at least one model. The table classifies clips, not individual edit counts. Full per-model alignments are under `scores/`.
+Only the four remaining recordings are included. Every passage contains a word difference; TNG is excluded. Overlapping clips caused by collapsed reference words are consolidated.
 
-| Recording | Clips | Both differ | V2 only | V3 only |
-|---|---:|---:|---:|---:|
-| tng-nl01-vrije-dag-enterprise-corrected | 34 | 19 | 10 | 5 |
-| 2025-01-14 side project | 35 | 8 | 2 | 25 |
-| alle-mensen-zijn-sterfelijk | 15 | 9 | 4 | 2 |
-| durins-volk | 10 | 3 | 4 | 3 |
-| world-war-z | 11 | 9 | 0 | 2 |
+| Recording | Passage | Time (seconds) | Wording to check |
+|---|---|---|---|
+| Side project | E01 | 0.00–18.21 | … in een serie. Deze opname gaat vooral over … |
+| Side project | E02 | 33.77–45.11 | … van side projects. Dus ik heb altijd van … |
+| Side project | E03 | 43.61–52.73 | … van iets met de computer waarbij ik iets … |
+| Side project | E04 | 51.23–56.97 | … die side projects. Ik wil ook dat deze … |
+| Side project | E05 | 55.49–76.61 | … projects. Het project wat ik nu voor ogen … |
+| Side project | E06 | 75.11–82.49 | … keek dan altijd naar Star Trek The Next … |
+| Side project | E07 | 80.99–94.39 | … Jean-Luc Picard, hij begint dan iedere uitzending … |
+| Side project | E08 | 92.89–102.29 | … houdt hij zo een logboek van de kapitein … |
+| Side project | E09 | 100.79–112.07 | … audioberichten. Datzelfde wil ik nu ook gaan doen … |
+| Side project | E10 | 110.57–112.07 | … audioberichten. Datzelfde wil ik nu ook gaan doen … |
+| Side project | E11 | 110.57–117.65 | … over werk of zoals nu over een side … |
+| Side project | E12 | 116.15–125.81 | … een side-project. Dat was het oorspronkelijke idee … |
+| Side project | E13 | 132.89–142.19 | … dat ze vervolgens worden gelezen door een large … |
+| Side project | E14 | 140.69–142.19 | … dat ze vervolgens worden gelezen door een large … |
+| Side project | E15 | 140.69–149.75 | … large language model. Liefst een lokaal model. Zo … |
+| Side project | E16 | 148.25–157.01 | … dat ik steeds allemaal bijgeluiden maak. Of dat … |
+| Side project | E17 | 155.51–164.49 | … ik steeds allemaal bijgeluiden maak. Of dat ik … |
+| Side project | E18 | 162.99–171.13 | … onsamenhangend verhaal wordt. Ik wil dan een large … |
+| Side project | E19 | 169.63–177.85 | … er een mooi samenhangend verhaal van te maken … |
+| Side project | E20 | 176.35–184.93 | … idee voor dit side-project. Ik had al … |
+| Side project | E21 | 183.43–193.69 | … eenvoudig, want deze audio-opnames die worden opgeslagen … |
+| Side project | E22 | 192.19–200.61 | … een bepaalde folder. Die folder staat op iedere … |
+| Side project | E23 | 199.11–205.59 | … account. Dus die audio berichten verschijnen dan automatisch … |
+| Side project | E24 | 213.09–220.17 | … de verwerking. En je kan de verwerking ook … |
+| Side project | E25 | 218.67–230.09 | … je een soort outputfolder hebt, of een soort … |
+| Side project | E26 | 241.55–250.49 | … samenhangende, goedlopende tekst. Dit is het eerste experiment … |
+| Alle mensen zijn sterfelijk | E01 | 0.00–18.89 | … doek ging op. Régine boog en glimlachte; in … |
+| Alle mensen zijn sterfelijk | E02 | 17.83–39.75 | … de aarde en stuwde haar op naar de … |
+| Alle mensen zijn sterfelijk | E03 | 40.83–48.39 | … regisseur.
+"Voor een provinciezaal niet, nee."
+Ze liep … |
+| Alle mensen zijn sterfelijk | E04 | 47.83–75.43 | … de foyer. Ze wachtten haar met bloemen op … |
+| Alle mensen zijn sterfelijk | E05 | 77.83–104.63 | … van geestdrift: een vlammetje dat ze alleen voor … |
+| Alle mensen zijn sterfelijk | E06 | 103.93–109.31 | … kunt houden, dacht Régine driftig, alsof we niet … |
+| Alle mensen zijn sterfelijk | E07 | 107.83–113.55 | … houden, dacht Régine driftig, alsof we niet verschillen … |
+| Alle mensen zijn sterfelijk | E08 | 113.23–123.33 | … talent had als Régine en dat ze even … |
+| Alle mensen zijn sterfelijk | E09 | 125.43–132.59 | … was.
+Roger wachtte Régine op in haar kleedkamer … |
+| Alle mensen zijn sterfelijk | E10 | 131.87–139.31 | … zijn armen:
+"Je hebt nog nooit zo goed … |
+| Alle mensen zijn sterfelijk | E11 | 137.83–144.21 | … dergelijk publiek," zei Régine.
+"Je kreeg een geweldig … |
+| Alle mensen zijn sterfelijk | E12 | 150.81–154.55 | … applaus," zei Annie.
+"Pff, Florence kreeg evenveel applaus … |
+| Alle mensen zijn sterfelijk | E13 | 154.19–161.75 | … haar haren te kammen terwijl Annie haar jurk … |
+| Alle mensen zijn sterfelijk | E14 | 162.67–168.75 | … haar jurk loshaakte. Florence bekommert zich niet om … |
+| Alle mensen zijn sterfelijk | E15 | 172.91–177.39 | … smaak in haar keel |
+| Durins volk | E01 | 15.13–27.47 | … gebruikten voor de oudste van de Zeven Vaders … |
+| Durins volk | E02 | 25.97–45.23 | … grotten boven het Kheled-zâram in het oosten … |
+| Durins volk | E03 | 43.73–46.27 | … hij zijn woonplaats, waar naderhand de Mijnen van … |
+| Durins volk | E04 | 46.39–49.27 | … waren, beroemd uit liederen. Daar woonde hij zo … |
+| Durins volk | E05 | 50.15–53.99 | … lang dat hij wijd en zijd bekend stond … |
+| Durins volk | E06 | 52.49–55.97 | … bekend stond als Durin de Onsterfelijke. Maar tenslotte … |
+| Durins volk | E07 | 61.47–65.93 | … graftombe stond in Khazad-dûm; maar zijn lijn … |
+| Durins volk | E08 | 74.41–77.53 | … hij de naam Durin kreeg. De Dwergen beschouwden … |
+| Durins volk | E09 | 76.03–87.55 | … naam Durin kreeg. De Dwergen beschouwden hem werkelijk … |
+| Durins volk | E10 | 86.05–90.80 | … werkelijk als de Onsterfelijke die terugkeerde; want zij … |
+| World War Z | E01 | 5.15–14.43 | … CHINA
 
-## tng-nl01-vrije-dag-enterprise-corrected
-
-| Clip | Seconds | V2 edits | V3 edits |
-|---|---|---:|---:|
-| E01 | 0.00–15.33 | 1 | 0 |
-| E02 | 27.83–42.77 | 4 | 3 |
-| E03 | 41.27–55.27 | 2 | 1 |
-| E04 | 53.77–68.39 | 1 | 1 |
-| E05 | 66.89–85.63 | 2 | 1 |
-| E06 | 100.03–104.91 | 2 | 2 |
-| E07 | 118.85–122.93 | 1 | 0 |
-| E08 | 138.51–140.77 | 0 | 6 |
-| E09 | 139.27–141.53 | 1 | 6 |
-| E10 | 140.77–149.81 | 1 | 2 |
-| E11 | 161.29–166.77 | 1 | 1 |
-| E12 | 177.69–182.51 | 1 | 1 |
-| E13 | 181.75–188.41 | 0 | 1 |
-| E14 | 201.35–207.77 | 1 | 1 |
-| E15 | 219.85–223.71 | 4 | 0 |
-| E16 | 225.35–229.85 | 1 | 1 |
-| E17 | 241.15–247.65 | 3 | 0 |
-| E18 | 249.15–256.65 | 1 | 1 |
-| E19 | 265.15–272.15 | 1 | 0 |
-| E20 | 272.65–278.15 | 1 | 0 |
-| E21 | 293.65–298.15 | 1 | 0 |
-| E22 | 303.65–309.15 | 1 | 1 |
-| E23 | 307.65–315.15 | 0 | 2 |
-| E24 | 333.65–343.15 | 1 | 2 |
-| E25 | 356.65–365.15 | 3 | 0 |
-| E26 | 369.65–375.15 | 0 | 2 |
-| E27 | 384.65–390.15 | 1 | 1 |
-| E28 | 388.65–395.15 | 1 | 1 |
-| E29 | 396.65–400.15 | 1 | 1 |
-| E30 | 410.65–416.15 | 1 | 1 |
-| E31 | 435.65–440.15 | 1 | 1 |
-| E32 | 448.65–453.15 | 1 | 0 |
-| E33 | 456.65–461.15 | 0 | 2 |
-| E34 | 483.65–488.45 | 3 | 0 |
-
-## 2025-01-14 side project
-
-| Clip | Seconds | V2 edits | V3 edits |
-|---|---|---:|---:|
-| E01 | 0.00–18.21 | 0 | 1 |
-| E02 | 33.77–45.11 | 0 | 2 |
-| E03 | 43.61–52.73 | 0 | 1 |
-| E04 | 51.23–56.97 | 1 | 17 |
-| E05 | 55.49–76.61 | 0 | 3 |
-| E06 | 75.11–82.27 | 0 | 80 |
-| E07 | 80.77–82.27 | 0 | 79 |
-| E08 | 80.77–82.27 | 0 | 79 |
-| E09 | 80.77–82.33 | 0 | 79 |
-| E10 | 80.83–82.39 | 0 | 79 |
-| E11 | 80.89–82.49 | 0 | 79 |
-| E12 | 80.99–94.39 | 0 | 81 |
-| E13 | 92.89–102.29 | 0 | 1 |
-| E14 | 100.79–108.25 | 0 | 63 |
-| E15 | 106.75–112.07 | 0 | 63 |
-| E16 | 110.57–112.07 | 0 | 63 |
-| E17 | 110.57–112.07 | 0 | 63 |
-| E18 | 110.57–112.07 | 0 | 67 |
-| E19 | 110.57–117.65 | 1 | 2 |
-| E20 | 116.15–125.81 | 0 | 3 |
-| E21 | 132.89–141.65 | 0 | 20 |
-| E22 | 140.15–142.19 | 0 | 20 |
-| E23 | 140.69–142.19 | 0 | 20 |
-| E24 | 140.69–149.75 | 2 | 2 |
-| E25 | 148.25–157.01 | 1 | 0 |
-| E26 | 155.51–164.49 | 2 | 0 |
-| E27 | 162.99–171.13 | 0 | 2 |
-| E28 | 169.63–177.85 | 0 | 3 |
-| E29 | 176.35–184.93 | 1 | 1 |
-| E30 | 183.43–193.69 | 0 | 2 |
-| E31 | 192.19–200.61 | 1 | 1 |
-| E32 | 199.11–205.59 | 0 | 3 |
-| E33 | 213.09–220.17 | 1 | 1 |
-| E34 | 218.67–230.09 | 2 | 4 |
-| E35 | 241.55–250.49 | 2 | 1 |
-
-## alle-mensen-zijn-sterfelijk
-
-| Clip | Seconds | V2 edits | V3 edits |
-|---|---|---:|---:|
-| E01 | 0.00–18.89 | 2 | 2 |
-| E02 | 17.83–39.75 | 1 | 2 |
-| E03 | 40.83–48.39 | 1 | 0 |
-| E04 | 47.83–75.43 | 1 | 1 |
-| E05 | 77.83–104.63 | 3 | 1 |
-| E06 | 103.93–109.31 | 1 | 1 |
-| E07 | 107.83–113.55 | 0 | 2 |
-| E08 | 113.23–123.33 | 1 | 1 |
-| E09 | 125.43–132.59 | 1 | 1 |
-| E10 | 131.87–139.31 | 1 | 0 |
-| E11 | 137.83–144.21 | 1 | 1 |
-| E12 | 150.81–154.55 | 0 | 1 |
-| E13 | 154.19–161.75 | 1 | 0 |
-| E14 | 162.67–168.75 | 3 | 2 |
-| E15 | 172.91–177.39 | 1 | 0 |
-
-## durins-volk
-
-| Clip | Seconds | V2 edits | V3 edits |
-|---|---|---:|---:|
-| E01 | 15.13–27.47 | 0 | 1 |
-| E02 | 25.97–45.23 | 2 | 2 |
-| E03 | 43.73–46.27 | 0 | 3 |
-| E04 | 46.39–49.27 | 1 | 0 |
-| E05 | 50.15–53.99 | 2 | 1 |
-| E06 | 52.49–55.97 | 2 | 0 |
-| E07 | 61.47–65.93 | 1 | 2 |
-| E08 | 74.41–77.53 | 1 | 0 |
-| E09 | 76.03–87.55 | 0 | 26 |
-| E10 | 86.05–90.80 | 1 | 0 |
-
-## world-war-z
-
-| Clip | Seconds | V2 edits | V3 edits |
-|---|---|---:|---:|
-| E01 | 5.15–14.43 | 4 | 4 |
-| E02 | 13.47–17.81 | 2 | 2 |
-| E03 | 21.41–27.91 | 1 | 1 |
-| E04 | 32.59–41.63 | 2 | 2 |
-| E05 | 40.97–46.17 | 3 | 3 |
-| E06 | 85.21–86.81 | 0 | 5 |
-| E07 | 85.31–94.17 | 1 | 1 |
-| E08 | 111.55–116.15 | 2 | 2 |
-| E09 | 124.85–131.05 | 1 | 2 |
-| E10 | 145.15–154.07 | 2 | 3 |
-| E11 | 181.95–184.70 | 0 | 4 |
+[At its prewar height, this region boasted … |
+| World War Z | E02 | 13.47–17.81 | … there are barely fifty thousand. Reconstruction funds have … |
+| World War Z | E03 | 21.41–27.91 | … more densely populated coast. There is no central … |
+| World War Z | E04 | 32.59–41.63 | … has prevented any postwar outbreaks. The chairman of … |
+| World War Z | E05 | 40.97–46.17 | … that council is Kwang Jing-shu, a medical … |
+| World War Z | E06 | 85.21–86.81 | … began to rise, much of Dachang had been … |
+| World War Z | E07 | 85.31–94.17 | … much of Dachang had been disassembled, brick by … |
+| World War Z | E08 | 111.55–116.15 | … of them choose to name their newly constructed … |
+| World War Z | E09 | 124.85–131.05 | … know that this older New Dachang existed, so … |
+| World War Z | E10 | 145.15–154.07 | … that your Harley-Davidsons killed more young Chinese … |
+| World War Z | E11 | 181.95–184.70 | … send help at once |

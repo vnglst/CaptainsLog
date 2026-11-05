@@ -91,7 +91,9 @@ final class EvalReviewServer: @unchecked Sendable {
               !path.contains("\0"), !path.split(separator: "/").contains("..") else { return try jsonResponse(["error": "Invalid path"], status: 400) }
         if path == "/api/reviews", method == "GET" {
             var sessions: [EvalItem] = [["root": root.path, "url": "http://127.0.0.1:\(port)"]]
-            if let catalog, let registered = try? tools.json(catalog) as? [EvalItem] { sessions = registered }
+            let currentData = (try? tools.json(root.appendingPathComponent("recordings.json"))) as? EvalItem
+            if currentData?["selection"] as? String != "aligned-differences",
+               let catalog, let registered = try? tools.json(catalog) as? [EvalItem] { sessions = registered }
             var result: [EvalItem] = []
             for session in sessions {
                 guard let folder = session["root"] as? String, let url = session["url"] as? String,

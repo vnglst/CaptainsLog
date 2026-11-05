@@ -51,18 +51,33 @@ extension Tools {
                 }
             }
             a = min(a, ref.ranges.count - 1); b = max(a + 1, min(b, ref.ranges.count))
+            var clipStart = max(0, first.start - 0.75), clipEnd = min(duration, last.end + 0.75)
+            // Timestamped hallucination segments can collapse onto the same
+            // reference word. Review that audio once rather than repeating it.
+            if let previous = passages.last,
+               let oldA = previous["reference_start_word"] as? Int, let oldB = previous["reference_end_word"] as? Int,
+               let oldStart = previous["start_seconds"] as? Double, let oldEnd = previous["end_seconds"] as? Double,
+               ((oldA <= a && oldB >= b) || (a <= oldA && b >= oldB)),
+               clipStart <= oldEnd && clipEnd >= oldStart {
+                a = min(a, oldA); b = max(b, oldB)
+                clipStart = min(clipStart, oldStart); clipEnd = max(clipEnd, oldEnd)
+                passages.removeLast()
+            }
             let excerpt = ref.excerpt(a, b)
             let errors = try zip([transcript, comparison], scores).map { text, score in
                 try TranscriptionScore(reference: excerpt, hypothesis: ReviewText(text).excerpt(score.referenceBoundaries[a], score.referenceBoundaries[b])).errors
             }
             try require(errors.contains(where: { $0 > 0 }), "Generated discrepancy passage contains no text differences")
             let short = String(format: "E%02d", passages.count + 1)
-            let models = zip(["Whisper Large-v2", "Whisper Large-v3"], errors).filter { $0.1 > 0 }.map { $0.0 }.joined(separator: " and ")
+            let firstDifference = scores.flatMap(\.edits).map(\.referenceIndex).filter { $0 >= a && ($0 < b || $0 == ref.ranges.count && b == ref.ranges.count) }.min() ?? a
+            let titleStart = max(0, min(firstDifference, ref.ranges.count - 1) - 3)
+            let titleEnd = min(ref.ranges.count, max(titleStart + 8, firstDifference + 5))
+            let title = (titleStart > 0 ? "… " : "") + ref.excerpt(titleStart, titleEnd) + (titleEnd < ref.ranges.count ? " …" : "")
             passages.append(["id": identifier + "-" + short, "short_id": short,
-                "title": models + " differs", "start_seconds": max(0, first.start - 0.75), "end_seconds": min(duration, last.end + 0.75),
+                "title": title, "start_seconds": clipStart, "end_seconds": clipEnd,
                 "reference_start_word": a, "reference_end_word": b,
                 "model_errors": errors,
-                "check": "Selected from word differences against the reference: Large-v2 \(errors[0]) edit(s), Large-v3 \(errors[1]) edit(s). Listen to establish the spoken wording; model agreement is not audio verification. Clip times come from Large-v3 segments and include context padding."])
+                "check": "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context."])
         }
         for score in scores {
             for edit in score.edits {

@@ -76,8 +76,8 @@ including invented endings, contribute to selection across the whole recording.
 The prior completed checklists remain preserved as history.
 
 The pinned [two-model discrepancy review](transcribe/history/comparisons/2026-11-05-whisper-v2-v3/README.md)
-includes the corrected Dutch Large-v3 rerun and saved comparisons for the other
-recordings; these historical comparisons do not add active transcription evals.
+contains only the four remaining recordings. The completed Dutch TNG reviews and
+eval are unchanged and excluded from this new review; these historical comparisons do not add active transcription evals.
 
 Every saved run containing transcription prepares `review-app/`. Use
 `make evals-review RUN_DIR=...` to serve it locally, optionally adding
@@ -89,11 +89,11 @@ for whatever output is newest. Audio must match a pinned synthetic fixture.
 recordings. Definitions pin the audio and reference hashes; when a reference
 changes, the app falls back to the full recording until those offsets are updated.
 Additional recordings work without segment definitions, using their full audio.
-The passage list defaults to **Text differences only**. Matching passages remain
-available with **Show matching passages**, labelled for audio verification rather
-than as suspected errors. Differences in either saved transcript, unavailable
-transcripts and reported audio issues remain in the review queue. Text agreement
-does not verify the audio or change saved decisions.
+Only passages containing actual word differences appear in transcript review.
+There is no matching-text toggle. Passage titles quote the relevant wording;
+transcript columns retain model identities. A discrepancy review’s overview is
+limited to its own recordings, so older completed reviews are not re-added.
+Text agreement does not verify audio or change saved decisions.
 Text alignment is approximate and is not proof of the spoken wording.
 
 Decisions and exact wording persist in the run's `review-app/review-state.json`.

@@ -8,9 +8,6 @@ export function textStatus(passage) {
  const reference=JSON.stringify(words(passage.reference));
  return outputs.some(text=>JSON.stringify(words(text))!==reference)?'different':'matching';
 }
-export function reviewQueue(passages,reviews,differencesOnly) {
- return passages.filter(p=>!differencesOnly||textStatus(p)!=='matching'||reviews[p.id]?.audio_issue||reviews[p.id]?.accepted_take_id||reviews[p.id]?.retakes?.length);
-}
-export function passageTitle(passage) {
- return textStatus(passage)==='matching'?`${passage.short_id||'Passage'} · Matching text`:passage.title;
+export function reviewQueue(passages) {
+ return passages.filter(p=>textStatus(p)==='different');
 }

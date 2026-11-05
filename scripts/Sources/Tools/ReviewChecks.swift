@@ -10,6 +10,14 @@ extension Tools {
         try require(differencePassages(reference: clean, transcript: clean, comparison: clean, timing: timing, identifier: "test", duration: 6).isEmpty, "Clean transcripts generated error passages")
         let differences = try differencePassages(reference: clean, transcript: "one changed three four five six", comparison: clean, timing: timing, identifier: "test", duration: 6)
         try require(differences.count == 1 && differences[0]["reference_end_word"] as? Int == 2 && differences[0]["model_errors"] as? [Int] == [1, 0], "Difference outside the old checklist was not selected precisely")
+        try require(differences[0]["title"] as? String == clean, "Passage title must describe the wording, not the model")
+        let repeatedTiming: EvalItem = ["transcription": [
+            ["text": "one two", "offsets": ["from": 0, "to": 2000]],
+            ["text": "extra", "offsets": ["from": 2000, "to": 2100]],
+            ["text": "other", "offsets": ["from": 2000, "to": 2100]],
+            ["text": "three four five six", "offsets": ["from": 2100, "to": 6000]]]]
+        let repeated = try differencePassages(reference: clean, transcript: clean, comparison: "one two extra other three four five six", timing: repeatedTiming, identifier: "repeat", duration: 6)
+        try require(repeated.count == 1 && repeated[0]["title"] as? String == clean, "Collapsed reference words created duplicate or one-word review titles")
         let tail = try differencePassages(reference: clean, transcript: clean + " invented tail", comparison: clean, timing: timing, identifier: "test", duration: 6)
         try require(tail.count == 1 && tail[0]["reference_start_word"] as? Int == 4, "Final insertion was omitted")
         let secondTiming: EvalItem = ["transcription": [["text": "one two three changed five six", "offsets": ["from": 0, "to": 6000]]]]
@@ -35,6 +43,7 @@ extension Tools {
         let first = try recordings()[0], passages = first["passages"] as! [EvalItem]
         try require(first["app_transcript"] as? String == text && passages.count == 12, "Review must use the selected run's fresh transcript and stored fixture timings")
         try require(fm.fileExists(atPath: app.appendingPathComponent("app.js").path), "Review app resource missing")
+        try require(!read(app.appendingPathComponent("index.html")).contains("onlyDifferences"), "Review still exposes a text-differences toggle")
         let audio = app.appendingPathComponent(first["audio"] as! String)
         try require(hash(audio) == hash(eval.file(item, "input")), "Review audio copy changed")
         let server = try EvalReviewServer(root: app, port: 0); defer { server.stop() }
@@ -134,6 +143,11 @@ extension Tools {
         let generated = generatedRecordings[0]["passages"] as! [EvalItem]
         try require(generated.count == 1 && generated[0]["short_id"] as? String == "E01", "Difference mode reused the fixed checklist")
         try require(Data(contentsOf: stateFile) == savedBytes, "Derived difference review changed completed owner decisions")
+        let derivedServer = try EvalReviewServer(root: generatedApp, port: 0, catalog: catalog)
+        defer { derivedServer.stop() }
+        let derivedOverview = try derivedServer.response(method: "GET", path: "/api/reviews", headers: ["host": "127.0.0.1:\(derivedServer.port)"])
+        let scopedReviews = (try JSONSerialization.jsonObject(with: derivedOverview.body) as! EvalItem)["reviews"] as! [EvalItem]
+        try require(scopedReviews.count == 1 && scopedReviews[0]["current"] as? Bool == true, "Discrepancy overview re-added unrelated historical reviews")
         _ = try prepareEvalReview(derived)
         try copy(expected, eval.file(derivedItem, "output"))
         try write(comparisonText, read(expected))

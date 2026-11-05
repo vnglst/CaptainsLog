@@ -1,10 +1,10 @@
-# Whisper discrepancy review · 2026-11-05
+# Transcript review · remaining recordings
 
-The review passages are selected from complete word alignments of both Whisper models against each recording’s reference. A passage must contain a difference in at least one model. Model-specific and shared differences are labelled separately. Matching context inside an error clip is retained for listening; error-free clips are not selected.
+The review passages are selected from complete word alignments of both Whisper models against each recording’s reference. A passage must contain a difference in at least one model. Passage titles quote the wording to check; model identities remain available above the transcripts. Matching context inside an error clip is retained for listening; error-free clips are not selected.
 
-Large-v2 native outputs are preserved from the earlier runs. Large-v3 uses the same audio hash for every pair; corrected Dutch Large-v3 was run anew on 2026-11-05. Comparison runtime/model identity, output/audio hashes, timestamps and logs are retained under `comparison/`; native metadata is under `provenance/`. Times come from Large-v3 segments with 0.75-second context padding and are approximate.
+This review contains Side project, Alle mensen zijn sterfelijk, Durins volk and World War Z only. TNG is excluded from its manifest and overview; its completed reviews and active eval are preserved. Large-v2 native outputs and matching-audio Large-v3 comparisons are preserved from the earlier runs. Comparison runtime/model identity, output/audio hashes, timestamps and logs are retained under `comparison/`; native metadata is under `provenance/`. Times come from Large-v3 segments with 0.75-second context padding and are approximate.
 
-Only the corrected Dutch reference is owner-verified. The other four recordings remain excluded from active transcription evals; this review does not promote their references. Existing review rounds, owner decisions, takes and active baseline remain unchanged.
+These four recordings remain excluded from active transcription evals; this review does not promote their references. Existing review rounds, owner decisions, takes and active baseline remain unchanged.
 
 Rebuild or open the discrepancy review without inference:
 
