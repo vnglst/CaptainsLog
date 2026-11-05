@@ -203,6 +203,40 @@
       "status": "matches",
       "updated_at": "2026-11-05T19:43:07Z",
       "words": ""
+    },
+    "world-war-z-E06@before-sentence-expansion": {
+      "accepted_take_id": null,
+      "audio_issue": false,
+      "context": {
+        "audio_sha256": "6f419da2feeb93596b095aa544dd70ad8c8cdef2f0816f2c458dedb0914740d6",
+        "end_seconds": 89.03,
+        "reference_end_word": 186,
+        "reference_sha256": "c235024887c363a203d4e2728f63a8f85b1f4f415b67f32d87019c4b816d5812",
+        "reference_start_word": 177,
+        "start_seconds": 83.3
+      },
+      "notes": "",
+      "retakes": [],
+      "status": "misaligned",
+      "updated_at": "2026-11-05T20:02:03Z",
+      "words": ""
+    },
+    "world-war-z-E08@before-sentence-expansion": {
+      "accepted_take_id": null,
+      "audio_issue": false,
+      "context": {
+        "audio_sha256": "6f419da2feeb93596b095aa544dd70ad8c8cdef2f0816f2c458dedb0914740d6",
+        "end_seconds": 116.32,
+        "reference_end_word": 245,
+        "reference_sha256": "c235024887c363a203d4e2728f63a8f85b1f4f415b67f32d87019c4b816d5812",
+        "reference_start_word": 236,
+        "start_seconds": 110.93
+      },
+      "notes": "",
+      "retakes": [],
+      "status": "misaligned",
+      "updated_at": "2026-11-05T20:02:23Z",
+      "words": ""
     }
   },
   "reviews": {
@@ -767,6 +801,23 @@
       "updated_at": "2026-11-05T19:40:47Z",
       "words": ""
     },
+    "world-war-z-E06": {
+      "accepted_take_id": null,
+      "audio_issue": false,
+      "context": {
+        "audio_sha256": "6f419da2feeb93596b095aa544dd70ad8c8cdef2f0816f2c458dedb0914740d6",
+        "end_seconds": 93.88,
+        "reference_end_word": 195,
+        "reference_sha256": "c235024887c363a203d4e2728f63a8f85b1f4f415b67f32d87019c4b816d5812",
+        "reference_start_word": 168,
+        "start_seconds": 78.7
+      },
+      "notes": "",
+      "retakes": [],
+      "status": "misaligned",
+      "updated_at": "2026-11-05T20:02:03Z",
+      "words": ""
+    },
     "world-war-z-E07": {
       "accepted_take_id": null,
       "audio_issue": false,
@@ -783,6 +834,23 @@
       "status": "corrected",
       "updated_at": "2026-11-05T19:42:01Z",
       "words": "of Dachang has been disassembled, brick by brick, then rebuilt on higher ground"
+    },
+    "world-war-z-E08": {
+      "accepted_take_id": null,
+      "audio_issue": false,
+      "context": {
+        "audio_sha256": "6f419da2feeb93596b095aa544dd70ad8c8cdef2f0816f2c458dedb0914740d6",
+        "end_seconds": 130.61,
+        "reference_end_word": 266,
+        "reference_sha256": "c235024887c363a203d4e2728f63a8f85b1f4f415b67f32d87019c4b816d5812",
+        "reference_start_word": 236,
+        "start_seconds": 110.93
+      },
+      "notes": "",
+      "retakes": [],
+      "status": "misaligned",
+      "updated_at": "2026-11-05T20:02:23Z",
+      "words": ""
     },
     "world-war-z-E09": {
       "accepted_take_id": null,
@@ -816,6 +884,23 @@
       "retakes": [],
       "status": "matches",
       "updated_at": "2026-11-05T19:43:07Z",
+      "words": ""
+    },
+    "world-war-z-E11": {
+      "accepted_take_id": null,
+      "audio_issue": false,
+      "context": {
+        "audio_sha256": "6f419da2feeb93596b095aa544dd70ad8c8cdef2f0816f2c458dedb0914740d6",
+        "end_seconds": 183.63,
+        "reference_end_word": 410,
+        "reference_sha256": "c235024887c363a203d4e2728f63a8f85b1f4f415b67f32d87019c4b816d5812",
+        "reference_start_word": 405,
+        "start_seconds": 179.29
+      },
+      "notes": "",
+      "retakes": [],
+      "status": "matches",
+      "updated_at": "2026-11-05T20:02:40Z",
       "words": ""
     }
   },

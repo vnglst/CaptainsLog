@@ -1521,29 +1521,29 @@
           "title" : "Kwang Jing-shu: name spelling"
         },
         {
-          "app_transcript" : "waters began to rise, much of Dachang has been",
+          "app_transcript" : "When the Three Gorges Dam was completed, and reservoir waters began to rise, much of Dachang has been disassembled, brick by brick, then rebuilt on higher ground",
           "audio" : "assets/audio/3.m4a",
           "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
-          "clip_end" : 89.030000000000001,
-          "clip_start" : 83.299999999999997,
+          "clip_end" : 93.879999999999995,
+          "clip_start" : 78.700000000000003,
           "context" : {
             "audio_sha256" : "6f419da2feeb93596b095aa544dd70ad8c8cdef2f0816f2c458dedb0914740d6",
-            "end_seconds" : 89.030000000000001,
-            "reference_end_word" : 186,
+            "end_seconds" : 93.879999999999995,
+            "reference_end_word" : 195,
             "reference_sha256" : "c235024887c363a203d4e2728f63a8f85b1f4f415b67f32d87019c4b816d5812",
-            "reference_start_word" : 177,
-            "start_seconds" : 83.299999999999997
+            "reference_start_word" : 168,
+            "start_seconds" : 78.700000000000003
           },
-          "end_seconds" : 89.030000000000001,
+          "end_seconds" : 93.879999999999995,
           "id" : "world-war-z-E06",
           "model_errors" : [
             1,
             6
           ],
-          "reference" : "waters began to rise, much of Dachang had been",
-          "second_transcript" : "waters began to rise,\nmuch of Dachang was destroyed.\nMuch of Dachang has been",
+          "reference" : "When the Three Gorges Dam was completed, and reservoir waters began to rise, much of Dachang had been disassembled, brick by brick, then rebuilt on higher ground",
+          "second_transcript" : "When the Three Gorges Dam was completed and reservoir waters began to rise,\nmuch of Dachang was destroyed.\nMuch of Dachang has been disassembled, brick by brick, then rebuilt on higher ground",
           "short_id" : "E06",
-          "start_seconds" : 83.299999999999997,
+          "start_seconds" : 78.700000000000003,
           "title" : "Destruction of Dachang: possible repeated or added words"
         },
         {
@@ -1573,27 +1573,27 @@
           "title" : "Dismantling Dachang: “had” / “has”"
         },
         {
-          "app_transcript" : "Maybe that is why some of them choose the name to",
+          "app_transcript" : "Maybe that is why some of them choose the name to name their newly constructed hamlet 'New Dachang', to preserve some connection to their heritage, even if it was only in name",
           "audio" : "assets/audio/3.m4a",
           "check" : "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
-          "clip_end" : 116.31999999999999,
+          "clip_end" : 130.61000000000001,
           "clip_start" : 110.93000000000001,
           "context" : {
             "audio_sha256" : "6f419da2feeb93596b095aa544dd70ad8c8cdef2f0816f2c458dedb0914740d6",
-            "end_seconds" : 116.31999999999999,
-            "reference_end_word" : 245,
+            "end_seconds" : 130.61000000000001,
+            "reference_end_word" : 266,
             "reference_sha256" : "c235024887c363a203d4e2728f63a8f85b1f4f415b67f32d87019c4b816d5812",
             "reference_start_word" : 236,
             "start_seconds" : 110.93000000000001
           },
-          "end_seconds" : 116.31999999999999,
+          "end_seconds" : 130.61000000000001,
           "id" : "world-war-z-E08",
           "model_errors" : [
             2,
             2
           ],
-          "reference" : "Maybe that is why some of them choose to",
-          "second_transcript" : "Maybe that is why some of them choose the name,\nto",
+          "reference" : "Maybe that is why some of them choose to name their newly constructed hamlet \"New Dachang\" to preserve some connection to their heritage, even if it was only in name",
+          "second_transcript" : "Maybe that is why some of them choose the name,\nto name their newly constructed hamlet New Dachang,\nto preserve some connection to their heritage, even if it was only in name",
           "short_id" : "E08",
           "start_seconds" : 110.93000000000001,
           "title" : "Naming the new homes: possible repeated “name”"

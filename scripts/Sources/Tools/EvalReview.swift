@@ -144,6 +144,19 @@ extension Tools {
                 let timingURL = run.appendingPathComponent(source)
                 try requireRunFile(timingURL)
                 try require(navigation["timing_sha256"] as? String == hash(timingURL), "Navigation timing hash mismatch: " + name)
+                if let ranges = navigation["reference_ranges"] as? [String: [Int]] {
+                    for index in definitions.indices {
+                        guard let id = definitions[index]["id"] as? String, let range = ranges[id] else { continue }
+                        guard range.count == 2,
+                              let start = definitions[index]["reference_start_word"] as? Int,
+                              let end = definitions[index]["reference_end_word"] as? Int,
+                              range[0] >= 0, range[0] <= start, range[1] >= end, range[1] <= ref.ranges.count else {
+                            throw ToolFailure("Invalid expanded navigation range: " + id)
+                        }
+                        definitions[index]["reference_start_word"] = range[0]
+                        definitions[index]["reference_end_word"] = range[1]
+                    }
+                }
                 definitions = try retimeReviewPassages(definitions, reference: reference,
                     timing: json(timingURL) as? EvalItem ?? [:], duration: duration)
             }
