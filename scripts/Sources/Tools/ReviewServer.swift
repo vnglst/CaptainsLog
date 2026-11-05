@@ -92,8 +92,13 @@ final class EvalReviewServer: @unchecked Sendable {
         if path == "/api/reviews", method == "GET" {
             var sessions: [EvalItem] = [["root": root.path, "url": "http://127.0.0.1:\(port)"]]
             let currentData = (try? tools.json(root.appendingPathComponent("recordings.json"))) as? EvalItem
-            if currentData?["selection"] as? String != "aligned-differences",
-               let catalog, let registered = try? tools.json(catalog) as? [EvalItem] { sessions = registered }
+            let discrepancyReview = currentData?["selection"] as? String == "aligned-differences"
+            if let catalog, let registered = try? tools.json(catalog) as? [EvalItem] {
+                sessions = registered
+                if !sessions.contains(where: { $0["root"] as? String == root.path }) {
+                    sessions.append(["root": root.path, "url": "http://127.0.0.1:\(port)"])
+                }
+            }
             var result: [EvalItem] = []
             for session in sessions {
                 guard let folder = session["root"] as? String, let url = session["url"] as? String,
@@ -131,6 +136,18 @@ final class EvalReviewServer: @unchecked Sendable {
                         if let id = passage["id"] as? String, let next = (followup["passages"] as? [EvalItem] ?? []).first(where: { $0["short_id"] as? String == passage["short_id"] as? String }), let nextID = next["id"] as? String { mapping[id] = nextID }
                     }
                     result[index]["followup"] = ["url": followup["url"] ?? "", "recording_id": followup["recording_id"] ?? "", "next_passage": followup["next_passage"] ?? "", "passages": mapping]
+                }
+            }
+            if discrepancyReview {
+                let currentIDs = Set(result.filter { $0["current"] as? Bool == true }.compactMap { $0["recording_id"] as? String })
+                let visible = result.filter { entry in
+                    entry["current"] as? Bool == true || (entry["complete"] as? Bool == true && !currentIDs.contains(entry["recording_id"] as? String ?? ""))
+                }
+                // Preserve completed history as passive cards, without duplicating
+                // an earlier round when its completed follow-up is also present.
+                result = visible.filter { entry in
+                    guard entry["current"] as? Bool != true, let followup = entry["followup"] as? EvalItem else { return true }
+                    return !visible.contains { $0["complete"] as? Bool == true && $0["recording_id"] as? String == followup["recording_id"] as? String && $0["url"] as? String == followup["url"] as? String }
                 }
             }
             for index in result.indices { for key in ["saved", "exports", "passages", "carried_candidates"] { result[index].removeValue(forKey: key) } }

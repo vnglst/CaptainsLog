@@ -148,6 +148,18 @@ extension Tools {
         let derivedOverview = try derivedServer.response(method: "GET", path: "/api/reviews", headers: ["host": "127.0.0.1:\(derivedServer.port)"])
         let scopedReviews = (try JSONSerialization.jsonObject(with: derivedOverview.body) as! EvalItem)["reviews"] as! [EvalItem]
         try require(scopedReviews.count == 1 && scopedReviews[0]["current"] as? Bool == true, "Discrepancy overview re-added unrelated historical reviews")
+        let siblingData = try Data(contentsOf: sibling.appendingPathComponent("recordings.json"))
+        let completedContext = passages[0]["context"]!
+        try json(sibling.appendingPathComponent("recordings.json"), ["recordings": [["id": "completed-history", "title": "Completed recording", "passages": [["id": "completed-passage", "context": completedContext]]]]])
+        let historyState = sibling.appendingPathComponent("review-state.json")
+        try json(historyState, ["reviews": ["completed-passage": ["status": "matches", "context": completedContext]]])
+        let historyBytes = try Data(contentsOf: historyState)
+        let withCompleted = try derivedServer.response(method: "GET", path: "/api/reviews", headers: ["host": "127.0.0.1:\(derivedServer.port)"])
+        let completedEntries = (try JSONSerialization.jsonObject(with: withCompleted.body) as! EvalItem)["reviews"] as! [EvalItem]
+        try require(completedEntries.count == 2 && completedEntries.contains { $0["recording_id"] as? String == "completed-history" && $0["complete"] as? Bool == true }, "Overview removed completed history instead of keeping its completed state")
+        try require(Data(contentsOf: historyState) == historyBytes, "Overview rewrote the completed review")
+        try siblingData.write(to: sibling.appendingPathComponent("recordings.json"))
+        try fm.removeItem(at: historyState)
         _ = try prepareEvalReview(derived)
         try copy(expected, eval.file(derivedItem, "output"))
         try write(comparisonText, read(expected))

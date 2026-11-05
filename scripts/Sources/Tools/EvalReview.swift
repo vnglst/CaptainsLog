@@ -169,7 +169,7 @@ extension Tools {
         return result
     }
     func evalsReview(_ args: [String]) throws {
-        var run: URL?, comparison: URL?, port: UInt16 = 8777, prepareOnly = false, differencesOnly = false, i = 0
+        var run: URL?, comparison: URL?, port: UInt16 = 8777, prepareOnly = false, differencesOnly = false, serveSaved = false, i = 0
         func value() throws -> String { i += 1; try require(i < args.count, "Missing review option value", status: 2); return args[i] }
         while i < args.count {
             switch args[i] {
@@ -177,14 +177,23 @@ extension Tools {
             case "--comparison-run": comparison = path(try value()).standardizedFileURL
             case "--port": guard let parsed = UInt16(try value()), parsed > 0 else { throw ToolFailure("Invalid review port", status: 2) }; port = parsed
             case "--differences": differencesOnly = true
+            case "--serve-saved": serveSaved = true
             case "--prepare-only": prepareOnly = true
-            case "--help", "-h": print("Usage: make evals-review RUN_DIR=RUN [COMPARISON_RUN=RUN_OR_TRANSCRIPT_DIR] [PORT=8777] [ARGS='--differences --prepare-only']"); return
+            case "--help", "-h": print("Usage: make evals-review RUN_DIR=RUN [COMPARISON_RUN=RUN_OR_TRANSCRIPT_DIR] [PORT=8777] [ARGS='--differences --prepare-only|--serve-saved']"); return
             default: throw ToolFailure("Unknown review option: \(args[i])", status: 2)
             }
             i += 1
         }
         try require(run != nil, "Specify a saved evaluation RUN_DIR", status: 2)
-        guard let app = try prepareEvalReview(run!, comparison: comparison, differencesOnly: differencesOnly) else { throw ToolFailure("No transcription cases in the selected evaluation run", status: 2) }
+        let app: URL
+        if serveSaved {
+            try require(!prepareOnly && !differencesOnly && comparison == nil, "--serve-saved only opens existing review files; do not combine it with preparation options", status: 2)
+            app = run!.appendingPathComponent("review-app")
+            try require(fm.fileExists(atPath: app.appendingPathComponent("recordings.json").path) && fm.fileExists(atPath: app.appendingPathComponent("index.html").path), "No saved review app exists", status: 2)
+        } else {
+            guard let prepared = try prepareEvalReview(run!, comparison: comparison, differencesOnly: differencesOnly) else { throw ToolFailure("No transcription cases in the selected evaluation run", status: 2) }
+            app = prepared
+        }
         if prepareOnly { print("Prepared review app: \(app.path)"); return }
         let catalog = path("tmp/eval-review-sessions.json")
         let server = try EvalReviewServer(root: app, port: port, catalog: catalog)
