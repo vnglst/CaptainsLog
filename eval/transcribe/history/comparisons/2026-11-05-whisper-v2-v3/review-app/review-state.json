@@ -34,57 +34,6 @@
       "updated_at": "2026-11-05T19:25:13Z",
       "words": "see notes"
     },
-    "side-project-E02@before-navigation-timing-fix": {
-      "accepted_take_id": null,
-      "audio_issue": false,
-      "context": {
-        "audio_sha256": "018807fe80637d269afa19e839f15b0b78925a3a65391fdb09fb666da183af85",
-        "end_seconds": 45.11,
-        "reference_end_word": 64,
-        "reference_sha256": "ee97b8485fedf9f38508952527cecb41e8a22b33717faa4936ed16b81cfe7e44",
-        "reference_start_word": 47,
-        "start_seconds": 33.77
-      },
-      "notes": "",
-      "retakes": [],
-      "status": "corrected",
-      "updated_at": "2026-11-05T19:36:07Z",
-      "words": "side projects. Ik heb altijd van dit soort projectjes die ik maak op basis, meestal iets"
-    },
-    "side-project-E03@before-navigation-timing-fix": {
-      "accepted_take_id": null,
-      "audio_issue": false,
-      "context": {
-        "audio_sha256": "018807fe80637d269afa19e839f15b0b78925a3a65391fdb09fb666da183af85",
-        "end_seconds": 52.73,
-        "reference_end_word": 83,
-        "reference_sha256": "ee97b8485fedf9f38508952527cecb41e8a22b33717faa4936ed16b81cfe7e44",
-        "reference_start_word": 64,
-        "start_seconds": 43.61
-      },
-      "notes": "",
-      "retakes": [],
-      "status": "matches",
-      "updated_at": "2026-11-05T19:36:32Z",
-      "words": ""
-    },
-    "side-project-E04@before-navigation-timing-fix": {
-      "accepted_take_id": null,
-      "audio_issue": false,
-      "context": {
-        "audio_sha256": "018807fe80637d269afa19e839f15b0b78925a3a65391fdb09fb666da183af85",
-        "end_seconds": 56.97,
-        "reference_end_word": 108,
-        "reference_sha256": "ee97b8485fedf9f38508952527cecb41e8a22b33717faa4936ed16b81cfe7e44",
-        "reference_start_word": 83,
-        "start_seconds": 51.23
-      },
-      "notes": "audio is much shorter than text, doesn't contain disputed word",
-      "retakes": [],
-      "status": "corrected",
-      "updated_at": "2026-11-05T19:37:43Z",
-      "words": "see notes"
-    },
     "world-war-z-E01@before-navigation-timing-fix": {
       "accepted_take_id": null,
       "audio_issue": false,
@@ -646,74 +595,6 @@
       "retakes": [],
       "status": "matches",
       "updated_at": "2026-11-05T19:39:32Z",
-      "words": ""
-    },
-    "side-project-E01": {
-      "accepted_take_id": null,
-      "audio_issue": false,
-      "context": {
-        "audio_sha256": "018807fe80637d269afa19e839f15b0b78925a3a65391fdb09fb666da183af85",
-        "end_seconds": 18.21,
-        "reference_end_word": 18,
-        "reference_sha256": "ee97b8485fedf9f38508952527cecb41e8a22b33717faa4936ed16b81cfe7e44",
-        "reference_start_word": 0,
-        "start_seconds": 0
-      },
-      "notes": "",
-      "retakes": [],
-      "status": "corrected",
-      "updated_at": "2026-11-05T19:35:42Z",
-      "words": "Het is vandaag 14 januari, half acht. Dit is mijn eerste opname in een serie en deze opname gaat"
-    },
-    "side-project-E02": {
-      "accepted_take_id": null,
-      "audio_issue": false,
-      "context": {
-        "audio_sha256": "018807fe80637d269afa19e839f15b0b78925a3a65391fdb09fb666da183af85",
-        "end_seconds": 45.11,
-        "reference_end_word": 64,
-        "reference_sha256": "ee97b8485fedf9f38508952527cecb41e8a22b33717faa4936ed16b81cfe7e44",
-        "reference_start_word": 47,
-        "start_seconds": 33.84
-      },
-      "notes": "",
-      "retakes": [],
-      "status": "corrected",
-      "updated_at": "2026-11-05T19:36:07Z",
-      "words": "side projects. Ik heb altijd van dit soort projectjes die ik maak op basis, meestal iets"
-    },
-    "side-project-E03": {
-      "accepted_take_id": null,
-      "audio_issue": false,
-      "context": {
-        "audio_sha256": "018807fe80637d269afa19e839f15b0b78925a3a65391fdb09fb666da183af85",
-        "end_seconds": 52.71,
-        "reference_end_word": 83,
-        "reference_sha256": "ee97b8485fedf9f38508952527cecb41e8a22b33717faa4936ed16b81cfe7e44",
-        "reference_start_word": 64,
-        "start_seconds": 43.68
-      },
-      "notes": "",
-      "retakes": [],
-      "status": "matches",
-      "updated_at": "2026-11-05T19:36:32Z",
-      "words": ""
-    },
-    "side-project-E04": {
-      "accepted_take_id": null,
-      "audio_issue": false,
-      "context": {
-        "audio_sha256": "018807fe80637d269afa19e839f15b0b78925a3a65391fdb09fb666da183af85",
-        "end_seconds": 64.98,
-        "reference_end_word": 108,
-        "reference_sha256": "ee97b8485fedf9f38508952527cecb41e8a22b33717faa4936ed16b81cfe7e44",
-        "reference_start_word": 83,
-        "start_seconds": 51.21
-      },
-      "notes": "audio is much shorter than text, doesn't contain disputed word",
-      "retakes": [],
-      "status": "misaligned",
-      "updated_at": "2026-11-05T19:37:43Z",
       "words": ""
     },
     "world-war-z-E01": {

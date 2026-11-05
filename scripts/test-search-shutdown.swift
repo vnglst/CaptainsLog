@@ -27,26 +27,26 @@ func sha256(_ url: URL) throws -> String {
 }
 let embeddingHash = try sha256(embedding)
 require(embeddingHash == "e011debc1208e31bf7b6aebee2d9fc8bd2ca11694a77ed66ac9d0c9d0a877c93", "E5 model checksum must match the pinned model")
-let header = URL(fileURLWithPath: "eval/enrich/expected/2025-01-14 side project.md")
-let body = URL(fileURLWithPath: "eval/cleanup/expected/2025-01-14 side project.md")
+let header = URL(fileURLWithPath: "eval/pipeline/tng-nl01/enriched.md")
+let body = URL(fileURLWithPath: "eval/pipeline/tng-nl01/cleaned.md")
 require(fm.fileExists(atPath: header.path) && fm.fileExists(atPath: body.path), "Run from the repository root; use only eval fixtures")
 let data = root.appendingPathComponent("data")
-let logs = data.appendingPathComponent("logs/side-project")
+let logs = data.appendingPathComponent("logs/personal")
 try fm.createDirectory(at: logs, withIntermediateDirectories: true)
 let stem = "2025-01-14-0730"
-let slug = "2025-01-14-side-project-star-trek-voice-log"
+let slug = "2025-01-14-enterprise-vrije-dag-sensorcontrole"
 for relative in [".pipeline/01-transcribed", ".pipeline/02-logs", ".pipeline/03-category", ".pipeline/04-rename"] {
     try fm.createDirectory(at: data.appendingPathComponent(relative), withIntermediateDirectories: true)
 }
-try fm.copyItem(at: URL(fileURLWithPath: "eval/transcribe/history/expected/2025-01-14 side project.md"),
+try fm.copyItem(at: URL(fileURLWithPath: "eval/transcribe/expected/tng-nl01-vrije-dag-enterprise-corrected.md"),
                 to: data.appendingPathComponent(".pipeline/01-transcribed/\(stem).md"))
 try fm.copyItem(at: body, to: data.appendingPathComponent(".pipeline/02-logs/\(stem).md"))
 try fm.copyItem(at: body, to: data.appendingPathComponent(".pipeline/04-rename/\(slug).md"))
-try JSONSerialization.data(withJSONObject: ["sourceStem": stem, "category": "side_project"], options: [.sortedKeys])
+try JSONSerialization.data(withJSONObject: ["sourceStem": stem, "category": "personal"], options: [.sortedKeys])
     .write(to: data.appendingPathComponent(".pipeline/03-category/\(stem).json"))
 try slug.write(to: data.appendingPathComponent(".pipeline/04-rename/\(stem).slug.txt"), atomically: true, encoding: .utf8)
 try (String(contentsOf: header, encoding: .utf8) + "\n" + String(contentsOf: body, encoding: .utf8))
-    .write(to: logs.appendingPathComponent("2025-01-14-side-project-star-trek-voice-log.md"), atomically: true, encoding: .utf8)
+    .write(to: logs.appendingPathComponent(slug + ".md"), atomically: true, encoding: .utf8)
 let config: [String: Any] = ["schemaVersion": 1, "dataDir": data.path, "whisperModel": "openai_whisper-large-v2", "whisperModelFolder": whisper, "qwenModelId": "Qwen3.5-9B-Q4_K_M", "qwenModelFolder": qwen, "automaticUpdates": false, "automaticUpdateChecks": false]
 let configURL = root.appendingPathComponent("config.json")
 try JSONSerialization.data(withJSONObject: config, options: [.prettyPrinted, .sortedKeys]).write(to: configURL)

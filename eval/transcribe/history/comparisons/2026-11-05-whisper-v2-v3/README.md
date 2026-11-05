@@ -4,8 +4,7 @@ The review passages are selected from complete word alignments of both Whisper m
 
 This review contains the completed comparisons for Alle mensen zijn sterfelijk,
 Durins volk and World War Z. TNG appears as a completed recording in the overview.
-Side project audio and decisions are retained as historical evidence. The four
-reviewed recordings are active transcription cases. Comparison model identity,
+The four reviewed recordings are active transcription cases. Comparison model identity,
 timestamps and logs are under `comparison/`, with native metadata under
 `provenance/`.
 

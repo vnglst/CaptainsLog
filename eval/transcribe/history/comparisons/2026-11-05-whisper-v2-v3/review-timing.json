@@ -1,10 +1,4 @@
 {
-  "2025-01-14 side project": {
-    "source": "timing/side-project.json",
-    "timing_sha256": "a3750fcfb507e6c47fe06e8e0348a0bfd078206d8bc4da24bdd18291127ebe93",
-    "audio_sha256": "018807fe80637d269afa19e839f15b0b78925a3a65391fdb09fb666da183af85",
-    "reference_sha256": "ee97b8485fedf9f38508952527cecb41e8a22b33717faa4936ed16b81cfe7e44"
-  },
   "world-war-z": {
     "source": "timing/world-war-z.json",
     "timing_sha256": "fc60cb093c220ed4d04aa418312744e5d8134550392130c6123569f8e01414fb",

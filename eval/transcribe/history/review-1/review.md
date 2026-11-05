@@ -7,7 +7,6 @@ Mechanical success does not establish semantic quality. Read every selected case
 - [categorize/tng-nl01-vrije-dag-enterprise](review/pipeline/categorize/tng-nl01-vrije-dag-enterprise/review.md): PASS
 - [filename/tng-nl01-vrije-dag-enterprise](review/pipeline/filename/tng-nl01-vrije-dag-enterprise/review.md): PASS
 - [enrich/tng-nl01-vrije-dag-enterprise](review/pipeline/enrich/tng-nl01-vrije-dag-enterprise/review.md): PASS
-- [transcribe/2025-01-14 side project](review/suites/transcribe/2025-01-14%20side%20project/review.md): PASS
 - [transcribe/alle-mensen-zijn-sterfelijk](review/suites/transcribe/alle-mensen-zijn-sterfelijk/review.md): PASS
 - [transcribe/durins-volk](review/suites/transcribe/durins-volk/review.md): PASS
 - [transcribe/world-war-z](review/suites/transcribe/world-war-z/review.md): PASS

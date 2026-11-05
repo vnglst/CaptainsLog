@@ -41,7 +41,7 @@ extension Tools {
             let transcript = try read(root.appendingPathComponent(expected["transcribe"]!)), cleaned = try read(root.appendingPathComponent(expected["cleanup"]!))
             let formatterDate = DateFormatter(); formatterDate.dateFormat = "yyyy-MM-dd"
             let date = settings["date"] as! String == "today" ? formatterDate.string(from: Date()) : settings["date"] as! String
-            let slug = stem == "2025-01-14 side project" ? "2025-01-14-side-project-star-trek-voice-log" : date + "-enterprise-vrije-dag-sensorcontrole"
+            let slug = date + "-enterprise-vrije-dag-sensorcontrole"
             var frontmatter = try expectedFrontmatter(root.appendingPathComponent(expected["enrich"]!)); frontmatter["date"] = date
             let audio = data.appendingPathComponent("audio/\(stem).m4a"); try copy(input, audio)
             let formatter = DateFormatter(); formatter.dateFormat = "HH:mm"; frontmatter["recording_time"] = formatter.string(from: try fm.attributesOfItem(atPath: audio.path)[.creationDate] as! Date)
@@ -110,7 +110,10 @@ extension Tools {
         let (suite, suiteResult) = try runFixture("suite", ["--suites"]); savedRuns.append(suite); try assert(suiteResult.status == 0, "suite fixture failed: \(suiteResult.output)")
         try require(fm.fileExists(atPath: suite.appendingPathComponent("review-app/recordings.json").path), "Audio suites must prepare their listening app automatically")
         let manifest = try json(suite.appendingPathComponent("manifest.json")) as! [EvalItem]; try assert(manifest.count == 21, "full suite dropped cases")
-        let calls = try read(dir.appendingPathComponent("calls")).split(separator: "\n").map(String.init); try assert(calls.filter { $0 != "enrich" } == ["transcribe", "eval-batch"], "suite did not batch text after sequential audio")
+        let calls = try read(dir.appendingPathComponent("calls")).split(separator: "\n").map(String.init)
+        let audioCases = manifest.filter { eval.string($0, "stage") == "transcribe" }.count
+        try assert(calls.filter { $0 != "enrich" } == Array(repeating: "transcribe", count: audioCases) + ["eval-batch"],
+                   "suite did not batch text after sequential audio")
         let metadata = try json(suite.appendingPathComponent("metadata.json")) as! EvalItem
         try assert(((metadata["models"] as? EvalItem)?["qwen"] as? EvalItem)?["sha256"] as? String == hash(eval.file(item, "input")), "actual model identity missing")
         try assert(metadata["status"] as? String == "passed-mechanical-checks" && (metadata["fixture_hashes"] as? EvalItem)?.count == 42, "suite metadata incomplete")
@@ -125,7 +128,7 @@ extension Tools {
         try write(eval.file(regression, "input"), read(eval.file(regression, "input")) + "Changed fixture."); try assert(eval.validate(regression).hasPrefix("FAIL:"), "changed saved regression source accepted"); try copy(path("eval/enrich/input/04_fictional_name_loop.md"), eval.file(regression, "input"))
         let (focused, focusedResult) = try runFixture("focused", ["--stage", "filename", "--case", "04_short_entry", "--baseline", suite.path], ["CAPTAINS_LOG_EVAL_WHISPER_FOLDER": "/missing-whisper"]); savedRuns.append(focused); try assert(focusedResult.status == 0, "focused fixture required unrelated model: \(focusedResult.output)"); try assert((try json(focused.appendingPathComponent("manifest.json")) as? [EvalItem])?.count == 1, "focused run included other cases")
         response = try cli(["--stage", "filename"], env.merging(["CAPTAINS_LOG_EVAL_RUN_DIR": focused.path]) { _, n in n }); try assert(response.status == 2 && response.output.contains("already exists"), "run overwrite accepted")
-        let (enrich, enrichResult) = try runFixture("enrich-only", ["--enrich"], ["CAPTAINS_LOG_EVAL_WHISPER_FOLDER": "/missing-whisper"]); savedRuns.append(enrich); try assert(enrichResult.status == 0 && (try json(enrich.appendingPathComponent("manifest.json")) as? [EvalItem])?.count == 5, "enrichment alias failed: \(enrichResult.output)")
+        let (enrich, enrichResult) = try runFixture("enrich-only", ["--enrich"], ["CAPTAINS_LOG_EVAL_WHISPER_FOLDER": "/missing-whisper"]); savedRuns.append(enrich); try assert(enrichResult.status == 0 && (try json(enrich.appendingPathComponent("manifest.json")) as? [EvalItem])?.count == 4, "enrichment alias failed: \(enrichResult.output)")
         let (failed, failedResult) = try runFixture("missing-model", ["--stage", "filename", "--case", "04_short_entry"], ["CAPTAINS_LOG_EVAL_QWEN_FOLDER": "/missing-qwen"]); try assert(failedResult.status == 1 && (try json(failed.appendingPathComponent("metadata.json")) as? EvalItem)?["status"] as? String == "failed", "missing model failure was not retained")
         let (pipeline, pipelineResult) = try runFixture("pipeline", ["--pipeline"]); try assert(pipelineResult.status == 0, "pipeline fixture failed: \(pipelineResult.output)"); try assert((try json(pipeline.appendingPathComponent("manifest.json")) as? [EvalItem])?.count == 5, "pipeline review did not include every stage"); try assert(read(pipeline.appendingPathComponent("before-resume.sha256")) == read(pipeline.appendingPathComponent("after-resume.sha256")), "resume immutability check lost")
         try assert((try json(pipeline.appendingPathComponent("metadata.json")) as? EvalItem)?["combined_metadata"] == nil, "default pipeline must not claim combined generation")

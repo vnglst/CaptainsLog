@@ -54,19 +54,6 @@ On the personal side, my daughter started kindergarten this week. Big milestone.
 
 <example>
 <input>
-Het is vandaag 14 januari, half acht. Dit is mijn eerste opname in een serie. Deze opname gaat vooral over het project zelf. Ik ga steeds audioberichten opnemen waarin ik over een bepaald onderwerp iets vertel. In dit specifieke geval is het het onderwerp van side-projects.
-
-Het project dat ik nu voor ogen heb is eigenlijk geïnspireerd op Star Trek. Ik keek altijd naar Star Trek The Next Generation. Daarin begint Captain Jean-Luc Picard iedere uitzending met 'Star Date' zo en zo zoveel, waar ze zijn en wat er gebeurt.
-
-Alleen wat ik eraan toe wil voegen is dat deze audioberichten automatisch worden opgepikt op mijn computer. Ze worden geconverteerd naar tekst door bijvoorbeeld het Whisper-model.
-</input>
-<output>
-2025-01-14-side-project-star-trek-voice-log.md
-</output>
-</example>
-
-<example>
-<input>
 Busy week. On Monday I gave a presentation about our AI roadmap to the executive team. They were impressed and approved the budget for Q3. Tuesday was all about hiring — we interviewed four candidates for the senior backend role. Wednesday I paired with Jonas on a tricky caching bug that's been causing timeouts in production. Thursday I started sketching out the architecture for the new event-driven pipeline.
 </input>
 <output>

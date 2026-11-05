@@ -45,32 +45,6 @@ Ik heb ook met Marie gepraat. Zij zei hetzelfde — we moeten eerst focussen op 
 </output>
 </example>
 
-<example>
-<input>
-Het project is geïnspireerd op Star Trek. En daarin begint Captain Jean-Luc Picard iedere uitzending met 'Star Date'. En hij houdt zo een logboek bij. En dat doet hij met audioberichten. Datzelfde wil ik nu ook gaan doen. En ik vertel over iets wat me bezighoudt. Dus dat is het idee.
-</input>
-<output>
-Het project is geïnspireerd op Star Trek. Daarin begint Captain Jean-Luc Picard iedere uitzending met 'Star Date'. Hij houdt zo een logboek bij. Dat doet hij met audioberichten. Datzelfde wil ik nu ook gaan doen. Ik vertel over iets wat me bezighoudt. Dat is het idee.
-</output>
-</example>
-
-<example>
-<input>
-Dus dat er een vollendje komt, maar daarin al mijn audioberichten over side projects. Het project is geïnspireerd op Star Trek. En daarin heeft Captain Jean-Luc Picard, hij begint dan iedere uitzending met 'Star Date' zo en zo zoveel.
-</input>
-<output>
-Er komt een foldertje waarin al mijn audioberichten over side projects staan. Het project is geïnspireerd op Star Trek. Daarin begint Captain Jean-Luc Picard iedere uitzending met 'Star Date' zo en zo zoveel.
-</output>
-</example>
-
-<example>
-<input>
-Ze worden gelezen door een large language model. Een liefdelokaal model. Zo slim mogelijk natuurlijk.
-</input>
-<output>
-Ze worden gelezen door een large language model. Liefst een lokaal model. Zo slim mogelijk natuurlijk.
-</output>
-</example>
 </examples>
 
 <context>

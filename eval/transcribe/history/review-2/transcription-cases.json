@@ -1,19 +1,4 @@
 {
-  "2025-01-14 side project": {
-    "language": "Dutch",
-    "reference_status": "model-assisted",
-    "audio_sha256": "018807fe80637d269afa19e839f15b0b78925a3a65391fdb09fb666da183af85",
-    "reference_sha256": "ee97b8485fedf9f38508952527cecb41e8a22b33717faa4936ed16b81cfe7e44",
-    "reference_check": {
-      "date": "2026-10-29",
-      "model": "Whisper Large-v3 q5_0",
-      "repository": "ggerganov/whisper.cpp",
-      "revision": "5359861c739e955e79d9a303bcbc70fb988958b1",
-      "model_sha256": "d75795ecff3f83b5faa89d1900604ad8c780abd5739fae406de19f23ecd98ad1",
-      "runtime_sha256": "e23dcdf55fdff2dfc085902b00cac93aba09e0373422e40ddd69d7c67d725f16",
-      "owner_audio_verification": "pending"
-    }
-  },
   "alle-mensen-zijn-sterfelijk": {
     "language": "Dutch",
     "reference_status": "model-assisted",

@@ -43,7 +43,6 @@ inputs, raw output and an aligned WER report. WER measures word edits; semantic
 review still matters, especially for hallucinations and changed meaning.
 
 Historical audio, references and review evidence live in `transcribe/history/`.
-Side project is archived because its unstructured audio is unsuitable for the transcription suite.
 
 The two preserved review rounds in `transcribe/history/review-1/` and `review-2/`
 contain raw outputs, measurements, owner decisions, replacement takes, timing maps

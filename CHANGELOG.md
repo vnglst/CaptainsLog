@@ -20,11 +20,13 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
+- Remove an unstructured recording and its derived examples from the evaluation fixtures.
+
 - Organize evaluation results under each stage’s history folder and retain transcription review rounds and not-reviewed recordings outside active selection. Distinguish the reviewed audio-only baseline from deferred end-to-end evaluation.
 
 ### Added
 
-- Add the owner-reviewed Alle mensen zijn sterfelijk, Durins volk, and World War Z recordings to the transcription suite. Archive Side project outside the review queue.
+- Add the owner-reviewed Alle mensen zijn sterfelijk, Durins volk, and World War Z recordings to the transcription suite.
 
 - Resume the latest transcript review at its saved passage with `make evals-review` and open the browser automatically.
 

@@ -133,39 +133,6 @@ summary: "A mixed week with FinanceHub launch preparations and security fixes do
 </output>
 </example>
 
-<example>
-<input>
-Het is vandaag 14 januari, half acht. Dit is mijn eerste opname in een serie. Deze opname gaat vooral over het project zelf. Ik ga steeds audioberichten opnemen waarin ik over een bepaald onderwerp iets vertel. In dit specifieke geval is het het onderwerp van side-projects. Ik heb altijd van dit soort projectjes die ik maak op basis van iets met de computer, waarbij ik iets programmeer op basis van een idee dat ik heb. Dit is een van die side-projects.
-
-Het project dat ik nu voor ogen heb is eigenlijk geïnspireerd op Star Trek. Ik keek altijd naar Star Trek The Next Generation. Daarin begint Captain Jean-Luc Picard iedere uitzending met 'Star Date' zo en zo zoveel, waar ze zijn en wat er gebeurt.
-
-Alleen wat ik eraan toe wil voegen is dat deze audioberichten automatisch worden opgepikt op mijn computer. Ze worden geconverteerd naar tekst door bijvoorbeeld het Whisper-model. Vervolgens worden ze gelezen door een large language model, liefst een lokaal model.
-</input>
-<output>
-date: "2025-01-14"
-recording_time: "{recording_time}"
-language: Dutch
-categories:
-  - side-project
-tags:
-  - side-projects
-  - audio
-  - artificial-intelligence
-  - whisper
-  - large-language-model
-  - star-trek
-  - automation
-persons: []
-projects: []
-companies: []
-entities:
-  - "Star Trek: The Next Generation"
-  - Captain Jean-Luc Picard
-  - Whisper
-  - large language model
-summary: "The author begins a new series of audio recordings focused on side projects, inspired by the Captain's log format from Star Trek: The Next Generation. The goal is to automate the processing of these voice memos by converting them to text using the Whisper model and refining the narrative with a local large language model."
-</output>
-</example>
 </examples>
 
 <context>

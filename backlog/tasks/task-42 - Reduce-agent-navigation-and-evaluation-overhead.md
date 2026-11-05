@@ -4,8 +4,8 @@ title: Reduce agent navigation and evaluation overhead
 status: Complete
 assignee:
   - '@codex'
-created_date: '2026-10-07 14:38'
-updated_date: '2026-10-08 17:11'
+created_date: 2026-10-07 14:38
+updated_date: '2026-11-05T20:23:00Z'
 labels: []
 dependencies: []
 type: enhancement
@@ -67,7 +67,6 @@ bash scripts/run-evals.sh --stage filename --list
 
 # Focused iteration; quote stems with spaces and omit their extension.
 bash scripts/run-evals.sh --stage filename --case 04_short_entry
-bash scripts/run-evals.sh --stage cleanup --case '2025-01-14 side project'
 bash scripts/run-evals.sh --stage enrich
 
 # Required full gates remain separate and sequential.
