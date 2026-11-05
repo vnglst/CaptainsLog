@@ -1,0 +1,99 @@
+{
+  "id": "durins-volk",
+  "title": "Durins volk",
+  "audio_sha256": "423df075a1d2efcdc74966cd24e5b09f02cc9012855715a1cb2fd12b0aae6e9b",
+  "reference_sha256": "841d8ff3922985a94f1b92bd37684c75e7880d8972b72dc4977732ae6a0c4a3f",
+  "timing_source": "Owner-reviewed passage boundaries from the 2026-11-05 two-model comparison.",
+  "passages": [
+    {
+      "id": "durins-volk-E01",
+      "short_id": "E01",
+      "title": "Zeven Vaders: “oudste” / “oudsten”",
+      "start_seconds": 15.13,
+      "end_seconds": 27.47,
+      "check": "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
+      "reference_start_word": 35,
+      "reference_end_word": 62
+    },
+    {
+      "id": "durins-volk-E02",
+      "short_id": "E02",
+      "title": "Kheled-zâram: name spelling",
+      "start_seconds": 25.97,
+      "end_seconds": 45.23,
+      "check": "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
+      "reference_start_word": 62,
+      "reference_end_word": 101
+    },
+    {
+      "id": "durins-volk-E03",
+      "short_id": "E03",
+      "title": "Woonplaats en de Mijnen: “waar naderhand” / “waarnaar de hand”",
+      "start_seconds": 43.73,
+      "end_seconds": 46.27,
+      "check": "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
+      "reference_start_word": 101,
+      "reference_end_word": 103
+    },
+    {
+      "id": "durins-volk-E04",
+      "short_id": "E04",
+      "title": "Bekend uit liederen: “liederen” / “lideren”",
+      "start_seconds": 46.39,
+      "end_seconds": 49.27,
+      "check": "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
+      "reference_start_word": 108,
+      "reference_end_word": 111
+    },
+    {
+      "id": "durins-volk-E05",
+      "short_id": "E05",
+      "title": "Wijd en zijd: spelling or pronunciation",
+      "start_seconds": 50.15,
+      "end_seconds": 53.99,
+      "check": "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
+      "reference_start_word": 116,
+      "reference_end_word": 123
+    },
+    {
+      "id": "durins-volk-E06",
+      "short_id": "E06",
+      "title": "Durin de Onsterfelijke: merged name and article",
+      "start_seconds": 52.49,
+      "end_seconds": 55.97,
+      "check": "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
+      "reference_start_word": 123,
+      "reference_end_word": 127
+    },
+    {
+      "id": "durins-volk-E07",
+      "short_id": "E07",
+      "title": "Khazad-dûm: name spelling",
+      "start_seconds": 61.47,
+      "end_seconds": 65.93,
+      "check": "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
+      "reference_start_word": 141,
+      "reference_end_word": 145
+    },
+    {
+      "id": "durins-volk-E08",
+      "short_id": "E08",
+      "title": "De naam Durin: spelling of the name",
+      "start_seconds": 74.41,
+      "end_seconds": 77.53,
+      "check": "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
+      "reference_start_word": 170,
+      "reference_end_word": 174
+    },
+    {
+      "id": "durins-volk-E09",
+      "short_id": "E09",
+      "title": "Overtuigingen van de Dwergen: possible repeated passage",
+      "start_seconds": 76.03,
+      "end_seconds": 90.8,
+      "check": "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
+      "reference_start_word": 174,
+      "reference_end_word": 200
+    }
+  ]
+}

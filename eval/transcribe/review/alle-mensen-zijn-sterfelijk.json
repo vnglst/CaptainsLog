@@ -1,0 +1,159 @@
+{
+  "id": "alle-mensen",
+  "title": "Alle mensen zijn sterfelijk",
+  "audio_sha256": "f8a977f21028036d9b88496bb87da3dcfcc0ad731732b41f29d782da4fd992ca",
+  "reference_sha256": "68240648e0c0fd312608cb1f13adf81f952dc3c0fbeebba9daaa48990150dc6f",
+  "timing_source": "Owner-reviewed passage boundaries from the 2026-11-05 two-model comparison.",
+  "passages": [
+    {
+      "id": "alle-mensen-E01",
+      "short_id": "E01",
+      "title": "Régine op het toneel: name spelling",
+      "start_seconds": 0,
+      "end_seconds": 18.89,
+      "check": "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
+      "reference_start_word": 0,
+      "reference_end_word": 40
+    },
+    {
+      "id": "alle-mensen-E02",
+      "short_id": "E02",
+      "title": "Publiek in de zaal: “stuwde” / “stuurde” and “hare” / “haren”",
+      "start_seconds": 17.83,
+      "end_seconds": 39.75,
+      "check": "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
+      "reference_start_word": 40,
+      "reference_end_word": 92
+    },
+    {
+      "id": "alle-mensen-E03",
+      "short_id": "E03",
+      "title": "Provinciezaal: possible extra “s”",
+      "start_seconds": 40.83,
+      "end_seconds": 48.39,
+      "check": "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
+      "reference_start_word": 92,
+      "reference_end_word": 107
+    },
+    {
+      "id": "alle-mensen-E04",
+      "short_id": "E04",
+      "title": "Bloemen in de foyer: “wachtten” / “wachtte”",
+      "start_seconds": 47.83,
+      "end_seconds": 75.43,
+      "check": "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
+      "reference_start_word": 107,
+      "reference_end_word": 169
+    },
+    {
+      "id": "alle-mensen-E05",
+      "short_id": "E05",
+      "title": "Vlammetje en gesprekken: “vlammetje” / “vlammertje”",
+      "start_seconds": 77.83,
+      "end_seconds": 104.63,
+      "check": "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
+      "reference_start_word": 175,
+      "reference_end_word": 232
+    },
+    {
+      "id": "alle-mensen-E06",
+      "short_id": "E06",
+      "title": "Gedachten van Régine: name spelling",
+      "start_seconds": 103.93,
+      "end_seconds": 109.31,
+      "check": "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
+      "reference_start_word": 232,
+      "reference_end_word": 242
+    },
+    {
+      "id": "alle-mensen-E07",
+      "short_id": "E07",
+      "title": "Régine denkt driftig: possibly omitted “driftig”",
+      "start_seconds": 107.83,
+      "end_seconds": 113.55,
+      "check": "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
+      "reference_start_word": 242,
+      "reference_end_word": 251
+    },
+    {
+      "id": "alle-mensen-E08",
+      "short_id": "E08",
+      "title": "Vergelijking met Régine: name spelling",
+      "start_seconds": 113.23,
+      "end_seconds": 123.33,
+      "check": "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
+      "reference_start_word": 251,
+      "reference_end_word": 271
+    },
+    {
+      "id": "alle-mensen-E09",
+      "short_id": "E09",
+      "title": "Roger in de kleedkamer: “Régine” / “Regina”",
+      "start_seconds": 125.43,
+      "end_seconds": 132.59,
+      "check": "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
+      "reference_start_word": 271,
+      "reference_end_word": 284
+    },
+    {
+      "id": "alle-mensen-E10",
+      "short_id": "E10",
+      "title": "Rogers compliment: “hebt” / “bent”",
+      "start_seconds": 131.87,
+      "end_seconds": 139.31,
+      "check": "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
+      "reference_start_word": 284,
+      "reference_end_word": 295
+    },
+    {
+      "id": "alle-mensen-E11",
+      "short_id": "E11",
+      "title": "Reactie op het publiek: “Régine” / “Regina”",
+      "start_seconds": 137.83,
+      "end_seconds": 144.21,
+      "check": "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
+      "reference_start_word": 295,
+      "reference_end_word": 303
+    },
+    {
+      "id": "alle-mensen-E12",
+      "short_id": "E12",
+      "title": "Applaus voor Florence: possibly omitted “Pff”",
+      "start_seconds": 150.81,
+      "end_seconds": 154.55,
+      "check": "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
+      "reference_start_word": 310,
+      "reference_end_word": 317
+    },
+    {
+      "id": "alle-mensen-E13",
+      "short_id": "E13",
+      "title": "Haren kammen: “kammen” / “kammer”",
+      "start_seconds": 154.19,
+      "end_seconds": 161.75,
+      "check": "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
+      "reference_start_word": 317,
+      "reference_end_word": 334
+    },
+    {
+      "id": "alle-mensen-E14",
+      "short_id": "E14",
+      "title": "Florence en applaus: possible restart and changed words",
+      "start_seconds": 162.67,
+      "end_seconds": 168.75,
+      "check": "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
+      "reference_start_word": 334,
+      "reference_end_word": 349
+    },
+    {
+      "id": "alle-mensen-E15",
+      "short_id": "E15",
+      "title": "Bittere smaak: possible invented ending",
+      "start_seconds": 172.91,
+      "end_seconds": 177.39,
+      "check": "Listen to the highlighted wording and confirm the exact words spoken. The clip includes a little surrounding audio for context.",
+      "reference_start_word": 360,
+      "reference_end_word": 369
+    }
+  ]
+}

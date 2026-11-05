@@ -4,7 +4,7 @@ title: Use Word Error Rates (WER) for evaluating transcription
 status: Verify
 assignee: []
 created_date: 2026-10-27 18:29
-updated_date: '2026-11-05T19:50:00Z'
+updated_date: '2026-11-05T20:06:00Z'
 labels: []
 dependencies: []
 ordinal: 68000

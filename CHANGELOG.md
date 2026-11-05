@@ -24,6 +24,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Added
 
+- Add the owner-reviewed Alle mensen zijn sterfelijk and Durins volk recordings to the transcription suite.
+
 - Resume the latest transcript review at its saved passage with `make evals-review` and open the browser automatically.
 
 - Add transcription WER scoring and reusable local audio/text review, including replacement recording and consolidation, completed-review status and carried-forward checks. Use the reviewed Dutch recording as the single active transcription eval and in the development demo, with a preserved fresh WER baseline and semantic error review.

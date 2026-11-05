@@ -234,8 +234,8 @@ samplers. Compile before inference; never edit a running evaluator or start anot
 model job concurrently. The [TNG reference folder](eval/tng-reference/README.md)
 contains three personal log scripts aboard the Enterprise, each about ten
 minutes long, in English, Dutch and German, with paired expected outputs.
-The corrected, owner-reviewed Dutch recording is the only active transcription case.
-Its preserved baseline measures transcription only; end-to-end evaluation and
+The transcription suite includes three owner-reviewed Dutch recordings.
+The preserved Enterprise baseline measures transcription only. End-to-end evaluation and
 verification of downstream references are deferred to TASK-82. Other recordings
 and earlier review rounds are preserved under `eval/transcribe/history/`; English
 and German TNG audio are still to be recorded by the owner.

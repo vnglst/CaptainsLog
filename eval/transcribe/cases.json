@@ -10,5 +10,27 @@
       "owner_audio_verification": "Accepted by owner after two review rounds, 2026-10-30",
       "derived_from": "tng-nl01-vrije-dag-enterprise"
     }
+  },
+  "alle-mensen-zijn-sterfelijk": {
+    "language": "Dutch",
+    "reference_status": "audio-reviewed",
+    "audio_sha256": "f8a977f21028036d9b88496bb87da3dcfcc0ad731732b41f29d782da4fd992ca",
+    "reference_sha256": "68240648e0c0fd312608cb1f13adf81f952dc3c0fbeebba9daaa48990150dc6f",
+    "reference_check": {
+      "date": "2026-11-05",
+      "source": "Owner listening review of both Whisper comparisons",
+      "owner_audio_verification": "Owner confirmed the reference for all 15 discrepancy passages"
+    }
+  },
+  "durins-volk": {
+    "language": "Dutch",
+    "reference_status": "audio-reviewed",
+    "audio_sha256": "423df075a1d2efcdc74966cd24e5b09f02cc9012855715a1cb2fd12b0aae6e9b",
+    "reference_sha256": "841d8ff3922985a94f1b92bd37684c75e7880d8972b72dc4977732ae6a0c4a3f",
+    "reference_check": {
+      "date": "2026-11-05",
+      "source": "Owner listening review of both Whisper comparisons",
+      "owner_audio_verification": "Owner confirmed the reference for all 9 discrepancy passages"
+    }
   }
 }

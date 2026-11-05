@@ -3,7 +3,7 @@
 Active stages are `transcribe`, `cleanup`, `categorize`, `filename` and `enrich`.
 Transcription inputs live in `transcribe/audio/`; text-stage inputs live in each
 stage's `input/`. Expected outputs are semantic references, not the only valid
-wording. The reviewed Dutch TNG recording is the single active transcription fixture.
+wording. The transcription suite includes three owner-reviewed Dutch recordings.
 End-to-end evaluation remains separate follow-up work (TASK-82).
 
 Use the runner from the repository root:
@@ -28,21 +28,21 @@ run separately from release preparation.
 
 ## Transcription
 
-The only active case is **Een vrije dag op de Enterprise**, the corrected Dutch
-recording accepted by the owner after two listening rounds on 2026-10-30.
+The active cases are **Een vrije dag op de Enterprise**, **Alle mensen zijn
+sterfelijk**, and **Durins volk**. The latter two were accepted after listening
+to the discrepancy passages in the two-model comparison on 2026-11-05.
 
-- Audio: `transcribe/audio/tng-nl01-vrije-dag-enterprise-corrected.m4a`
+- Audio: matching M4A files in `transcribe/audio/`.
 - Verbatim reference: matching file in `transcribe/expected/`.
 - Manifest: `transcribe/cases.json` pins both hashes and `audio-reviewed` status.
 - Passage timing and provenance: matching files in `transcribe/review/`.
 
-Run `make evals STAGE=transcribe` for the single WER case. Full pipeline evaluation is separate follow-up work (TASK-82). Every run snapshots
+Run `make evals STAGE=transcribe` to score all three WER cases. Full pipeline evaluation is separate follow-up work (TASK-82). Every run snapshots
 inputs, raw output and an aligned WER report. WER measures word edits; semantic
 review still matters, especially for hallucinations and changed meaning.
 
-Earlier recordings are **not active transcription evaluations**. Their audio,
-references and timing definitions live in `transcribe/history/` for later review
-and existing synthetic regression checks. Text-stage fixtures remain independent.
+Historical audio, references and review evidence live in `transcribe/history/`.
+Side project and World War Z remain in the listening review queue.
 
 The two preserved review rounds in `transcribe/history/review-1/` and `review-2/`
 contain raw outputs, measurements, owner decisions, replacement takes, timing maps
