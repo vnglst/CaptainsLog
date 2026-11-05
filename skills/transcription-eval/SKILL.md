@@ -39,6 +39,15 @@ Keep the older completed checklists and their owner decisions as history; genera
 a separate comparison run rather than replacing their passage contexts. Times
 are approximate model segment boundaries with listening context.
 
+## Review item names
+
+For all review work, name each item **Topic or phrase: specific issue to check**,
+for example **Vrachtschip: possible stumble or omitted words**. Use meaningful
+subjects and concrete uncertainties, not model names or truncated text snippets.
+Keep completed reviews unchanged. Pinned `review-titles.json` entries apply only
+to matching audio, reference, transcript hashes and passage ranges; regenerate
+names when those inputs change.
+
 ## Stage review
 
 Read the expected text and original uncleaned generated transcript word by word. Never substitute cleaned output for raw transcription.

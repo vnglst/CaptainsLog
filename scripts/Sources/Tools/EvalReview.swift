@@ -116,6 +116,22 @@ extension Tools {
                 try require(read(comparisonText) == second, "Comparison timing source does not match the selected output")
                 definitions = try differencePassages(reference: reference, transcript: transcript, comparison: second,
                     timing: json(timingURL) as? EvalItem ?? [:], identifier: identifier, duration: duration)
+                let titlesURL = run.appendingPathComponent("review-titles.json")
+                if fm.fileExists(atPath: titlesURL.path),
+                   let titleRecords = try json(titlesURL) as? [String: EvalItem], let record = titleRecords[name],
+                   record["audio_sha256"] as? String == audioHash, record["reference_sha256"] as? String == referenceHash,
+                   record["output_sha256"] as? String == (try hash(output)), record["comparison_sha256"] as? String == identity["output_sha256"] as? String,
+                   let titles = record["passages"] as? [String: EvalItem] {
+                    for index in definitions.indices {
+                        guard let id = definitions[index]["id"] as? String, let entry = titles[id],
+                              entry["reference_start_word"] as? Int == definitions[index]["reference_start_word"] as? Int,
+                              entry["reference_end_word"] as? Int == definitions[index]["reference_end_word"] as? Int,
+                              let title = entry["title"] as? String else { continue }
+                        let parts = title.split(separator: ":", maxSplits: 1)
+                        try require(parts.count == 2 && parts.allSatisfy { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }, "Review titles must name the topic and the issue to check")
+                        definitions[index]["title"] = title
+                    }
+                }
                 comparisonLabel = "Whisper Large-v3 · timestamped comparison"
             }
             if definitions.isEmpty && !generateDifferences { definitions = [["id": identifier + "-full", "short_id": "Full", "title": "Full recording", "start_seconds": 0.0, "end_seconds": duration, "reference_start_word": 0, "reference_end_word": ref.ranges.count, "check": "Listen to the recording and verify the reference against the spoken words."]] }

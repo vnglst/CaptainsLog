@@ -47,7 +47,7 @@
           "second_transcript" : "Het is vandaag 14 januari, half acht. Dit is mijn eerste opname in een serie en deze opname gaat",
           "short_id" : "E01",
           "start_seconds" : 0,
-          "title" : "… in een serie. Deze opname gaat vooral over …"
+          "title" : "Eerste opname: possible extra conjunction"
         },
         {
           "app_transcript" : "side projects. Dus ik heb altijd van dit soort projectjes die ik maak op basis van iets",
@@ -73,7 +73,7 @@
           "second_transcript" : "side projects. Ik heb altijd van dit soort projectjes die ik maak op basis, meestal iets",
           "short_id" : "E02",
           "start_seconds" : 33.770000000000003,
-          "title" : "… van side projects. Dus ik heb altijd van …"
+          "title" : "Side projects: “van” / “meestal” and missing “dus”"
         },
         {
           "app_transcript" : "met de computer waarbij ik iets programmeer. Op basis van een idee dat ik heb. Dit is een van",
@@ -99,7 +99,7 @@
           "second_transcript" : "met computer, waarbij ik iets programmeer op basis van een idee dat ik heb. Dit is een van",
           "short_id" : "E03",
           "start_seconds" : 43.609999999999999,
-          "title" : "… van iets met de computer waarbij ik iets …"
+          "title" : "Met de computer: possibly omitted “de”"
         },
         {
           "app_transcript" : "die side projects. Ik wil ook dat deze daaronder gecategoriseerd wordt. Dus dat er een vollendje komt, maar daarin al mijn audioberichten over side projects",
@@ -125,7 +125,7 @@
           "second_transcript" : "die side projects, dus ik wil ook dat deze daaronder gaat",
           "short_id" : "E04",
           "start_seconds" : 51.229999999999997,
-          "title" : "… die side projects. Ik wil ook dat deze …"
+          "title" : "Categorisering en foldertje: possible omissions or stumble"
         },
         {
           "app_transcript" : "Het project wat ik nu voor ogen heb is eigenlijk geïnspireerd op Star Trek. Ik keek dan altijd naar",
@@ -151,7 +151,7 @@
           "second_transcript" : "Het project dat ik nu voor ogen heb is eigenlijk geïnspireerd op Star Trek. Ik heet dan altijd",
           "short_id" : "E05",
           "start_seconds" : 55.490000000000002,
-          "title" : "… projects. Het project wat ik nu voor ogen …"
+          "title" : "Projectidee en Star Trek: “wat” / “dat” and “keek” / “heet”"
         },
         {
           "app_transcript" : "naar Star Trek The Next Generation. En daarin heeft Captain Jean-Luc Picard, hij",
@@ -177,7 +177,7 @@
           "second_transcript" : "Star Trek: The Next Generation. En daarin heeft Captain Jean-Luc Picard, dat is de onderscheidende\nontwikkelaar van Star Trek. Dat is een ontwikkelaar ontwikkelaar van Star Trek: The Next Generation.\nDat is een ontwikkelaar ontwikkelaar van Star Trek. Dat is een ontwikkelaar ontwikkelaar van Star Trek.\nDat is een ontwikkelaar ontwikkelaar van Star Trek. Dat is een ontwikkelaar ontwikkelaar van Star Trek.\nDat is een ontwikkelaar ontwikkelaar van Star Trek. Dat is een ontwikkelaar ontwikkelaar van Star Trek.\nDat is een ontwikkelaar ontwikkelaar van Star Trek.\nCaptain Jean-Luc Picard",
           "short_id" : "E06",
           "start_seconds" : 75.109999999999999,
-          "title" : "… keek dan altijd naar Star Trek The Next …"
+          "title" : "Star Trek: possible added or repeated words"
         },
         {
           "app_transcript" : "hij begint dan iedere uitzending met 'Star Date' zo en zo zoveel",
@@ -203,7 +203,7 @@
           "second_transcript" : "dat is de onderscheidende\nontwikkelaar van Star Trek. Dat is een ontwikkelaar ontwikkelaar van Star Trek: The Next Generation.\nDat is een ontwikkelaar ontwikkelaar van Star Trek. Dat is een ontwikkelaar ontwikkelaar van Star Trek.\nDat is een ontwikkelaar ontwikkelaar van Star Trek. Dat is een ontwikkelaar ontwikkelaar van Star Trek.\nDat is een ontwikkelaar ontwikkelaar van Star Trek. Dat is een ontwikkelaar ontwikkelaar van Star Trek.\nDat is een ontwikkelaar ontwikkelaar van Star Trek.\nCaptain Jean-Luc Picard begint dan iedere uitzending met stardate zo en zo zoveel",
           "short_id" : "E07",
           "start_seconds" : 80.989999999999995,
-          "title" : "… Jean-Luc Picard, hij begint dan iedere uitzending …"
+          "title" : "Jean-Luc Picard: possible long repetition"
         },
         {
           "app_transcript" : "waar ze zijn en wat er gebeurt. En houdt hij zo een logboek van de kapitein van het schip bij",
@@ -229,7 +229,7 @@
           "second_transcript" : "waar ze zijn en wat er gebeurt. En houdt hij zo het logboek van de kapitein van het schip bij",
           "short_id" : "E08",
           "start_seconds" : 92.890000000000001,
-          "title" : "… houdt hij zo een logboek van de kapitein …"
+          "title" : "Kapiteinslogboek: “een” / “het”"
         },
         {
           "app_transcript" : "En dat doet hij met audioberichten. Datzelfde wil ik",
@@ -255,7 +255,7 @@
           "second_transcript" : "En dat doet hij met audioberichten. Datzelfde wil ik nu ook gaan doen,\nwaarbij ik dan vertel over iets wat ik mee bezig houd,\nmijn schip. En dat doe ik nu ook gaan doen, waarbij ik dan vertel over iets wat ik mee bezig houd,\nmijn schip. En dat doe ik nu ook gaan doen, waarbij ik dan vertel over iets wat ik mee bezig houd,\nmijn schip. En dat doe ik",
           "short_id" : "E09",
           "start_seconds" : 100.79000000000001,
-          "title" : "… audioberichten. Datzelfde wil ik nu ook gaan doen …"
+          "title" : "Zelf audioberichten opnemen: possible repeated passage"
         },
         {
           "app_transcript" : "ik nu ook gaan doen. Waarbij ik dan vertel over iets wat me bezighoudt",
@@ -281,7 +281,7 @@
           "second_transcript" : "ik nu ook gaan doen,\nwaarbij ik dan vertel over iets wat ik mee bezig houd,\nmijn schip. En dat doe ik nu ook gaan doen, waarbij ik dan vertel over iets wat ik mee bezig houd,\nmijn schip. En dat doe ik nu ook gaan doen, waarbij ik dan vertel over iets wat ik mee bezig houd,\nmijn schip. En dat doe ik nu ook gaan doen, waarbij ik dan vertel over iets wat ik mee bezig houd",
           "short_id" : "E10",
           "start_seconds" : 110.56999999999999,
-          "title" : "… audioberichten. Datzelfde wil ik nu ook gaan doen …"
+          "title" : "Waar ik me mee bezighoud: possible added or repeated words"
         },
         {
           "app_transcript" : "Misschien iets persoonlijks, iets over werk of zoals nu over een science project",
@@ -307,7 +307,7 @@
           "second_transcript" : "misschien iets persoonlijks, iets over werk of over zoals nu over een science project",
           "short_id" : "E11",
           "start_seconds" : 110.56999999999999,
-          "title" : "… over werk of zoals nu over een side …"
+          "title" : "Side project: “side” / “science”"
         },
         {
           "app_transcript" : "Dat was het oorspronkelijke idee. Alleen wat ik eraan toe wil voegen is dat deze audioberichten",
@@ -333,7 +333,7 @@
           "second_transcript" : "En dat was het oorspronkelijke idee. Alleen wat ik er aan toe wil voegen is dat deze audioberichten",
           "short_id" : "E12",
           "start_seconds" : 116.15000000000001,
-          "title" : "… een side-project. Dat was het oorspronkelijke idee …"
+          "title" : "Oorspronkelijke idee: possible extra “en”"
         },
         {
           "app_transcript" : "door bijvoorbeeld het Whisper model. En dat ze vervolgens worden",
@@ -359,7 +359,7 @@
           "second_transcript" : "door bijvoorbeeld het Whisper model. En dat ze vervolgens worden gelezen,\ndoor bijvoorbeeld het Whisper model. En dat ze worden gelezen,\ndoor bijvoorbeeld het Whisper model. En dat ze worden",
           "short_id" : "E13",
           "start_seconds" : 132.88999999999999,
-          "title" : "… dat ze vervolgens worden gelezen door een large …"
+          "title" : "Transcripties lezen: possible repeated phrase"
         },
         {
           "app_transcript" : "worden gelezen",
@@ -385,7 +385,7 @@
           "second_transcript" : "worden gelezen,\ndoor bijvoorbeeld het Whisper model. En dat ze worden gelezen,\ndoor bijvoorbeeld het Whisper model. En dat ze worden gelezen",
           "short_id" : "E14",
           "start_seconds" : 140.69,
-          "title" : "… dat ze vervolgens worden gelezen door een large …"
+          "title" : "Verwerking van transcripties: possible added repetition"
         },
         {
           "app_transcript" : "door een Large Language Model, een liefst lokaal model, zo slim mogelijk natuurlijk",
@@ -411,7 +411,7 @@
           "second_transcript" : "door een Large Language Model, een liefdelokaal model, zo slim mogelijk natuurlijk",
           "short_id" : "E15",
           "start_seconds" : 140.69,
-          "title" : "… large language model. Liefst een lokaal model. Zo …"
+          "title" : "Lokaal taalmodel: possible stumble or reordered words"
         },
         {
           "app_transcript" : "waarin de tekst een beetje recht wordt gezet. Want zoals je nu zal merken is dat ik steeds al allemaal",
@@ -437,7 +437,7 @@
           "second_transcript" : "waarin de tekst een beetje recht wordt gezet. Want zoals je nu zal merken is dat ik steeds allemaal",
           "short_id" : "E16",
           "start_seconds" : 148.25,
-          "title" : "… dat ik steeds allemaal bijgeluiden maak. Of dat …"
+          "title" : "Bijgeluiden: possible extra “al”"
         },
         {
           "app_transcript" : "pijgeluiden maak, maken of dat ik even de draad kwijtraak en dat het soms een onsamenhangend verhaal wordt",
@@ -463,7 +463,7 @@
           "second_transcript" : "bijgeluiden maak of dat ik even de draad kwijtraak en dat het soms een onsamenhangend verhaal wordt",
           "short_id" : "E17",
           "start_seconds" : 155.50999999999999,
-          "title" : "… ik steeds allemaal bijgeluiden maak. Of dat ik …"
+          "title" : "Bijgeluiden: wording and extra “maken”"
         },
         {
           "app_transcript" : "Ik wil dan een large language model gebruiken om dat verhaal recht te zetten en er een mooi",
@@ -489,7 +489,7 @@
           "second_transcript" : "En ik wil dan een Large Language Model gebruiken om dat verhaal recht te zetten en een mooi",
           "short_id" : "E18",
           "start_seconds" : 162.99000000000001,
-          "title" : "… onsamenhangend verhaal wordt. Ik wil dan een large …"
+          "title" : "Onsamenhangend verhaal: possible added or omitted words"
         },
         {
           "app_transcript" : "samenhangend verhaal van te maken zonder te veel af te wijken van wat ik nu vertel",
@@ -515,7 +515,7 @@
           "second_transcript" : "ja, samenhangend verhaal van te maken, zonder teveel af te wijken van wat ik nu vertel",
           "short_id" : "E19",
           "start_seconds" : 169.63,
-          "title" : "… er een mooi samenhangend verhaal van te maken …"
+          "title" : "Samenhangend verhaal: possible extra “ja”"
         },
         {
           "app_transcript" : "Dus dat is het idee voor dit site project. Ik had al gekeken hoe ik dat zou op kunnen zetten",
@@ -541,7 +541,7 @@
           "second_transcript" : "Dus dat is het idee voor dit site project. Ik had al gekeken hoe ik dat zou op kunnen zetten",
           "short_id" : "E20",
           "start_seconds" : 176.34999999999999,
-          "title" : "… idee voor dit side-project. Ik had al …"
+          "title" : "Side-project: “side” / “site”"
         },
         {
           "app_transcript" : "En dat is volgens mij vrij eenvoudig. Want deze audio opnames die worden opgeslagen in een bepaalde",
@@ -567,7 +567,7 @@
           "second_transcript" : "En dat is volgens mij vrij eenvoudig, want deze audioopnames die worden opgeslagen in een bepaalde",
           "short_id" : "E21",
           "start_seconds" : 183.43000000000001,
-          "title" : "… eenvoudig, want deze audio-opnames die worden opgeslagen …"
+          "title" : "Audio-opnames: joined or separate words"
         },
         {
           "app_transcript" : "folder. En die folder staat op iedere computer die aangesloten is op dat iCloud account",
@@ -593,7 +593,7 @@
           "second_transcript" : "folder. En die folder staat op iedere computer die aangesloten is op dat iCloud account",
           "short_id" : "E22",
           "start_seconds" : 192.19,
-          "title" : "… een bepaalde folder. Die folder staat op iedere …"
+          "title" : "Folder op iedere Mac: possible extra “en”"
         },
         {
           "app_transcript" : "Dus die audio berichten verschijnen dan automatisch. Die zou ik dan kunnen oppakken",
@@ -619,7 +619,7 @@
           "second_transcript" : "Dus die audioberichten verschijnen daar automatisch. Die zou ik dan kunnen oppakken",
           "short_id" : "E23",
           "start_seconds" : 199.11000000000001,
-          "title" : "… account. Dus die audio berichten verschijnen dan automatisch …"
+          "title" : "Audioberichten: joined words and “dan” / “daar”"
         },
         {
           "app_transcript" : "e-mail met daarin de verwerking. En ik kan de verwerking ook ergens opslaan naast het audiobestand",
@@ -645,7 +645,7 @@
           "second_transcript" : "e-mail met daarin de verwerking. En ik kan de verwerking ook ergens opslaan naast het audiobestand",
           "short_id" : "E24",
           "start_seconds" : 213.09,
-          "title" : "… de verwerking. En je kan de verwerking ook …"
+          "title" : "Verwerking: “je” / “ik”"
         },
         {
           "app_transcript" : "Dus dan zou het gevolg zijn dat je een soort output folder hebt. Of een soort folder voor side projects",
@@ -671,7 +671,7 @@
           "second_transcript" : "Dus dan zou het gevolg zijn dat je een soort output folder hebt, of een soort folder voor site project",
           "short_id" : "E25",
           "start_seconds" : 218.66999999999999,
-          "title" : "… je een soort outputfolder hebt, of een soort …"
+          "title" : "Outputfolder en side projects: word boundaries and plural"
         },
         {
           "app_transcript" : "Dit is het eerste experiment daarvoor en ik ben benieuwd waar dit toe gaat leiden. [BLANK_AUDIO",
@@ -697,7 +697,7 @@
           "second_transcript" : "En dit is het eerste experiment daarvoor. En ik ben benieuwd waar dit toe gaat leiden",
           "short_id" : "E26",
           "start_seconds" : 241.55000000000001,
-          "title" : "… samenhangende, goedlopende tekst. Dit is het eerste experiment …"
+          "title" : "Einde van de opname: possible invented ending"
         }
       ],
       "reference" : "Het is vandaag 14 januari, half acht. Dit is mijn eerste opname in een serie. Deze opname gaat vooral over het project zelf. Waarbij ik steeds audioberichten ga opnemen, waarin ik over een bepaald onderwerp iets ga vertellen. In dit specifieke geval is het het onderwerp van side projects. Dus ik heb altijd van dit soort projectjes die ik maak op basis van iets met de computer waarbij ik iets programmeer op basis van een idee dat ik heb. Dit is een van die side projects. Ik wil ook dat deze daaronder gecategoriseerd wordt. Dus dat er een foldertje komt, maar daarin al mijn audioberichten over side projects. Het project wat ik nu voor ogen heb is eigenlijk geïnspireerd op Star Trek. Ik keek dan altijd naar Star Trek The Next Generation en daarin heeft Captain Jean-Luc Picard, hij begint dan iedere uitzending met 'Star Date' zo en zo zoveel, waar ze zijn en wat er gebeurt. En houdt hij zo een logboek van de kapitein van het schip bij. En dat doet hij met audioberichten. Datzelfde wil ik nu ook gaan doen. Waarbij ik dan vertel over iets wat me bezighoudt. Misschien iets persoonlijks, iets over werk of zoals nu over een side-project. Dat was het oorspronkelijke idee. Alleen wat ik eraan toe wil voegen is dat deze audioberichten automatisch worden opgepikt op mijn computer. En dat ze worden geconverteerd naar tekst door bijvoorbeeld het Whisper model. En dat ze vervolgens worden gelezen door een large language model. Liefst een lokaal model. Zo slim mogelijk natuurlijk. Waarin de tekst een beetje recht wordt gezet. Want zoals je nu zal merken is dat ik steeds allemaal bijgeluiden maak. Of dat ik even de draad kwijtraak. En dat het soms een onsamenhangend verhaal wordt. Ik wil dan een large language model gebruiken om dat verhaal recht te zetten en er een mooi samenhangend verhaal van te maken, zonder te veel af te wijken van wat ik nu vertel. Dus dat is het idee voor dit side-project. Ik had al gekeken hoe ik dat zou op kunnen zetten. En dat is volgens mij vrij eenvoudig, want deze audio-opnames die worden opgeslagen in een bepaalde folder. Die folder staat op iedere computer die aangesloten is op dat iCloud-account. Dus die audio berichten verschijnen dan automatisch. Die zou ik dan kunnen oppakken, kunnen verwerken en op het moment dat ze verwerkt zijn, kan ik mezelf een berichtje sturen of een e-mail met daarin de verwerking. En je kan de verwerking ook ergens opslaan naast het audiobestand. Dus dan zou het gevolg zijn dat je een soort outputfolder hebt, of een soort folder voor side-projects, waarin dan dit audiobestand staat, de transcriptie, gemaakt door Whisper, en wat de LLM ervan gemaakt heeft in een mooie, samenhangende, goedlopende tekst. Dit is het eerste experiment daarvoor en ik ben benieuwd waar dit toe gaat leiden.",
@@ -745,7 +745,7 @@
           "second_transcript" : "Het doek ging op. Regine boog en glimlachte. In het licht van de grote kroonluchter dansten roze vlekken boven kleurige jurken en donkere pakken. Elk gezicht had ogen en in al die ogen stond Regine te buigen en te glimlachen",
           "short_id" : "E01",
           "start_seconds" : 0,
-          "title" : "… doek ging op. Régine boog en glimlachte; in …"
+          "title" : "Régine op het toneel: name spelling"
         },
         {
           "app_transcript" : "Een donderende waterval, het geraas van een lawine, vulde de oude schouwburg. Een ontstuimige kracht tilde haar los van de aarde en stuwde haar op naar de hemel. Ze boog opnieuw. Het doek viel en ze voelde Florences hand in de haren. Ze liet haar snel los en liep naar de uitgang",
@@ -771,7 +771,7 @@
           "second_transcript" : "Een donderende waterval, het geraas van een lawine, vulde de oude schouwburg. Een ontstuimige kracht tilde haar los van de aarde en stuurde haar op naar de hemel. Ze boog opnieuw. Het doek viel en ze voelde Florences hand in de haren. Ze liet haar snel los en liep naar de uitgang",
           "short_id" : "E02",
           "start_seconds" : 17.829999999999998,
-          "title" : "… de aarde en stuwde haar op naar de …"
+          "title" : "Publiek in de zaal: “stuwde” / “stuurde” and “hare” / “haren”"
         },
         {
           "app_transcript" : "Vijf keer halen, dat is niet gek,\" zei de regisseur. \"Voor een provincieszaal niet, nee",
@@ -797,7 +797,7 @@
           "second_transcript" : "Vijf keer halen, dat is niet gek, zei de regisseur. Voor een provinciezaal niet, nee",
           "short_id" : "E03",
           "start_seconds" : 40.829999999999998,
-          "title" : "… regisseur.\n\"Voor een provinciezaal niet, nee.\"\nZe liep …"
+          "title" : "Provinciezaal: possible extra “s”"
         },
         {
           "app_transcript" : "Ze liep het trapje af naar de foyer. Ze wachten haar met bloemen op, in één klap stond ze weer met beide benen op de grond. Als ze onzichtbaar en anoniem in het donker zaten, wist je niet wie ze waren. Je kon jezelf voor een zaal vol goden wanen, maar zodra je hen apart zag, stond je tegenover doodgewone, oninteressante mensen",
@@ -823,7 +823,7 @@
           "second_transcript" : "Ze liep het trapje af naar de foyer. Ze wachtte haar met bloemen op. In één klap stond ze weer met beide benen op de grond. Als ze onzichtbaar en anoniem in het donker zaten, wist je niet wie ze waren. Je kon jezelf voor een zaal vol goden wanen. Maar zodra je hen apart zag, stond je tegenover doodgewone, oninteressante mensen",
           "short_id" : "E04",
           "start_seconds" : 47.829999999999998,
-          "title" : "… de foyer. Ze wachtten haar met bloemen op …"
+          "title" : "Bloemen in de foyer: “wachtten” / “wachtte”"
         },
         {
           "app_transcript" : "Het was geniaal!\" \"Het was indrukwekkend!\" en hun ogen straalden van geestdrift, een vlammertje dat ze alleen voor de gelegenheid ontstaken en dat zuinig gedoofd werd zodra het niet meer nodig was. Ze drongen ook om Florence heen. Ze hadden bloemen voor haar meegebracht en als ze tegen haar praten, ging het vlammertje in hun ogen aan",
@@ -849,7 +849,7 @@
           "second_transcript" : "Het was geniaal. Het was indrukwekkend. En hun ogen straalden van geestdrift. Een vlammetje dat ze alleen voor de gelegenheid ontstaken en dat zuinig gedoofd werd zodra het niet meer nodig was. Ze drongen ook om Florence heen. Ze hadden bloemen voor haar meegebracht en als ze tegen haar praten, ging het vlammetje in hun ogen aan",
           "short_id" : "E05",
           "start_seconds" : 77.829999999999998,
-          "title" : "… van geestdrift: een vlammetje dat ze alleen voor …"
+          "title" : "Vlammetje en gesprekken: “vlammetje” / “vlammertje”"
         },
         {
           "app_transcript" : "Alsof je van ons allebei tegelijk kunt houden,\" dacht Regine",
@@ -875,7 +875,7 @@
           "second_transcript" : "Alsof je van ons allebei tegelijk kunt houden, dacht Regina",
           "short_id" : "E06",
           "start_seconds" : 103.93000000000001,
-          "title" : "… kunt houden, dacht Régine driftig, alsof we niet …"
+          "title" : "Gedachten van Régine: name spelling"
         },
         {
           "app_transcript" : "driftig. alsof we niet verschillen als dag en nacht",
@@ -901,7 +901,7 @@
           "second_transcript" : "Als of we niet verschillen als dag en nacht",
           "short_id" : "E07",
           "start_seconds" : 107.83,
-          "title" : "… houden, dacht Régine driftig, alsof we niet verschillen …"
+          "title" : "Régine denkt driftig: possibly omitted “driftig”"
         },
         {
           "app_transcript" : "Florence glimlachte, niets belette haar te geloven dat ze evenveel talent had als Regine en dat ze even mooi was",
@@ -927,7 +927,7 @@
           "second_transcript" : "Florence glimlachte. Niets belette haar te geloven dat ze evenveel talent had als Regina en dat ze even mooi was",
           "short_id" : "E08",
           "start_seconds" : 113.23,
-          "title" : "… talent had als Régine en dat ze even …"
+          "title" : "Vergelijking met Régine: name spelling"
         },
         {
           "app_transcript" : "Roger wachtte Regine op in haar kleedkamer. Hij nam haar in zijn armen",
@@ -953,7 +953,7 @@
           "second_transcript" : "Roger wachtte Regina op in haar kleedkamer. Hij nam haar in zijn armen",
           "short_id" : "E09",
           "start_seconds" : 125.43000000000001,
-          "title" : "… was.\nRoger wachtte Régine op in haar kleedkamer …"
+          "title" : "Roger in de kleedkamer: “Régine” / “Regina”"
         },
         {
           "app_transcript" : "Je bent nog nooit zo goed gespeeld als vanavond,\" zei hij",
@@ -979,7 +979,7 @@
           "second_transcript" : "Je hebt nog nooit zo goed gespeeld als vanavond, zei hij",
           "short_id" : "E10",
           "start_seconds" : 131.87,
-          "title" : "… zijn armen:\n\"Je hebt nog nooit zo goed …"
+          "title" : "Rogers compliment: “hebt” / “bent”"
         },
         {
           "app_transcript" : "Te goed voor een dergelijk publiek,\" zei Regine",
@@ -1005,7 +1005,7 @@
           "second_transcript" : "Te goed voor een dergelijk publiek, zei Regina",
           "short_id" : "E11",
           "start_seconds" : 137.83000000000001,
-          "title" : "… dergelijk publiek,\" zei Régine.\n\"Je kreeg een geweldig …"
+          "title" : "Reactie op het publiek: “Régine” / “Regina”"
         },
         {
           "app_transcript" : "Pff, Florence kreeg evenveel applaus als ik",
@@ -1031,7 +1031,7 @@
           "second_transcript" : "Florence kreeg evenveel applaus als ik",
           "short_id" : "E12",
           "start_seconds" : 150.81,
-          "title" : "… applaus,\" zei Annie.\n\"Pff, Florence kreeg evenveel applaus …"
+          "title" : "Applaus voor Florence: possibly omitted “Pff”"
         },
         {
           "app_transcript" : "Ze ging aan de kaptafel zitten en begon haar haren te kammer terwijl Annie haar jurk loshaakte",
@@ -1057,7 +1057,7 @@
           "second_transcript" : "Ze ging aan de kaptafel zitten en begon haar haren te kammen terwijl Annie haar jurk loshaakte",
           "short_id" : "E13",
           "start_seconds" : 154.19,
-          "title" : "… haar haren te kammen terwijl Annie haar jurk …"
+          "title" : "Haren kammen: “kammen” / “kammer”"
         },
         {
           "app_transcript" : "Florence, Florence, bekommert zich niet om mij. Ik zal me ook niet van haar moeten aantrekken",
@@ -1083,7 +1083,7 @@
           "second_transcript" : "Florence bekommerd zich niet om mij. Ik zou me ook niet van haar moeten aantrekken",
           "short_id" : "E14",
           "start_seconds" : 162.66999999999999,
-          "title" : "… haar jurk loshaakte. Florence bekommert zich niet om …"
+          "title" : "Florence en applaus: possible restart and changed words"
         },
         {
           "app_transcript" : "En ze had een wrange smaak in haar keel. -네",
@@ -1109,7 +1109,7 @@
           "second_transcript" : "En ze had een wrange smaak in haar keel",
           "short_id" : "E15",
           "start_seconds" : 172.91,
-          "title" : "… smaak in haar keel"
+          "title" : "Bittere smaak: possible invented ending"
         }
       ],
       "reference" : "Het doek ging op. Régine boog en glimlachte; in het licht van de grote kroonluchter dansten roze vlekken boven kleurige jurken en donkere pakken; elk gezicht had ogen en in al die ogen stond Régine te buigen en te glimlachen; een donderende waterval, het geraas van een lawine vulde de oude schouwburg; een ontstuimige kracht tilde haar los van de aarde en stuwde haar op naar de hemel. Ze boog opnieuw. Het doek viel en ze voelde Florences hand in de hare; ze liet haar snel los en liep naar de uitgang.\n\"Vijf keer halen, dat is niet gek,\" zei de regisseur.\n\"Voor een provinciezaal niet, nee.\"\nZe liep het trapje af naar de foyer. Ze wachtten haar met bloemen op; in één klap stond ze weer met beide benen op de grond. Als ze onzichtbaar en anoniem in het donker zaten, wist je niet wie ze waren; je kon jezelf voor een zaal vol goden wanen, maar zodra je hen apart zag, stond je tegenover doodgewone, oninteressante mensen. Ze zeiden wat ze moesten zeggen. 'Het was geniaal! Het was indrukwekkend!' En hun ogen straalden van geestdrift: een vlammetje dat ze alleen voor de gelegenheid ontstaken en dat zuinig gedoofd werd zodra het niet meer nodig was. Ze drongen ook om Florence heen; ze hadden bloemen voor haar meegebracht en als ze tegen haar praatten, ging het vlammetje in hun ogen aan. Alsof je van ons allebei tegelijk kunt houden, dacht Régine driftig, alsof we niet verschillen als dag en nacht. Florence glimlachte. Niets belette haar te geloven dat ze evenveel talent had als Régine en dat ze even mooi was.\nRoger wachtte Régine op in haar kleedkamer; hij nam haar in zijn armen:\n\"Je hebt nog nooit zo goed gespeeld als vanavond!\", zei hij.\n\"Te goed voor een dergelijk publiek,\" zei Régine.\n\"Je kreeg een geweldig applaus,\" zei Annie.\n\"Pff, Florence kreeg evenveel applaus als ik.\"\nZe ging aan de kaptafel zitten en begon haar haren te kammen terwijl Annie haar jurk loshaakte. Florence bekommert zich niet om mij, ik zou me ook niets van haar moeten aantrekken, dacht ze. Maar ze trok zich wel iets van haar aan, en ze had een wrange smaak in haar keel.",
@@ -1157,7 +1157,7 @@
           "second_transcript" : "durin is de naam die de dwergen gebruikten voor de oudsten van de zeven vaders van hun ras en de voorvader van alle koningen van de langbaarden",
           "short_id" : "E01",
           "start_seconds" : 15.130000000000001,
-          "title" : "… gebruikten voor de oudste van de Zeven Vaders …"
+          "title" : "Zeven Vaders: “oudste” / “oudsten”"
         },
         {
           "app_transcript" : "Hij sliep alleen, tot hij in de diepten van de tijd en bij het ontwaken van dat volk naar Azanulbizar ging en in de grotten boven het Kelet-Zaram in het oosten van de Nevelbergen vestigde hij zijn woonplaats",
@@ -1183,7 +1183,7 @@
           "second_transcript" : "hij sliep alleen tot hij in de diepten van de tijd en bij het ontwaken van dat volk naar azanulbizar ging en in de grotten boven het keletzaram in het oosten van de nevelbergen vestigde hij zijn woonplaats",
           "short_id" : "E02",
           "start_seconds" : 25.969999999999999,
-          "title" : "… grotten boven het Kheled-zâram in het oosten …"
+          "title" : "Kheled-zâram: name spelling"
         },
         {
           "app_transcript" : "waar naderhand",
@@ -1209,7 +1209,7 @@
           "second_transcript" : "waarnaar de hand",
           "short_id" : "E03",
           "start_seconds" : 43.729999999999997,
-          "title" : "… hij zijn woonplaats, waar naderhand de Mijnen van …"
+          "title" : "Woonplaats en de Mijnen: “waar naderhand” / “waarnaar de hand”"
         },
         {
           "app_transcript" : "beroemd uit Lideren",
@@ -1235,7 +1235,7 @@
           "second_transcript" : "beroemd uit liederen",
           "short_id" : "E04",
           "start_seconds" : 46.390000000000001,
-          "title" : "… waren, beroemd uit liederen. Daar woonde hij zo …"
+          "title" : "Bekend uit liederen: “liederen” / “lideren”"
         },
         {
           "app_transcript" : "dat hij wijt en zeit bekend stond",
@@ -1261,7 +1261,7 @@
           "second_transcript" : "dat hij wijd en zijt bekend stond",
           "short_id" : "E05",
           "start_seconds" : 50.149999999999999,
-          "title" : "… lang dat hij wijd en zijd bekend stond …"
+          "title" : "Wijd en zijd: spelling or pronunciation"
         },
         {
           "app_transcript" : "als durende onsterfelijke",
@@ -1287,7 +1287,7 @@
           "second_transcript" : "als durin de onsterfelijke",
           "short_id" : "E06",
           "start_seconds" : 52.490000000000002,
-          "title" : "… bekend stond als Durin de Onsterfelijke. Maar tenslotte …"
+          "title" : "Durin de Onsterfelijke: merged name and article"
         },
         {
           "app_transcript" : "stond in Kazad-dûm",
@@ -1313,7 +1313,7 @@
           "second_transcript" : "stond in kazadum",
           "short_id" : "E07",
           "start_seconds" : 61.469999999999999,
-          "title" : "… graftombe stond in Khazad-dûm; maar zijn lijn …"
+          "title" : "Khazad-dûm: name spelling"
         },
         {
           "app_transcript" : "de naam Dürin kreeg",
@@ -1339,7 +1339,7 @@
           "second_transcript" : "de naam durin kreeg",
           "short_id" : "E08",
           "start_seconds" : 74.409999999999997,
-          "title" : "… hij de naam Durin kreeg. De Dwergen beschouwden …"
+          "title" : "De naam Durin: spelling of the name"
         },
         {
           "app_transcript" : "De",
@@ -1365,7 +1365,7 @@
           "second_transcript" : "de dwergen beschouwden hem werkelijk als de onsterfelijke die terugkeerde want zij hebben vele vreemde verhalen en opvattingen over zichzelf en hun lot in de wereld\nde",
           "short_id" : "E09",
           "start_seconds" : 76.030000000000001,
-          "title" : "… naam Durin kreeg. De Dwergen beschouwden hem werkelijk …"
+          "title" : "Overtuigingen van de Dwergen: possible repeated passage"
         },
         {
           "app_transcript" : "dwergen beschouwden hem werkelijk als de onsterflijke die terugkeerde, want zij hebben vele vreemde verhalen en opvattingen over zichzelf en hun lot in de wereld",
@@ -1391,7 +1391,7 @@
           "second_transcript" : "dwergen beschouwden hem werkelijk als de onsterfelijke die terugkeerde want zij hebben vele vreemde verhalen en opvattingen over zichzelf en hun lot in de wereld",
           "short_id" : "E10",
           "start_seconds" : 86.049999999999997,
-          "title" : "… werkelijk als de Onsterfelijke die terugkeerde; want zij …"
+          "title" : "De Onsterfelijke keert terug: wording or spelling"
         }
       ],
       "reference" : "Over het begin van de Dwergen doen vreemde verhalen de ronde, zowel onder de Eldar als bij de Dwergen zelf; maar aangezien deze dingen ver voor onze tijd liggen, wordt er hier weinig over medegedeeld. Durin is de naam die de Dwergen gebruikten voor de oudste van de Zeven Vaders van hun ras en de voorvader van alle Koningen van de Langbaarden. Hij sliep alleen, tot hij in de diepten van de tijd en bij het ontwaken van dat volk naar Azanulbizar ging, en in de grotten boven het Kheled-zâram in het oosten van de Nevelbergen vestigde hij zijn woonplaats, waar naderhand de Mijnen van Moria waren, beroemd uit liederen. Daar woonde hij zo lang dat hij wijd en zijd bekend stond als Durin de Onsterfelijke. Maar tenslotte stierf hij toch voordat de Oudste Tijden voorbij waren, en zijn graftombe stond in Khazad-dûm; maar zijn lijn stierf nooit uit en vijf keer werd er een erfgenaam van zijn Huis geboren die zozeer op zijn voorvader leek dat hij de naam Durin kreeg. De Dwergen beschouwden hem werkelijk als de Onsterfelijke die terugkeerde; want zij hebben vele vreemde verhalen en opvattingen over zichzelf en hun lot in de wereld.",
@@ -1439,7 +1439,7 @@
           "second_transcript" : "At its pre-war height, this region boasted a population of over 35 million people",
           "short_id" : "E01",
           "start_seconds" : 5.1500000000000004,
-          "title" : "… CHINA\n\n[At its prewar height, this region boasted …"
+          "title" : "Prewar population: numbers and joined words"
         },
         {
           "app_transcript" : "Now there are barely 50,000",
@@ -1465,7 +1465,7 @@
           "second_transcript" : "Now, there are barely 50,000",
           "short_id" : "E02",
           "start_seconds" : 13.470000000000001,
-          "title" : "… there are barely fifty thousand. Reconstruction funds have …"
+          "title" : "Remaining population: words or digits"
         },
         {
           "app_transcript" : "the government choosing to concentrate on more densely populated coasts",
@@ -1491,7 +1491,7 @@
           "second_transcript" : "the government choosing to concentrate on more densely populated coasts",
           "short_id" : "E03",
           "start_seconds" : 21.41,
-          "title" : "… more densely populated coast. There is no central …"
+          "title" : "Densely populated coast: singular or plural"
         },
         {
           "app_transcript" : "But the streets are clear of rubble and the local security council has prevented any post-war outbreaks",
@@ -1517,7 +1517,7 @@
           "second_transcript" : "but the streets are clear of rubble and the local security council has prevented any post-war outbreaks",
           "short_id" : "E04",
           "start_seconds" : 32.590000000000003,
-          "title" : "… has prevented any postwar outbreaks. The chairman of …"
+          "title" : "Postwar outbreaks: joined or separate words"
         },
         {
           "app_transcript" : "The chairman of that council is Kuang Ying-choo",
@@ -1543,7 +1543,7 @@
           "second_transcript" : "The chairman of that council is Kuang Ying-chu",
           "short_id" : "E05",
           "start_seconds" : 40.969999999999999,
-          "title" : "… that council is Kwang Jing-shu, a medical …"
+          "title" : "Kwang Jing-shu: name spelling"
         },
         {
           "app_transcript" : "much",
@@ -1569,7 +1569,7 @@
           "second_transcript" : "much of Dachang was destroyed.\nMuch",
           "short_id" : "E06",
           "start_seconds" : 85.209999999999994,
-          "title" : "… began to rise, much of Dachang had been …"
+          "title" : "Destruction of Dachang: possible repeated or added words"
         },
         {
           "app_transcript" : "of Dachang has been disassembled, brick by brick, then rebuilt on higher ground",
@@ -1595,7 +1595,7 @@
           "second_transcript" : "of Dachang has been disassembled, brick by brick, then rebuilt on higher ground",
           "short_id" : "E07",
           "start_seconds" : 85.310000000000002,
-          "title" : "… much of Dachang had been disassembled, brick by …"
+          "title" : "Dismantling Dachang: “had” / “has”"
         },
         {
           "app_transcript" : "Maybe that is why some of them choose the name to",
@@ -1621,7 +1621,7 @@
           "second_transcript" : "Maybe that is why some of them choose the name,\nto",
           "short_id" : "E08",
           "start_seconds" : 111.55,
-          "title" : "… of them choose to name their newly constructed …"
+          "title" : "Naming the new homes: possible repeated “name”"
         },
         {
           "app_transcript" : "I personally didn't know that this older Dachang existed",
@@ -1647,7 +1647,7 @@
           "second_transcript" : "I personally didn't know that this Old Dachang existed",
           "short_id" : "E09",
           "start_seconds" : 124.84999999999999,
-          "title" : "… know that this older New Dachang existed, so …"
+          "title" : "Older New Dachang: possibly omitted or changed place name"
         },
         {
           "app_transcript" : "We used to say that your Harley-Davidson skilled more young Chinese than all the G.I.s in the Korean War",
@@ -1673,7 +1673,7 @@
           "second_transcript" : "We used to say that your Harley Davidsons killed more young Chinese than all the GIs in the Korean War",
           "short_id" : "E10",
           "start_seconds" : 145.15000000000001,
-          "title" : "… that your Harley-Davidsons killed more young Chinese …"
+          "title" : "Harley-Davidsons and G.I.s: word boundaries and spelling"
         },
         {
           "app_transcript" : "once",
@@ -1699,7 +1699,7 @@
           "second_transcript" : "once?\nA few days later",
           "short_id" : "E11",
           "start_seconds" : 181.94999999999999,
-          "title" : "… send help at once"
+          "title" : "Sending help: possible invented ending"
         }
       ],
       "reference" : "GREATER CHONGQING, THE UNITED FEDERATION OF CHINA\n\n[At its prewar height, this region boasted a population of over thirty-five million people. Now, there are barely fifty thousand. Reconstruction funds have been slow to arrive in this part of the country, the government choosing to concentrate on more densely populated coast. There is no central power grid, no running water besides the Yangtze River. But the streets are clear of rubble and the local \"security council\" has prevented any postwar outbreaks. The chairman of that council is Kwang Jing-shu, a medical doctor who, despite his advanced age and wartime injuries, still manages to make house calls to all his patients.]\n\nThe first outbreak I saw was in a remote village that officially had no name. The residents called it \"New Dachang,\" but this was more out of nostalgia than anything else. Their former home, \"Old Dachang,\" had stood since the period of the Three Kingdoms, with farms and houses and even trees said to be centuries old. When the Three Gorges Dam was completed, and reservoir waters began to rise, much of Dachang had been disassembled, brick by brick, then rebuilt on higher ground. This New Dachang, however, was not a town anymore, but a \"national historic museum.\" It must have been a heartbreaking irony for those poor peasants, to see their town saved but then only being able to visit it as a tourist. Maybe that is why some of them choose to name their newly constructed hamlet \"New Dachang\" to preserve some connection to their heritage, even if it was only in name. I personally didn't know that this older New Dachang existed, so you can imagine how confused I was when the call came in.\n\nThe hospital was quiet; it had been a slow night, even for the increasing number of drunk-driving accidents. Motorcycles were becoming very popular. We used to say that your Harley-Davidsons killed more young Chinese than all the G.I.s in the Korean War. That's why I was so grateful for a quiet shift. I was tired, my back and feet ached. I was on my way out to smoke a cigarette and watch the dawn when I heard my name being paged. The receptionist that night was new and couldn't quite understand the dialect. There had been an accident, or an illness. It was an emergency, that part was obvious, and could we please send help at once.",

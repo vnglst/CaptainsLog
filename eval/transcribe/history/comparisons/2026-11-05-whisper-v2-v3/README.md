@@ -1,6 +1,6 @@
 # Transcript review · remaining recordings
 
-The review passages are selected from complete word alignments of both Whisper models against each recording’s reference. A passage must contain a difference in at least one model. Passage titles quote the wording to check; model identities remain available above the transcripts. Matching context inside an error clip is retained for listening; error-free clips are not selected.
+The review passages are selected from complete word alignments of both Whisper models against each recording’s reference. A passage must contain a difference in at least one model. Passage titles follow **Topic: specific issue to check**, such as **Kheled-zâram: name spelling**; model identities remain available above the transcripts. Matching context inside an error clip is retained for listening; error-free clips are not selected.
 
 This review contains Side project, Alle mensen zijn sterfelijk, Durins volk and World War Z only. TNG stays visible in the overview as completed, with a secondary Open action. It is excluded from the pending manifest; its completed reviews and active eval are preserved. Large-v2 native outputs and matching-audio Large-v3 comparisons are preserved from the earlier runs. Comparison runtime/model identity, output/audio hashes, timestamps and logs are retained under `comparison/`; native metadata is under `provenance/`. Times come from Large-v3 segments with 0.75-second context padding and are approximate.
 

@@ -2,6 +2,22 @@ import Foundation
 
 /// Build listening passages from both complete word alignments, not an old checklist.
 extension Tools {
+    func reviewDifferenceTitle(reference: String, transcripts: [String]) throws -> String {
+        let text = ReviewText(reference)
+        let edits = try transcripts.flatMap { try TranscriptionScore(reference: reference, hypothesis: $0).edits }
+        try require(!edits.isEmpty, "Only text differences can receive a review title")
+        let index = min(edits.map(\.referenceIndex).min() ?? 0, text.ranges.count - 1)
+        let topic = text.excerpt(max(0, index - 1), min(text.ranges.count, index + 3))
+            .replacingOccurrences(of: "\n", with: " ").trimmingCharacters(in: .punctuationCharacters)
+        let kinds = Set(edits.map(\.operation))
+        let issue: String
+        if kinds.contains("insertion") && kinds.contains("deletion") { issue = "possible stumble or omitted words" }
+        else if kinds.contains("insertion") { issue = "possible added or repeated words" }
+        else if kinds.contains("deletion") { issue = "possibly omitted words" }
+        else { issue = "wording or spelling to verify" }
+        return topic.prefix(1).uppercased() + topic.dropFirst() + ": " + issue
+    }
+
     func differencePassages(reference: String, transcript: String, comparison: String,
                             timing: EvalItem, identifier: String, duration: Double) throws -> [EvalItem] {
         let ref = ReviewText(reference)
@@ -69,10 +85,10 @@ extension Tools {
             }
             try require(errors.contains(where: { $0 > 0 }), "Generated discrepancy passage contains no text differences")
             let short = String(format: "E%02d", passages.count + 1)
-            let firstDifference = scores.flatMap(\.edits).map(\.referenceIndex).filter { $0 >= a && ($0 < b || $0 == ref.ranges.count && b == ref.ranges.count) }.min() ?? a
-            let titleStart = max(0, min(firstDifference, ref.ranges.count - 1) - 3)
-            let titleEnd = min(ref.ranges.count, max(titleStart + 8, firstDifference + 5))
-            let title = (titleStart > 0 ? "… " : "") + ref.excerpt(titleStart, titleEnd) + (titleEnd < ref.ranges.count ? " …" : "")
+            let title = try reviewDifferenceTitle(reference: excerpt,
+                transcripts: zip([transcript, comparison], scores).map { text, score in
+                    ReviewText(text).excerpt(score.referenceBoundaries[a], score.referenceBoundaries[b])
+                })
             passages.append(["id": identifier + "-" + short, "short_id": short,
                 "title": title, "start_seconds": clipStart, "end_seconds": clipEnd,
                 "reference_start_word": a, "reference_end_word": b,

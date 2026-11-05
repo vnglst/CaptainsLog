@@ -1,0 +1,344 @@
+{
+  "2025-01-14 side project": {
+    "audio_sha256": "018807fe80637d269afa19e839f15b0b78925a3a65391fdb09fb666da183af85",
+    "reference_sha256": "ee97b8485fedf9f38508952527cecb41e8a22b33717faa4936ed16b81cfe7e44",
+    "output_sha256": "3f57414a5544d54da0952e1260c634c3c53ea7235e97631a191e2a8ac966bcf3",
+    "comparison_sha256": "9de1f61b7e34a0402ee7af5ad97cfed859739973e39dffc396075b61f803eae4",
+    "passages": {
+      "side-project-E01": {
+        "reference_start_word": 0,
+        "reference_end_word": 18,
+        "title": "Eerste opname: possible extra conjunction"
+      },
+      "side-project-E02": {
+        "reference_start_word": 47,
+        "reference_end_word": 64,
+        "title": "Side projects: “van” / “meestal” and missing “dus”"
+      },
+      "side-project-E03": {
+        "reference_start_word": 64,
+        "reference_end_word": 83,
+        "title": "Met de computer: possibly omitted “de”"
+      },
+      "side-project-E04": {
+        "reference_start_word": 83,
+        "reference_end_word": 108,
+        "title": "Categorisering en foldertje: possible omissions or stumble"
+      },
+      "side-project-E05": {
+        "reference_start_word": 108,
+        "reference_end_word": 127,
+        "title": "Projectidee en Star Trek: “wat” / “dat” and “keek” / “heet”"
+      },
+      "side-project-E06": {
+        "reference_start_word": 126,
+        "reference_end_word": 140,
+        "title": "Star Trek: possible added or repeated words"
+      },
+      "side-project-E07": {
+        "reference_start_word": 139,
+        "reference_end_word": 151,
+        "title": "Jean-Luc Picard: possible long repetition"
+      },
+      "side-project-E08": {
+        "reference_start_word": 151,
+        "reference_end_word": 171,
+        "title": "Kapiteinslogboek: “een” / “het”"
+      },
+      "side-project-E09": {
+        "reference_start_word": 171,
+        "reference_end_word": 180,
+        "title": "Zelf audioberichten opnemen: possible repeated passage"
+      },
+      "side-project-E10": {
+        "reference_start_word": 179,
+        "reference_end_word": 193,
+        "title": "Waar ik me mee bezighoud: possible added or repeated words"
+      },
+      "side-project-E11": {
+        "reference_start_word": 193,
+        "reference_end_word": 206,
+        "title": "Side project: “side” / “science”"
+      },
+      "side-project-E12": {
+        "reference_start_word": 206,
+        "reference_end_word": 222,
+        "title": "Oorspronkelijke idee: possible extra “en”"
+      },
+      "side-project-E13": {
+        "reference_start_word": 235,
+        "reference_end_word": 245,
+        "title": "Transcripties lezen: possible repeated phrase"
+      },
+      "side-project-E14": {
+        "reference_start_word": 244,
+        "reference_end_word": 246,
+        "title": "Verwerking van transcripties: possible added repetition"
+      },
+      "side-project-E15": {
+        "reference_start_word": 246,
+        "reference_end_word": 259,
+        "title": "Lokaal taalmodel: possible stumble or reordered words"
+      },
+      "side-project-E16": {
+        "reference_start_word": 259,
+        "reference_end_word": 278,
+        "title": "Bijgeluiden: possible extra “al”"
+      },
+      "side-project-E17": {
+        "reference_start_word": 278,
+        "reference_end_word": 295,
+        "title": "Bijgeluiden: wording and extra “maken”"
+      },
+      "side-project-E18": {
+        "reference_start_word": 295,
+        "reference_end_word": 313,
+        "title": "Onsamenhangend verhaal: possible added or omitted words"
+      },
+      "side-project-E19": {
+        "reference_start_word": 313,
+        "reference_end_word": 329,
+        "title": "Samenhangend verhaal: possible extra “ja”"
+      },
+      "side-project-E20": {
+        "reference_start_word": 329,
+        "reference_end_word": 349,
+        "title": "Side-project: “side” / “site”"
+      },
+      "side-project-E21": {
+        "reference_start_word": 349,
+        "reference_end_word": 366,
+        "title": "Audio-opnames: joined or separate words"
+      },
+      "side-project-E22": {
+        "reference_start_word": 366,
+        "reference_end_word": 380,
+        "title": "Folder op iedere Mac: possible extra “en”"
+      },
+      "side-project-E23": {
+        "reference_start_word": 380,
+        "reference_end_word": 393,
+        "title": "Audioberichten: joined words and “dan” / “daar”"
+      },
+      "side-project-E24": {
+        "reference_start_word": 411,
+        "reference_end_word": 428,
+        "title": "Verwerking: “je” / “ik”"
+      },
+      "side-project-E25": {
+        "reference_start_word": 428,
+        "reference_end_word": 447,
+        "title": "Outputfolder en side projects: word boundaries and plural"
+      },
+      "side-project-E26": {
+        "reference_start_word": 470,
+        "reference_end_word": 485,
+        "title": "Einde van de opname: possible invented ending"
+      }
+    }
+  },
+  "alle-mensen-zijn-sterfelijk": {
+    "audio_sha256": "f8a977f21028036d9b88496bb87da3dcfcc0ad731732b41f29d782da4fd992ca",
+    "reference_sha256": "68240648e0c0fd312608cb1f13adf81f952dc3c0fbeebba9daaa48990150dc6f",
+    "output_sha256": "85697684b9feb49d4d519ac74c3c6589d6c4282ba3b4055e176461c13a91da0b",
+    "comparison_sha256": "fdb7f5a4382ad30611251b14f6713ce5a74b173770f36ea7dff5321f33d928b1",
+    "passages": {
+      "alle-mensen-E01": {
+        "reference_start_word": 0,
+        "reference_end_word": 40,
+        "title": "Régine op het toneel: name spelling"
+      },
+      "alle-mensen-E02": {
+        "reference_start_word": 40,
+        "reference_end_word": 92,
+        "title": "Publiek in de zaal: “stuwde” / “stuurde” and “hare” / “haren”"
+      },
+      "alle-mensen-E03": {
+        "reference_start_word": 92,
+        "reference_end_word": 107,
+        "title": "Provinciezaal: possible extra “s”"
+      },
+      "alle-mensen-E04": {
+        "reference_start_word": 107,
+        "reference_end_word": 169,
+        "title": "Bloemen in de foyer: “wachtten” / “wachtte”"
+      },
+      "alle-mensen-E05": {
+        "reference_start_word": 175,
+        "reference_end_word": 232,
+        "title": "Vlammetje en gesprekken: “vlammetje” / “vlammertje”"
+      },
+      "alle-mensen-E06": {
+        "reference_start_word": 232,
+        "reference_end_word": 242,
+        "title": "Gedachten van Régine: name spelling"
+      },
+      "alle-mensen-E07": {
+        "reference_start_word": 242,
+        "reference_end_word": 251,
+        "title": "Régine denkt driftig: possibly omitted “driftig”"
+      },
+      "alle-mensen-E08": {
+        "reference_start_word": 251,
+        "reference_end_word": 271,
+        "title": "Vergelijking met Régine: name spelling"
+      },
+      "alle-mensen-E09": {
+        "reference_start_word": 271,
+        "reference_end_word": 284,
+        "title": "Roger in de kleedkamer: “Régine” / “Regina”"
+      },
+      "alle-mensen-E10": {
+        "reference_start_word": 284,
+        "reference_end_word": 295,
+        "title": "Rogers compliment: “hebt” / “bent”"
+      },
+      "alle-mensen-E11": {
+        "reference_start_word": 295,
+        "reference_end_word": 303,
+        "title": "Reactie op het publiek: “Régine” / “Regina”"
+      },
+      "alle-mensen-E12": {
+        "reference_start_word": 310,
+        "reference_end_word": 317,
+        "title": "Applaus voor Florence: possibly omitted “Pff”"
+      },
+      "alle-mensen-E13": {
+        "reference_start_word": 317,
+        "reference_end_word": 334,
+        "title": "Haren kammen: “kammen” / “kammer”"
+      },
+      "alle-mensen-E14": {
+        "reference_start_word": 334,
+        "reference_end_word": 349,
+        "title": "Florence en applaus: possible restart and changed words"
+      },
+      "alle-mensen-E15": {
+        "reference_start_word": 360,
+        "reference_end_word": 369,
+        "title": "Bittere smaak: possible invented ending"
+      }
+    }
+  },
+  "durins-volk": {
+    "audio_sha256": "423df075a1d2efcdc74966cd24e5b09f02cc9012855715a1cb2fd12b0aae6e9b",
+    "reference_sha256": "841d8ff3922985a94f1b92bd37684c75e7880d8972b72dc4977732ae6a0c4a3f",
+    "output_sha256": "73ad4cd98be0223275e9b645f3cf0acf2b6d7b983a69ad8e6f3365a0715b5f64",
+    "comparison_sha256": "48e4228e0a4a746021cf7aeb456757ab8057146e4304ccbdfcabda5aef5a0e84",
+    "passages": {
+      "durins-volk-E01": {
+        "reference_start_word": 35,
+        "reference_end_word": 62,
+        "title": "Zeven Vaders: “oudste” / “oudsten”"
+      },
+      "durins-volk-E02": {
+        "reference_start_word": 62,
+        "reference_end_word": 101,
+        "title": "Kheled-zâram: name spelling"
+      },
+      "durins-volk-E03": {
+        "reference_start_word": 101,
+        "reference_end_word": 103,
+        "title": "Woonplaats en de Mijnen: “waar naderhand” / “waarnaar de hand”"
+      },
+      "durins-volk-E04": {
+        "reference_start_word": 108,
+        "reference_end_word": 111,
+        "title": "Bekend uit liederen: “liederen” / “lideren”"
+      },
+      "durins-volk-E05": {
+        "reference_start_word": 116,
+        "reference_end_word": 123,
+        "title": "Wijd en zijd: spelling or pronunciation"
+      },
+      "durins-volk-E06": {
+        "reference_start_word": 123,
+        "reference_end_word": 127,
+        "title": "Durin de Onsterfelijke: merged name and article"
+      },
+      "durins-volk-E07": {
+        "reference_start_word": 141,
+        "reference_end_word": 145,
+        "title": "Khazad-dûm: name spelling"
+      },
+      "durins-volk-E08": {
+        "reference_start_word": 170,
+        "reference_end_word": 174,
+        "title": "De naam Durin: spelling of the name"
+      },
+      "durins-volk-E09": {
+        "reference_start_word": 174,
+        "reference_end_word": 175,
+        "title": "Overtuigingen van de Dwergen: possible repeated passage"
+      },
+      "durins-volk-E10": {
+        "reference_start_word": 175,
+        "reference_end_word": 200,
+        "title": "De Onsterfelijke keert terug: wording or spelling"
+      }
+    }
+  },
+  "world-war-z": {
+    "audio_sha256": "6f419da2feeb93596b095aa544dd70ad8c8cdef2f0816f2c458dedb0914740d6",
+    "reference_sha256": "c235024887c363a203d4e2728f63a8f85b1f4f415b67f32d87019c4b816d5812",
+    "output_sha256": "5df7d789b5dd2b880d83df8180be5bba229130581a7841a7dfc15d28b150f33a",
+    "comparison_sha256": "87b90d0977c8be36dca6781b9f9975e5fc70a7d599829f63723eefece90b0492",
+    "passages": {
+      "world-war-z-E01": {
+        "reference_start_word": 7,
+        "reference_end_word": 22,
+        "title": "Prewar population: numbers and joined words"
+      },
+      "world-war-z-E02": {
+        "reference_start_word": 22,
+        "reference_end_word": 28,
+        "title": "Remaining population: words or digits"
+      },
+      "world-war-z-E03": {
+        "reference_start_word": 41,
+        "reference_end_word": 51,
+        "title": "Densely populated coast: singular or plural"
+      },
+      "world-war-z-E04": {
+        "reference_start_word": 64,
+        "reference_end_word": 81,
+        "title": "Postwar outbreaks: joined or separate words"
+      },
+      "world-war-z-E05": {
+        "reference_start_word": 81,
+        "reference_end_word": 90,
+        "title": "Kwang Jing-shu: name spelling"
+      },
+      "world-war-z-E06": {
+        "reference_start_word": 181,
+        "reference_end_word": 182,
+        "title": "Destruction of Dachang: possible repeated or added words"
+      },
+      "world-war-z-E07": {
+        "reference_start_word": 182,
+        "reference_end_word": 195,
+        "title": "Dismantling Dachang: “had” / “has”"
+      },
+      "world-war-z-E08": {
+        "reference_start_word": 236,
+        "reference_end_word": 245,
+        "title": "Naming the new homes: possible repeated “name”"
+      },
+      "world-war-z-E09": {
+        "reference_start_word": 266,
+        "reference_end_word": 276,
+        "title": "Older New Dachang: possibly omitted or changed place name"
+      },
+      "world-war-z-E10": {
+        "reference_start_word": 313,
+        "reference_end_word": 335,
+        "title": "Harley-Davidsons and G.I.s: word boundaries and spelling"
+      },
+      "world-war-z-E11": {
+        "reference_start_word": 409,
+        "reference_end_word": 410,
+        "title": "Sending help: possible invented ending"
+      }
+    }
+  }
+}

@@ -90,8 +90,16 @@ recordings. Definitions pin the audio and reference hashes; when a reference
 changes, the app falls back to the full recording until those offsets are updated.
 Additional recordings work without segment definitions, using their full audio.
 Only passages containing actual word differences appear in transcript review.
-There is no matching-text toggle. Passage titles quote the relevant wording;
-transcript columns retain model identities. The overview shows the current recordings plus completed history. Completed
+There is no matching-text toggle.
+
+Name every review item **Topic or phrase: specific issue to check**, for example
+**Vrachtschip: possible stumble or omitted words**. Use this format for all review
+work, including generated items; avoid model identities and raw text snippets as
+titles. Hash-pinned `review-titles.json` records preserve descriptive titles for
+the current audio, reference, outputs and passage ranges; changed evidence falls
+back to a newly generated topic-and-issue title.
+Transcript columns retain model identities. The overview shows current recordings
+plus completed history. Completed
 reviews have a secondary Open action and are never added to the pending queue.
 Text agreement does not verify audio or change saved decisions.
 Text alignment is approximate and is not proof of the spoken wording.
