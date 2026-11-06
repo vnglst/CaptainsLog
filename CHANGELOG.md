@@ -12,7 +12,14 @@ entry. Git links provide the complete commit history for each release.
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-11-06
+
 - Fix Swift compiler compatibility in the review audio tooling so the release build can package CaptainsLog. This release includes the changes listed in the [0.6.0 changelog](https://github.com/vnglst/CaptainsLog/blob/v0.6.1/CHANGELOG.md#060---2026-11-06).
+
+### Release
+
+- Publish the 0.6.1 app/CLI archive and matching Homebrew cask version and checksum.
+
 ## [0.6.0] - 2026-11-06
 
 ### Fixed
@@ -320,7 +327,8 @@ entry. Git links provide the complete commit history for each release.
 
 - Make release tests work on clean runners without preinstalled inference models.
 
-[Unreleased]: https://github.com/vnglst/CaptainsLog/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/vnglst/CaptainsLog/compare/v0.6.1...HEAD
+[0.6.1]: https://github.com/vnglst/CaptainsLog/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/vnglst/CaptainsLog/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/vnglst/CaptainsLog/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/vnglst/CaptainsLog/compare/v0.3.1...v0.4.0
