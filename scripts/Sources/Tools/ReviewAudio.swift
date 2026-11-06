@@ -20,8 +20,8 @@ extension Tools {
     /// Called on a review HTTP worker, never on the native app's main thread.
     func consolidateReviewAudio(source: URL, splices: [ReviewSplice], destination: URL) throws -> ReviewAudioResult {
         let job = ReviewAudioJob()
-        Task.detached {
-            do { job.result = .success(try await Self.exportReviewAudio(source: source, splices: splices, destination: destination)) }
+        Task.detached { @Sendable [job, source, splices, destination] in
+            do { job.result = .success(try await Tools.exportReviewAudio(source: source, splices: splices, destination: destination)) }
             catch { job.result = .failure(error) }
             job.done.signal()
         }
