@@ -347,14 +347,10 @@ struct ResumeCommand: AsyncParsableCommand {
 
     func validate() throws {
         guard let fromStage else { return }
-        let supportedStages: Set<String> = [
-            Pipeline.Stage.transcribing.rawValue,
-            Pipeline.Stage.cleaning.rawValue,
-            Pipeline.Stage.categorizing.rawValue,
-            Pipeline.Stage.naming.rawValue,
-            Pipeline.Stage.enriching.rawValue,
-        ]
-        guard supportedStages.contains(fromStage) else {
+        guard stem != nil else { throw ValidationError("--from-stage requires a recording stem.") }
+        switch Pipeline.Stage(rawValue: fromStage) {
+        case .transcribing, .cleaning, .categorizing, .naming, .enriching: break
+        default:
             throw ValidationError(
                 "--from-stage must be one of transcribing, cleaning, categorizing, naming, or enriching."
             )
@@ -363,6 +359,9 @@ struct ResumeCommand: AsyncParsableCommand {
 
     func run() async throws {
         let dir = resolveDataDir(dataDir)
+        let progress: @Sendable (Pipeline.Progress) -> Void = {
+            print("[stage:\($0.stage.rawValue)] \($0.stem)")
+        }
 
         if let singleStem = stem {
             // Resume single entry
@@ -373,9 +372,7 @@ struct ResumeCommand: AsyncParsableCommand {
                 fromStage: stage,
                 language: language,
                 modelId: model,
-                progress: { p in
-                    print("[stage:\(p.stage.rawValue)] \(p.stem)")
-                }
+                progress: progress
             )
             print("\nOutput files:")
             print("  Transcript: \(result.transcriptPath)")
@@ -388,9 +385,7 @@ struct ResumeCommand: AsyncParsableCommand {
                 dataDir: dir,
                 language: language,
                 modelId: model,
-                progress: { p in
-                    print("[stage:\(p.stage.rawValue)] \(p.stem)")
-                }
+                progress: progress
             )
         }
     }

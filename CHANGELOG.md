@@ -15,6 +15,7 @@ entry. Git links provide the complete commit history for each release.
 ### Fixed
 
 - Keep search progress tied to the current query, save settings atomically, and reopen a transcription review when a replacement range no longer matches the exported audio.
+- Refresh logs after external changes in custom categories, keep model paths available if deletion fails, and reject `resume --from-stage` without a recording stem.
 
 - Keep duplicated transcription sentences together in listening review so the full reference stays aligned with the audio. Use independently pinned word timing for unreliable clips, include full sentences where short clips are hard to verify, and let reviewers flag audio/text mismatches without an explanation.
 

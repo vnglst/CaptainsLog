@@ -71,6 +71,8 @@ extension Tools {
         }
         try fails(["resume", "eval-fixture", "--data-dir", local("empty-data").path, "--from-stage", "unknown"],
                   log: "invalid-resume-stage.txt", diagnostic: "--from-stage must be one of")
+        try fails(["resume", "--data-dir", local("empty-data").path, "--from-stage", "cleaning"],
+                  log: "resume-stage-without-stem.txt", diagnostic: "--from-stage requires a recording stem")
         let settings = [("dataDir", local("data").path), ("whisperModel", "synthetic/whisper-model"),
                         ("whisperModelFolder", local("models/whisper").path), ("qwenModelId", "synthetic/eval-model"),
                         ("qwenModelFolder", local("models/qwen").path)]

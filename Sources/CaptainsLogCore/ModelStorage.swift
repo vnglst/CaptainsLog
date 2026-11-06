@@ -32,7 +32,7 @@ public enum ModelStorage {
             let bundles = ["AudioEncoder.mlmodelc", "MelSpectrogram.mlmodelc", "TextDecoder.mlmodelc"]
                 .map { root.appendingPathComponent($0) }
             guard bundles.contains(where: { FileManager.default.fileExists(atPath: $0.path) }) else { return [] }
-            return bundles + ["config.json", "generation_config.json"].map { root.appendingPathComponent($0) }
+            return ["config.json", "generation_config.json"].map { root.appendingPathComponent($0) } + bundles
         case .qwen:
             return LLM.configuredModelFile(in: config.qwenModelFolder).map { [URL(fileURLWithPath: $0)] } ?? []
         case .embeddings:
@@ -81,6 +81,11 @@ public enum ModelStorage {
         config: CaptainsLogConfig = CaptainsLogConfig.load(),
         embeddingURL: URL = E5EmbeddingModel.modelURL()
     ) throws {
+        for url in targets(for: model, config: config, embeddingURL: embeddingURL)
+            where FileManager.default.fileExists(atPath: url.path) {
+            try FileManager.default.removeItem(at: url)
+        }
+        guard model != .embeddings else { return }
         // Retain model identifiers so the next download uses the user's selection.
         try CaptainsLogConfig.update { saved in
             switch model {
@@ -88,10 +93,6 @@ public enum ModelStorage {
             case .qwen: saved.qwenModelFolder = nil
             case .embeddings: break
             }
-        }
-        for url in targets(for: model, config: config, embeddingURL: embeddingURL)
-            where FileManager.default.fileExists(atPath: url.path) {
-            try FileManager.default.removeItem(at: url)
         }
     }
 }

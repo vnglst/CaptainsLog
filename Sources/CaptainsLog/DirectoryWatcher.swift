@@ -1,13 +1,20 @@
-import Dispatch
+import CaptainsLogCore
+import CoreServices
 import Foundation
 
-/// Watches pipeline directories for file system changes and triggers reloads.
+/// Watches pipeline directories and their descendants for file system changes.
 @MainActor
 @Observable
 public final class DirectoryWatcher {
     static let reloadDebounceNanoseconds: UInt64 = 300_000_000
 
-    private var dirWatchers: [DispatchSourceFileSystemObject] = []
+    @MainActor
+    private final class Callback {
+        weak var watcher: DirectoryWatcher?
+        init(_ watcher: DirectoryWatcher) { self.watcher = watcher }
+    }
+
+    private var stream: FSEventStreamRef?
     private var watchSetupTask: Task<Void, Never>?
     private var watchReloadTask: Task<Void, Never>?
     public var onReload: () -> Void
@@ -16,61 +23,53 @@ public final class DirectoryWatcher {
         self.onReload = onReload
     }
 
-    deinit {
-        // DispatchSource cancellation must happen on the dispatch queue it was created on.
-        // We rely on the source's cancelHandler (which calls close(fd)) for cleanup.
-        // The dirWatchers array will be deallocated naturally.
-    }
+    isolated deinit { stopWatching() }
 
     public func startWatching(dataDir: String) {
         stopWatching()
-        let subdirs = [
-            "audio",
-            ".pipeline/01-transcribed",
-            ".pipeline/02-logs",
-            ".pipeline/03-category",
-            ".pipeline/04-rename",
-            "logs",
-            "logs/personal",
-            "logs/professional",
-            "logs/side-project",
-        ]
-        watchSetupTask = Task { [weak self] in
-            let descriptors = await Task.detached(priority: .utility) {
-                let fm = FileManager.default
-                return subdirs.compactMap { subdir -> Int32? in
-                    guard !Task.isCancelled else { return nil }
-                    let path = "\(dataDir)/\(subdir)"
-                    try? fm.createDirectory(atPath: path, withIntermediateDirectories: true)
-                    let fd = open(path, O_EVTONLY)
-                    return fd >= 0 ? fd : nil
-                }
-            }.value
-
-            guard let self, !Task.isCancelled else {
-                descriptors.forEach { close($0) }
-                return
+        watchSetupTask = Task.detached(priority: .utility) { [weak self] in
+            let logs = "\(dataDir)/\(Pipeline.Directory.enriched.path)"
+            let paths = Pipeline.Directory.allCases.map { "\(dataDir)/\($0.path)" }
+            for path in paths + Categorize.Category.allCases.map({ "\(logs)/\($0.folderName)" }) {
+                guard !Task.isCancelled else { return }
+                try? FileManager.default.createDirectory(atPath: path, withIntermediateDirectories: true)
             }
+            await self?.startStream(paths)
+        }
+    }
 
-            for fd in descriptors {
-                let source = DispatchSource.makeFileSystemObjectSource(
-                    fileDescriptor: fd, eventMask: .write, queue: .main)
-                source.setEventHandler { [weak self] in
-                    Task { @MainActor [weak self] in self?.scheduleReload() }
-                }
-                source.setCancelHandler { close(fd) }
-                source.resume()
-                dirWatchers.append(source)
-            }
-            watchSetupTask = nil
+    private func startStream(_ paths: [String]) {
+        guard !Task.isCancelled else { return }
+        let callback = Callback(self)
+        var context = FSEventStreamContext()
+        context.info = Unmanaged.passUnretained(callback).toOpaque()
+        context.retain = { _ = Unmanaged<Callback>.fromOpaque($0!).retain(); return $0 }
+        context.release = { Unmanaged<Callback>.fromOpaque($0!).release() }
+        guard let stream = FSEventStreamCreate(nil, { _, info, _, _, _, _ in
+            let callback = Unmanaged<Callback>.fromOpaque(info!).takeUnretainedValue()
+            MainActor.assumeIsolated { callback.watcher?.scheduleReload() }
+        }, &context, paths as CFArray, FSEventStreamEventId(kFSEventStreamEventIdSinceNow), 0.05,
+            FSEventStreamCreateFlags(kFSEventStreamCreateFlagNoDefer))
+        else { return }
+
+        FSEventStreamSetDispatchQueue(stream, .main)
+        if FSEventStreamStart(stream) {
+            self.stream = stream
+        } else {
+            FSEventStreamInvalidate(stream)
+            FSEventStreamRelease(stream)
         }
     }
 
     public func stopWatching() {
         watchSetupTask?.cancel()
         watchSetupTask = nil
-        dirWatchers.forEach { $0.cancel() }
-        dirWatchers = []
+        if let stream {
+            FSEventStreamStop(stream)
+            FSEventStreamInvalidate(stream)
+            FSEventStreamRelease(stream)
+            self.stream = nil
+        }
         watchReloadTask?.cancel()
         watchReloadTask = nil
     }
@@ -78,10 +77,10 @@ public final class DirectoryWatcher {
     /// Debounced reload to batch rapid file system events.
     public func scheduleReload() {
         watchReloadTask?.cancel()
-        watchReloadTask = Task {
+        watchReloadTask = Task { [weak self] in
             try? await Task.sleep(nanoseconds: Self.reloadDebounceNanoseconds)
             guard !Task.isCancelled else { return }
-            onReload()
+            self?.onReload()
         }
     }
 }

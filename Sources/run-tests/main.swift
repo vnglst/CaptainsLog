@@ -5981,38 +5981,34 @@ func runTests() async {
 
     // MARK: - DirectoryWatcher Tests
 
-    await testAsync("DirectoryWatcher: starts monitoring directories inside an isolated data folder") {
-        let fm = FileManager.default
-        let root = fm.temporaryDirectory
-            .appendingPathComponent("CaptainsLogDirectoryWatcher-\(UUID().uuidString)", isDirectory: true)
-        try fm.createDirectory(at: root, withIntermediateDirectories: true)
-        let watcher = DirectoryWatcher(onReload: { })
+    await testAsync("DirectoryWatcher: reloads after changes inside a new custom category") {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        let reloads = LockedStringArray()
+        let watcher = DirectoryWatcher(onReload: { reloads.append("reload") })
         defer {
             watcher.stopWatching()
-            try? fm.removeItem(at: root)
+            try? FileManager.default.removeItem(at: root)
         }
-        let monitoredPaths = [
-            "audio",
-            ".pipeline/01-transcribed",
-            ".pipeline/02-logs",
-            ".pipeline/03-category",
-            ".pipeline/04-rename",
-            "logs",
-            "logs/personal",
-            "logs/professional",
-            "logs/side-project",
-        ]
-
+        @MainActor func expectReload(after change: () throws -> Void) async throws {
+            let previous = reloads.snapshot().count
+            try change()
+            for _ in 0..<200 where reloads.snapshot().count == previous {
+                try await Task.sleep(for: .milliseconds(10))
+            }
+            try expect(reloads.snapshot().count > previous, "External log changes should trigger a reload")
+        }
         watcher.startWatching(dataDir: root.path)
-        let deadline = ContinuousClock.now + .seconds(2)
-        while !monitoredPaths.allSatisfy({ fm.fileExists(atPath: root.appendingPathComponent($0).path) })
-            && ContinuousClock.now < deadline {
+        let category = root.appendingPathComponent("logs/research")
+        for _ in 0..<200 where !FileManager.default.fileExists(atPath: category.deletingLastPathComponent().path) {
             try await Task.sleep(for: .milliseconds(10))
         }
-        try expect(
-            monitoredPaths.allSatisfy({ fm.fileExists(atPath: root.appendingPathComponent($0).path) }),
-            "Watcher setup should create each monitored directory under the configured data folder"
-        )
+        let audio = root.appendingPathComponent("audio/ready")
+        try await expectReload { try Data().write(to: audio) }
+        try await expectReload { try FileManager.default.createDirectory(at: category, withIntermediateDirectories: false) }
+        let note = category.appendingPathComponent("fixture.md")
+        let fixture = try Data(contentsOf: URL(fileURLWithPath: "eval/categorize/input/side-project-voice-app.md"))
+        try await expectReload { try fixture.write(to: note, options: .atomic) }
+        try await expectReload { try FileManager.default.removeItem(at: note) }
     }
 
     await testAsync("DirectoryWatcher: stopping cancels a pending reload") {
@@ -6060,6 +6056,14 @@ func runTests() async {
         try config.save()
         let usage = try ModelStorage.usage(config: config, embeddingURL: embedding)
         try expect(usage.count == 3 && usage.allSatisfy { $0.installed && $0.bytes >= 8192 })
+        try FileManager.default.setAttributes([.immutable: true], ofItemAtPath: qwen.path)
+        defer { try? FileManager.default.setAttributes([.immutable: false], ofItemAtPath: qwen.path) }
+        do {
+            try ModelStorage.delete(.qwen, config: config, embeddingURL: embedding)
+            try expect(false, "Deleting the locked model should fail")
+        } catch let error as CocoaError where error.code == .fileWriteNoPermission {}
+        try expect(CaptainsLogConfig.load().qwenModelFolder == root.path, "A failed deletion must preserve the model path for retry")
+        try FileManager.default.setAttributes([.immutable: false], ofItemAtPath: qwen.path)
         try ModelStorage.delete(.whisper, config: config, embeddingURL: embedding)
         try ModelStorage.delete(.qwen, config: config, embeddingURL: embedding)
         try ModelStorage.delete(.embeddings, config: config, embeddingURL: embedding)
