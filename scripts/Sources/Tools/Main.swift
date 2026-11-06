@@ -20,6 +20,14 @@ extension Tools {
         case "isolated-check": let temp = try temporary("captainslog-check-"); defer { try? fm.removeItem(at: temp) }; try isolated(temp); try run(args)
         case "evals": try evals(args)
         case "evals-review": try evalsReview(args)
+        case "website":
+            guard args.count == 1, let port = UInt16(args[0]) else {
+                throw ToolFailure("Usage: website PORT (0–65535)", status: 2)
+            }
+            let server = try EvalReviewServer(root: root.appendingPathComponent("website"), port: port, website: true)
+            print("Website: http://127.0.0.1:\(server.port)")
+            fflush(stdout)
+            try server.serve()
         case "score-transcription":
             try require(args.count == 4 && args[0] == "--expected" && args[2] == "--generated", "Usage: score-transcription --expected PATH --generated PATH", status: 2)
             print(try TranscriptionScore(reference: read(path(args[1])), hypothesis: read(path(args[3]))).markdown)

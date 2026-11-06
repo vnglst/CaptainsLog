@@ -5,14 +5,16 @@ A static landing page styled after the Logs design system and the ImageGen conce
 Open `index.html` directly, or preview from the repository root:
 
 ```sh
-python3 -m http.server 8765 --directory website
+make website
 ```
+
+The preview uses the repository’s Swift tooling. Open <http://127.0.0.1:8765> and press Ctrl+C in the terminal when you’re done. To use another port, run `make website PORT=8766`.
 
 Deploy the contents of `website/` to a static host. There is no build step, package dependency, external font, analytics, or inference API. HTML, CSS, and JavaScript live in `index.html`.
 
 ## Add your app recording
 
-The walkthrough has a fixed 16:9 placeholder and makes no request for missing media. In the `walkthrough` object near the bottom of `index.html`, set:
+The hero walkthrough has a 16:9 placeholder and makes no request for missing media. In the `walkthrough` object near the bottom of `index.html`, set:
 
 ```js
 const walkthrough = {
@@ -24,10 +26,6 @@ const walkthrough = {
 ```
 
 Place those files in `assets/`. A poster and captions are optional (`null` omits either); captions are recommended for accessibility. The video and descriptive caption automatically replace the placeholder. Adjust the description to what the recording actually shows. Use a static host with HTTP byte-range support for video seeking.
-
-The owner will create the recordings. The earlier synthetic sample audio and illustrative walkthrough have been removed. No recordings ship with the page until the owner adds the final files.
-
-The hero is a selectable HTML illustration, explicitly labeled as such. It uses verbatim synthetic fixture text from `eval/categorize/input/{side-project-voice-app,professional-release-planning,personal-weekend}.md`, split into paragraphs. Titles, tags, and relative dates are illustrative. It is not captured native UI or measured model output. No app audio playback is advertised: it is tracked in the [backlog](../backlog/tasks/), with workspace context in [Logs interface details](../backlog/tasks).
 
 ## Content sources
 

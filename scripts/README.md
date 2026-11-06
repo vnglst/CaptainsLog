@@ -9,6 +9,7 @@ required. `make help` lists available targets.
 |---|---|
 | `make dev` / `make` / `make run` | Launch the cached debug app directly with its persistent isolated demo copy, skipping SwiftPM when sources and package manifests are unchanged. Missing apps or changed inputs trigger an app-only incremental build first. No packaging, tests or evaluations run; the first build takes longer. |
 | `make build` | Build Swift package products; `CONFIGURATION=release` selects release (default: debug). |
+| `make website` | Serve the static landing page at `http://127.0.0.1:8765` with the Swift tooling. Set `PORT` to use a different port. |
 | `make cli ARGS='search "project architecture"'` | Run a CLI command. Normal CLI usage uses your configured data; checks must supply isolated config/data and eval fixtures. |
 | `make tests` | Run the deterministic framework-free suite with temporary config/data. `ARGS=--unit` or `make tests-unit` selects model-free unit checks. |
 | `make evals` | Run the full audio pipeline then all stage suites, sequentially. `MODE=pipeline` / `MODE=suites` selects one; `STAGE=filename CASE="fixture stem"` selects focused cases. |
@@ -141,6 +142,7 @@ than guessing a filename from a Make target.
 | UI harness, updater/model/recorder checks, pipeline artifact checks | [Checks.swift](Sources/Tools/Checks.swift) |
 | Evaluation selection, generation and review bundles | [Evals.swift](Sources/Tools/Evals.swift) |
 | Saved-run listening review and local HTTP/audio serving | [EvalReview.swift](Sources/Tools/EvalReview.swift), [ReviewServer.swift](Sources/Tools/ReviewServer.swift), [ReviewAudio.swift](Sources/Tools/ReviewAudio.swift), UI assets in `Sources/Tools/Resources/EvalReview/` |
+| Landing page preview | [Main.swift](Sources/Tools/Main.swift), [ReviewServer.swift](Sources/Tools/ReviewServer.swift), files in [`website/`](../website/) |
 | Evaluation tooling fixtures and enrichment validation | [EvalChecks.swift](Sources/Tools/EvalChecks.swift), [EnrichValidation.swift](Sources/Tools/EnrichValidation.swift) |
 | Coverage | [Coverage.swift](Sources/Tools/Coverage.swift) |
 | Release preparation, notes, changelog checks and cask updates | [release.swift](release.swift); release fixtures: [ReleaseChecks.swift](Sources/Tools/ReleaseChecks.swift) |

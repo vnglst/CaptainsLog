@@ -11,20 +11,22 @@ struct ReviewResponse {
     var length: UInt64 = 0
 }
 
-/// Loopback-only review server. Retakes and consolidated exports stay in the
+/// Loopback-only server for the review app and landing page. Retakes and consolidated exports stay in the
 /// selected run; original fixtures and inference inputs are never overwritten.
 final class EvalReviewServer: @unchecked Sendable {
     let root: URL
     let port: UInt16
     let catalog: URL?
     let sessionFile: URL?
+    private let website: Bool
     private let listener: Int32
     private let lock = NSLock()
     private var stopped = false
     private let tools = Tools()
-    init(root: URL, port: UInt16, catalog: URL? = nil, sessionFile: URL? = nil) throws {
+    init(root: URL, port: UInt16, catalog: URL? = nil, sessionFile: URL? = nil, website: Bool = false) throws {
         self.sessionFile = sessionFile
         self.catalog = catalog
+        self.website = website
         self.root = root.resolvingSymlinksInPath()
         let descriptor = socket(AF_INET, SOCK_STREAM, 0)
         guard descriptor >= 0 else { throw ToolFailure("Could not create review socket") }
@@ -108,6 +110,11 @@ final class EvalReviewServer: @unchecked Sendable {
         guard ["127.0.0.1:\(port)", "localhost:\(port)"].contains(headers["host"] ?? "") else { return try jsonResponse(["error": "Invalid local host"], status: 400) }
         guard let path = String(rawPath.split(separator: "?", maxSplits: 1).first ?? "").removingPercentEncoding,
               !path.contains("\0"), !path.split(separator: "/").contains("..") else { return try jsonResponse(["error": "Invalid path"], status: 400) }
+        if website {
+            let relative = path == "/" ? "index.html" : String(path.dropFirst())
+            let allowed = relative == "index.html" || relative.hasPrefix("assets/")
+            return try staticResponse(method: method, relative: relative, allowed: allowed, headers: headers)
+        }
         if path == "/api/location" {
             guard let sessionFile else { return try jsonResponse(["error": "Session tracking unavailable"], status: 404) }
             let run = root.deletingLastPathComponent()
@@ -246,13 +253,25 @@ final class EvalReviewServer: @unchecked Sendable {
             try JSONSerialization.data(withJSONObject: saved, options: [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]).write(to: root.appendingPathComponent("review-state.json"), options: .atomic)
             return try jsonResponse(entry)
         }
-        guard method == "GET" || method == "HEAD" else { return try jsonResponse(["error": "Method not allowed"], status: 405) }
         let relative = path == "/" ? "index.html" : String(path.dropFirst())
         let allowed = ["index.html", "style.css", "app.js", "recordings.json", "audio-capture.mjs", "review-passages.mjs", "review-session.mjs"].contains(relative) || ["assets/audio/", "assets/retakes/", "assets/consolidated/"].contains(where: relative.hasPrefix)
+        return try staticResponse(method: method, relative: relative, allowed: allowed, headers: headers)
+    }
+
+    private func staticResponse(method: String, relative: String, allowed: Bool, headers: [String: String]) throws -> ReviewResponse {
+        guard method == "GET" || method == "HEAD" else { return try jsonResponse(["error": "Method not allowed"], status: 405) }
         let file = root.appendingPathComponent(relative).resolvingSymlinksInPath()
         guard allowed, file.path.hasPrefix(root.path + "/"), tools.fm.fileExists(atPath: file.path),
-              let size = (try tools.fm.attributesOfItem(atPath: file.path))[.size] as? UInt64 else { return try jsonResponse(["error": "Not found"], status: 404) }
-        let types = ["html": "text/html; charset=utf-8", "css": "text/css; charset=utf-8", "js": "text/javascript; charset=utf-8", "mjs": "text/javascript; charset=utf-8", "json": "application/json; charset=utf-8", "m4a": "audio/mp4", "wav": "audio/wav", "mp3": "audio/mpeg", "mov": "video/quicktime", "qt": "video/quicktime", "qta": "video/quicktime"]
+              let attributes = try? tools.fm.attributesOfItem(atPath: file.path),
+              attributes[.type] as? FileAttributeType == .typeRegular,
+              let size = attributes[.size] as? UInt64 else { return try jsonResponse(["error": "Not found"], status: 404) }
+        let types = [
+            "html": "text/html; charset=utf-8", "css": "text/css; charset=utf-8",
+            "js": "text/javascript; charset=utf-8", "mjs": "text/javascript; charset=utf-8",
+            "json": "application/json; charset=utf-8", "m4a": "audio/mp4", "wav": "audio/wav",
+            "mp3": "audio/mpeg", "mov": "video/quicktime", "qt": "video/quicktime", "qta": "video/quicktime",
+            "svg": "image/svg+xml", "jpg": "image/jpeg", "png": "image/png", "mp4": "video/mp4", "vtt": "text/vtt; charset=utf-8"
+        ]
         var result = ReviewResponse(headers: ["Content-Type": types[file.pathExtension] ?? "application/octet-stream", "Accept-Ranges": "bytes"], file: file, length: size)
         if let range = headers["range"] {
             guard range.hasPrefix("bytes="), !range.contains(","), size > 0 else { return ReviewResponse(status: 416, headers: ["Content-Range": "bytes */\(size)"]) }

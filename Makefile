@@ -20,11 +20,12 @@ SHA256 ?=
 # Directory timestamps also invalidate the app when source files are added or removed.
 DEV_INPUTS := Package.swift Package.resolved $(shell find Sources Vendor -type f -o -type d)
 
-.PHONY: help build dev run cli tests tests-unit tests-coverage tests-updates tests-release tests-evals tests-runtime tests-enrich tests-model tests-recorder tests-app-performance tests-search-shutdown ui evals evals-review evals-list evals-pipeline evals-suites packaging release release-notes release-check release-cask icons clean
+.PHONY: help build dev run website cli tests tests-unit tests-coverage tests-updates tests-release tests-evals tests-runtime tests-enrich tests-model tests-recorder tests-app-performance tests-search-shutdown ui evals evals-review evals-list evals-pipeline evals-suites packaging release release-notes release-check release-cask icons clean
 
 help:
 	@printf '%s\n' \
 	  'make dev (or make / make run)  Incrementally build and start the development app' \
+	  'make website                  Serve the landing page locally (PORT=8765)' \
 	  'make build                    Build app, CLI and test executables' \
 	  'make tests                    Run deterministic tests in isolated storage' \
 	  'make evals                    Run all fixture evaluations sequentially' \
@@ -48,6 +49,9 @@ run: dev
 
 dev: .build/debug/CaptainsLogApp
 	.build/debug/CaptainsLogApp $(ARGS)
+
+website:
+	$(SWIFT) run --package-path scripts captainslog-tools website "$(or $(PORT),8765)"
 
 .build/debug/CaptainsLogApp: $(DEV_INPUTS)
 	$(SWIFT) build -c debug --product CaptainsLogApp

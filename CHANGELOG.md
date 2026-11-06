@@ -23,11 +23,15 @@ entry. Git links provide the complete commit history for each release.
 
 ### Changed
 
+- Update the landing page with the app’s wording and origin story, and give the walkthrough video the main preview spot.
+
 - Remove an unstructured recording and its derived examples from the evaluation fixtures.
 
 - Organize evaluation results under each stage’s history folder and retain transcription review rounds and not-reviewed recordings outside active selection. Distinguish the reviewed audio-only baseline from deferred end-to-end evaluation.
 
 ### Added
+
+- Preview the landing page locally with `make website`.
 
 - Add the owner-reviewed Alle mensen zijn sterfelijk, Durins volk, and World War Z recordings to the transcription suite and record a fresh four-case WER baseline. Preserve the reviewed Enterprise end-to-end eval and its search readback.
 
