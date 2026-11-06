@@ -20,6 +20,12 @@ func resolveDataDir(_ explicit: String? = nil) -> String {
     )
 }
 
+private func defaultDate() -> String {
+    let formatter = DateFormatter()
+    formatter.dateFormat = "yyyy-MM-dd"
+    return formatter.string(from: Date())
+}
+
 struct Ping: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         abstract: "Smoke test that core is wired up."
@@ -160,12 +166,6 @@ struct FilenameCommand: AsyncParsableCommand {
             )
         }
     }
-
-    private func defaultDate() -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        return formatter.string(from: Date())
-    }
 }
 
 struct CategorizeCommand: AsyncParsableCommand {
@@ -268,12 +268,6 @@ struct EnrichCommand: AsyncParsableCommand {
                 diagnostic: diagnostic
             )
         }
-    }
-
-    private func defaultDate() -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        return formatter.string(from: Date())
     }
 }
 
@@ -607,18 +601,28 @@ struct ConfigSet: AsyncParsableCommand {
 
     func run() async throws {
         let v: String? = (value == "unset") ? nil : value
-        let knownKeys = Set([
-            "categories",
-            "automaticUpdates",
-            "automaticUpdateChecks",
-            "dataDir",
-            "whisperModel",
-            "whisperModelFolder",
-            "qwenModelId",
-            "qwenModelFolder",
-        ])
-        guard knownKeys.contains(key) else {
-            let cfg = CaptainsLogConfig.load()
+        var cfg = CaptainsLogConfig.load()
+        switch key {
+        case "categories":
+            let names = v?.split(separator: ",")
+            let categories = names?.compactMap { Categorize.Category(name: String($0))?.rawValue }
+            guard categories?.count == names?.count else {
+                throw ValidationError("Each category must contain letters or numbers.")
+            }
+            cfg.categories = categories
+        case "automaticUpdates", "automaticUpdateChecks":
+            guard v == nil || v == "true" || v == "false" else {
+                throw ValidationError("\(key) must be true, false, or unset.")
+            }
+            let enabled = v.map { $0 == "true" }
+            if key == "automaticUpdates" { cfg.automaticUpdates = enabled }
+            else { cfg.automaticUpdateChecks = enabled }
+        case "dataDir": cfg.dataDir = v
+        case "whisperModel": cfg.whisperModel = v
+        case "whisperModelFolder": cfg.whisperModelFolder = v
+        case "qwenModelId": cfg.qwenModelId = v
+        case "qwenModelFolder": cfg.qwenModelFolder = v
+        default:
             throw ValidationError(
                 """
                 Unknown key: \(key)
@@ -629,28 +633,7 @@ struct ConfigSet: AsyncParsableCommand {
                 """
             )
         }
-        if ["automaticUpdateChecks", "automaticUpdates"].contains(key), let v, v != "true", v != "false" {
-            throw ValidationError("\(key) must be true, false, or unset.")
-        }
-        let categoryNames = v?.split(separator: ",").map(String.init)
-        if key == "categories", let categoryNames,
-           categoryNames.contains(where: { Categorize.Category(name: $0) == nil }) {
-            throw ValidationError("Each category must contain letters or numbers.")
-        }
-        try CaptainsLogConfig.update { cfg in
-            switch key {
-            case "categories": cfg.categories = categoryNames.map { $0.compactMap { Categorize.Category(name: $0)?.rawValue } }
-            case "automaticUpdates": cfg.automaticUpdates = v.map { $0 == "true" }
-            case "automaticUpdateChecks": cfg.automaticUpdateChecks = v.map { $0 == "true" }
-            case "dataDir": cfg.dataDir = v
-            case "whisperModel": cfg.whisperModel = v
-            case "whisperModelFolder": cfg.whisperModelFolder = v
-            case "qwenModelId": cfg.qwenModelId = v
-            case "qwenModelFolder": cfg.qwenModelFolder = v
-            default:
-                break
-            }
-        }
+        try cfg.save()
         print("Saved.")
     }
 }

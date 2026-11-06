@@ -83,6 +83,23 @@ final class EvalReviewServer: @unchecked Sendable {
               value["reviews"] as? [String: EvalItem] != nil else { throw ToolFailure("Invalid saved review state; original file preserved") }
         return value
     }
+    private func exports(in state: EvalItem, at directory: URL) -> [EvalItem] {
+        let folder = directory.appendingPathComponent("assets/consolidated", isDirectory: true)
+        return (state["consolidations"] as? [EvalItem] ?? []).map { export in
+            guard let id = export["id"] as? String, UUID(uuidString: id) != nil else { return export }
+            let file = folder.appendingPathComponent(id + ".json").resolvingSymlinksInPath()
+            guard file.path.hasPrefix(folder.path + "/"), let map = try? tools.json(file) as? EvalItem else { return export }
+            var ranges: [String: [Double]] = [:]
+            for edit in map["edits"] as? [EvalItem] ?? [] {
+                guard let id = edit["passage_id"] as? String, let start = edit["original_start"] as? Double,
+                      let end = edit["original_end"] as? Double else { continue }
+                ranges[id] = [start, end]
+            }
+            var export = export
+            export["ranges"] = ranges
+            return export
+        }
+    }
     private func sameContext(_ a: EvalItem?, _ b: EvalItem) -> Bool {
         guard let a else { return false }
         return NSDictionary(dictionary: a).isEqual(to: b)
@@ -125,7 +142,8 @@ final class EvalReviewServer: @unchecked Sendable {
                 guard let folder = session["root"] as? String, let url = session["url"] as? String,
                       url.hasPrefix("http://127.0.0.1:"), let components = URLComponents(string: url), components.host == "127.0.0.1", components.port != nil,
                       let data = try? tools.json(URL(fileURLWithPath: folder).appendingPathComponent("recordings.json")) as? EvalItem else { continue }
-                let state = (try? tools.json(URL(fileURLWithPath: folder).appendingPathComponent("review-state.json"))) as? EvalItem ?? [:]
+                let directory = URL(fileURLWithPath: folder)
+                let state = (try? tools.json(directory.appendingPathComponent("review-state.json"))) as? EvalItem ?? [:]
                 let saved = state["reviews"] as? [String: EvalItem] ?? [:]
                 for recording in data["recordings"] as? [EvalItem] ?? [] {
                     let passages = recording["passages"] as? [EvalItem] ?? []
@@ -133,7 +151,7 @@ final class EvalReviewServer: @unchecked Sendable {
                         guard let id = p["id"] as? String, let review = saved[id], ["matches", "corrected"].contains(review["status"] as? String ?? ""), let context = p["context"] as? EvalItem else { return false }
                         return sameContext(review["context"] as? EvalItem, context)
                     }.count
-                    result.append(["title": recording["title"] ?? "Recording", "recording_id": recording["id"] ?? "", "url": url, "verified": verified, "total": passages.count, "next_passage": passages.first(where: { p in guard let id = p["id"] as? String else { return false }; return !["matches", "corrected"].contains(saved[id]?["status"] as? String ?? "") })?["id"] ?? passages.first?["id"] ?? "", "current": folder == root.path, "audio_sha256": recording["audio_sha256"] ?? "", "reference_sha256": recording["reference_sha256"] ?? "", "passages": passages, "saved": saved, "exports": state["consolidations"] ?? [], "carried_candidates": recording["carried_passages"] ?? []])
+                    result.append(["title": recording["title"] ?? "Recording", "recording_id": recording["id"] ?? "", "url": url, "verified": verified, "total": passages.count, "next_passage": passages.first(where: { p in guard let id = p["id"] as? String else { return false }; return !["matches", "corrected"].contains(saved[id]?["status"] as? String ?? "") })?["id"] ?? passages.first?["id"] ?? "", "current": folder == root.path, "audio_sha256": recording["audio_sha256"] ?? "", "reference_sha256": recording["reference_sha256"] ?? "", "passages": passages, "saved": saved, "exports": exports(in: state, at: directory), "carried_candidates": recording["carried_passages"] ?? []])
                 }
             }
             for index in result.indices {
@@ -144,7 +162,13 @@ final class EvalReviewServer: @unchecked Sendable {
                     if let id = passage["id"] as? String, (entry["carried_candidates"] as? [String] ?? []).contains(id), saved[id] == nil { carried.append(id); resolved.append(id); continue }
                     guard let id = passage["id"] as? String, let review = saved[id], let context = passage["context"] as? EvalItem, sameContext(review["context"] as? EvalItem, context) else { continue }
                     if ["matches", "corrected"].contains(review["status"] as? String ?? "") { resolved.append(id); continue }
-                    if let take = review["accepted_take_id"] as? String, exports.contains(where: { ($0["selections"] as? [String: String])?[id] == take }) { replaced.append(id); resolved.append(id) }
+                    guard let take = review["accepted_take_id"] as? String,
+                          let selected = (review["retakes"] as? [EvalItem])?.first(where: { $0["id"] as? String == take }),
+                          let start = selected["replace_start_seconds"] as? Double, let end = selected["replace_end_seconds"] as? Double,
+                          exports.contains(where: { ($0["selections"] as? [String: String])?[id] == take &&
+                              ($0["ranges"] as? [String: [Double]])?[id] == [start, end] }) else { continue }
+                    replaced.append(id)
+                    resolved.append(id)
                 }
                 result[index]["replaced_passages"] = replaced
                 result[index]["carried_passages"] = carried
@@ -186,11 +210,11 @@ final class EvalReviewServer: @unchecked Sendable {
                 var archived = saved["archived_reviews"] as? [String: EvalItem] ?? [:]
                 for (id, value) in reviews where active[id] == nil { archived[id + "@inactive-reference"] = value }
                 saved["reviews"] = active; saved["archived_reviews"] = archived
+                saved["consolidations"] = exports(in: saved, at: root)
                 return try jsonResponse(saved)
             }
             guard method == "POST" else { return try jsonResponse(["error": "Method not allowed"], status: 405) }
-            guard headers["content-type"]?.lowercased().hasPrefix("application/json") == true,
-                  headers["origin"].map({ $0 == "http://" + headers["host"]! }) ?? true else { return try jsonResponse(["error": "Invalid local JSON request"], status: 403) }
+            guard localJSON(method, headers) else { return try jsonResponse(["error": "Invalid local JSON request"], status: 403) }
             guard body.count <= 100_000, let value = (try? JSONSerialization.jsonObject(with: body)) as? EvalItem,
                   let id = value["id"] as? String, let context = currentContexts[id],
                   let status = value["status"] as? String, ["pending", "matches", "corrected", "uncertain", "misaligned"].contains(status),
@@ -377,6 +401,6 @@ extension EvalReviewServer {
         lock.lock(); defer { lock.unlock() }
         var saved = try state(), exports = saved["consolidations"] as? [EvalItem] ?? []; exports.append(export); saved["consolidations"] = exports
         try JSONSerialization.data(withJSONObject: saved, options: [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]).write(to: root.appendingPathComponent("review-state.json"), options: .atomic)
-        return try jsonResponse(export)
+        return try jsonResponse(export.merging(["ranges": Dictionary(uniqueKeysWithValues: splices.map { ($0.passageID, [$0.start, $0.end]) })]) { _, ranges in ranges })
     }
 }

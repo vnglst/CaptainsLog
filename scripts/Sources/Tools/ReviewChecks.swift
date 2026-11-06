@@ -141,9 +141,11 @@ extension Tools {
         var completedReviews: [String: EvalItem] = [:]
         for passage in passages { completedReviews[passage["id"] as! String] = ["status": "matches", "context": passage["context"]!] }
         let lastID = passages.last!["id"] as! String
-        completedReviews[lastID] = ["status": "uncertain", "context": passages.last!["context"]!, "accepted_take_id": "selected-take"]
+        let exportID = UUID().uuidString
+        completedReviews[lastID] = ["status": "uncertain", "context": passages.last!["context"]!, "accepted_take_id": "selected-take", "retakes": [["id": "selected-take", "replace_start_seconds": 0.1, "replace_end_seconds": 0.2]]]
         completed["reviews"] = completedReviews
-        completed["consolidations"] = [["recording_id": first["id"]!, "reference_sha256": first["reference_sha256"]!, "audio_sha256": "corrected-audio", "selections": [lastID: "selected-take"]]]
+        completed["consolidations"] = [["id": exportID, "recording_id": first["id"]!, "reference_sha256": first["reference_sha256"]!, "audio_sha256": "corrected-audio", "selections": [lastID: "selected-take"]]]
+        try json(app.appendingPathComponent("assets/consolidated/" + exportID + ".json"), ["edits": [["passage_id": lastID, "original_start": 0.1, "original_end": 0.2]]])
         try json(stateFile, completed)
         try json(sibling.appendingPathComponent("recordings.json"), ["recordings": [["id": "second", "title": "Second review", "audio_sha256": "corrected-audio", "passages": [["id": "second-passage", "short_id": passages.last!["short_id"]!]]]]])
         func summary() throws -> EvalItem {

@@ -14,6 +14,8 @@ entry. Git links provide the complete commit history for each release.
 
 ### Fixed
 
+- Keep search progress tied to the current query, save settings atomically, and reopen a transcription review when a replacement range no longer matches the exported audio.
+
 - Keep duplicated transcription sentences together in listening review so the full reference stays aligned with the audio. Use independently pinned word timing for unreliable clips, include full sentences where short clips are hard to verify, and let reviewers flag audio/text mismatches without an explanation.
 
 - Generate transcription review clips from complete reference alignments of both Whisper models, pin comparison audio/output/timing evidence, use topic-and-issue passage titles, and keep pending review focused on the selected recordings while retaining completed history as passive overview cards. Matching text is excluded without a filter option. Preserve earlier review decisions and keep matching passages out of the differences queue.

@@ -19,8 +19,7 @@ public struct CaptainsLogConfig: Codable, Sendable {
         let parsed = (categories ?? Categorize.Category.allCases.map(\.rawValue))
             .compactMap { Categorize.Category(name: $0) }
         var seen = Set<Categorize.Category>()
-        let unique = parsed.filter { seen.insert($0).inserted }
-        return unique
+        return parsed.filter { seen.insert($0).inserted }
     }
     public var preferredRecordingDeviceUID: String?
     public var dataDir: String?
@@ -75,46 +74,32 @@ public struct CaptainsLogConfig: Codable, Sendable {
     }
 
     public static func migrate(from oldVersion: Int, to config: inout CaptainsLogConfig) {
-        switch oldVersion {
-        case 0:
-            // Schema v0 → v1: add schemaVersion field
+        if oldVersion == 0 {
             config.schemaVersion = currentSchemaVersion
-            fallthrough
-        default:
-            break
         }
     }
 
-    public func readPersonalInfo() -> String? {
-        let url = personalInfoURL()
+    public func readPersonalInfo() -> String? { readContextFile(personalInfoURL()) }
+
+    public func readCorrections() -> String? { readContextFile(correctionsURL()) }
+
+    private func readContextFile(_ url: URL) -> String? {
         guard FileManager.default.fileExists(atPath: url.path) else { return nil }
         do {
             return try String(contentsOf: url, encoding: .utf8)
         } catch {
-            Logger.config.warning("Failed to read personal context at \(url.path): \(error.localizedDescription)")
+            Logger.config.warning("Failed to read \(url.lastPathComponent) at \(url.path): \(error.localizedDescription)")
             return nil
         }
     }
 
-    public func readCorrections() -> String? {
-        let url = correctionsURL()
-        guard FileManager.default.fileExists(atPath: url.path) else { return nil }
-        do {
-            return try String(contentsOf: url, encoding: .utf8)
-        } catch {
-            Logger.config.warning("Failed to read corrections at \(url.path): \(error.localizedDescription)")
-            return nil
-        }
-    }
+    public func writePersonalInfo(_ text: String) throws { try writeContextFile(text, to: personalInfoURL()) }
 
-    public func writePersonalInfo(_ text: String) throws {
-        try FileManager.default.createDirectory(atPath: contextDir().path, withIntermediateDirectories: true)
-        try text.write(to: personalInfoURL(), atomically: true, encoding: .utf8)
-    }
+    public func writeCorrections(_ text: String) throws { try writeContextFile(text, to: correctionsURL()) }
 
-    public func writeCorrections(_ text: String) throws {
-        try FileManager.default.createDirectory(atPath: contextDir().path, withIntermediateDirectories: true)
-        try text.write(to: correctionsURL(), atomically: true, encoding: .utf8)
+    private func writeContextFile(_ text: String, to url: URL) throws {
+        try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try text.write(to: url, atomically: true, encoding: .utf8)
     }
 
     public static var configURL: URL {
@@ -140,19 +125,13 @@ public struct CaptainsLogConfig: Codable, Sendable {
                 migrate(from: config.schemaVersion, to: &config)
                 try? config.save()
             }
-            validate(config: config)
+            if let dataDir = config.dataDir, !FileManager.default.fileExists(atPath: dataDir) {
+                Logger.config.warning("Configured dataDir does not exist: \(dataDir)")
+            }
             return config
         } catch {
             Logger.config.error("Failed to load config at \(url.path): \(error.localizedDescription)")
             return CaptainsLogConfig()
-        }
-    }
-
-    private static func validate(config: CaptainsLogConfig) {
-        if let dataDir = config.dataDir {
-            if !FileManager.default.fileExists(atPath: dataDir) {
-                Logger.config.warning("Configured dataDir does not exist: \(dataDir)")
-            }
         }
     }
 
@@ -163,7 +142,7 @@ public struct CaptainsLogConfig: Codable, Sendable {
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         let data = try encoder.encode(self)
-        try data.write(to: url)
+        try data.write(to: url, options: .atomic)
     }
 
     public static func update(_ mutator: (inout CaptainsLogConfig) -> Void) throws {

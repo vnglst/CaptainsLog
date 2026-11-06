@@ -83,7 +83,7 @@ public final class SearchManager {
             defer { self?.activeSearchTasks.removeValue(forKey: taskID) }
             try? await Task.sleep(for: debounceInterval)
             guard !Task.isCancelled, let self else { return }
-            await self.performSearch(dataDir: dataDir)
+            await self.performSearch(dataDir: dataDir, taskID: taskID)
         }
         searchTask = task
         activeSearchTasks[taskID] = task
@@ -120,8 +120,7 @@ public final class SearchManager {
 
     public func retry(dataDir: String) {
         guard !isStopping else { return }
-        engine = nil
-        engineDataDir = nil
+        releaseModel()
         updateQuery(query, dataDir: dataDir)
     }
 
@@ -130,19 +129,14 @@ public final class SearchManager {
         updateQuery(query, dataDir: dataDir)
     }
 
-    private func performSearch(dataDir: String) async {
+    private func performSearch(dataDir: String, taskID: UUID) async {
         do {
             let search: SemanticSearch
             if let engine, engineDataDir == dataDir {
                 search = engine
             } else {
                 state = .preparingModel
-                search = try await searchFactory(dataDir) { [weak self] _ in
-                    Task { @MainActor in
-                        guard let self, !self.isStopping else { return }
-                        self.state = .preparingModel
-                    }
-                }
+                search = try await searchFactory(dataDir) { _ in }
                 guard !Task.isCancelled, !isStopping else { return }
                 engine = search
                 engineDataDir = dataDir
@@ -150,16 +144,10 @@ public final class SearchManager {
 
             let matches = try await search.search(query, limit: 20, excludedCategoryFolders: excludedCategoryFolders) { [weak self] progress in
                 Task { @MainActor in
-                    guard let self, !self.isStopping else { return }
+                    guard let self, self.activeSearchTasks[taskID]?.isCancelled == false else { return }
                     switch progress.phase {
                     case .preparingModel: self.state = .preparingModel
-                    case .scanning:
-                        self.state = .indexing(
-                            message: progress.message,
-                            completed: progress.completed,
-                            total: progress.total
-                        )
-                    case .indexing:
+                    case .scanning, .indexing:
                         self.state = .indexing(
                             message: progress.message,
                             completed: progress.completed,

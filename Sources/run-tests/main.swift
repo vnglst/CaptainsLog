@@ -591,24 +591,33 @@ func runSearchCoverageTests() async {
         let lifecycle = LockedStringArray()
         let factories = LockedValue(0)
         let oldFactory = AsyncTestGate()
-        let manager = SearchManager(debounceInterval: .zero) { dataDir, _ in
+        let oldProgress = LockedValue<(@Sendable (Progress) -> Void)?>(nil)
+        let manager = SearchManager(debounceInterval: .zero) { dataDir, progress in
             factories.set(factories.get() + 1)
             let first = factories.get() == 1
             let search = try SemanticSearch(dataDir: dataDir, model: LifetimeEmbeddingModel(lifecycle: lifecycle))
-            if first { await oldFactory.wait() }
+            if first {
+                oldProgress.set(progress)
+                await oldFactory.wait()
+            }
             return search
         }
         manager.updateQuery("first query", dataDir: root.path)
-        for _ in 0..<100 where factories.get() == 0 { try await Task.sleep(for: .milliseconds(10)) }
+        for _ in 0..<100 where oldProgress.get() == nil { try await Task.sleep(for: .milliseconds(10)) }
         manager.updateQuery("replacement query", dataDir: root.path)
         for _ in 0..<100 where manager.state != .ready { try await Task.sleep(for: .milliseconds(10)) }
-        try expect(manager.state == .ready && factories.get() == 2)
+        let replacementFinished = manager.state == .ready && factories.get() == 2
+        oldProgress.get()?(Progress(totalUnitCount: 1))
+        try await Task.sleep(for: .milliseconds(20))
+        let replacementStayedReady = manager.state == .ready
         let drained = LockedValue(false)
         let shutdown = Task { await manager.stopForTermination(); drained.set(true) }
         try await Task.sleep(for: .milliseconds(20))
-        try expect(!drained.get(), "A finished latest query must not conceal a canceled factory that still owns native resources")
+        let waitedForOldFactory = !drained.get()
         await oldFactory.open()
         await shutdown.value
+        try expect(replacementFinished && replacementStayedReady, "Superseded factory progress must not overwrite completed results")
+        try expect(waitedForOldFactory, "A finished latest query must not conceal a canceled factory that still owns native resources")
         try expect(lifecycle.snapshot().filter { $0 == "released" }.count == 2)
         try expect(drained.get() && manager.state == .idle)
     }
@@ -658,9 +667,11 @@ func runSearchCoverageTests() async {
         }
         try expect(queryLog.snapshot() == ["bike"], "The first query should be blocked inside embedding")
 
-        manager.updateQuery("sqlite", dataDir: root.path)
+        manager.updateQuery("", dataDir: root.path)
         await gate.open()
         try await Task.sleep(for: .milliseconds(80))
+        try expect(manager.state == .idle, "Canceled query progress must not revive a cleared search")
+        manager.updateQuery("sqlite", dataDir: root.path)
         try expect(
             manager.results.isEmpty,
             "The completed but canceled query must not publish its stale results"

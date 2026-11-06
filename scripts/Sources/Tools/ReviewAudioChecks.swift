@@ -62,6 +62,13 @@ extension Tools {
         try require(hash(source) == originalHash && hash(firstFile) == hash(retake), "Consolidation mutated original or retake audio")
         let state = try json(dir.appendingPathComponent("review-state.json")) as! EvalItem
         try require((state["consolidations"] as? [EvalItem])?.count == 1, "Corrected recording history was not persisted")
+        func reviewIsComplete() throws -> Bool {
+            let overview = try decode(server.response(method: "GET", path: "/api/reviews", headers: headers, body: Data()))
+            return (overview["reviews"] as? [EvalItem])?.first?["complete"] as? Bool == true
+        }
+        try require(reviewIsComplete(), "Exported replacements did not resolve the review")
+        update["retake_ranges"] = [takeID: ["start": 0.15, "end": 0.4]]
+        try require(send("/api/state", update).status == 200 && !reviewIsComplete(), "Editing an exported replacement range must reopen the review")
         print("PASS: synthetic WAV retakes, approvals, editable ranges, overlap rejection, native M4A consolidation, edit-map timing and original preservation")
     }
 }
