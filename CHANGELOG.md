@@ -12,6 +12,8 @@ entry. Git links provide the complete commit history for each release.
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-11-06
+
 ### Fixed
 
 - Keep search progress tied to the current query, save settings atomically, and reopen a transcription review when a replacement range no longer matches the exported audio.
@@ -102,6 +104,10 @@ entry. Git links provide the complete commit history for each release.
 - Reduce Qwen inference graph memory by reserving logits for only the final token of each batch; keep the same models, prompts, generation limits, GPU offload and batch sizes.
 - Move personal context, name and term corrections, and categories into a separate Context destination using their existing editors; reorder Settings to audio input, storage, models, updates, processing outputs, and About without a submenu.
 - Remove separate CLI and per-entry UI reprocessing, backup creation and saved batch resume; add confirmed `cl delete-outputs` and use existing pending processing after deletion. Remove the public `Reprocessing`, `Pipeline.resetForReprocessing` and `Pipeline.reprocessingCandidatePaths` interfaces; clients can delete outputs and use the existing pipeline resume APIs.
+
+### Release
+
+- Publish the 0.6.0 app/CLI archive and matching Homebrew cask version and checksum.
 
 ## [0.5.0] - 2026-10-11
 
@@ -313,7 +319,8 @@ entry. Git links provide the complete commit history for each release.
 
 - Make release tests work on clean runners without preinstalled inference models.
 
-[Unreleased]: https://github.com/vnglst/CaptainsLog/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/vnglst/CaptainsLog/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/vnglst/CaptainsLog/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/vnglst/CaptainsLog/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/vnglst/CaptainsLog/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/vnglst/CaptainsLog/compare/v0.3.0...v0.3.1
