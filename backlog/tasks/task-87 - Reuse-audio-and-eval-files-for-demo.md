@@ -1,9 +1,10 @@
 ---
 id: TASK-87
 title: Reuse audio and eval files for demo
-status: Next
+status: Verify
 assignee: []
 created_date: '2026-11-07T14:38:00Z'
+updated_date: '2026-11-07T20:59:00Z'
 labels: []
 dependencies: []
 ordinal: 78000

@@ -1,15 +1,19 @@
-# TNG demo data
+# Development demo
 
-These are synthetic voice-memo entries in the TNG setting used for product demonstrations. Evaluation scripts use separate fixtures under `eval/`. They are short enough to browse during a product video and varied enough to exercise dates, categories, summaries, tags, detail reading, and search.
+The demo and native UI harness use the same library in
+[`eval/demo-library.json`](../eval/demo-library.json). It references the canonical
+evaluation audio, transcripts, cleaned text and enriched metadata under `eval/`;
+there are no separate demo recordings or notes.
 
-`entries/` contains canonical enriched Markdown for seven finished notes. The debug app seeds the other pipeline artifacts in its ignored working copy so the normal entry discovery reports them as completed. `audio/` contains matching synthesized audio for those notes and two short pending memos, generated from the adjacent script using macOS `say` and `afconvert`. The pending memo can be resumed through the real pipeline when the local models are available.
+Run `make dev`. The debug app copies those fixtures into
+`tmp/demo-runtime-eval/data/` with a separate config. Completed examples include the
+Dutch Enterprise log and work-week review; the remaining recordings and a
+transcript are pending. Changes affect only this working copy. Quit and move
+`tmp/demo-runtime-eval/` aside to reset it. The previous `tmp/demo-runtime/` copy is
+left untouched.
 
-Run `make dev` from the repository. The app prepares `tmp/demo-runtime/data/` and a separate config there. Changes made in the app affect the working copy. Quit the app and move `tmp/demo-runtime/` aside to reset it.
-
-`audio/2026-09-24-1750.qta` is a short synthesized QuickTime audio example. Its adjacent text file contains the spoken words. It was generated with macOS `say` and encoded as AAC in a QuickTime container using FFmpeg. The debug app copies it alongside the M4A files as a pending memo.
-
-The development app also copies the owner's Dutch TNG recording from
-`eval/transcribe/audio/tng-nl01-vrije-dag-enterprise-corrected.m4a` into its isolated audio
-folder as a pending memo. The eval fixture remains canonical; processing in the
-demo changes only the runtime copy. English and German recordings are not seeded
-until they are supplied.
+`make ui` uses a fresh temporary copy of the same library and can show simulated
+UI states without downloading models or discovering recordings. `make dev` uses
+the real processing pipeline and prepared local models. Explicit
+`CAPTAINS_LOG_CONFIG_PATH` bypasses demo seeding for isolated checks. Demo browsing
+and simulated UI states do not establish successful inference.

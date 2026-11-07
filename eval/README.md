@@ -56,7 +56,11 @@ make evals-review RUN_DIR=eval/transcribe/history/review-2
 
 The [TNG scripts](tng-reference/README.md) preserve the original script separately
 from the verbatim reference. English and German recordings are still to be supplied.
-The development demo copies the reviewed Dutch audio into its isolated runtime.
+The development demo and native UI harness copy the same canonical fixture library
+from [`demo-library.json`](demo-library.json) into isolated runtime storage.
+The shared Foundation-only package in `FixtureLibrary/` seeds completed logs and
+pending recordings without copying fixture data into a second source folder.
+Run its model-free checks with `swift run --package-path eval/FixtureLibrary fixture-library-checks`.
 Run `make evals-pipeline` for transcription through search using `pipeline/cases.json`.
 The [2026-11-05 Enterprise run](pipeline/history/2026-11-05-enterprise/README.md)
 records stage outputs, mechanical validation, resume and search checks, and

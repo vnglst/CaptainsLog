@@ -101,7 +101,7 @@ check, clean debug and release builds, deterministic tests, packaging/signature
 checks and sequential fixture evaluations before committing. Changing system
 llama.cpp, GGML or libomp installations has no effect on the selected artifact.
 
-For a safe development demo, run `make dev` (`make` and `make run` are aliases). It launches the cached debug app directly when sources and package manifests are unchanged, bypassing SwiftPM startup. If the app is missing or inputs changed (including added or removed source files), it incrementally builds only the app and its dependencies first. No packaging, tests or evaluations run. The first build needs dependency downloads and compilation. It creates an isolated TNG-themed data copy under `tmp/demo-runtime/` from synthetic notes and locally synthesized audio in [`demo/`](./demo/). The demo copy persists between launches; move it aside to restore the original demo.
+For a safe development demo, run `make dev` (`make` and `make run` are aliases). It launches the cached debug app directly when sources and package manifests are unchanged, bypassing SwiftPM startup. If the app is missing or inputs changed (including added or removed source files), it incrementally builds only the app and its dependencies first. No packaging, tests or evaluations run. The first build needs dependency downloads and compilation. It creates an isolated data copy under `tmp/demo-runtime-eval/` from the same canonical audio and text fixtures used by evaluations and the native UI harness, selected in [`eval/demo-library.json`](./eval/demo-library.json). The demo copy persists between launches; move it aside to restore the original demo. See [`demo/`](./demo/) for details.
 
 ## Use
 
