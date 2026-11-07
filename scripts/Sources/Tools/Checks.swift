@@ -1,40 +1,9 @@
+import EvalFixtureLibrary
+import ToolSupport
 import Foundation
 import Darwin
 
 extension Tools {
-    func nonempty(_ url: URL) -> Bool { ((try? fm.attributesOfItem(atPath: url.path)[.size] as? NSNumber)?.intValue ?? 0) > 0 }
-    func evalPipeline(_ args: [String]) throws {
-        try require(args.count >= 2 && args.dropFirst(2).allSatisfy { ["--combined-metadata", "--check-artifacts"].contains($0) }, "Usage: eval-pipeline RUN_DIR CL [--combined-metadata] [--check-artifacts]", status: 2)
-        let dir = path(args[0]), cl = args[1], data = dir.appendingPathComponent("data"), eval = Evaluator(self)
-        guard let manifest = try json(dir.appendingPathComponent("manifest.json")) as? [EvalItem],
-              let audio = manifest.first(where: { eval.string($0, "scope") == "pipeline" && eval.string($0, "stage") == "transcribe" }) else { throw ToolFailure("Missing pipeline audio fixture") }
-        let stem = eval.string(audio, "name")
-        if !args.contains("--check-artifacts") {
-            try run([cl, "pipeline", "--input", eval.string(audio, "input"), "--data-dir", data.path] + (args.contains("--combined-metadata") ? ["--combined-metadata"] : []), log: dir.appendingPathComponent("pipeline.log"))
-        }
-        for relative in ["01-transcribed/\(stem).md", "02-logs/\(stem).md", "03-category/\(stem).json"] {
-            try require(nonempty(data.appendingPathComponent(".pipeline/" + relative)), "Pipeline artifact assertion failed: \(relative)")
-        }
-        let category = try json(data.appendingPathComponent(".pipeline/03-category/\(stem).json")) as? [String: Any]
-        guard let categoryName = category?["category"] as? String,
-              let categoryFixture = manifest.first(where: { eval.string($0, "scope") == "pipeline" && eval.string($0, "stage") == "categorize" }) else { throw ToolFailure("Missing pipeline category") }
-        let accepted = try read(eval.file(categoryFixture, "expected")).split(whereSeparator: \.isNewline).map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
-        try require(accepted.contains(categoryName), "Unexpected pipeline category")
-        let marker = data.appendingPathComponent(".pipeline/04-rename/\(stem).slug.txt")
-        try require(nonempty(marker), "Missing slug marker")
-        let slug = try read(marker).trimmingCharacters(in: .whitespacesAndNewlines)
-        let enriched = data.appendingPathComponent("logs/\(categoryName.replacingOccurrences(of: "_", with: "-"))/\(slug).md")
-        try require(nonempty(data.appendingPathComponent(".pipeline/04-rename/\(slug).md")) && nonempty(enriched), "Missing renamed/enriched artifacts for \(slug)")
-        func snapshot() throws -> String { try files(data, recursive: true).map { try hash($0) + "  " + $0.path }.sorted().joined(separator: "\n") + "\n" }
-        let before = try snapshot(); try write(dir.appendingPathComponent("before-resume.sha256"), before)
-        try run([cl, "resume", "--data-dir", data.path], log: dir.appendingPathComponent("resume.log"))
-        let after = try snapshot(); try write(dir.appendingPathComponent("after-resume.sha256"), after)
-        try require(before == after, "Resume changed completed pipeline artifacts")
-        try run([cl, "search-index", "--data-dir", data.path], log: dir.appendingPathComponent("search-index.log"))
-        let search = try run([cl, "search", eval.string(audio, "search_query", "Star Trek captain log side project"), "--data-dir", data.path, "--limit", "5"], log: dir.appendingPathComponent("search.log"))
-        try require(search.output.contains(enriched.path), "Search did not return pipeline entry: \(enriched.path)")
-        print("Pipeline artifact, category, resume immutability, and search readback assertions passed.")
-    }
     func testUpdates() throws {
         let dir = try temporary("update-verification-", in: path("tmp")); try isolated(dir)
         environment["CAPTAINS_LOG_UPDATE_FIXTURE_STATE"] = dir.appendingPathComponent("installed").path
@@ -66,7 +35,7 @@ extension Tools {
         for key in keys { try require(!(environment[key] ?? "").isEmpty, "Set \(key) to an already-installed model before running this opt-in smoke.", status: 2) }
         for key in [keys[1], keys[3]] { var directory: ObjCBool = false; try require(fm.fileExists(atPath: environment[key]!, isDirectory: &directory) && directory.boolValue, "Model folder does not exist: \(environment[key]!)", status: 2) }
         try require(files(path(environment[keys[3]]!)).contains { $0.pathExtension == "gguf" }, "Qwen model folder must contain an installed .gguf file.", status: 2)
-        let fixture = path("eval/transcribe/history/audio/durins-volk.m4a")
+        let fixture = path("eval/transcribe/audio/durins-volk.m4a")
         try require(nonempty(fixture), "Synthetic transcription fixture missing", status: 2)
         let dir = try temporary("captainslog-model-smoke-"); defer { try? fm.removeItem(at: dir) }; try isolated(dir)
         for (key, value) in [("whisperModel", environment[keys[0]]!), ("whisperModelFolder", environment[keys[1]]!), ("qwenModelId", environment[keys[2]]!), ("qwenModelFolder", environment[keys[3]]!)] { try run(["swift", "run", "cl", "config", "set", key, value], quiet: true) }
@@ -102,22 +71,7 @@ extension Tools {
         let bin = path(try capture(["swift", "build", "--show-bin-path"]))
         let dir = try temporary("captainslog-ui-eval-"); try isolated(dir)
         let data = dir.appendingPathComponent("data"), app = dir.appendingPathComponent("CaptainsLogUITest.app"), identifier = "local.captainslog.ui-eval." + UUID().uuidString.lowercased()
-        func source(_ relative: String) throws -> String { try read(path("eval/" + relative)) }
-        func completed(_ stem: String, _ slug: String, _ category: String, _ transcript: String, _ cleaned: String, _ final: String) throws {
-            try copy(path("eval/" + transcript), data.appendingPathComponent(".pipeline/01-transcribed/\(stem).md"))
-            try write(data.appendingPathComponent(".pipeline/02-logs/\(stem).md"), cleaned)
-            try json(data.appendingPathComponent(".pipeline/03-category/\(stem).json"), ["sourceStem": stem, "category": category])
-            try write(data.appendingPathComponent(".pipeline/04-rename/\(stem).slug.txt"), slug)
-            try write(data.appendingPathComponent(".pipeline/04-rename/\(slug).md"), cleaned)
-            try write(data.appendingPathComponent("logs/\(category.replacingOccurrences(of: "_", with: "-"))/\(slug).md"), final)
-        }
-        let slug = try source("pipeline/tng-nl01/filename.md").trimmingCharacters(in: .whitespacesAndNewlines).replacingOccurrences(of: ".md", with: "")
-        let cleaned = try source("pipeline/tng-nl01/cleaned.md")
-        try completed("2025-01-14-0730", slug, "personal", "transcribe/expected/tng-nl01-vrije-dag-enterprise-corrected.md", cleaned, source("pipeline/tng-nl01/enriched.md") + cleaned)
-        try copy(path("eval/transcribe/audio/tng-nl01-vrije-dag-enterprise-corrected.m4a"), data.appendingPathComponent("audio/2025-01-14-0730.m4a"))
-        let work = try source("enrich/input/01_work_week.md")
-        try completed("2025-01-15-1200", "2025-01-15-work-week-review", "professional", "enrich/input/01_work_week.md", work, source("enrich/expected/01_work_week.md") + work)
-        try copy(path("eval/cleanup/input/book-reference.md"), data.appendingPathComponent(".pipeline/01-transcribed/2025-01-16-0900.md"))
+        try EvalFixtureLibrary.prepare(evalRoot: path("eval"), dataRoot: data)
         try mkdir(app.appendingPathComponent("Contents/MacOS")); try mkdir(app.appendingPathComponent("Contents/Resources"))
         let executable = app.appendingPathComponent("Contents/MacOS/CaptainsLogUITest")
         try copy(bin.appendingPathComponent("CaptainsLogApp"), executable)

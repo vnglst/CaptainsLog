@@ -1,4 +1,9 @@
-# Evaluation fixtures
+# Evaluations
+
+Evaluation orchestration, scoring, validation, the listening-review app and its
+tests live in [`tools/`](tools/). Stage workflows live in [`skills/`](skills/).
+The CLI batch command lives in [`CLI/`](CLI/); production inference stages remain
+in CaptainsLogCore. Make is the public entry point.
 
 Active stages are `transcribe`, `cleanup`, `categorize`, `filename` and `enrich`.
 Transcription inputs live in `transcribe/audio/`; text-stage inputs live in each
@@ -21,7 +26,7 @@ identity, and prints a review bundle under its temporary run directory. Text
 cases reuse one model sequentially with fresh contexts and samplers. Stage `history/generated/` and `history/reports/` folders preserve previous results; new run bundles contain their own outputs, validation and per-case reports.
 
 See [evaluation commands and isolation](../README.md#fixture-evaluations) and the
-[stage review skills](../skills/) for semantic review. Discovery and saved-run
+[stage review skills](skills/) for semantic review. Discovery and saved-run
 validation do not load inference models. Generation requires the selected models;
 never run concurrent inference jobs or use personal recordings. Model evaluations
 run separately from release preparation.
@@ -138,7 +143,7 @@ Neither recording nor consolidation modifies fixtures or reruns inference.
 Capture starts only with the Record button and browser microphone permission.
 The browser converts captured audio locally to mono 16 kHz PCM WAV, with a ten
 minute limit per take. Native AVFoundation exports the combined M4A. Optional
-capture lifecycle tests run with `node --test scripts/tests/review-capture.mjs`;
+capture lifecycle tests run with `node --test eval/tools/tests/review-capture.mjs`;
 `make tests-evals` covers storage and native consolidation with repository fixtures.
 
 The fresh owner-reviewed Dutch baseline is preserved in `transcribe/history/baselines/2026-10-30-whisper-large-v2/`: WER 3.66% (44 edits / 1,203 words). Its report retains the remaining recognition errors and ungrounded Korean ending.

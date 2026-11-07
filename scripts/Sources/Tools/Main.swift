@@ -1,3 +1,5 @@
+import ToolSupport
+import EvaluationTools
 import Foundation
 import Darwin
 
@@ -6,7 +8,7 @@ import Darwin
         do {
             let args = Array(CommandLine.arguments.dropFirst())
             if ProcessInfo.processInfo.environment["CAPTAINS_LOG_TOOL_FIXTURE_KIND"] == "release" { try Tools().releaseFixture(args); return }
-            if ProcessInfo.processInfo.environment["CAPTAINS_LOG_TOOL_FIXTURE_KIND"] == "eval", ["swift", "otool", "cl"].contains(URL(fileURLWithPath: CommandLine.arguments[0]).lastPathComponent) { try Tools().evalFixture(args); return }
+            if ProcessInfo.processInfo.environment["CAPTAINS_LOG_TOOL_FIXTURE_KIND"] == "eval", ["swift", "otool", "cl"].contains(URL(fileURLWithPath: CommandLine.arguments[0]).lastPathComponent) { try EvaluationTools.runFixture(Tools(), args); return }
             guard let command = args.first else { throw ToolFailure("Specify a tooling command") }
             let tools = Tools(); FileManager.default.changeCurrentDirectoryPath(tools.root.path)
             try tools.dispatch(command, Array(args.dropFirst()))
@@ -18,25 +20,8 @@ extension Tools {
     func dispatch(_ command: String, _ args: [String]) throws {
         switch command {
         case "isolated-check": let temp = try temporary("captainslog-check-"); defer { try? fm.removeItem(at: temp) }; try isolated(temp); try run(args)
-        case "evals": try evals(args)
-        case "evals-review": try evalsReview(args)
-        case "website":
-            guard args.count == 1, let port = UInt16(args[0]) else {
-                throw ToolFailure("Usage: website PORT (0–65535)", status: 2)
-            }
-            let server = try EvalReviewServer(root: root.appendingPathComponent("website"), port: port, website: true)
-            print("Website: http://127.0.0.1:\(server.port)")
-            fflush(stdout)
-            try server.serve()
-        case "score-transcription":
-            try require(args.count == 4 && args[0] == "--expected" && args[2] == "--generated", "Usage: score-transcription --expected PATH --generated PATH", status: 2)
-            print(try TranscriptionScore(reference: read(path(args[1])), hypothesis: read(path(args[3]))).markdown)
-        case "test-evals": try testEvals()
         case "test-coverage": try testCoverage(args)
         case "test-release-tooling": try testReleaseTooling()
-        case "test-enrich-eval": try testEnrichEval()
-        case "test-enrich-validator": try testEnrichValidator()
-        case "eval-pipeline": try evalPipeline(args)
         case "test-updates": try testUpdates()
         case "test-model-smoke": try testModelSmoke()
         case "test-recorder-hardware": try testRecorder()
@@ -46,7 +31,7 @@ extension Tools {
         case "check-runtime": try checkRuntime(args)
         case "test-runtime": try testRuntime()
         case "make-iconset": try makeIconset()
-        default: throw ToolFailure("Unknown tooling command: \(command)")
+        default: try EvaluationTools.run(self, command, args)
         }
     }
 }

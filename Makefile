@@ -18,7 +18,7 @@ PORT ?=
 SHA256 ?=
 
 # Directory timestamps also invalidate the app when source files are added or removed.
-DEV_INPUTS := Package.swift Package.resolved $(shell find Sources Vendor -type f -o -type d)
+DEV_INPUTS := Package.swift Package.resolved $(shell find Sources Vendor eval/FixtureLibrary -name .build -prune -o -name .swiftpm -prune -o -type f -print -o -type d -print)
 
 .PHONY: help build dev run website cli tests tests-unit tests-coverage tests-updates tests-release tests-evals tests-runtime tests-enrich tests-model tests-recorder tests-app-performance tests-search-shutdown ui evals evals-review evals-list evals-pipeline evals-suites packaging release release-notes release-check release-cask icons clean
 
@@ -60,32 +60,32 @@ cli:
 	$(SWIFT) run -c "$(CONFIGURATION)" cl $(ARGS)
 
 tests:
-	$(SWIFT) scripts/isolated-check.swift $(SWIFT) run -c "$(CONFIGURATION)" run-tests $(ARGS)
+	$(SWIFT) scripts/tooling.swift isolated-check $(SWIFT) run -c "$(CONFIGURATION)" run-tests $(ARGS)
 
 tests-unit:
-	$(SWIFT) scripts/isolated-check.swift $(SWIFT) run -c "$(CONFIGURATION)" run-tests --unit $(ARGS)
+	$(SWIFT) scripts/tooling.swift isolated-check $(SWIFT) run -c "$(CONFIGURATION)" run-tests --unit $(ARGS)
 
 tests-coverage:
-	$(SWIFT) scripts/isolated-check.swift $(SWIFT) scripts/test-coverage.swift $(ARGS)
+	$(SWIFT) scripts/tooling.swift isolated-check $(SWIFT) scripts/tooling.swift test-coverage $(ARGS)
 
 tests-updates:
-	$(SWIFT) scripts/isolated-check.swift $(SWIFT) scripts/test-updates.swift $(ARGS)
+	$(SWIFT) scripts/tooling.swift isolated-check $(SWIFT) scripts/tooling.swift test-updates $(ARGS)
 
 tests-release:
-	$(SWIFT) scripts/test-release-tooling.swift $(ARGS)
+	$(SWIFT) scripts/tooling.swift test-release-tooling $(ARGS)
 
 tests-evals:
-	$(SWIFT) scripts/test-evals.swift $(ARGS)
+	$(SWIFT) scripts/tooling.swift test-evals $(ARGS)
 
 tests-runtime:
-	$(SWIFT) scripts/test-runtime.swift
+	$(SWIFT) scripts/tooling.swift test-runtime
 
 tests-enrich:
 	$(MAKE) build CONFIGURATION=debug
-	$(SWIFT) scripts/isolated-check.swift $(SWIFT) scripts/test-enrich-eval.swift $(ARGS)
+	$(SWIFT) scripts/tooling.swift isolated-check $(SWIFT) scripts/tooling.swift test-enrich-eval $(ARGS)
 
 tests-model:
-	$(SWIFT) scripts/isolated-check.swift $(SWIFT) scripts/test-model-smoke.swift $(ARGS)
+	$(SWIFT) scripts/tooling.swift isolated-check $(SWIFT) scripts/tooling.swift test-model-smoke $(ARGS)
 
 tests-app-performance:
 	@test -n "$(RUN_DIR)"
@@ -98,19 +98,19 @@ tests-search-shutdown:
 	$(SWIFT) scripts/test-search-shutdown.swift "$$($(SWIFT) build -c debug --show-bin-path)/CaptainsLogApp" "$(RUN_DIR)" $(ARGS)
 
 tests-recorder:
-	$(SWIFT) scripts/isolated-check.swift $(SWIFT) scripts/test-recorder-hardware.swift $(ARGS)
+	$(SWIFT) scripts/tooling.swift isolated-check $(SWIFT) scripts/tooling.swift test-recorder-hardware $(ARGS)
 
 ui:
-	$(SWIFT) scripts/test-ui.swift $(if $(ARGS),$(ARGS),eval)
+	$(SWIFT) scripts/tooling.swift test-ui $(if $(ARGS),$(ARGS),eval)
 
 evals:
-	$(SWIFT) scripts/run-evals.swift $(if $(STAGE),--stage "$(STAGE)",$(if $(MODE),--$(MODE))) $(if $(CASE),--case "$(CASE)") $(ARGS)
+	$(SWIFT) scripts/tooling.swift evals $(if $(STAGE),--stage "$(STAGE)",$(if $(MODE),--$(MODE))) $(if $(CASE),--case "$(CASE)") $(ARGS)
 
 evals-review:
-	$(SWIFT) scripts/evals-review.swift $(if $(RUN_DIR),--run "$(RUN_DIR)") $(if $(COMPARISON_RUN),--comparison-run "$(COMPARISON_RUN)") $(if $(PORT),--port "$(PORT)") $(ARGS)
+	$(SWIFT) scripts/tooling.swift evals-review $(if $(RUN_DIR),--run "$(RUN_DIR)") $(if $(COMPARISON_RUN),--comparison-run "$(COMPARISON_RUN)") $(if $(PORT),--port "$(PORT)") $(ARGS)
 
 evals-list:
-	$(SWIFT) scripts/run-evals.swift --list $(if $(STAGE),--stage "$(STAGE)",$(if $(MODE),--$(MODE))) $(if $(CASE),--case "$(CASE)") $(ARGS)
+	$(SWIFT) scripts/tooling.swift evals --list $(if $(STAGE),--stage "$(STAGE)",$(if $(MODE),--$(MODE))) $(if $(CASE),--case "$(CASE)") $(ARGS)
 
 evals-pipeline:
 	$(MAKE) evals MODE=pipeline
@@ -119,7 +119,7 @@ evals-suites:
 	$(MAKE) evals MODE=suites
 
 packaging:
-	$(SWIFT) scripts/build-app.swift $(ARGS)
+	$(SWIFT) scripts/tooling.swift build-app $(ARGS)
 
 release:
 	$(SWIFT) scripts/release.swift "$(BUMP)" $(ARGS)
@@ -134,7 +134,7 @@ release-cask:
 	$(SWIFT) scripts/release.swift cask "$(VERSION)" "$(SHA256)"
 
 icons:
-	$(SWIFT) scripts/make-iconset.swift $(ARGS)
+	$(SWIFT) scripts/tooling.swift make-iconset $(ARGS)
 
 clean:
 	$(SWIFT) package clean

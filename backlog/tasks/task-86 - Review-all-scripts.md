@@ -1,9 +1,10 @@
 ---
 id: TASK-86
 title: Review all scripts
-status: Next
+status: Verify
 assignee: []
 created_date: '2026-11-07T14:36:00Z'
+updated_date: '2026-11-07T21:01:00Z'
 labels: []
 dependencies: []
 ordinal: 77000

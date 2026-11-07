@@ -62,7 +62,7 @@ run model jobs concurrently. Evaluations use only repository `eval/` fixtures an
 isolated config/data. The UI harness is for presentation inspection; its processing
 and recording controls invoke real models or hardware. Checks bypass default demo
 seeding. See the [testing workflow](../README.md#testing) and stage skills in
-[`skills/`](../skills/) for quality gates and semantic review requirements.
+[`eval/skills/`](../eval/skills/) for quality gates and semantic review requirements.
 
 ### Cached native search shutdown check
 
@@ -131,44 +131,37 @@ fixtures and model files before making speed claims.
 
 ## Implementation map
 
-Start with [Makefile](../Makefile) for command invocation. Most `scripts/*.swift`
-entrypoints delegate through [tooling.swift](tooling.swift) to the dispatch table
-in [Main.swift](Sources/Tools/Main.swift); find the implementation below rather
-than guessing a filename from a Make target.
+Start with [Makefile](../Makefile) for command invocation. One
+[tooling.swift](tooling.swift) dispatcher replaces the former per-command aliases.
+It compiles and runs [Main.swift](Sources/Tools/Main.swift). Independent native
+performance/search checks, release preparation and icon drawing remain standalone
+because they have their own process lifecycle or lightweight invocation.
 
 | Workflow | Implementation |
 |---|---|
 | Packaging, framework bundling, runtime verification | [Native.swift](Sources/Tools/Native.swift) |
-| UI harness, updater/model/recorder checks, pipeline artifact checks | [Checks.swift](Sources/Tools/Checks.swift) |
-| Evaluation selection, generation and review bundles | [Evals.swift](Sources/Tools/Evals.swift) |
-| Saved-run listening review and local HTTP/audio serving | [EvalReview.swift](Sources/Tools/EvalReview.swift), [ReviewServer.swift](Sources/Tools/ReviewServer.swift), [ReviewAudio.swift](Sources/Tools/ReviewAudio.swift), UI assets in `Sources/Tools/Resources/EvalReview/` |
-| Landing page preview | [Main.swift](Sources/Tools/Main.swift), [ReviewServer.swift](Sources/Tools/ReviewServer.swift), files in [`website/`](../website/) |
-| Evaluation tooling fixtures and enrichment validation | [EvalChecks.swift](Sources/Tools/EvalChecks.swift), [EnrichValidation.swift](Sources/Tools/EnrichValidation.swift) |
+| UI harness, updater/model/recorder checks | [Checks.swift](Sources/Tools/Checks.swift) |
+| Evaluations, review app, scoring, validation and their tests | [evaluation tools](../eval/tools/Sources/EvaluationTools/), [review skills](../eval/skills/) |
+| Landing page preview | [evaluation dispatcher](../eval/tools/Sources/EvaluationTools/Dispatch.swift), shared review HTTP server, [`website/`](../website/) |
 | Coverage | [Coverage.swift](Sources/Tools/Coverage.swift) |
 | Release preparation, notes, changelog checks and cask updates | [release.swift](release.swift); release fixtures: [ReleaseChecks.swift](Sources/Tools/ReleaseChecks.swift) |
-| Temporary config/data, subprocesses and file helpers | [Common.swift](Sources/Tools/Common.swift); `isolated-check` dispatch: [Main.swift](Sources/Tools/Main.swift) |
+| Temporary config/data, subprocesses and file helpers | [ToolSupport](Support/Sources/ToolSupport/Common.swift) |
 
-Before full tests, coverage or updater checks, quit the app
-when recording and processing have finished. Updater fixtures still inspect the
-real app process. Run checks from the repository root so relative `eval/` fixture
-paths resolve correctly. See [testing prerequisites](../README.md#testing).
+Before full tests, coverage or updater checks, quit the app when recording and
+processing have finished. Updater fixtures still inspect the real app process.
+Run checks from the repository root so relative `eval/` fixture paths resolve.
 
-All helper implementations are Swift. A separate pinned Swift package in this
-directory compiles shared tooling; it is not a dependency of the app package.
-The package uses Yams for YAML validation. The first helper invocation resolves
-its pinned dependency and builds the tool; subsequent invocations reuse its cache.
+The tooling executable depends on two local libraries: common filesystem/process
+support under `scripts/Support/`, and evaluation logic/resources under `eval/tools/`.
+Yams remains pinned in the evaluation package and the tooling lockfile. None is a
+dependency of the app package. The CLI's evaluation command source lives in
+`eval/CLI/`; its source link in `Sources/cl/` lets SwiftPM compile it with the CLI.
 
-Helpers stay in `scripts/`: packaging (`build-app.swift`), release (`release.swift`),
-evaluation orchestration and validation (`run-evals.swift`, `evals.swift`,
-`eval-pipeline.swift`), icons (`make-iconset.swift`,
-`make-icon.swift`), and the `test-*` checks. `isolated-check.swift` gives checks
-throwaway configuration/data and removes it afterward. Call Make for these
-workflows instead of treating the helpers as a separate command interface.
-
-Direct helper usage is `swift scripts/NAME.swift [arguments]` or the executable
-`./scripts/NAME.swift`. Helpers use only `.swift` filenames.
-For example, `swift scripts/run-evals.swift --stage filename --list` lists
-fixtures without loading a model.
+Use Make for workflows. For direct dispatch, run
+`swift scripts/tooling.swift COMMAND [ARGS...]`; for example,
+`swift scripts/tooling.swift evals --stage filename --list` lists fixtures without
+loading a model. Browser review tests run with
+`node --test eval/tools/tests/*.mjs`.
 
 For an isolated native performance check on a cold CoreML specialization cache,
 `CAPTAINSLOG_PERFORMANCE_PROCESS_TIMEOUT=300` extends only the overall processing

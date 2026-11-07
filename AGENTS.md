@@ -15,12 +15,12 @@ For code changes, use the entry points below.
 | Pipeline stages and native inference | [CaptainsLogCore](./Sources/CaptainsLogCore/): `Transcriber.swift`, `Cleanup.swift`, `Categorize.swift`, `Filename.swift`, `Enrich.swift`, `LLM.swift` |
 | Prompts and prompt loading | [prompts/](./prompts/), [PromptLoader.swift](./Sources/CaptainsLogCore/PromptLoader.swift), [PromptResolver.swift](./Sources/CaptainsLogCore/PromptResolver.swift) |
 | Configuration and corrections | [Config.swift](./Sources/CaptainsLogCore/Config.swift), [ConfigManager.swift](./Sources/CaptainsLog/ConfigManager.swift), [CorrectionDocument.swift](./Sources/CaptainsLog/CorrectionDocument.swift) |
-| CLI commands and evaluation batches | [CL.swift](./Sources/cl/CL.swift), [EvalBatch.swift](./Sources/cl/EvalBatch.swift) |
+| CLI commands and evaluation batches | [CL.swift](./Sources/cl/CL.swift), [EvalBatch.swift](./eval/CLI/EvalBatch.swift) |
 | Updates | [AppUpdater.swift](./Sources/CaptainsLogCore/AppUpdater.swift), [UpdateManager.swift](./Sources/CaptainsLog/UpdateManager.swift) |
-| Tests and synthetic fixtures | [run-tests/main.swift](./Sources/run-tests/main.swift), [eval/](./eval/), [stage review skills](./skills/) |
+| Tests and synthetic fixtures | [run-tests/main.swift](./Sources/run-tests/main.swift), [eval/](./eval/), [stage review skills](./eval/skills/) |
 | Build, packaging, runtime checks and releases | [Tool implementation map](./scripts/README.md#implementation-map), [Package.swift](./Package.swift), [release workflow](./.github/workflows/release.yml) |
 
-Use `rg --files Sources scripts` to locate files before reading them. CLI command
+Use `rg --files Sources scripts eval/tools eval/CLI` to locate files before reading them. CLI command
 types share `CL.swift`, tests share `run-tests/main.swift`, and tooling entrypoint
 names do not necessarily match their implementation filenames. Current commands
 and runtime setup live in README.md and the command guide; ADRs preserve dated
@@ -77,7 +77,7 @@ backlog task edit TASK-1 --status "Complete"  # After your review
 
 ## Evaluations
 
-Stage-specific evaluation workflows live in `skills/<stage>-eval/SKILL.md` for transcription, cleanup, filename, and enrichment. Use the relevant workflow when evaluating output. Reports should describe concrete changes and semantic impact, including missing or added content and hallucinations; scores alone are not enough. Human review makes the final quality judgment.
+Stage-specific evaluation workflows live in `eval/skills/<stage>-eval/SKILL.md` for transcription, cleanup, filename, and enrichment. Use the relevant workflow when evaluating output. Reports should describe concrete changes and semantic impact, including missing or added content and hallucinations; scores alone are not enough. Human review makes the final quality judgment.
 
 - Report dated evaluation results, semantic findings and limitations in chat or PRs, without adding agent-authored content to tasks.
 

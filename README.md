@@ -85,7 +85,7 @@ Reproducibility here means identical prebuilt native code and headers across cle
 resolutions, local builds and releases. It does not promise identical app signatures,
 ZIP timestamps or a byte-identical rebuild of upstream's compiler output. Run
 `make tests-runtime` to independently download, verify and compare two
-clean unsigned framework extractions. Packaging runs `scripts/check-runtime.swift`
+clean unsigned framework extractions. Packaging runs the `check-runtime` tooling command
 to reject external runtime paths and verify the app/CLI deployment target.
 
 Two upstream Swift packages are retained in `Vendor/` with only dependency
