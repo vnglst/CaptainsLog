@@ -1495,12 +1495,12 @@ private struct FieldNotesCompactModelStatus: View {
                     Text(progress, format: .percent.precision(.fractionLength(0)))
                         .fixedSize()
                 }
-            case .error(let message):
+            case .error:
                 Image(systemName: "exclamationmark.circle")
                     .foregroundStyle(FieldNotes.ColorToken.danger)
-                Text(message)
+                Text(appState.statusMessage)
                     .lineLimit(1)
-                    .help(message)
+                    .help(appState.statusMessage)
                 Button("Retry download") { appState.ensureModelsDownloaded() }
                     .buttonStyle(.plain)
                     .foregroundStyle(FieldNotes.ColorToken.amber)

@@ -12,7 +12,7 @@ entry. Git links provide the complete commit history for each release.
 
 ## [Unreleased]
 
-- Coordinate recording, model setup and processing through one shared state machine, with consistent activity and queue status in Logs and the menu.
+- Coordinate recording, model setup and processing through one shared state machine, keeping activity and queue status consistent during downloads and errors in Logs and the menu.
 - Use one canonical evaluation fixture library for the development demo and native UI harness, removing separate synthesized demo recordings and notes.
 - Keep the current Logs design references directly in `design/` and remove the obsolete project prototype.
 - Consolidate evaluation tools, review assets and workflows under `eval/`, and replace redundant script aliases with one command dispatcher.

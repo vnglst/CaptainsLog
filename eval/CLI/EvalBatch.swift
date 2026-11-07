@@ -2,7 +2,7 @@ import ArgumentParser
 import CaptainsLogCore
 import Foundation
 
-/// Internal transport for run-evals.swift. Each stage uses the production API;
+/// Internal transport for the evaluation runner. Each stage uses the production API;
 /// only the immutable model weights are reused, never contexts or samplers.
 struct EvalBatch: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
