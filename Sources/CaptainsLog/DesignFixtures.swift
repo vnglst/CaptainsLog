@@ -35,17 +35,14 @@ extension AppState {
         case "eval-empty":
             entries = []
         case "eval-processing":
-            entries = Pipeline.listEntries(dataDir: dataDir).map { listing in
-                var entry = LogEntry.from(listing)
-                if listing.nextStage != .done {
-                    entry.isActive = true
-                    entry.stage = .cleaning
-                }
-                return entry
+            entries = Pipeline.listEntries(dataDir: dataDir).map(LogEntry.from)
+            let pending = entries.filter { $0.stage != .done }
+            if let active = pending.first {
+                lifecycle.send(.workerStarted)
+                lifecycle.send(.processingStarted(active.stem))
+                lifecycle.send(.processingProgress(active.stem, .cleaning))
+                for entry in pending.dropFirst() { processing.queueProcessing(stem: entry.stem) }
             }
-            processing.stage = .cleaning
-            processing.statusMessage = "Cleaning eval fixture"
-            processing.processingStem = entries.first(where: { $0.stage != .done })?.stem
         case "eval-paused", "eval-failed":
             entries = Pipeline.listEntries(dataDir: dataDir).map { listing in
                 var entry = LogEntry.from(listing)

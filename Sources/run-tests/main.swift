@@ -2310,6 +2310,30 @@ func runCoordinatorCoverageTests() async {
         try expect(models.modelsReady)
     }
 
+    test("Design fixtures: processing shows one active recording and the remaining serial queue") {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("SerialProcessingPreview-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: root) }
+        let audio = root.appendingPathComponent("audio")
+        try FileManager.default.createDirectory(at: audio, withIntermediateDirectories: true)
+        let fixture = URL(fileURLWithPath: "eval/transcribe/audio/tng-nl01-vrije-dag-enterprise-corrected.m4a")
+        for stem in ["2025-01-14-0730", "2025-01-14-0830", "2025-01-14-0930"] {
+            try FileManager.default.copyItem(at: fixture, to: audio.appendingPathComponent("\(stem).m4a"))
+        }
+        let config = ConfigManager(loadContextFiles: false)
+        config.dataDir = root.path
+        let state = AppState(config: config)
+        state.applyDesignFixture(named: "eval-processing")
+        let entries = state.allEntries
+        let active = entries.filter(\.isActive)
+        let queued = entries.filter(\.isQueued)
+        try expect(entries.count == 3 && active.count == 1 && queued.count == 2,
+                   "A serial preview must display exactly one LIVE row and all other pending rows as QUEUED")
+        try expect(active.first?.stem == state.processingStem && active.first?.stage == .cleaning)
+        try expect(queued.allSatisfy { EntryRowBehavior(entry: $0).status == .queued && !$0.isActive })
+        try expect(state.statusMessage.contains("Cleaning Up:") && state.statusMessage.contains("2 queued"),
+                   "The shared preview summary must agree with the active row and visible queue")
+    }
+
     await testAsync("App lifecycle: model setup and recording share one cancelable queue and visible status") {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent("LifecycleQueue-\(UUID().uuidString)")
         defer { try? FileManager.default.removeItem(at: root) }
