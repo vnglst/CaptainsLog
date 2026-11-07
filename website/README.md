@@ -32,7 +32,7 @@ Place those files in `assets/`. A poster and captions are optional (`null` omits
 ## Content sources
 
 - `README.md`: supported platform, install command, first-launch downloads, processing stages, CLI, and current models.
-- `design/logs/DESIGN-SYSTEM.md`: charcoal surfaces, off-white type, amber recording controls, understated native styling, and voice-first personal logs.
+- `design/DESIGN-SYSTEM.md`: charcoal surfaces, off-white type, amber recording controls, understated native styling, and voice-first personal logs.
 - `prompts/cleanup.md` and `prompts/enrich.md`: readable log entries and metadata; the captain’s-log inspiration is described in the repository examples.
 - `docs/0005-use-libllama-c-api-for-text-inference.md`: shared local app/CLI inference and hybrid keyword/semantic search. Search returns entries and excerpts, not generated answers. Markdown logs are canonical; the index is disposable.
 - `docs/0006-bundle-llama-runtime-in-app.md` and `docs/0009-distribute-app-and-cli-through-homebrew.md`: app and CLI installation together; no separate inference service needed.

@@ -12,6 +12,8 @@ entry. Git links provide the complete commit history for each release.
 
 ## [Unreleased]
 
+- Keep the current Logs design references directly in `design/` and remove the obsolete project prototype.
+
 - Keep recordings made in the same minute as separate logs, and process recordings after model setup without restarting.
 - Show model download progress and retryable errors in Logs and Settings.
 

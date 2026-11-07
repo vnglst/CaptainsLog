@@ -1,15 +1,13 @@
 # Design references
 
-The selected [Context and Settings redesign](logs/CONTEXT-SETTINGS-REDESIGN.md)
+The selected [Context and Settings redesign](CONTEXT-SETTINGS-REDESIGN.md)
 records TASK-7's combined concept and the owner's chosen **Context** menu label.
 
-The shipped interface is the Logs workspace implemented in [`FieldNotesContentView.swift`](../Sources/CaptainsLog/FieldNotesContentView.swift); `Sources/CaptainsLogApp` contains the launcher. It supports entry browsing, search and detail, recording, processing, onboarding, and Settings. See [`logs/DESIGN-SYSTEM.md`](logs/DESIGN-SYSTEM.md) for visual direction and reference images.
+The shipped interface is the Logs workspace implemented in [`FieldNotesContentView.swift`](../Sources/CaptainsLog/FieldNotesContentView.swift); `Sources/CaptainsLogApp` contains the launcher. It supports entry browsing, search and detail, recording, processing, onboarding, and Settings. See [`DESIGN-SYSTEM.md`](DESIGN-SYSTEM.md) for visual direction and reference images.
 
-The images in `design/logs/screens/` are conceptual design references. They are not captures of the current app and include illustrative values such as folder paths, entry counts, microphone names, and version numbers. Review or replace them before presenting them as product screenshots.
+The images in `design/screens/` are conceptual design references. They are not captures of the current app and include illustrative values such as folder paths, entry counts, microphone names, and version numbers. Review or replace them before presenting them as product screenshots.
 
-The HTML/CSS prototype in `design/project/` is an older LCARS exploration. It is retained as historical material and is not the current product specification. The TNG wording and data in the demo and evaluation fixtures are intentional test content.
-
-The [Settings redesign](logs/SETTINGS-REDESIGN.md) records the ImageGen concept and
+The [Settings redesign](SETTINGS-REDESIGN.md) records the ImageGen concept and
 native toggle/checkbox implementation. Its image is also a concept reference,
 not a product screenshot. Preview the Settings page with repository fixtures via
 `make ui ARGS=eval-settings`.

@@ -1,9 +1,10 @@
 ---
 id: TASK-88
 title: Review design folder
-status: Next
+status: Verify
 assignee: []
 created_date: '2026-11-07T14:40:00Z'
+updated_date: '2026-11-07T20:52:00Z'
 labels: []
 dependencies: []
 ordinal: 79000

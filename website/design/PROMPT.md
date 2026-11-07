@@ -1,6 +1,6 @@
 # Website design concept
 
-Generated with the built-in ImageGen tool. Style reference: `design/logs/screens/01-main-workspace.png`, a conceptual app design reference. Output: `landing-page-concept.png`.
+Generated with the built-in ImageGen tool. Style reference: `design/screens/01-main-workspace.png`, a conceptual app design reference. Output: `landing-page-concept.png`.
 
 This is a visual design concept, not a native app capture. Image-generated copy, sample durations, and illustrative notes should be replaced with verified product copy and synthetic fixture content during implementation. This initial concept predates the documentation review. The implemented HTML now uses revised product copy sourced from the README, ADRs, prompts, and current product plans, and reserves the walkthrough for the owner’s recording. See `../README.md` for source mapping and recording setup; the HTML copy is authoritative.
 
