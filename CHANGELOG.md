@@ -12,6 +12,8 @@ entry. Git links provide the complete commit history for each release.
 
 ## [Unreleased]
 
+- Track app website visits in the existing self-hosted Plausible dashboard for koenvangilst.nl.
+
 ## [0.6.3] - 2026-11-07
 
 - Move Homebrew installation, updates, and release publication to `vnglst/tap/captainslog`.

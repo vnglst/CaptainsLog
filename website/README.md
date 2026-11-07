@@ -10,7 +10,9 @@ make website
 
 The preview uses the repository’s Swift tooling. Open <http://127.0.0.1:8765> and press Ctrl+C in the terminal when you’re done. To use another port, run `make website PORT=8766`.
 
-Deploy the contents of `website/` to a static host. There is no build step, package dependency, external font, analytics, or inference API. HTML, CSS, and JavaScript live in `index.html`.
+Deploy the contents of `website/` to a static host. There is no build step, package dependency, external font, or inference API. HTML, CSS, and JavaScript live in `index.html`.
+
+Website visits use the same self-hosted Plausible script and `koenvangilst.nl` dashboard as the main site. Filter by hostname `captainslog.koenvangilst.nl` to see app website traffic. The script ignores localhost previews. This tracking applies only to the website; the Mac app has no analytics.
 
 ## Add your app recording
 
