@@ -289,9 +289,8 @@ private struct FieldNotesEntriesView: View {
                     Text("Logs")
                         .font(FieldNotes.Typography.title(28))
                         .foregroundStyle(FieldNotes.ColorToken.primaryText)
-                    Text("Your thoughts, captured and organized")
-                        .font(FieldNotes.Typography.body(13))
-                        .foregroundStyle(FieldNotes.ColorToken.secondaryText)
+                    FieldNotesCompactModelStatus()
+                        .frame(height: 20, alignment: .leading)
                 }
                 Spacer()
                 Text(categoryFilter.includesAll ? "\(appState.allEntries.count) logs" : "\(visibleEntries.count) of \(appState.allEntries.count) logs")
@@ -1458,19 +1457,106 @@ private struct FieldNotesSettingsView: View {
             .fixedSize(horizontal: false, vertical: true)
     }
 
-    @ViewBuilder
     private var modelStatus: some View {
-        switch appState.modelState {
-        case .ready: FieldNotesStatus(state: .processed,
-                                      label: appState.models.needsDownload ? "Models download on next transcription" : "Local models ready")
-        case .downloading: FieldNotesStatus(state: .active, label: "Preparing local models")
-        case .error: FieldNotesStatus(state: .failed, label: "Local models need attention")
-        }
+        FieldNotesModelStatus()
+            .frame(minHeight: 76, alignment: .topLeading)
     }
 
     private func shortenedPath(_ path: String) -> String {
         let home = FileManager.default.homeDirectoryForCurrentUser.path
         return path.hasPrefix(home) ? "~" + path.dropFirst(home.count) : path
+    }
+}
+
+/// Uses the existing Logs subtitle space so setup never moves the recording controls.
+private struct FieldNotesCompactModelStatus: View {
+    @Environment(AppState.self) private var appState
+
+    var body: some View {
+        HStack(spacing: 8) {
+            switch appState.modelState {
+            case .ready:
+                Text("Your thoughts, captured and organized")
+            case .downloading(let model, let progress):
+                ProgressView().controlSize(.mini)
+                Text(model == "Initializing…" ? "Checking local models…" : "Downloading \(model)")
+                    .lineLimit(1)
+                    .help("\(model). Recordings are saved and will process when local models are ready.")
+                if progress > 0 {
+                    Text(progress, format: .percent.precision(.fractionLength(0)))
+                        .fixedSize()
+                }
+            case .error(let message):
+                Image(systemName: "exclamationmark.circle")
+                    .foregroundStyle(FieldNotes.ColorToken.danger)
+                Text(message)
+                    .lineLimit(1)
+                    .help(message)
+                Button("Retry download") { appState.ensureModelsDownloaded() }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(FieldNotes.ColorToken.amber)
+                    .fixedSize()
+            }
+        }
+        .font(FieldNotes.Typography.body(13))
+        .foregroundStyle(FieldNotes.ColorToken.secondaryText)
+    }
+}
+
+/// Shared download feedback keeps Logs and Settings on the same readiness state.
+private struct FieldNotesModelStatus: View {
+    @Environment(AppState.self) private var appState
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            switch appState.modelState {
+            case .ready:
+                FieldNotesStatus(state: .processed,
+                    label: appState.models.needsDownload
+                        ? "Models download on next transcription" : "Local models ready")
+            case .downloading(let model, let progress):
+                HStack(spacing: 10) {
+                    ProgressView().controlSize(.small)
+                    Text(model == "Initializing…" ? "Checking local models…" : "Downloading \(model)")
+                        .font(FieldNotes.Typography.body(12, weight: .medium))
+                        .foregroundStyle(FieldNotes.ColorToken.primaryText)
+                    Spacer(minLength: 0)
+                    if progress > 0 {
+                        Text(progress, format: .percent.precision(.fractionLength(0)))
+                            .font(FieldNotes.Typography.metadata(12))
+                            .foregroundStyle(FieldNotes.ColorToken.secondaryText)
+                    }
+                }
+                if progress > 0 {
+                    ProgressView(value: progress)
+                        .tint(FieldNotes.ColorToken.amber)
+                }
+                Text("Recordings are saved and will process when local models are ready.")
+                    .font(FieldNotes.Typography.body(12))
+                    .foregroundStyle(FieldNotes.ColorToken.secondaryText)
+                    .fixedSize(horizontal: false, vertical: true)
+            case .error(let message):
+                HStack(alignment: .top, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 6) {
+                        FieldNotesStatus(state: .failed, label: "Local model setup failed")
+                        ScrollView {
+                            Text(message)
+                                .font(FieldNotes.Typography.body(12))
+                                .foregroundStyle(FieldNotes.ColorToken.secondaryText)
+                                .textSelection(.enabled)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        .frame(height: 54)
+                    }
+                    Spacer(minLength: 0)
+                    FieldNotesButton(title: "Retry download", kind: .secondary) {
+                        appState.ensureModelsDownloaded()
+                    }
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 

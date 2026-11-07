@@ -18,6 +18,7 @@ public final class RecordingState {
         let listInputDevices: @Sendable () -> [AudioDevice]
         let defaultInputDevice: @Sendable () -> AudioDevice?
         let record: RecordOperation
+        var outputFilename: @Sendable () -> String = { Recorder.defaultOutputPath() }
     }
 
     public var recordingDuration: TimeInterval = 0
@@ -194,15 +195,23 @@ public final class RecordingState {
         onComplete: @escaping (String) -> Void,
         onError: @escaping (Error) -> Void
     ) async {
-        let stem = URL(fileURLWithPath: Recorder.defaultOutputPath()).deletingPathExtension().lastPathComponent
-        let dataDirURL = URL(fileURLWithPath: dataDir)
-        let audioURL = dataDirURL
+        let baseStem = URL(fileURLWithPath: dependencies.outputFilename()).deletingPathExtension().lastPathComponent
+        let audioDirectory = URL(fileURLWithPath: dataDir)
             .appendingPathComponent(Pipeline.Directory.audio.path)
-            .appendingPathComponent("\(stem).m4a")
 
         do {
-            try FileManager.default.createDirectory(
-                at: audioURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try FileManager.default.createDirectory(at: audioDirectory, withIntermediateDirectories: true)
+            // Every audio extension shares the same processing stem. Reserve imported
+            // recordings too, so a new capture cannot reuse an existing log's identity.
+            let existingStems = Set(try FileManager.default.contentsOfDirectory(atPath: audioDirectory.path)
+                .map { URL(fileURLWithPath: $0).deletingPathExtension().lastPathComponent })
+            var stem = baseStem
+            var suffix = 2
+            while existingStems.contains(stem) {
+                stem = "\(baseStem)-\(suffix)"
+                suffix += 1
+            }
+            let audioURL = audioDirectory.appendingPathComponent("\(stem).m4a")
             let box = audioLevelBox
             let flag = pauseFlag
             try await dependencies.record(

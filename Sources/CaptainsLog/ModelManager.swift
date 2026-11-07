@@ -26,6 +26,7 @@ public final class ModelManager {
 
     public var modelState: ModelState = .ready
     private let dependencies: Dependencies
+    private var activeDownloadID: UUID?
     private var readyCallbacks: [@MainActor () -> Void] = []
 
     public private(set) var needsDownload = false
@@ -83,45 +84,25 @@ public final class ModelManager {
             return (whisper: whisper, qwen: qwen)
         }.value
 
-        if availability.whisper && availability.qwen {
-            needsDownload = false
+        needsDownload = !availability.whisper || !availability.qwen
+        if !needsDownload {
             modelState = .ready
             return
         }
         do {
             if !availability.whisper {
-                modelState = .downloading(model: "Whisper (speech-to-text)", progress: 0)
-                try await dependencies.downloadWhisper { progress in
-                    Task { @MainActor in
-                        let fraction = progress.fractionCompleted
-                        if fraction < 1 {
-                            self.modelState = .downloading(
-                                model: "Whisper (speech-to-text)", progress: fraction)
-                        }
-                    }
-                }
+                try await downloadModel("Whisper (speech-to-text)", operation: dependencies.downloadWhisper)
             }
 
             if !availability.qwen {
-                modelState = .downloading(model: "Qwen 3.5 (text processing)", progress: 0)
-                try await dependencies.downloadQwen { progress in
-                    Task { @MainActor in
-                        let fraction = progress.fractionCompleted
-                        if fraction < 1 {
-                            self.modelState = .downloading(
-                                model: "Qwen 3.5 (text processing)", progress: fraction)
-                        }
-                    }
-                }
+                try await downloadModel("Qwen 3.5 (text processing)", operation: dependencies.downloadQwen)
             }
 
             needsDownload = false
             modelState = .ready
-        } catch is CancellationError {
-            modelState = .ready
         } catch {
-            if error.isNetworkCancellation {
-                modelState = .ready
+            if error is CancellationError || error.isNetworkCancellation {
+                modelState = .error("Model download was interrupted. Check your connection and try again.")
             } else {
                 let msg = error.localizedDescription
                 if msg.contains("metadata") || msg.contains("corrupted") {
@@ -131,6 +112,22 @@ public final class ModelManager {
                     }
                 }
                 modelState = .error(msg)
+            }
+        }
+    }
+
+    private func downloadModel(_ name: String, operation: DownloadOperation) async throws {
+        let downloadID = UUID()
+        activeDownloadID = downloadID
+        defer { activeDownloadID = nil }
+        modelState = .downloading(model: name, progress: 0)
+        try await operation { [weak self] progress in
+            let fraction = progress.fractionCompleted
+            Task { @MainActor [weak self] in
+                // Download libraries can deliver a final callback after returning or
+                // failing. It must not hide an error, readiness, or the next model.
+                guard let self, self.activeDownloadID == downloadID else { return }
+                self.modelState = .downloading(model: name, progress: min(1, max(0, fraction)))
             }
         }
     }

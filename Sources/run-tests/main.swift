@@ -2211,6 +2211,82 @@ func runCoordinatorCoverageTests() async {
         try expect(try processingSleepAssertions().isEmpty, "Pipeline errors must release sleep prevention")
     }
 
+    await testAsync("AppState: recording after startup progress completes without restarting or unblocking pending work") {
+        let defaults = UserDefaults.standard
+        let launchKey = "CaptainsLogHasLaunched"
+        let previousLaunch = defaults.object(forKey: launchKey)
+        defer {
+            if let previousLaunch { defaults.set(previousLaunch, forKey: launchKey) }
+            else { defaults.removeObject(forKey: launchKey) }
+        }
+        defaults.removeObject(forKey: launchKey)
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("StartupRecording-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: root) }
+        let fixture = URL(fileURLWithPath: "eval/transcribe/audio/tng-nl01-vrije-dag-enterprise-corrected.m4a")
+        let transcript = try String(contentsOfFile: "eval/transcribe/expected/tng-nl01-vrije-dag-enterprise-corrected.md", encoding: .utf8)
+        let cleaned = try String(contentsOfFile: "eval/pipeline/tng-nl01/cleaned.md", encoding: .utf8)
+        let enriched = try String(contentsOfFile: "eval/pipeline/tng-nl01/enriched.md", encoding: .utf8)
+        let lateProgress = LockedValue<(@Sendable (Progress) -> Void)?>(nil)
+        let processed = LockedStringArray()
+        let models = ModelManager(dependencies: .init(
+            clearStaleConfig: {}, cleanCorruptedMetadata: {},
+            whisperIsDownloaded: { false }, qwenIsDownloaded: { true },
+            downloadWhisper: { report in lateProgress.set(report) }, downloadQwen: { _ in }
+        ))
+        let operations = Pipeline.Operations(
+            transcribe: { _, _ in transcript }, cleanup: { _, _ in cleaned },
+            categorize: { _, _, _ in .personal },
+            filename: { _, _ in "2025-04-27-startup-fixture.md" },
+            enrich: { _, _, _, _ in enriched }
+        )
+        let coordinator = ProcessingCoordinator { stem, dataDir, fromStage, progress in
+            processed.append(stem)
+            return try await Pipeline.resumeCommand(
+                stem: stem, dataDir: dataDir, fromStage: fromStage,
+                operations: operations, progress: progress
+            )
+        }
+        let recording = RecordingState(dependencies: .init(
+            listInputDevices: { [] }, defaultInputDevice: { nil },
+            record: { destination, _, stop, _, _ in
+                try FileManager.default.copyItem(at: fixture, to: destination)
+                for await _ in stop { break }
+            }
+        ))
+        let config = ConfigManager(loadContextFiles: false)
+        config.dataDir = root.path
+        let state = AppState(config: config, recording: recording, processing: coordinator, models: models)
+        await state.bootstrap()
+        for _ in 0..<1000 where !models.modelsReady {
+            try await Task.sleep(for: .milliseconds(1))
+        }
+        try expect(models.modelsReady, "Synthetic startup model preparation must complete")
+        // A download delegate can deliver queued progress after its operation returns.
+        let progress = Progress(totalUnitCount: 4)
+        progress.completedUnitCount = 2
+        guard let report = lateProgress.get() else { throw NSError(domain: "StartupRecording", code: 1) }
+        report(progress)
+        try await Task.sleep(for: .milliseconds(10))
+        try expect(state.needsFirstRun, "Fresh setup must present onboarding")
+        state.completeFirstRun()
+        try expect(!state.needsFirstRun, "Completing onboarding must dismiss setup")
+        state.startRecording()
+        state.stopRecording()
+        for _ in 0..<1000 where state.isRecording {
+            try await Task.sleep(for: .milliseconds(1))
+        }
+        state.loadEntries()
+        state.batchResumePending()
+        for _ in 0..<1000 where processed.snapshot().isEmpty || coordinator.hasScheduledWork {
+            try await Task.sleep(for: .milliseconds(1))
+        }
+        try expect(processed.snapshot().count == 1, "The stopped recording must process exactly once without an app restart")
+        state.loadEntries()
+        try expect(state.allEntries.count == 1 && state.pendingEntries.isEmpty,
+                   "A stopped fixture recording must produce one completed log")
+        await coordinator.stopForTermination()
+    }
+
     await testAsync("AppState: resuming after deletion downloads models before processing") {
         let events = LockedStringArray()
         let models = ModelManager(dependencies: .init(
@@ -5694,6 +5770,72 @@ func runTests() async {
         try expect(FileManager.default.fileExists(atPath: audioURL.deletingLastPathComponent().path))
     }
 
+    await testAsync("AppState: consecutive recordings in the same minute create separate completed logs") {
+        let dataDir = FileManager.default.temporaryDirectory
+            .appendingPathComponent("CaptainsLogConsecutiveRecordings-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: dataDir) }
+        let fixture = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+            .appendingPathComponent("eval/transcribe/audio/tng-nl01-vrije-dag-enterprise-corrected.m4a")
+        let fixtureAudio = try Data(contentsOf: fixture)
+        let transcript = try String(contentsOfFile: "eval/transcribe/expected/tng-nl01-vrije-dag-enterprise-corrected.md", encoding: .utf8)
+        let cleaned = try String(contentsOfFile: "eval/pipeline/tng-nl01/cleaned.md", encoding: .utf8)
+        let enriched = try String(contentsOfFile: "eval/pipeline/tng-nl01/enriched.md", encoding: .utf8)
+        let processed = LockedStringArray()
+        let coordinator = ProcessingCoordinator { stem, directory, fromStage, progress in
+            processed.append(stem)
+            let operations = Pipeline.Operations(
+                transcribe: { _, _ in transcript }, cleanup: { _, _ in cleaned },
+                categorize: { _, _, _ in .personal },
+                filename: { _, _ in "\(stem)-fixture.md" },
+                enrich: { _, _, _, _ in enriched }
+            )
+            return try await Pipeline.resumeCommand(
+                stem: stem, dataDir: directory, fromStage: fromStage,
+                operations: operations, progress: progress
+            )
+        }
+        let recording = RecordingState(dependencies: .init(
+            listInputDevices: { [] },
+            defaultInputDevice: { nil },
+            record: { url, _, stopTrigger, _, _ in
+                try fixtureAudio.write(to: url)
+                for await _ in stopTrigger { break }
+            },
+            outputFilename: { "2026-11-07-1234.m4a" }
+        ))
+        let config = ConfigManager(loadContextFiles: false)
+        config.dataDir = dataDir.path
+        let state = AppState(config: config, recording: recording, processing: coordinator)
+        for expectedCount in 1...2 {
+            state.startRecording()
+            state.stopRecording()
+            let deadline = ContinuousClock.now + .seconds(3)
+            while (state.isRecording || coordinator.hasScheduledWork) && ContinuousClock.now < deadline {
+                try await Task.sleep(for: .milliseconds(10))
+            }
+            try expect(!state.isRecording && !coordinator.hasScheduledWork,
+                       "Each recording and its processing must finish before the next starts")
+            try expect(state.errorMessage == nil, "Both fixture recordings must complete successfully")
+            state.loadEntries()
+            try expect(state.allEntries.count == expectedCount && state.allEntries.allSatisfy { $0.stage == .done },
+                       "Stopping recording \(expectedCount) must leave \(expectedCount) completed logs")
+            try expect(state.pendingEntries.isEmpty, "Both recordings must finish processing")
+        }
+        let completedStems = state.allEntries.map(\.stem)
+        try expect(Set(completedStems).count == 2,
+                   "Recordings in one minute must not reuse a log stem")
+        try expect(Set(processed.snapshot()) == Set(completedStems),
+                   "Each stopped recording must pass through the processing queue")
+        let audioDir = dataDir.appendingPathComponent(Pipeline.Directory.audio.path)
+        let files = try FileManager.default.contentsOfDirectory(atPath: audioDir.path)
+        try expect(files.count == 2, "Each recording must retain its own original audio")
+        for stem in completedStems {
+            let audio = try Data(contentsOf: audioDir.appendingPathComponent("\(stem).m4a"))
+            try expect(audio == fixtureAudio, "Original audio must survive later recordings unchanged")
+        }
+        await coordinator.stopForTermination()
+    }
+
     await testAsync("RecordingState: immediate stop and duplicate start use one recording operation") {
         let (events, continuation) = AsyncStream<String>.makeStream()
         let operationCalls = LockedStringArray()
@@ -6378,7 +6520,47 @@ func runTests() async {
         try expect(FileManager.default.fileExists(atPath: otherMetadata.path))
     }
 
-    await testAsync("ModelManager: treats download cancellation as ready") {
+    await testAsync("ModelManager: late progress cannot hide a failed download") {
+        let retainedProgress = LockedValue<(@Sendable (Progress) -> Void)?>(nil)
+        let manager = ModelManager(dependencies: .init(
+            clearStaleConfig: {}, cleanCorruptedMetadata: {},
+            whisperIsDownloaded: { false }, qwenIsDownloaded: { true },
+            downloadWhisper: { reportProgress in
+                retainedProgress.set(reportProgress)
+                throw NSError(domain: "ModelTests", code: 90, userInfo: [
+                    NSLocalizedDescriptionKey: "Synthetic download failure",
+                ])
+            }, downloadQwen: { _ in }
+        ))
+        await manager.downloadModelsIfNeeded()
+        let delayedProgress = Progress(totalUnitCount: 4)
+        delayedProgress.completedUnitCount = 2
+        retainedProgress.get()?(delayedProgress)
+        try await Task.sleep(for: .milliseconds(20))
+        try expect(manager.modelState == .error("Synthetic download failure"),
+                   "Late progress must not replace the error with a stuck download")
+        try expect(manager.needsDownload && !manager.modelsReady,
+                   "A failed missing-model download must remain unavailable for processing")
+    }
+
+    await testAsync("ModelManager: late progress cannot replace completed model readiness") {
+        let retainedProgress = LockedValue<(@Sendable (Progress) -> Void)?>(nil)
+        let manager = ModelManager(dependencies: .init(
+            clearStaleConfig: {}, cleanCorruptedMetadata: {},
+            whisperIsDownloaded: { false }, qwenIsDownloaded: { true },
+            downloadWhisper: { reportProgress in
+                retainedProgress.set(reportProgress)
+            }, downloadQwen: { _ in }
+        ))
+        await manager.downloadModelsIfNeeded()
+        let delayedProgress = Progress(totalUnitCount: 4)
+        delayedProgress.completedUnitCount = 2
+        retainedProgress.get()?(delayedProgress)
+        try await Task.sleep(for: .milliseconds(20))
+        try expect(manager.modelsReady, "Queued progress must not leave completed setup downloading")
+    }
+
+    await testAsync("ModelManager: interrupted download remains unavailable and retryable") {
         let manager = ModelManager(dependencies: .init(
             clearStaleConfig: {},
             cleanCorruptedMetadata: {},
@@ -6389,10 +6571,18 @@ func runTests() async {
         ))
 
         await manager.downloadModelsIfNeeded()
-        try expect(manager.modelState == .ready)
+        try expect(!manager.modelsReady && manager.needsDownload,
+                   "Interrupted model setup cannot report ready while the model is missing")
+        if case .error(let message) = manager.modelState {
+            try expect(!message.isEmpty, "Interrupted downloads need an actionable error")
+        } else {
+            throw NSError(domain: "ModelTests", code: 90, userInfo: [
+                NSLocalizedDescriptionKey: "Interrupted setup must show a retryable error",
+            ])
+        }
     }
 
-    await testAsync("ModelManager: treats URL-session cancellation as ready") {
+    await testAsync("ModelManager: interrupted network download remains unavailable and retryable") {
         let manager = ModelManager(dependencies: .init(
             clearStaleConfig: {},
             cleanCorruptedMetadata: {},
@@ -6403,7 +6593,15 @@ func runTests() async {
         ))
 
         await manager.downloadModelsIfNeeded()
-        try expect(manager.modelState == .ready)
+        try expect(!manager.modelsReady && manager.needsDownload,
+                   "Interrupted model setup cannot report ready while the model is missing")
+        if case .error(let message) = manager.modelState {
+            try expect(!message.isEmpty, "Interrupted downloads need an actionable error")
+        } else {
+            throw NSError(domain: "ModelTests", code: 90, userInfo: [
+                NSLocalizedDescriptionKey: "Interrupted setup must show a retryable error",
+            ])
+        }
     }
 
     await testAsync("ModelManager: ensureModelsDownloaded calls readiness after both downloads") {
@@ -6466,6 +6664,28 @@ func runTests() async {
 
         await manager.downloadModelsIfNeeded()
         try expect(manager.modelState == .error("Synthetic download failure"))
+    }
+
+    await testAsync("ModelManager: retry after download failure restores readiness") {
+        let shouldFail = LockedValue(true)
+        let ready = LockedStringArray()
+        let manager = ModelManager(dependencies: .init(
+            clearStaleConfig: {}, cleanCorruptedMetadata: {},
+            whisperIsDownloaded: { true }, qwenIsDownloaded: { false },
+            downloadWhisper: { _ in },
+            downloadQwen: { _ in
+                if shouldFail.get() { throw URLError(.notConnectedToInternet) }
+            }
+        ))
+        await manager.downloadModelsIfNeeded()
+        try expect(!manager.modelsReady && manager.needsDownload)
+        shouldFail.set(false)
+        manager.ensureModelsDownloaded { ready.append("ready") }
+        for _ in 0..<100 where ready.snapshot().isEmpty {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        try expect(manager.modelsReady && !manager.needsDownload)
+        try expect(ready.snapshot() == ["ready"], "Retry must resume work waiting for models")
     }
 
     await testAsync("ModelManager: metadata download failure clears stale Whisper config") {

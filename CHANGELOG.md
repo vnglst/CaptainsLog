@@ -12,6 +12,9 @@ entry. Git links provide the complete commit history for each release.
 
 ## [Unreleased]
 
+- Keep recordings made in the same minute as separate logs, and process recordings after model setup without restarting.
+- Show model download progress and retryable errors in Logs and Settings.
+
 ## [0.7.0] - 2026-11-07
 
 - Track app website visits in the existing self-hosted Plausible dashboard for koenvangilst.nl.
