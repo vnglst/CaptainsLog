@@ -12,6 +12,8 @@ entry. Git links provide the complete commit history for each release.
 
 ## [Unreleased]
 
+- Move Homebrew installation, updates, and release publication to `vnglst/tap/captainslog`.
+
 ## [0.6.2] - 2026-11-07
 
 - Document the tested M4 MacBook Air baseline with 16 GB of unified memory, and explain which languages CaptainsLog was tuned for and how to adapt it.

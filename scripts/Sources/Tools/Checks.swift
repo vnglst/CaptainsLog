@@ -48,7 +48,7 @@ extension Tools {
         try require(exists(environment["CAPTAINS_LOG_UPDATE_FIXTURE_STATE"]!), "Install fixture state missing")
         try require(try update("current", ["--check"]).output.contains("up to date"), "Installed version not detected")
         let upgrades = try read(dir.appendingPathComponent("commands")).split(separator: "\n").filter { $0.hasPrefix("upgrade ") }
-        try require(upgrades == ["upgrade --cask --no-quit --require-sha vnglst/captainslog/captainslog"], "Expected one exact verified cask upgrade")
+        try require(upgrades == ["upgrade --cask --no-quit --require-sha vnglst/tap/captainslog"], "Expected one exact verified cask upgrade")
         let failure = try run([cl, "update", "--check", "--brew-path", fixture], allowFailure: true, log: dir.appendingPathComponent("failure.log"), environment: ["CAPTAINS_LOG_UPDATE_FIXTURE_FAIL": "update"])
         try require(failure.status != 0 && failure.output.contains("Synthetic network failure"), "Synthetic update failure was not propagated")
         for key in ["automaticUpdates", "automaticUpdateChecks"] { try run([cl, "config", "set", key, "false"]) }

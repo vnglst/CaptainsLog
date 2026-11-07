@@ -7034,7 +7034,7 @@ private func runUpdateManagerTests(fixtures: URL) async {
         try expect(lifecycle == ["relaunch", "terminate"])
         let commands = try String(contentsOf: log, encoding: .utf8).split(separator: "\n")
         try expect(commands.filter { $0.hasPrefix("upgrade ") }.count == 1)
-        try expect(commands.contains("upgrade --cask --no-quit --require-sha vnglst/captainslog/captainslog"))
+        try expect(commands.contains("upgrade --cask --no-quit --require-sha vnglst/tap/captainslog"))
     }
 
     await testAsync("UpdateManager: redesigned Settings preferences persist and control automatic installation") {
@@ -7213,7 +7213,7 @@ func runUpdateTests() async {
     }
     test("Updater: rejects malformed, unrelated, and uninstalled casks") {
         let source = try String(contentsOf: fixtures.appendingPathComponent("available.json"), encoding: .utf8)
-        for value in ["{}", source.replacingOccurrences(of: "vnglst/captainslog/captainslog", with: "other/tap/app"),
+        for value in ["{}", source.replacingOccurrences(of: "vnglst/tap/captainslog", with: "other/tap/app"),
                       source.replacingOccurrences(of: "\"installed\":\"0.1.0\"", with: "\"installed\":null")] {
             do {
                 _ = try AppUpdater.parseStatus(Data(value.utf8))
@@ -7264,7 +7264,7 @@ func runUpdateTests() async {
         let after = try await updater.check(refresh: false)
         try expect(!after.updateAvailable)
         let commands = try String(contentsOf: log, encoding: .utf8)
-        try expect(commands.contains("upgrade --cask --no-quit --require-sha vnglst/captainslog/captainslog"))
+        try expect(commands.contains("upgrade --cask --no-quit --require-sha vnglst/tap/captainslog"))
         setenv("CAPTAINS_LOG_UPDATE_FIXTURE_FAIL", "update", 1)
         do {
             _ = try await updater.check()

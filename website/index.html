@@ -222,7 +222,7 @@
     <section class="install wrap" id="install" aria-labelledby="install-title">
       <h2 class="section-title" id="install-title">Get CaptainsLog</h2>
       <p class="section-copy">I’m sharing CaptainsLog so others can build on it. It’s open source and completely free. Install it with Homebrew, or point your favorite AI coding agent to the GitHub repo to build it from source. <a href="https://github.com/vnglst/CaptainsLog">View the source on GitHub.</a></p>
-      <div class="terminal"><code id="install-command"><span class="prompt" aria-hidden="true">$</span>brew install --cask vnglst/captainslog/captainslog</code><button class="copy" id="copy-command" aria-label="Copy Homebrew install command">Copy</button></div>
+      <div class="terminal"><code id="install-command"><span class="prompt" aria-hidden="true">$</span>brew install --cask vnglst/tap/captainslog</code><button class="copy" id="copy-command" aria-label="Copy Homebrew install command">Copy</button></div>
       <p class="copy-status" id="copy-status" role="status" aria-live="polite"></p>
       <p class="install-note">Recommended minimum: M4 with 16 GB unified memory · macOS 26 or later required<br>Ad-hoc signed, not notarized. The cask removes macOS quarantine.<br>Install only if you trust the project. <a href="https://github.com/vnglst/CaptainsLog#install">Read the install instructions.</a></p>
     </section>
@@ -255,7 +255,7 @@
       caption.hidden = false;
     }
     document.getElementById('copy-command').addEventListener('click', async () => {
-      const command = 'brew install --cask vnglst/captainslog/captainslog';
+      const command = 'brew install --cask vnglst/tap/captainslog';
       let copied = false;
       try { await navigator.clipboard.writeText(command); copied = true; }
       catch {

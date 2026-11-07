@@ -11,7 +11,7 @@ Recording, transcription, and text processing run locally on Apple Silicon; no c
 The Homebrew cask supports Apple Silicon Macs running macOS 26 or later. Homebrew adds the CaptainsLog tap automatically when you install. The app is ad-hoc signed and not notarized. The cask removes macOS quarantine from the app bundle, so install it only if you trust this project:
 
 ```sh
-brew install --cask vnglst/captainslog/captainslog
+brew install --cask vnglst/tap/captainslog
 ```
 
 The full pipeline was tested on an M4 MacBook Air with 16 GB of unified memory.
@@ -363,8 +363,10 @@ Pushing the tag triggers GitHub Actions to validate the matching dated changelog
 entry, build the app/CLI archive, publish those notes and the archive, and update
 the source cask and Homebrew tap. Reruns also refresh the release notes. Check the
 workflow results and test the published install/upgrade before announcing the
-release. `HOMEBREW_TAP_TOKEN` must be configured as described in
-[ADR-024](./docs/0024-separate-release-publication-from-development-checks.md).
+release. `HOMEBREW_TAP_TOKEN` must grant Contents read/write access to
+`vnglst/homebrew-tap`. The release workflow publishes `Casks/captainslog.rb` there.
+See [ADR-024](./docs/0024-separate-release-publication-from-development-checks.md)
+for the release publication decision.
 
 Release-tooling tests use Swift and Git:
 

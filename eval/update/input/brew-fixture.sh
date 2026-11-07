@@ -24,19 +24,21 @@ case "$1" in
         trap 'rm -rf "$transport_dir"' EXIT
         /usr/bin/git init -q "$transport_dir"
         /usr/bin/git -C "$transport_dir" config 'url.git@github.com:.insteadOf' 'https://github.com/'
-        https='https://github.com/vnglst/homebrew-captainslog.git'
-        for remote in 'git@github.com:vnglst/homebrew-captainslog.git' \
-                      'ssh://git@github.com/vnglst/homebrew-captainslog.git' "$https"; do
-            /usr/bin/git -C "$transport_dir" config remote.origin.url "$remote"
-            [[ "$(env -i HOME="$transport_dir" "${HOMEBREW_GIT_PATH:?Missing public tap Git override}" -C "$transport_dir" remote get-url origin)" == "$https" ]]
-            [[ "$(/usr/bin/git -C "$transport_dir" config --get remote.origin.url)" == "$remote" ]]
+        for tap in homebrew-tap homebrew-captainslog; do
+            https="https://github.com/vnglst/$tap.git"
+            for remote in "git@github.com:vnglst/$tap.git" \
+                          "ssh://git@github.com/vnglst/$tap.git" "$https"; do
+                /usr/bin/git -C "$transport_dir" config remote.origin.url "$remote"
+                [[ "$(env -i HOME="$transport_dir" "${HOMEBREW_GIT_PATH:?Missing public tap Git override}" -C "$transport_dir" remote get-url origin)" == "$https" ]]
+                [[ "$(/usr/bin/git -C "$transport_dir" config --get remote.origin.url)" == "$remote" ]]
+            done
         done
         # Other taps retain their original transport.
         /usr/bin/git -C "$transport_dir" config remote.origin.url 'git@github.com:other/private-tap.git'
         [[ "$("$HOMEBREW_GIT_PATH" -C "$transport_dir" remote get-url origin)" == 'git@github.com:other/private-tap.git' ]]
         ;;
     upgrade)
-        [[ "$*" == 'upgrade --cask --no-quit --require-sha vnglst/captainslog/captainslog' ]]
+        [[ "$*" == 'upgrade --cask --no-quit --require-sha vnglst/tap/captainslog' ]]
         touch "${CAPTAINS_LOG_UPDATE_FIXTURE_STATE:?Fixture state path required}"
         ;;
     *) exit 2 ;;

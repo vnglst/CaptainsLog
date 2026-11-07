@@ -3,7 +3,7 @@ import Foundation
 
 /// Uses the same checksum-verified Homebrew cask as the documented install path.
 public struct AppUpdater: Sendable {
-    public static let cask = "vnglst/captainslog/captainslog"
+    public static let cask = "vnglst/tap/captainslog"
     public let brewURL: URL
 
     public init(brewURL: URL = URL(fileURLWithPath: "/opt/homebrew/bin/brew")) {
@@ -114,8 +114,11 @@ public struct AppUpdater: Sendable {
             #!/bin/sh
             export GIT_TERMINAL_PROMPT=0
             exec /usr/bin/git \\
+              -c 'url.https://github.com/vnglst/homebrew-tap.insteadOf=git@github.com:vnglst/homebrew-tap' \\
               -c 'url.https://github.com/vnglst/homebrew-captainslog.insteadOf=git@github.com:vnglst/homebrew-captainslog' \\
+              -c 'url.https://github.com/vnglst/homebrew-tap.insteadOf=ssh://git@github.com/vnglst/homebrew-tap' \\
               -c 'url.https://github.com/vnglst/homebrew-captainslog.insteadOf=ssh://git@github.com/vnglst/homebrew-captainslog' \\
+              -c 'url.https://github.com/vnglst/homebrew-tap.insteadOf=https://github.com/vnglst/homebrew-tap' \\
               -c 'url.https://github.com/vnglst/homebrew-captainslog.insteadOf=https://github.com/vnglst/homebrew-captainslog' \\
               "$@"
             """
