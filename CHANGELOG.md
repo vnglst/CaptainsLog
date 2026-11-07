@@ -12,9 +12,15 @@ entry. Git links provide the complete commit history for each release.
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-11-07
+
 - Track app website visits in the existing self-hosted Plausible dashboard for koenvangilst.nl.
 
 - Save storage choices immediately and allow quitting during onboarding. The isolated onboarding harness now supports folder selection and completion across relaunches.
+
+### Release
+
+- Publish the 0.7.0 app/CLI archive and matching Homebrew cask version and checksum.
 
 ## [0.6.3] - 2026-11-07
 
@@ -347,7 +353,8 @@ entry. Git links provide the complete commit history for each release.
 
 - Make release tests work on clean runners without preinstalled inference models.
 
-[Unreleased]: https://github.com/vnglst/CaptainsLog/compare/v0.6.3...HEAD
+[Unreleased]: https://github.com/vnglst/CaptainsLog/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/vnglst/CaptainsLog/compare/v0.6.3...v0.7.0
 [0.6.3]: https://github.com/vnglst/CaptainsLog/compare/v0.6.2...v0.6.3
 [0.6.2]: https://github.com/vnglst/CaptainsLog/compare/v0.6.1...v0.6.2
 [0.6.1]: https://github.com/vnglst/CaptainsLog/compare/v0.6.0...v0.6.1
