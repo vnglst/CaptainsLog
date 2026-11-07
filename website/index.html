@@ -170,7 +170,7 @@
       <h1 id="hero-title">Your thoughts.<br>Kept private.</h1>
       <p class="hero-copy">CaptainsLog is a free Mac app that turns your recordings into clear, organized notes. Talk through your week, capture an idea, or practice a talk. Your recordings and notes stay on your Mac.</p>
       <div class="hero-actions"><a class="button" href="#install">Get CaptainsLog</a><a class="button secondary" href="#watch">App walkthrough</a></div>
-      <p class="requirements">Apple Silicon · macOS 26 or later</p>
+      <p class="requirements">Tested on M4 with 16 GB unified memory · macOS 26 or later</p>
       <figure class="walkthrough" id="watch" aria-label="CaptainsLog walkthrough">
         <div id="walkthrough-media">
           <div class="media-placeholder">
@@ -193,8 +193,9 @@
       <div class="origin-inner wrap">
         <div>
           <h2 class="section-title" id="origin-title">Why I built CaptainsLog</h2>
-          <p>I built CaptainsLog for myself and have been using it for more than a year. I wanted to record what happened during the week and look back on it later, with my recordings and notes staying on my laptop.</p>
+          <p>CaptainsLog is personal software. I built it for myself and have been using it for more than a year. I wanted to record what happened during the week and look back on it later, with my recordings and notes staying on my laptop. I’ve tuned it for the languages I use most, Dutch, English, and German.</p>
           <p>It’s inspired by Star Trek. You know how Jean-Luc Picard starts his logs with “Captain’s Log, Stardate 41153.7”? I’ve always wanted a computer I could use the same way.</p>
+          <p>You can adapt it to how you work. In Context, you can choose your own categories, add personal context, and tell CaptainsLog how to spell the names and terms you use.</p>
         </div>
         <div>
           <h3>How I use it</h3>
@@ -210,7 +211,7 @@
     <section class="faq wrap" aria-labelledby="faq-title">
       <h2 class="section-title" id="faq-title">Common questions</h2>
       <div>
-        <details><summary>What Mac do I need?</summary><p>An Apple Silicon Mac running macOS 26 or later. The local models need several gigabytes of storage. First launch needs an internet connection and time to download them.</p></details>
+        <details><summary>What Mac do I need?</summary><p>I tested the full pipeline on an M4 MacBook Air with 16 GB of unified memory. That’s the recommended minimum for the default local models. CaptainsLog requires macOS 26 or later. You’ll need several gigabytes of free space and an internet connection to download the models.</p></details>
         <details><summary>Does anything leave my computer?</summary><p>Your audio and notes stay local. Model setup downloads the required models, and optional Homebrew update checks refresh metadata over the network. Those checks do not send your recordings or notes. You can disable automatic checks and installation in Settings.</p></details>
         <details><summary>How do I find a note?</summary><p>Search in Logs matches both the words you type and their meaning. You’ll see the relevant entries and excerpts from your own notes.</p></details>
         <details><summary>Can I use the terminal?</summary><p>Yes. One Homebrew install includes the Mac app and the <code>cl</code> CLI. Use <code>cl pipeline</code> to record and process, <code>cl pipeline --input memo.m4a</code> for a file, and <code>cl search "project architecture"</code> to find logs. Interrupted processing can be resumed with <code>cl resume &lt;stem&gt;</code>. <a href="https://github.com/vnglst/CaptainsLog#use">Read the CLI instructions.</a></p></details>
@@ -223,7 +224,7 @@
       <p class="section-copy">I’m sharing CaptainsLog so others can build on it. It’s open source and completely free. Install it with Homebrew, or point your favorite AI coding agent to the GitHub repo to build it from source. <a href="https://github.com/vnglst/CaptainsLog">View the source on GitHub.</a></p>
       <div class="terminal"><code id="install-command"><span class="prompt" aria-hidden="true">$</span>brew install --cask vnglst/captainslog/captainslog</code><button class="copy" id="copy-command" aria-label="Copy Homebrew install command">Copy</button></div>
       <p class="copy-status" id="copy-status" role="status" aria-live="polite"></p>
-      <p class="install-note">Apple Silicon · macOS 26+ · Several GB for local models<br>Ad-hoc signed, not notarized. The cask removes macOS quarantine.<br>Install only if you trust the project. <a href="https://github.com/vnglst/CaptainsLog#install">Read the install instructions.</a></p>
+      <p class="install-note">Recommended minimum: M4 with 16 GB unified memory · macOS 26 or later required<br>Ad-hoc signed, not notarized. The cask removes macOS quarantine.<br>Install only if you trust the project. <a href="https://github.com/vnglst/CaptainsLog#install">Read the install instructions.</a></p>
     </section>
   </main>
   <footer class="footer wrap"><a class="brand" href="#"><span class="mark" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>CaptainsLog</a><div class="footer-links"><a href="https://github.com/vnglst/CaptainsLog">Source</a><a href="https://github.com/vnglst/CaptainsLog/issues">Feedback</a></div></footer>

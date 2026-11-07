@@ -12,6 +12,8 @@ entry. Git links provide the complete commit history for each release.
 
 ## [Unreleased]
 
+- Document the tested M4 MacBook Air baseline with 16 GB of unified memory, and explain which languages CaptainsLog was tuned for and how to adapt it.
+
 ## [0.6.1] - 2026-11-06
 
 - Fix Swift compiler compatibility in the review audio tooling so the release build can package CaptainsLog. This release includes the changes listed in the [0.6.0 changelog](https://github.com/vnglst/CaptainsLog/blob/v0.6.1/CHANGELOG.md#060---2026-11-06).

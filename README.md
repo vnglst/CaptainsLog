@@ -14,6 +14,10 @@ The Homebrew cask supports Apple Silicon Macs running macOS 26 or later. Homebre
 brew install --cask vnglst/captainslog/captainslog
 ```
 
+The full pipeline was tested on an M4 MacBook Air with 16 GB of unified memory.
+Use that configuration as the recommended minimum for the default local
+models. See the [end-to-end evaluation](eval/pipeline/history/2026-11-05-enterprise/README.md).
+
 The installed app checks for updates at launch and once every 24 hours while open.
 Available updates install automatically once recording, processing, and model
 setup finish, then the app restarts. Settings → Updates lets you disable automatic
