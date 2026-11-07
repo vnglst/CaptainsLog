@@ -12,7 +12,13 @@ entry. Git links provide the complete commit history for each release.
 
 ## [Unreleased]
 
+## [0.6.3] - 2026-11-07
+
 - Move Homebrew installation, updates, and release publication to `vnglst/tap/captainslog`.
+
+### Release
+
+- Publish the 0.6.3 app/CLI archive and matching Homebrew cask version and checksum.
 
 ## [0.6.2] - 2026-11-07
 
@@ -337,7 +343,8 @@ entry. Git links provide the complete commit history for each release.
 
 - Make release tests work on clean runners without preinstalled inference models.
 
-[Unreleased]: https://github.com/vnglst/CaptainsLog/compare/v0.6.2...HEAD
+[Unreleased]: https://github.com/vnglst/CaptainsLog/compare/v0.6.3...HEAD
+[0.6.3]: https://github.com/vnglst/CaptainsLog/compare/v0.6.2...v0.6.3
 [0.6.2]: https://github.com/vnglst/CaptainsLog/compare/v0.6.1...v0.6.2
 [0.6.1]: https://github.com/vnglst/CaptainsLog/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/vnglst/CaptainsLog/compare/v0.5.0...v0.6.0
