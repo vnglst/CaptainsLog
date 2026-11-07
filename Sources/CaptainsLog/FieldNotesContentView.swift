@@ -250,7 +250,7 @@ private struct FieldNotesEntriesView: View {
     var body: some View {
         VStack(spacing: 0) {
             header
-            if !appState.pendingEntries.isEmpty || appState.isProcessing { queueStrip }
+            if !appState.pendingEntries.isEmpty || appState.lifecycle.hasScheduledWork || appState.isProcessing { queueStrip }
             if appState.search.isActive {
                 searchContent
             } else if appState.allEntries.isEmpty {
@@ -438,7 +438,8 @@ private struct FieldNotesEntriesView: View {
         let behavior = QueueStripBehavior(
             isProcessing: appState.isProcessing,
             statusMessage: appState.statusMessage,
-            pendingCount: appState.pendingEntries.count
+            pendingCount: appState.pendingEntries.count,
+            hasScheduledWork: appState.lifecycle.hasScheduledWork
         )
         return HStack(spacing: FieldNotes.Spacing.s) {
             FieldNotesStatus(state: behavior.action == .pause ? .active : .paused,
@@ -1034,7 +1035,8 @@ private struct FieldNotesRecordDock: View {
         RecordDockBehavior(
             isRecording: appState.isRecording,
             isPaused: appState.isRecordingPaused,
-            inputDeviceCount: appState.inputDevices.count
+            inputDeviceCount: appState.inputDevices.count,
+            isFinishing: appState.lifecycle.recording == .finishing
         )
     }
 
@@ -1061,6 +1063,8 @@ private struct FieldNotesRecordDock: View {
             .keyboardShortcut("r", modifiers: .command)
             .accessibilityLabel(behavior.primaryAction == .stop ? "Stop recording" : "Start recording")
             .accessibilityHint(behavior.primaryAction == .stop ? "Saves this note and begins processing it." : "Starts a new voice note.")
+            .disabled(appState.lifecycle.recording == .finishing ||
+                (!appState.isRecording && !appState.lifecycle.canStartRecording))
 
             if let pauseAction = behavior.pauseAction {
                 Button {
@@ -1087,7 +1091,8 @@ private struct FieldNotesRecordDock: View {
                 if behavior.showsAudioLevel {
                     FieldNotesAudioRuler(level: normalizedLevel, height: 22, count: 44)
                 } else {
-                    Text(appState.isRecordingPaused ? "Recording is paused" : "Press ⌘R to start a new note")
+                    Text(appState.lifecycle.recording == .finishing ? "Saving your recording…"
+                        : appState.isRecordingPaused ? "Recording is paused" : "Press ⌘R to start a new note")
                         .font(FieldNotes.Typography.body(12))
                         .foregroundStyle(FieldNotes.ColorToken.tertiaryText)
                         .frame(height: 22, alignment: .center)
@@ -1123,6 +1128,7 @@ private struct FieldNotesRecordDock: View {
     }
 
     private var dockLabel: String {
+        if appState.lifecycle.recording == .finishing { return "Saving · \(duration)" }
         if appState.isRecordingPaused { return "Paused · \(duration)" }
         if appState.isRecording { return "Recording · \(duration)" }
         return "Ready to record"
@@ -1476,10 +1482,13 @@ private struct FieldNotesCompactModelStatus: View {
         HStack(spacing: 8) {
             switch appState.modelState {
             case .ready:
-                Text("Your thoughts, captured and organized")
+                Text(appState.lifecycle.hasActivity
+                    ? appState.statusMessage : "Your thoughts, captured and organized")
+                    .lineLimit(1)
+                    .help(appState.statusMessage)
             case .downloading(let model, let progress):
                 ProgressView().controlSize(.mini)
-                Text(model == "Initializing…" ? "Checking local models…" : "Downloading \(model)")
+                Text(appState.statusMessage)
                     .lineLimit(1)
                     .help("\(model). Recordings are saved and will process when local models are ready.")
                 if progress > 0 {
@@ -1512,12 +1521,11 @@ private struct FieldNotesModelStatus: View {
             switch appState.modelState {
             case .ready:
                 FieldNotesStatus(state: .processed,
-                    label: appState.models.needsDownload
-                        ? "Models download on next transcription" : "Local models ready")
-            case .downloading(let model, let progress):
+                    label: appState.lifecycle.modelStatusMessage)
+            case .downloading(_, let progress):
                 HStack(spacing: 10) {
                     ProgressView().controlSize(.small)
-                    Text(model == "Initializing…" ? "Checking local models…" : "Downloading \(model)")
+                    Text(appState.lifecycle.modelStatusMessage)
                         .font(FieldNotes.Typography.body(12, weight: .medium))
                         .foregroundStyle(FieldNotes.ColorToken.primaryText)
                     Spacer(minLength: 0)

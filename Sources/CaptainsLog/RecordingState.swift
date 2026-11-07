@@ -35,9 +35,27 @@ public final class RecordingState {
             catch { fputs("Warning: Failed to save recording device: \(error.localizedDescription)\n", stderr) }
         }
     }
-    public var errorMessage: String?
-    /// UI-facing pause state — drives SwiftUI redraws.
-    public var isRecordingPaused: Bool = false
+    var lifecycle = AppLifecycle()
+    public var errorMessage: String? {
+        get { lifecycle.recordingError }
+        set { lifecycle.send(.recordingError(newValue)) }
+    }
+    public var isRecordingPaused: Bool {
+        get { lifecycle.isRecordingPaused }
+        set { lifecycle.send(newValue ? .recordingPaused : .recordingResumed) }
+    }
+
+    func useLifecycle(_ shared: AppLifecycle) {
+        let state = lifecycle.recording
+        let error = lifecycle.recordingError
+        lifecycle = shared
+        if state.isActive {
+            lifecycle.send(.recordingStarted)
+            if state == .paused { lifecycle.send(.recordingPaused) }
+            if state == .finishing { lifecycle.send(.recordingFinishing) }
+        }
+        if let error { lifecycle.send(.recordingFailed(error)) }
+    }
     /// Holds the audio level for the audio tap closure.
     private final class AudioLevelBox: @unchecked Sendable { var value: Float = 0 }
     private let audioLevelBox = AudioLevelBox()
@@ -56,22 +74,14 @@ public final class RecordingState {
     private var stopContinuation: AsyncStream<Void>.Continuation?
     private var recordingTimer: Timer?
     private var recordingTask: Task<Void, Never>?
-    private var isStopping = false
     private let dependencies: Dependencies
 
-    public var isRecording: Bool {
-        #if DEBUG
-        if let fixtureIsRecording { return fixtureIsRecording }
-        #endif
-        return recordingTask != nil
-    }
+    public var isRecording: Bool { lifecycle.isRecording }
 
     #if DEBUG
-    private var fixtureIsRecording: Bool?
-
     func applyDesignFixture(isPaused: Bool, duration: TimeInterval, audioLevel: Float) {
-        fixtureIsRecording = true
-        isRecordingPaused = isPaused
+        lifecycle.send(.recordingStarted)
+        if isPaused { lifecycle.send(.recordingPaused) }
         recordingDuration = duration
         self.audioLevel = audioLevel
     }
@@ -137,10 +147,10 @@ public final class RecordingState {
         onComplete: @escaping (String) -> Void,
         onError: @escaping (Error) -> Void
     ) {
-        guard !isStopping, recordingTask == nil else { return }
+        guard recordingTask == nil, lifecycle.canStartRecording else { return }
         recordingDuration = 0
         audioLevel = 0
-        errorMessage = nil
+        lifecycle.send(.recordingStarted)
 
         recordingTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in
             Task { @MainActor in
@@ -161,7 +171,7 @@ public final class RecordingState {
     }
 
     public func stopRecording() {
-        isRecordingPaused = false
+        lifecycle.send(.recordingFinishing)
         tapPaused = false
         stopContinuation?.yield()
         stopContinuation?.finish()
@@ -171,16 +181,16 @@ public final class RecordingState {
     }
 
     public func pauseRecording() {
-        guard isRecording, !isRecordingPaused else { return }
-        isRecordingPaused = true
+        guard lifecycle.recording == .recording else { return }
+        lifecycle.send(.recordingPaused)
         tapPaused = true
         recordingTimer?.invalidate()
         recordingTimer = nil
     }
 
     public func resumeRecording() {
-        guard isRecording, isRecordingPaused else { return }
-        isRecordingPaused = false
+        guard lifecycle.recording == .paused else { return }
+        lifecycle.send(.recordingResumed)
         tapPaused = false
         recordingTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in
             Task { @MainActor in
@@ -228,27 +238,30 @@ public final class RecordingState {
                 stopRecording()
                 audioLevel = 0
                 recordingTask = nil
+                lifecycle.send(.recordingStopped)
                 return
             }
 
             stopRecording()
             audioLevel = 0
             recordingTask = nil
+            lifecycle.send(.recordingStopped)
             onComplete(stem)
 
         } catch {
             stopRecording()
             audioLevel = 0
             recordingTask = nil
+            lifecycle.send(.recordingStopped)
             guard !Task.isCancelled else { return }
-            errorMessage = error.localizedDescription
+            lifecycle.send(.recordingFailed(error.localizedDescription))
             onError(error)
         }
     }
 
     /// Close the active audio file without scheduling processing, before app exit.
     public func stopForTermination() async {
-        isStopping = true
+        lifecycle.send(.terminating)
         let task = recordingTask
         stopRecording()
         task?.cancel()
@@ -260,5 +273,6 @@ public final class RecordingState {
         stopRecording()
         recordingTask?.cancel()
         recordingTask = nil
+        lifecycle.send(.recordingStopped)
     }
 }

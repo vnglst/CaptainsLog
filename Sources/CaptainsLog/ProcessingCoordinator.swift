@@ -10,11 +10,24 @@ public final class ProcessingCoordinator {
         _ progress: (@Sendable (Pipeline.Progress) -> Void)?
     ) async throws -> Pipeline.Result
 
-    public var stage: AppStage = .idle
-    public var statusMessage = "Ready to record"
-    public var errorMessage: String?
-    public var processingStem: String?
-    private(set) var failedEntries: [String: String] = [:]
+    let lifecycle = AppLifecycle()
+    public var stage: AppStage {
+        get { lifecycle.processingStage }
+        set { lifecycle.send(.processingStage(newValue)) }
+    }
+    public var statusMessage: String {
+        get { lifecycle.processingMessage }
+        set { lifecycle.send(.processingMessage(newValue)) }
+    }
+    public var errorMessage: String? {
+        get { lifecycle.processingError }
+        set { lifecycle.send(.processingError(newValue)) }
+    }
+    public var processingStem: String? {
+        get { lifecycle.processingStem }
+        set { lifecycle.send(.processingStem(newValue)) }
+    }
+    var failedEntries: [String: String] { lifecycle.failedEntries }
 
     private struct Context {
         let dataDir: String
@@ -30,18 +43,15 @@ public final class ProcessingCoordinator {
 
     private var processingTask: Task<Void, Never>?
     // Unlike the visible processingStem, ownership survives Pause until native work returns.
-    private var ownedStem: String?
+    private var ownedStem: String? { lifecycle.ownedStem }
     private var cleanupAfterCancellation: (() -> Void)?
-    private var requests: [Request] = []
+    private var requests: [String: Request] = [:]
     private var drainCallbacks: [() -> Void] = []
-    private var isStopping = false
+    private var isStopping: Bool { lifecycle.isTerminating }
     private let resumePipeline: PipelineResume
 
-    var hasScheduledWork: Bool { processingTask != nil || !requests.isEmpty }
-    public var isProcessing: Bool {
-        processingTask?.isCancelled == false || requests.contains { $0.context != nil }
-            || [.transcribing, .cleaning, .categorizing, .naming, .enriching].contains(stage)
-    }
+    var hasScheduledWork: Bool { lifecycle.hasScheduledWork }
+    public var isProcessing: Bool { lifecycle.isProcessing }
 
     var processingStage: Pipeline.Stage {
         switch stage {
@@ -63,23 +73,15 @@ public final class ProcessingCoordinator {
     init(resumePipeline: @escaping PipelineResume) { self.resumePipeline = resumePipeline }
 
     func failureMessage(for stem: String) -> String? { failedEntries[stem] }
-    func isQueued(stem: String) -> Bool { requests.contains { $0.stem == stem } }
+    func isQueued(stem: String) -> Bool { lifecycle.queue.contains { $0.stem == stem } }
     func ownsEntry(stem: String) -> Bool { ownedStem == stem || processingStem == stem || isQueued(stem: stem) }
 
-    func canQueueReprocessing(stem: String) -> Bool {
-        !isStopping && !isQueued(stem: stem)
-            && !(ownedStem == stem && processingTask?.isCancelled == false)
-    }
+    func canQueueReprocessing(stem: String) -> Bool { lifecycle.canQueue(stem: stem) }
 
     @discardableResult
     private func enqueue(_ request: Request) -> Bool {
-        guard canQueueReprocessing(stem: request.stem) else { return false }
-        requests.append(request)
-        errorMessage = nil
-        failedEntries.removeValue(forKey: request.stem)
-        if processingTask?.isCancelled == true, request.context != nil {
-            statusMessage = "Waiting for previous processing to stop…"
-        }
+        guard lifecycle.enqueue(stem: request.stem, prepared: request.context != nil) else { return false }
+        requests[request.stem] = request
         return true
     }
 
@@ -96,8 +98,9 @@ public final class ProcessingCoordinator {
         guard !isStopping else { return }
         let context = Context(dataDir: dataDir, onProgress: onProgress, onError: onError, refreshOnError: true)
         var configured = false
-        for index in requests.indices where requests[index].context == nil {
-            requests[index].context = context
+        for item in lifecycle.queue where !item.isPrepared {
+            requests[item.stem]?.context = context
+            lifecycle.prepareQueued(stem: item.stem)
             configured = true
         }
         if configured { drainCallbacks.append(onComplete) }
@@ -108,13 +111,11 @@ public final class ProcessingCoordinator {
         requests.removeAll()
         drainCallbacks.removeAll()
         processingTask?.cancel()
-        stage = .idle
-        statusMessage = "Paused"
-        processingStem = nil
+        lifecycle.send(.processingPaused)
     }
 
     public func stopForTermination() async {
-        isStopping = true
+        lifecycle.send(.terminating)
         let task = processingTask
         pauseProcessing()
         await task?.value
@@ -122,10 +123,11 @@ public final class ProcessingCoordinator {
 
     func resumeEntry(
         stem: String, fromStage: Pipeline.Stage? = nil, dataDir: String,
+        modelsReady: Bool = true,
         onComplete: @escaping () -> Void, onError: @escaping (Error) -> Void
     ) {
-        enqueue(Request(stem: stem, fromStage: fromStage,
-                        context: Context(dataDir: dataDir, onProgress: onComplete, onError: onError)))
+        let context = Context(dataDir: dataDir, onProgress: onComplete, onError: onError)
+        enqueue(Request(stem: stem, fromStage: fromStage, context: modelsReady ? context : nil))
         startWorker()
     }
 
@@ -149,7 +151,8 @@ public final class ProcessingCoordinator {
             cleanupAfterCancellation = { [self] in
                 do { try prepare() }
                 catch {
-                    requests.removeAll { $0.stem == stem }
+                    requests.removeValue(forKey: stem)
+                    lifecycle.discardQueued(stem: stem)
                     recordPreparationFailure(error, for: stem)
                     onError(error)
                 }
@@ -162,37 +165,35 @@ public final class ProcessingCoordinator {
     }
 
     func batchResumePending(
-        pendingEntries: [LogEntry], dataDir: String,
+        pendingEntries: [LogEntry], dataDir: String, modelsReady: Bool = true,
         onProgress: @escaping () -> Void, onComplete: @escaping () -> Void,
         onError: @escaping (Error) -> Void
     ) {
         let context = Context(dataDir: dataDir, onProgress: onProgress, onError: onError, refreshOnError: true)
         var added = false
         for entry in pendingEntries {
-            if enqueue(Request(stem: entry.stem, fromStage: nil, context: context)) { added = true }
+            if enqueue(Request(stem: entry.stem, fromStage: nil, context: modelsReady ? context : nil)) { added = true }
         }
         if added { drainCallbacks.append(onComplete) }
         startWorker()
     }
 
     private func startWorker() {
-        guard !isStopping, processingTask == nil, requests.contains(where: { $0.context != nil }) else {
-            if processingTask?.isCancelled == true, requests.contains(where: { $0.context != nil }) {
-                statusMessage = "Waiting for previous processing to stop…"
-            }
-            return
-        }
+        guard !isStopping, processingTask == nil, lifecycle.queue.contains(where: \.isPrepared) else { return }
+        lifecycle.send(.workerStarted)
         processingTask = Task { [self] in
             let activity = ProcessInfo.processInfo.beginActivity(
                 options: [.userInitiatedAllowingIdleSystemSleep, .idleSystemSleepDisabled],
                 reason: "Processing CaptainsLog recordings"
             )
             defer { ProcessInfo.processInfo.endActivity(activity) }
-            while !Task.isCancelled, let index = requests.firstIndex(where: { $0.context != nil }) {
-                let request = requests.remove(at: index)
-                guard let context = request.context else { continue }
-                ownedStem = request.stem
-                processingStem = request.stem
+            while !Task.isCancelled, let item = lifecycle.queue.first(where: \.isPrepared) {
+                guard let request = requests.removeValue(forKey: item.stem),
+                      let context = request.context else {
+                    lifecycle.discardQueued(stem: item.stem)
+                    continue
+                }
+                lifecycle.send(.processingStarted(request.stem))
                 do {
                     let detected: Pipeline.Stage
                     if let requested = request.fromStage {
@@ -204,21 +205,15 @@ public final class ProcessingCoordinator {
                         }.value
                     }
                     try Task.checkCancellation()
-                    stage = Self.appStage(for: detected)
-                    statusMessage = "Processing \(request.stem)..."
+                    lifecycle.send(.processingProgress(request.stem, detected))
                     if detected != .done {
                         _ = try await runPipeline(stem: request.stem, dataDir: context.dataDir, fromStage: detected)
                     }
                     try Task.checkCancellation()
-                    failedEntries.removeValue(forKey: request.stem)
-                    ownedStem = nil
-                    processingStem = nil
-                    stage = .done
-                    statusMessage = "Done"
+                    lifecycle.send(.processingCompleted(request.stem))
                     context.onProgress()
                 } catch {
                     guard !Task.isCancelled else { break }
-                    ownedStem = nil
                     recordFailure(error, for: request.stem)
                     if context.refreshOnError { context.onProgress() }
                     context.onError(error)
@@ -227,7 +222,7 @@ public final class ProcessingCoordinator {
             let cleanup = cleanupAfterCancellation
             cleanupAfterCancellation = nil
             cleanup?()
-            ownedStem = nil
+            lifecycle.send(.workerDrained)
             processingTask = nil
             guard !Task.isCancelled else {
                 // Resume, batch, reprocess and new recordings all use this handoff.
@@ -236,17 +231,14 @@ public final class ProcessingCoordinator {
             }
             let callbacks = drainCallbacks
             drainCallbacks.removeAll()
-            if !callbacks.isEmpty { stage = .done; statusMessage = "Done" }
+            if !callbacks.isEmpty { lifecycle.send(.queueCompleted) }
             for callback in callbacks { callback() }
         }
     }
 
     func resetAfterDeletingOutputs() {
         guard !hasScheduledWork else { return }
-        failedEntries = [:]
-        errorMessage = nil
-        stage = .idle
-        statusMessage = "Ready to process"
+        lifecycle.send(.outputsDeleted)
     }
 
     /// Consume progress in order before reporting completion. Unawaited UI-update tasks
@@ -267,8 +259,7 @@ public final class ProcessingCoordinator {
         return try await withTaskCancellationHandler {
             for await progress in updates {
                 guard !Task.isCancelled, processingStem == progress.stem else { continue }
-                stage = Self.appStage(for: progress.stage)
-                statusMessage = "\(progress.stage.rawValue.capitalized)..."
+                lifecycle.send(.processingProgress(progress.stem, progress.stage))
             }
             let result = try await task.value
             try Task.checkCancellation()
@@ -280,41 +271,23 @@ public final class ProcessingCoordinator {
     }
 
     private func recordFailure(_ error: Error, for stem: String) {
-        processingStem = nil
         if Task.isCancelled || error.isNetworkCancellation {
-            stage = .idle
-            statusMessage = "Paused"
+            lifecycle.send(.processingInterrupted)
         } else {
             #if DEBUG
             AppPerformanceTrace.mark("pipeline-failed")
             AppPerformanceTrace.mark("pipeline-error " + error.localizedDescription.replacingOccurrences(of: "\n", with: " "))
             #endif
-            failedEntries[stem] = error.localizedDescription
-            errorMessage = error.localizedDescription
-            stage = .idle
-            statusMessage = "Processing failed. Retry available."
+            lifecycle.send(.processingFailed(stem, error.localizedDescription))
         }
     }
 
     func recordPreparationFailure(_ error: Error, for stem: String) {
         if hasScheduledWork {
-            failedEntries[stem] = error.localizedDescription
-            errorMessage = error.localizedDescription
+            lifecycle.send(.processingFailed(stem, error.localizedDescription))
             return
         }
         recordFailure(error, for: stem)
-    }
-
-    private static func appStage(for s: Pipeline.Stage) -> AppStage {
-        switch s {
-        case .recording:    return .recording
-        case .transcribing: return .transcribing
-        case .cleaning:     return .cleaning
-        case .categorizing: return .categorizing
-        case .naming:       return .naming
-        case .enriching:    return .enriching
-        case .done:         return .done
-        }
     }
 
 }

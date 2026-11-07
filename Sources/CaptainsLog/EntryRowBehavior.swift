@@ -76,11 +76,11 @@ struct RecordDockBehavior: Equatable {
     let canSelectInputDevice: Bool
     let showsAudioLevel: Bool
 
-    init(isRecording: Bool, isPaused: Bool, inputDeviceCount: Int) {
+    init(isRecording: Bool, isPaused: Bool, inputDeviceCount: Int, isFinishing: Bool = false) {
         primaryAction = isRecording ? .stop : .start
-        pauseAction = isRecording ? (isPaused ? .resume : .pause) : nil
+        pauseAction = isRecording && !isFinishing ? (isPaused ? .resume : .pause) : nil
         canSelectInputDevice = inputDeviceCount > 0
-        showsAudioLevel = isRecording && !isPaused
+        showsAudioLevel = isRecording && !isPaused && !isFinishing
     }
 }
 
@@ -93,8 +93,8 @@ struct QueueStripBehavior: Equatable {
     let action: QueueStripAction
     let statusLabel: String
 
-    init(isProcessing: Bool, statusMessage: String, pendingCount: Int) {
-        if isProcessing {
+    init(isProcessing: Bool, statusMessage: String, pendingCount: Int, hasScheduledWork: Bool = false) {
+        if isProcessing || hasScheduledWork {
             action = .pause
             statusLabel = statusMessage
         } else {

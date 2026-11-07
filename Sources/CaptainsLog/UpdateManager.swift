@@ -5,10 +5,32 @@ import SwiftUI
 @MainActor
 @Observable
 public final class UpdateManager {
-    public private(set) var isChecking = false
-    public private(set) var isInstalling = false
-    public private(set) var isRestarting = false
-    public private(set) var needsRestart = false
+    var lifecycle = AppLifecycle()
+    public private(set) var isChecking: Bool {
+        get { lifecycle.updateChecking }
+        set { lifecycle.send(.updateChecking(newValue)) }
+    }
+    public private(set) var isInstalling: Bool {
+        get { lifecycle.updateInstalling }
+        set { lifecycle.send(.updateInstalling(newValue)) }
+    }
+    public private(set) var isRestarting: Bool {
+        get { lifecycle.updateRestarting }
+        set { lifecycle.send(.updateRestarting(newValue)) }
+    }
+    public private(set) var needsRestart: Bool {
+        get { lifecycle.updateNeedsRestart }
+        set { lifecycle.send(.updateNeedsRestart(newValue)) }
+    }
+
+    func useLifecycle(_ shared: AppLifecycle) {
+        let flags = (isChecking, isInstalling, isRestarting, needsRestart)
+        lifecycle = shared
+        lifecycle.send(.updateChecking(flags.0))
+        lifecycle.send(.updateInstalling(flags.1))
+        lifecycle.send(.updateRestarting(flags.2))
+        lifecycle.send(.updateNeedsRestart(flags.3))
+    }
     public private(set) var availableVersion: String?
     public private(set) var message = "Updates are installed through Homebrew."
     public private(set) var automaticUpdates: Bool
@@ -163,7 +185,8 @@ public final class UpdateManager {
     }
 
     public func install() async {
-        guard supported, availableVersion != nil, !isChecking, !isInstalling, !needsRestart else { return }
+        guard supported, availableVersion != nil, !isChecking, !isInstalling, !needsRestart,
+              lifecycle.canInstallUpdate else { return }
         isInstalling = true
         defer { isInstalling = false }
         message = "Installing update…"

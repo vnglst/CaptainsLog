@@ -31,7 +31,13 @@ public final class AppState {
     private let moveToTrash: (URL) -> Void
     private var entryLoadGeneration = 0
     private let entryLoader: @Sendable (String) -> [LogEntry]
-    private var processingRequestGeneration = 0
+    public var lifecycle: AppLifecycle { processing.lifecycle }
+
+    private func configureLifecycle() {
+        recording.useLifecycle(lifecycle)
+        models.useLifecycle(lifecycle)
+        updates.useLifecycle(lifecycle)
+    }
 
     // MARK: - Entries
 
@@ -59,8 +65,8 @@ public final class AppState {
     public var stage: AppStage { processing.stage }
     public var audioLevel: Float { recording.audioLevel }
     public var recordingDuration: TimeInterval { recording.recordingDuration }
-    public var statusMessage: String { processing.statusMessage }
-    public var errorMessage: String? { processing.errorMessage ?? recording.errorMessage }
+    public var statusMessage: String { lifecycle.statusMessage }
+    public var errorMessage: String? { lifecycle.processingError ?? lifecycle.recordingError }
     public var modelState: ModelState { models.modelState }
     public var inputDevices: [AudioDevice] { recording.inputDevices }
     public var selectedDeviceUID: String? {
@@ -134,6 +140,7 @@ public final class AppState {
         directoryWatcher = DirectoryWatcher(onReload: { })
         // Set initial first-run state from config
         needsFirstRunDisplay = config.needsFirstRun
+        configureLifecycle()
     }
 
     init(
@@ -159,6 +166,7 @@ public final class AppState {
         self.moveToTrash = moveToTrash
         self.entryLoader = entryLoader
         needsFirstRunDisplay = config.needsFirstRun
+        configureLifecycle()
     }
 
     /// Called by CaptainsLogApp after self is fully constructed
@@ -198,7 +206,7 @@ public final class AppState {
         config.pickQwenModelFolder()
     }
 
-    var canChangeDataDirectory: Bool { !isRecording && !isProcessing && !processing.hasScheduledWork && processing.processingStem == nil }
+    var canChangeDataDirectory: Bool { lifecycle.canChangeDataDirectory }
 
     func pickDataDirectory() {
         guard canChangeDataDirectory else { return }
@@ -214,9 +222,7 @@ public final class AppState {
     }
 
     func startRecording() {
-        guard !updates.isInstalling, !updates.needsRestart else { return }
-        guard !recording.isRecording else { return }
-        if !processing.isProcessing { processing.stage = .recording }
+        guard lifecycle.canStartRecording else { return }
         recording.startRecording(
             dataDir: config.dataDir,
             onComplete: { [weak self] stem in
@@ -237,8 +243,6 @@ public final class AppState {
     private func startQueuedProcessingIfPossible() {
         guard modelsReady else {
             if models.needsDownload { ensureModelsDownloaded() }
-            processing.stage = .idle
-            processing.statusMessage = "Waiting for local models"
             return
         }
         processing.startProcessing(
@@ -246,7 +250,6 @@ public final class AppState {
             isRecording: recording.isRecording,
             onProgress: { [weak self] in self?.refreshEntries() },
             onComplete: { [weak self] in
-                self?.processing.stage = self?.recording.isRecording == true ? .recording : .done
                 self?.refreshEntries()
             },
             onError: { [weak self] _ in self?.refreshEntries() }
@@ -254,11 +257,8 @@ public final class AppState {
     }
 
     private func onRecordingError(_ error: Error) {
-        if !processing.isProcessing {
-            processing.stage = .error
-            processing.errorMessage = error.localizedDescription
-            processing.statusMessage = "Error: \(error.localizedDescription)"
-        }
+        // The recorder has already sent the failure to the shared machine.
+        refreshEntries()
     }
 
     func stopRecording() {
@@ -274,25 +274,17 @@ public final class AppState {
     }
 
     public func pauseProcessing() {
-        processingRequestGeneration += 1
         processing.pauseProcessing()
         refreshEntries()
     }
 
     func resumeProcessing(stem: String, fromStage: Pipeline.Stage? = nil) {
-        guard !updates.isInstalling, !updates.needsRestart else { return }
-        if models.needsDownload {
-            let generation = processingRequestGeneration
-            models.ensureModelsDownloaded { [weak self] in
-                guard let self, self.processingRequestGeneration == generation else { return }
-                self.resumeProcessing(stem: stem, fromStage: fromStage)
-            }
-            return
-        }
+        guard lifecycle.canStartWork else { return }
         processing.resumeEntry(
             stem: stem,
             fromStage: fromStage,
             dataDir: config.dataDir,
+            modelsReady: modelsReady,
             onComplete: { [weak self] in
                 self?.refreshEntries()
             },
@@ -300,16 +292,15 @@ public final class AppState {
                 self?.refreshEntries()
             }
         )
+        if !modelsReady { ensureModelsDownloaded() }
     }
 
     var canDeleteProcessingOutputs: Bool {
-        !isRecording && !isProcessing && processing.processingStem == nil
-            && !processing.hasScheduledWork && !updates.isInstalling && !updates.needsRestart
+        lifecycle.canChangeDataDirectory && lifecycle.canStartWork
     }
 
     func canReprocessEntry(stem: String) -> Bool {
-        !isRecording && !updates.isInstalling && !updates.needsRestart
-            && processing.canQueueReprocessing(stem: stem)
+        !isRecording && lifecycle.canQueue(stem: stem)
     }
 
     func reprocessEntry(stem: String) {
@@ -349,25 +340,18 @@ public final class AppState {
     }
 
     public func batchResumePending() {
-        guard !updates.isInstalling, !updates.needsRestart else { return }
-        if models.needsDownload {
-            let generation = processingRequestGeneration
-            models.ensureModelsDownloaded { [weak self] in
-                guard let self, self.processingRequestGeneration == generation else { return }
-                self.batchResumePending()
-            }
-            return
-        }
+        guard lifecycle.canStartWork else { return }
         processing.batchResumePending(
             pendingEntries: pendingEntries,
             dataDir: config.dataDir,
+            modelsReady: modelsReady,
             onProgress: { [weak self] in self?.refreshEntries() },
             onComplete: { [weak self] in
-                self?.processing.stage = .done
                 self?.refreshEntries()
             },
             onError: { _ in }
         )
+        if !modelsReady { ensureModelsDownloaded() }
     }
 
     func canDeleteEntry(stem: String) -> Bool { !processing.ownsEntry(stem: stem) }
@@ -392,7 +376,7 @@ public final class AppState {
     }
 
     var canInstallUpdate: Bool {
-        !isRecording && !isProcessing && !processing.hasScheduledWork && models.modelState == .ready
+        lifecycle.canInstallUpdate
     }
 
     public func installUpdate() async {

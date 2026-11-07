@@ -2310,6 +2310,88 @@ func runCoordinatorCoverageTests() async {
         try expect(models.modelsReady)
     }
 
+    await testAsync("App lifecycle: model setup and recording share one cancelable queue and visible status") {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("LifecycleQueue-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: root) }
+        let download = LockedValue<CheckedContinuation<Void, Never>?>(nil)
+        let processed = LockedStringArray()
+        let models = ModelManager(dependencies: .init(
+            clearStaleConfig: {}, cleanCorruptedMetadata: {},
+            whisperIsDownloaded: { false }, qwenIsDownloaded: { true },
+            downloadWhisper: { _ in await withCheckedContinuation { download.set($0) } },
+            downloadQwen: { _ in }
+        ))
+        let processing = ProcessingCoordinator { stem, _, _, _ in
+            processed.append(stem)
+            return result(for: stem)
+        }
+        let fixture = URL(fileURLWithPath: "eval/transcribe/audio/tng-nl01-vrije-dag-enterprise-corrected.m4a")
+        let recording = RecordingState(dependencies: .init(
+            listInputDevices: { [] }, defaultInputDevice: { nil },
+            record: { destination, _, stop, _, _ in
+                try FileManager.default.copyItem(at: fixture, to: destination)
+                for await _ in stop { break }
+            }
+        ))
+        let config = ConfigManager(loadContextFiles: false)
+        config.dataDir = root.path
+        let state = AppState(config: config, recording: recording, processing: processing, models: models)
+        state.ensureModelsDownloaded()
+        for _ in 0..<1000 where download.get() == nil { try await Task.sleep(for: .milliseconds(1)) }
+        guard let release = download.get() else { throw NSError(domain: "LifecycleQueue", code: 1) }
+        state.resumeProcessing(stem: "2025-01-14-0730", fromStage: .cleaning)
+        state.resumeProcessing(stem: "2025-01-14-0830", fromStage: .enriching)
+        state.resumeProcessing(stem: "2025-01-14-0730", fromStage: .cleaning)
+        try expect(processing.isQueued(stem: "2025-01-14-0730") && processing.isQueued(stem: "2025-01-14-0830"))
+        try expect(state.statusMessage.contains("2 queued") && state.statusMessage.contains("Downloading Whisper"))
+        let waiting = QueueStripBehavior(isProcessing: state.isProcessing, statusMessage: state.statusMessage,
+                                        pendingCount: 2, hasScheduledWork: processing.hasScheduledWork)
+        try expect(waiting.action == .pause && waiting.statusLabel == state.statusMessage,
+                   "Waiting model work must be visible and cancelable from the shared status")
+        state.startRecording()
+        try expect(state.isRecording && state.statusMessage.contains("Recording"))
+        try expect(!state.canInstallUpdate && !state.canChangeDataDirectory)
+        state.pauseProcessing()
+        try expect(!processing.isQueued(stem: "2025-01-14-0730") && !state.statusMessage.contains("queued"))
+        release.resume()
+        for _ in 0..<1000 where !models.modelsReady { try await Task.sleep(for: .milliseconds(1)) }
+        try expect(models.modelsReady && processed.snapshot().isEmpty,
+                   "A completed download must not resurrect requests discarded by Pause")
+        try expect(state.isRecording, "Pausing the queue must preserve the concurrent recording")
+        recording.cancelRecording()
+        await recording.stopForTermination()
+        await processing.stopForTermination()
+    }
+
+    await testAsync("App lifecycle: waiting resumes keep order and requested stage when models become ready") {
+        let download = LockedValue<CheckedContinuation<Void, Never>?>(nil)
+        let calls = LockedStringArray()
+        let models = ModelManager(dependencies: .init(
+            clearStaleConfig: {}, cleanCorruptedMetadata: {},
+            whisperIsDownloaded: { false }, qwenIsDownloaded: { true },
+            downloadWhisper: { _ in await withCheckedContinuation { download.set($0) } },
+            downloadQwen: { _ in }
+        ))
+        let processing = ProcessingCoordinator { stem, _, stage, _ in
+            calls.append("\(stem):\(stage?.rawValue ?? "none")")
+            return result(for: stem)
+        }
+        let state = AppState(config: ConfigManager(loadContextFiles: false), processing: processing, models: models)
+        state.ensureModelsDownloaded()
+        for _ in 0..<1000 where download.get() == nil { try await Task.sleep(for: .milliseconds(1)) }
+        guard let release = download.get() else { throw NSError(domain: "LifecycleQueue", code: 2) }
+        state.resumeProcessing(stem: "first", fromStage: .cleaning)
+        state.resumeProcessing(stem: "second", fromStage: .enriching)
+        try expect(calls.snapshot().isEmpty && state.statusMessage.contains("2 queued"))
+        release.resume()
+        for _ in 0..<1000 where calls.snapshot().count < 2 || processing.hasScheduledWork {
+            try await Task.sleep(for: .milliseconds(1))
+        }
+        try expect(calls.snapshot() == ["first:cleaning", "second:enriching"],
+                   "Model readiness must preserve queue order and the requested checkpoints")
+        try expect(state.statusMessage == "Done" && state.canInstallUpdate)
+    }
+
     await testAsync("AppState: finishing a recording does not block the main thread on slow entry reads") {
         let models = ModelManager(dependencies: .init(
             clearStaleConfig: {}, cleanCorruptedMetadata: {},
@@ -7326,14 +7408,12 @@ private func runUpdateManagerTests(fixtures: URL) async {
             await manager.runScheduledUpdate { state.canInstallUpdate }
         }
         state.processing.stage = .idle
-        let recording = RecordingState()
         for paused in [false, true] {
-            recording.applyDesignFixture(isPaused: paused, duration: 10, audioLevel: 0.1)
-            let recordingState = AppState(updates: manager, config: ConfigManager(loadContextFiles: false), recording: recording)
-            recordingState.models.modelState = .ready
-            try expect(!recordingState.canInstallUpdate)
-            await recordingState.installUpdate()
-            await manager.runScheduledUpdate { recordingState.canInstallUpdate }
+            state.recording.applyDesignFixture(isPaused: paused, duration: 10, audioLevel: 0.1)
+            try expect(!state.canInstallUpdate)
+            await state.installUpdate()
+            await manager.runScheduledUpdate { state.canInstallUpdate }
+            state.recording.cancelRecording()
         }
         try expect(harness.events == ["check"], "Busy states must not install or restart")
         try expect(state.canInstallUpdate)

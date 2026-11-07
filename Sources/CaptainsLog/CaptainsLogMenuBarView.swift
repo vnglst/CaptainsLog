@@ -38,8 +38,8 @@ public struct CaptainsLogMenuBarView: View {
                 .clipShape(RoundedRectangle(cornerRadius: FieldNotes.Radius.control, style: .continuous))
             }
             .buttonStyle(.plain)
-            .disabled(!appState.isRecording &&
-                (appState.needsFirstRun || appState.updates.isInstalling || appState.updates.needsRestart))
+            .disabled(appState.lifecycle.recording == .finishing || (!appState.isRecording &&
+                (appState.needsFirstRun || !appState.lifecycle.canStartRecording)))
 
             VStack(alignment: .leading, spacing: FieldNotes.Spacing.xs) {
                 if appState.isRecording {
@@ -51,16 +51,14 @@ public struct CaptainsLogMenuBarView: View {
                     }
                     .foregroundStyle(FieldNotes.ColorToken.danger)
                 }
-                if !appState.isRecording || showsProcessing || appState.processing.hasScheduledWork {
-                    HStack(spacing: FieldNotes.Spacing.xs) {
-                        if showsProcessing {
-                            ProgressView().controlSize(.small).tint(FieldNotes.ColorToken.amber)
-                        }
-                        Text(processingLabel)
-                            .font(FieldNotes.Typography.body(12))
-                            .foregroundStyle(FieldNotes.ColorToken.secondaryText)
-                            .lineLimit(2)
+                HStack(spacing: FieldNotes.Spacing.xs) {
+                    if appState.lifecycle.showsProgress {
+                        ProgressView().controlSize(.small).tint(FieldNotes.ColorToken.amber)
                     }
+                    Text(processingLabel)
+                        .font(FieldNotes.Typography.body(12))
+                        .foregroundStyle(FieldNotes.ColorToken.secondaryText)
+                        .lineLimit(2)
                 }
                 if let error = appState.errorMessage {
                     Label(error, systemImage: "exclamationmark.triangle")
@@ -109,19 +107,12 @@ public struct CaptainsLogMenuBarView: View {
         guard appState.isRecording else { return "CaptainsLog" }
         let seconds = Int(appState.recordingDuration)
         let duration = String(format: "%02d:%02d", seconds / 60, seconds % 60)
-        return "\(appState.isRecordingPaused ? "Paused" : "Recording") · \(duration)"
-    }
-
-    private var showsProcessing: Bool {
-        appState.isProcessing || appState.processingStem != nil
+        let label = appState.lifecycle.recording == .finishing ? "Saving" : appState.isRecordingPaused ? "Paused" : "Recording"
+        return "\(label) · \(duration)"
     }
 
     private var processingLabel: String {
-        if showsProcessing {
-            return appState.isRecording ? "Processing memos" : "Processing memos · \(appState.stage.rawValue)"
-        }
-        if appState.processing.hasScheduledWork { return "Memos waiting to process" }
         if appState.needsFirstRun { return "Open CaptainsLog to finish setup" }
-        return "Ready to record"
+        return appState.statusMessage
     }
 }

@@ -24,13 +24,27 @@ public final class ModelManager {
         let downloadQwen: DownloadOperation
     }
 
-    public var modelState: ModelState = .ready
+    var lifecycle = AppLifecycle()
+    public var modelState: ModelState {
+        get { lifecycle.modelState }
+        set { lifecycle.send(.modelState(newValue)) }
+    }
+
+    func useLifecycle(_ shared: AppLifecycle) {
+        let state = modelState
+        let missing = needsDownload
+        lifecycle = shared
+        lifecycle.send(.modelState(state))
+        lifecycle.send(.modelsMissing(missing))
+    }
     private let dependencies: Dependencies
-    private var activeDownloadID: UUID?
     private var readyCallbacks: [@MainActor () -> Void] = []
 
-    public private(set) var needsDownload = false
-    public var modelsReady: Bool { modelState == .ready && !needsDownload }
+    public private(set) var needsDownload: Bool {
+        get { lifecycle.needsModels }
+        set { lifecycle.send(.modelsMissing(newValue)) }
+    }
+    public var modelsReady: Bool { lifecycle.modelsReady }
 
     func didDeleteModel(_ model: ModelStorage.Model) {
         if model != .embeddings {
@@ -118,16 +132,14 @@ public final class ModelManager {
 
     private func downloadModel(_ name: String, operation: DownloadOperation) async throws {
         let downloadID = UUID()
-        activeDownloadID = downloadID
-        defer { activeDownloadID = nil }
-        modelState = .downloading(model: name, progress: 0)
+        lifecycle.send(.modelDownloadStarted(downloadID, name))
+        defer { lifecycle.send(.modelDownloadFinished(downloadID)) }
         try await operation { [weak self] progress in
             let fraction = progress.fractionCompleted
             Task { @MainActor [weak self] in
                 // Download libraries can deliver a final callback after returning or
                 // failing. It must not hide an error, readiness, or the next model.
-                guard let self, self.activeDownloadID == downloadID else { return }
-                self.modelState = .downloading(model: name, progress: min(1, max(0, fraction)))
+                self?.lifecycle.send(.modelDownloadProgress(downloadID, fraction))
             }
         }
     }
