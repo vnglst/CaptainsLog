@@ -90,16 +90,17 @@ enum QueueStripAction: Equatable {
 }
 
 struct QueueStripBehavior: Equatable {
-    let action: QueueStripAction
+    let action: QueueStripAction?
     let statusLabel: String
 
-    init(isProcessing: Bool, statusMessage: String, pendingCount: Int, hasScheduledWork: Bool = false) {
+    init(isProcessing: Bool, statusMessage: String, pendingCount: Int, hasScheduledWork: Bool = false,
+         hasActivity: Bool = false) {
         if isProcessing || hasScheduledWork {
             action = .pause
             statusLabel = statusMessage
         } else {
-            action = .processPending
-            statusLabel = "\(pendingCount) logs waiting"
+            action = pendingCount > 0 ? .processPending : nil
+            statusLabel = hasActivity ? statusMessage : "\(pendingCount) logs waiting"
         }
     }
 }

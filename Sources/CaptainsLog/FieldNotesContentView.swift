@@ -250,7 +250,7 @@ private struct FieldNotesEntriesView: View {
     var body: some View {
         VStack(spacing: 0) {
             header
-            if !appState.pendingEntries.isEmpty || appState.lifecycle.hasScheduledWork || appState.isProcessing { queueStrip }
+            if !appState.pendingEntries.isEmpty || appState.lifecycle.hasActivity || appState.errorMessage != nil { queueStrip }
             if appState.search.isActive {
                 searchContent
             } else if appState.allEntries.isEmpty {
@@ -289,8 +289,9 @@ private struct FieldNotesEntriesView: View {
                     Text("Logs")
                         .font(FieldNotes.Typography.title(28))
                         .foregroundStyle(FieldNotes.ColorToken.primaryText)
-                    FieldNotesCompactModelStatus()
-                        .frame(height: 20, alignment: .leading)
+                    Text("Your thoughts, captured and organized")
+                        .font(FieldNotes.Typography.body(13))
+                        .foregroundStyle(FieldNotes.ColorToken.secondaryText)
                 }
                 Spacer()
                 Text(categoryFilter.includesAll ? "\(appState.allEntries.count) logs" : "\(visibleEntries.count) of \(appState.allEntries.count) logs")
@@ -439,15 +440,29 @@ private struct FieldNotesEntriesView: View {
             isProcessing: appState.isProcessing,
             statusMessage: appState.statusMessage,
             pendingCount: appState.pendingEntries.count,
-            hasScheduledWork: appState.lifecycle.hasScheduledWork
+            hasScheduledWork: appState.lifecycle.hasScheduledWork,
+            hasActivity: appState.lifecycle.hasActivity || appState.errorMessage != nil
         )
         return HStack(spacing: FieldNotes.Spacing.s) {
-            FieldNotesStatus(state: behavior.action == .pause ? .active : .paused,
+            if appState.lifecycle.showsProgress {
+                ProgressView().controlSize(.small)
+            }
+            FieldNotesStatus(state: notificationState,
                              label: behavior.statusLabel)
+                .textSelection(.enabled)
             Spacer()
+            if case .downloading(_, let progress) = appState.modelState, progress > 0 {
+                Text(progress, format: .percent.precision(.fractionLength(0)))
+                    .font(FieldNotes.Typography.metadata(12))
+                    .foregroundStyle(FieldNotes.ColorToken.secondaryText)
+                    .fixedSize()
+            }
+            if case .error = appState.modelState {
+                FieldNotesButton(title: "Retry download", kind: .secondary) { appState.ensureModelsDownloaded() }
+            }
             if behavior.action == .pause {
                 FieldNotesButton(title: "Pause", kind: .secondary) { appState.pauseProcessing() }
-            } else {
+            } else if behavior.action == .processPending {
                 FieldNotesButton(title: "Process pending", kind: .primary) { appState.batchResumePending() }
             }
         }
@@ -455,6 +470,12 @@ private struct FieldNotesEntriesView: View {
         .padding(.vertical, FieldNotes.Spacing.s)
         .background(FieldNotes.ColorToken.surface)
         .overlay(alignment: .bottom) { Rectangle().fill(FieldNotes.ColorToken.stroke).frame(height: 1) }
+    }
+
+    private var notificationState: FieldNotesStatus.State {
+        if case .error = appState.modelState { return .failed }
+        if appState.errorMessage != nil { return .failed }
+        return appState.lifecycle.hasActivity ? .active : .paused
     }
 
     private var emptyState: some View {
@@ -1294,7 +1315,6 @@ private struct FieldNotesSettingsView: View {
                 }
 
                 section("Models") {
-                    modelStatus
                     ForEach(ModelStorage.Model.allCases) { model in
                         let usage = modelUsage.first { $0.model == model }
                         HStack(spacing: 12) {
@@ -1463,108 +1483,9 @@ private struct FieldNotesSettingsView: View {
             .fixedSize(horizontal: false, vertical: true)
     }
 
-    private var modelStatus: some View {
-        FieldNotesModelStatus()
-            .frame(minHeight: 76, alignment: .topLeading)
-    }
-
     private func shortenedPath(_ path: String) -> String {
         let home = FileManager.default.homeDirectoryForCurrentUser.path
         return path.hasPrefix(home) ? "~" + path.dropFirst(home.count) : path
-    }
-}
-
-/// Uses the existing Logs subtitle space so setup never moves the recording controls.
-private struct FieldNotesCompactModelStatus: View {
-    @Environment(AppState.self) private var appState
-
-    var body: some View {
-        HStack(spacing: 8) {
-            switch appState.modelState {
-            case .ready:
-                Text(appState.lifecycle.hasActivity
-                    ? appState.statusMessage : "Your thoughts, captured and organized")
-                    .lineLimit(1)
-                    .help(appState.statusMessage)
-            case .downloading(let model, let progress):
-                ProgressView().controlSize(.mini)
-                Text(appState.statusMessage)
-                    .lineLimit(1)
-                    .help("\(model). Recordings are saved and will process when local models are ready.")
-                if progress > 0 {
-                    Text(progress, format: .percent.precision(.fractionLength(0)))
-                        .fixedSize()
-                }
-            case .error:
-                Image(systemName: "exclamationmark.circle")
-                    .foregroundStyle(FieldNotes.ColorToken.danger)
-                Text(appState.statusMessage)
-                    .lineLimit(1)
-                    .help(appState.statusMessage)
-                Button("Retry download") { appState.ensureModelsDownloaded() }
-                    .buttonStyle(.plain)
-                    .foregroundStyle(FieldNotes.ColorToken.amber)
-                    .fixedSize()
-            }
-        }
-        .font(FieldNotes.Typography.body(13))
-        .foregroundStyle(FieldNotes.ColorToken.secondaryText)
-    }
-}
-
-/// Shared download feedback keeps Logs and Settings on the same readiness state.
-private struct FieldNotesModelStatus: View {
-    @Environment(AppState.self) private var appState
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            switch appState.modelState {
-            case .ready:
-                FieldNotesStatus(state: .processed,
-                    label: appState.lifecycle.modelStatusMessage)
-            case .downloading(_, let progress):
-                HStack(spacing: 10) {
-                    ProgressView().controlSize(.small)
-                    Text(appState.lifecycle.modelStatusMessage)
-                        .font(FieldNotes.Typography.body(12, weight: .medium))
-                        .foregroundStyle(FieldNotes.ColorToken.primaryText)
-                    Spacer(minLength: 0)
-                    if progress > 0 {
-                        Text(progress, format: .percent.precision(.fractionLength(0)))
-                            .font(FieldNotes.Typography.metadata(12))
-                            .foregroundStyle(FieldNotes.ColorToken.secondaryText)
-                    }
-                }
-                if progress > 0 {
-                    ProgressView(value: progress)
-                        .tint(FieldNotes.ColorToken.amber)
-                }
-                Text("Recordings are saved and will process when local models are ready.")
-                    .font(FieldNotes.Typography.body(12))
-                    .foregroundStyle(FieldNotes.ColorToken.secondaryText)
-                    .fixedSize(horizontal: false, vertical: true)
-            case .error(let message):
-                HStack(alignment: .top, spacing: 12) {
-                    VStack(alignment: .leading, spacing: 6) {
-                        FieldNotesStatus(state: .failed, label: "Local model setup failed")
-                        ScrollView {
-                            Text(message)
-                                .font(FieldNotes.Typography.body(12))
-                                .foregroundStyle(FieldNotes.ColorToken.secondaryText)
-                                .textSelection(.enabled)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
-                        .frame(height: 54)
-                    }
-                    Spacer(minLength: 0)
-                    FieldNotesButton(title: "Retry download", kind: .secondary) {
-                        appState.ensureModelsDownloaded()
-                    }
-                }
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 

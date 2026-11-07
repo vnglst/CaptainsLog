@@ -17,7 +17,7 @@ entry. Git links provide the complete commit history for each release.
 - Keep the current Logs design references directly in `design/` and remove the obsolete project prototype.
 - Consolidate evaluation tools, native preview fixtures, review assets and workflows under `eval/`, and replace redundant script aliases with one command dispatcher.
 - Keep recordings made in the same minute as separate logs, and process recordings after model setup without restarting.
-- Show model download progress and retryable errors in Logs and Settings.
+- Show downloads, retryable errors, processing and queue notifications in one status strip above the logs.
 
 ## [0.7.0] - 2026-11-07
 

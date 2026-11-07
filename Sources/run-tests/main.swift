@@ -2064,6 +2064,16 @@ func runCoreCoverageTests() {
 
         let idle = QueueStripBehavior(isProcessing: false, statusMessage: "Stale status", pendingCount: 3)
         try expect(idle.action == .processPending && idle.statusLabel == "3 logs waiting")
+
+        let downloading = QueueStripBehavior(isProcessing: false, statusMessage: "Downloading Whisper",
+                                             pendingCount: 0, hasActivity: true)
+        try expect(downloading.action == nil && downloading.statusLabel == "Downloading Whisper",
+                   "Model setup must stay visible without offering an empty processing action")
+
+        let failed = QueueStripBehavior(isProcessing: false, statusMessage: "Download failed",
+                                       pendingCount: 3, hasActivity: true)
+        try expect(failed.action == .processPending && failed.statusLabel == "Download failed",
+                   "Pending logs must not hide the notification or its retryable error")
     }
 
     test("Field Notes: entry Markdown keeps explicit line breaks") {
