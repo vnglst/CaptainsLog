@@ -2,7 +2,8 @@
 
 Evaluation orchestration, scoring, validation, the listening-review app and its
 tests live in [`tools/`](tools/). Stage workflows live in [`skills/`](skills/).
-The CLI batch command lives in [`CLI/`](CLI/); production inference stages remain
+The CLI batch command lives in [`CLI/`](CLI/) and native UI preview states in
+[`UI/`](UI/); production inference stages remain
 in CaptainsLogCore. Make is the public entry point.
 
 Active stages are `transcribe`, `cleanup`, `categorize`, `filename` and `enrich`.

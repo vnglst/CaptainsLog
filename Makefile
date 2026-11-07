@@ -18,7 +18,7 @@ PORT ?=
 SHA256 ?=
 
 # Directory timestamps also invalidate the app when source files are added or removed.
-DEV_INPUTS := Package.swift Package.resolved $(shell find Sources Vendor eval/FixtureLibrary -name .build -prune -o -name .swiftpm -prune -o -type f -print -o -type d -print)
+DEV_INPUTS := Package.swift Package.resolved $(shell find Sources Vendor eval/FixtureLibrary eval/UI -name .build -prune -o -name .swiftpm -prune -o -type f -print -o -type d -print)
 
 .PHONY: help build dev run website cli tests tests-unit tests-coverage tests-updates tests-release tests-evals tests-runtime tests-enrich tests-model tests-recorder tests-app-performance tests-search-shutdown ui evals evals-review evals-list evals-pipeline evals-suites packaging release release-notes release-check release-cask icons clean
 
