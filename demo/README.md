@@ -5,6 +5,12 @@ The demo and native UI harness use the same library in
 evaluation audio, transcripts, cleaned text and enriched metadata under `eval/`;
 there are no separate demo recordings or notes.
 
+The same manifest seeds Context with a fictional Enterprise engineering officer's
+profile and TNG name and technical-term corrections from `eval/demo-context/`.
+Categories retain the app's personal, professional and side-project defaults;
+microphones, model storage and update availability reflect the running app.
+Missing context files are added to existing demo copies; saved edits are retained.
+
 Run `make dev`. The debug app copies those fixtures into
 `tmp/demo-runtime-eval/data/` with a separate config. Completed examples include the
 Dutch Enterprise log and work-week review; the remaining recordings and a

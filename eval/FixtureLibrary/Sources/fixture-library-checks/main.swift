@@ -28,9 +28,18 @@ func seedsCanonicalLibraryAndPreservesRuntimeChanges() throws {
     try require(fm.fileExists(atPath: data.appendingPathComponent(".pipeline/01-transcribed/2025-01-16-0900.md").path))
     try require(fm.fileExists(atPath: data.appendingPathComponent("logs/professional/2025-01-15-work-week-review.md").path))
 
+    let context = data.appendingPathComponent("context/personal_info.md")
+    let corrections = data.appendingPathComponent("context/corrections.md")
+    try require(try String(contentsOf: context, encoding: .utf8) == String(contentsOf: evalRoot().appendingPathComponent("demo-context/personal_info.md"), encoding: .utf8))
+    try require(try String(contentsOf: corrections, encoding: .utf8) == String(contentsOf: evalRoot().appendingPathComponent("demo-context/corrections.md"), encoding: .utf8))
+
     try "Runtime edit\n".write(to: final, atomically: true, encoding: .utf8)
+    try "My edited crew profile\n".write(to: context, atomically: true, encoding: .utf8)
+    try "".write(to: corrections, atomically: true, encoding: .utf8)
     try EvalFixtureLibrary.prepare(evalRoot: evalRoot(), dataRoot: data)
     try require(try String(contentsOf: final, encoding: .utf8) == "Runtime edit\n")
+    try require(try String(contentsOf: context, encoding: .utf8) == "My edited crew profile\n")
+    try require(try String(contentsOf: corrections, encoding: .utf8).isEmpty)
     try require(try String(contentsOf: evalRoot().appendingPathComponent("pipeline/tng-nl01/enriched.md"), encoding: .utf8) == metadata)
 }
 
@@ -51,4 +60,4 @@ func rejectsPathsOutsideFixtureLibrary() throws {
 
 try seedsCanonicalLibraryAndPreservesRuntimeChanges()
 try rejectsPathsOutsideFixtureLibrary()
-print("Fixture library checks passed: canonical audio/text, pending entries, retained edits, source preservation and rejected traversal.")
+print("Fixture library checks passed: canonical audio/text, TNG context, pending entries, retained edits, source preservation and rejected traversal.")

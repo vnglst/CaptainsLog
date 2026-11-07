@@ -3,8 +3,14 @@ import Foundation
 /// Copies the canonical evaluation library into writable, isolated demo/UI storage.
 public enum EvalFixtureLibrary {
     private struct Library: Decodable {
+        let context: Context?
         let completed: [Completed]
         let pending: [Pending]
+    }
+
+    private struct Context: Decodable {
+        let personalInfo: String
+        let corrections: String
     }
 
     private struct Completed: Decodable {
@@ -63,6 +69,10 @@ public enum EvalFixtureLibrary {
         }
 
         let library = try JSONDecoder().decode(Library.self, from: Data(contentsOf: source("demo-library.json")))
+        if let context = library.context {
+            try text("context/personal_info.md", read(context.personalInfo))
+            try text("context/corrections.md", read(context.corrections))
+        }
         for entry in library.completed {
             let stem = try component(entry.stem)
             let category = try component(entry.category)

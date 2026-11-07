@@ -1,4 +1,8 @@
 {
+  "context": {
+    "personalInfo": "demo-context/personal_info.md",
+    "corrections": "demo-context/corrections.md"
+  },
   "completed": [
     {
       "stem": "2025-04-27-1200",

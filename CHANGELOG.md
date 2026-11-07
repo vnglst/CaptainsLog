@@ -13,7 +13,7 @@ entry. Git links provide the complete commit history for each release.
 ## [Unreleased]
 
 - Coordinate recording, model setup and processing through one shared state machine, keeping activity and queue status consistent during downloads and errors in Logs and the menu.
-- Use one canonical evaluation fixture library for the development demo and native UI harness, with processing previews showing one active log and the remaining queue.
+- Use one canonical evaluation fixture library for the development demo and native UI harness, with TNG personal context and spelling corrections, and processing previews showing one active log and the remaining queue.
 - Keep the current Logs design references directly in `design/` and remove the obsolete project prototype.
 - Consolidate evaluation tools, native preview fixtures, review assets and workflows under `eval/`, and replace redundant script aliases with one command dispatcher.
 - Keep recordings made in the same minute as separate logs, and process recordings after model setup without restarting.
