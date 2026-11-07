@@ -12,7 +12,13 @@ entry. Git links provide the complete commit history for each release.
 
 ## [Unreleased]
 
+## [0.6.2] - 2026-11-07
+
 - Document the tested M4 MacBook Air baseline with 16 GB of unified memory, and explain which languages CaptainsLog was tuned for and how to adapt it.
+
+### Release
+
+- Publish the 0.6.2 app/CLI archive and matching Homebrew cask version and checksum.
 
 ## [0.6.1] - 2026-11-06
 
@@ -329,7 +335,8 @@ entry. Git links provide the complete commit history for each release.
 
 - Make release tests work on clean runners without preinstalled inference models.
 
-[Unreleased]: https://github.com/vnglst/CaptainsLog/compare/v0.6.1...HEAD
+[Unreleased]: https://github.com/vnglst/CaptainsLog/compare/v0.6.2...HEAD
+[0.6.2]: https://github.com/vnglst/CaptainsLog/compare/v0.6.1...v0.6.2
 [0.6.1]: https://github.com/vnglst/CaptainsLog/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/vnglst/CaptainsLog/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/vnglst/CaptainsLog/compare/v0.4.0...v0.5.0
