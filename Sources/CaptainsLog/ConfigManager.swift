@@ -14,7 +14,10 @@ enum FirstRunPresentationPolicy {
 public final class ConfigManager {
     public var dataDir: String {
         didSet {
-            scheduleConfigSave()
+            // A folder choice must survive an immediate setup completion and quit.
+            // Merge only this field so background model downloads keep their settings.
+            do { try CaptainsLogConfig.update { $0.dataDir = dataDir } }
+            catch { logWarning("Failed to save data folder: \(error.localizedDescription)") }
             reloadContextFiles()
         }
     }

@@ -133,8 +133,7 @@ extension Tools {
             print("The synthetic preview window renders the same menu panel as the status item. Recording and processing indicators are simulated; no microphone capture or inference has been performed.")
         }
         print("The app launch skips model download and audio discovery. Do not activate processing or recording controls; those use real inference or audio hardware.")
-        var open = ["open", "--env", "CAPTAINS_LOG_CONFIG_PATH=\(dir.path)/config.json", "--env", "CAPTAINSLOG_UI_FIXTURE=\(fixture)"]
-        if fixture == "onboarding" { open += ["--env", "CAPTAINSLOG_DEMO_MODE=1"] }
+        let open = ["open", "--env", "CAPTAINS_LOG_CONFIG_PATH=\(dir.path)/config.json", "--env", "CAPTAINSLOG_UI_FIXTURE=\(fixture)"]
         try run(open + ["-n", app.path])
     }
 }

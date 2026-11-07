@@ -26,45 +26,55 @@ public struct FieldNotesContentView: View {
     }
 
     public var body: some View {
-        HStack(spacing: 0) {
-            FieldNotesSidebar(section: $section) {
-                returnToList()
-            }
-            Rectangle().fill(FieldNotes.ColorToken.stroke).frame(width: 1)
+        ZStack {
+            HStack(spacing: 0) {
+                FieldNotesSidebar(section: $section) {
+                    returnToList()
+                }
+                Rectangle().fill(FieldNotes.ColorToken.stroke).frame(width: 1)
 
-            ZStack(alignment: .bottom) {
-                Group {
-                    switch section {
-                    case .entries:
-                        if let selectedEntry {
-                            FieldNotesEntryDetailView(entry: selectedEntry) {
-                                returnToList()
+                ZStack(alignment: .bottom) {
+                    Group {
+                        switch section {
+                        case .entries:
+                            if let selectedEntry {
+                                FieldNotesEntryDetailView(entry: selectedEntry) {
+                                    returnToList()
+                                }
+                                .transition(detailTransition)
+                            } else {
+                                FieldNotesEntriesView(deleteTarget: $deleteTarget, categoryFilter: $navigation.categoryFilter) { entry in
+                                    show(entry)
+                                }
+                                .transition(listTransition)
                             }
-                            .transition(detailTransition)
-                        } else {
-                            FieldNotesEntriesView(deleteTarget: $deleteTarget, categoryFilter: $navigation.categoryFilter) { entry in
-                                show(entry)
-                            }
-                            .transition(listTransition)
+                        case .context: FieldNotesContextView()
+                        case .settings: FieldNotesSettingsView()
                         }
-                    case .context: FieldNotesContextView()
-                    case .settings: FieldNotesSettingsView()
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+                    if section == .entries && selectedEntry == nil {
+                        FieldNotesRecordDock()
+                            .frame(maxWidth: 1040)
+                            .padding(.horizontal, FieldNotes.Spacing.xl)
+                            .padding(.bottom, FieldNotes.Spacing.l)
+                            .transition(
+                                .opacity.combined(with: .scale(scale: 0.97, anchor: .bottom))
+                            )
                     }
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-
-                if section == .entries && selectedEntry == nil {
-                    FieldNotesRecordDock()
-                        .frame(maxWidth: 1040)
-                        .padding(.horizontal, FieldNotes.Spacing.xl)
-                        .padding(.bottom, FieldNotes.Spacing.l)
-                        .transition(
-                            .opacity.combined(with: .scale(scale: 0.97, anchor: .bottom))
-                        )
-                }
+                .clipped()
+                .disabled(section == .entries && (appState.updates.isInstalling || appState.updates.needsRestart))
             }
-            .clipped()
-            .disabled(section == .entries && (appState.updates.isInstalling || appState.updates.needsRestart))
+            .disabled(appState.needsFirstRun)
+            .accessibilityHidden(appState.needsFirstRun)
+
+            if appState.needsFirstRun {
+                FieldNotes.ColorToken.canvas.opacity(0.85).ignoresSafeArea()
+                FieldNotesOnboardingView()
+                    .clipShape(RoundedRectangle(cornerRadius: FieldNotes.Radius.card))
+            }
         }
         .frame(minWidth: 720, minHeight: 780)
         .background(FieldNotes.ColorToken.canvas)
@@ -73,10 +83,6 @@ public struct FieldNotesContentView: View {
             FieldNotesDeleteDialog(entry: target) {
                 appState.deleteEntry(stem: target.stem, slug: target.slug)
             }
-        }
-        .sheet(isPresented: .constant(appState.needsFirstRun)) {
-            FieldNotesOnboardingView().environment(appState)
-                .interactiveDismissDisabled()
         }
         .task {
             guard bootstrap else { return }
@@ -1546,7 +1552,6 @@ private struct FieldNotesTextEditor: View {
 
 private struct FieldNotesOnboardingView: View {
     @Environment(AppState.self) private var appState
-    @Environment(\.dismiss) private var dismiss
     var body: some View {
         HStack(spacing: 0) {
             VStack(alignment: .leading, spacing: FieldNotes.Spacing.l) {
@@ -1571,7 +1576,7 @@ private struct FieldNotesOnboardingView: View {
                         FieldNotesCategoriesEditor()
                     }.padding(FieldNotes.Spacing.m).fieldNotesSurface()
                     Spacer()
-                    HStack { Text("Your recordings and notes aren’t uploaded").font(FieldNotes.Typography.body(13)).foregroundStyle(FieldNotes.ColorToken.secondaryText); Spacer(); FieldNotesButton(title: "Set up CaptainsLog") { appState.completeFirstRun(); dismiss() } }
+                    HStack { Text("Your recordings and notes aren’t uploaded").font(FieldNotes.Typography.body(13)).foregroundStyle(FieldNotes.ColorToken.secondaryText); Spacer(); FieldNotesButton(title: "Set up CaptainsLog") { appState.completeFirstRun() } }
                 }
                 .padding(FieldNotes.Spacing.xxl)
             }

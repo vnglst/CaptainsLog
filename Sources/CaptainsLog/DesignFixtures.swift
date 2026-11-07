@@ -21,8 +21,6 @@ extension AppState {
         let fixtureName = menuFixtures[requestedName] ?? requestedName
         if fixtureName != "onboarding" {
             suppressFirstRunForDesignFixture()
-        } else {
-            presentFirstRunForDesignFixture()
         }
         models.modelState = .ready
         processing.stage = .idle

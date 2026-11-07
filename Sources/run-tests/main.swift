@@ -6813,11 +6813,44 @@ func runTests() async {
         }
         defaults.removeObject(forKey: key)
 
-        let appState = AppState(config: ConfigManager())
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("Onboarding-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let config = ConfigManager()
+        let appState = AppState(config: config)
+        config.dataDir = root.path
         try expect(appState.needsFirstRun, "Fresh install should show onboarding")
         appState.completeFirstRun()
         try expect(!appState.needsFirstRun, "Completing setup should dismiss onboarding")
         try expect(defaults.bool(forKey: key), "Setup completion should persist across launches")
+        try expect(CaptainsLogConfig.load().dataDir == root.path,
+                   "Completing setup must save the selected folder before an immediate quit")
+
+        let beforeDownload = ConfigManager(loadContextFiles: false)
+        let downloadedModel = root.appendingPathComponent("downloaded-whisper")
+        try FileManager.default.createDirectory(at: downloadedModel, withIntermediateDirectories: true)
+        try CaptainsLogConfig.update { $0.whisperModelFolder = downloadedModel.path }
+        beforeDownload.completeFirstRun()
+        try expect(CaptainsLogConfig.load().whisperModelFolder == downloadedModel.path,
+                   "Completing setup without pending edits must preserve a model downloaded during onboarding")
+    }
+
+    test("Onboarding fixture: completing setup stays complete after relaunch") {
+        let defaults = UserDefaults.standard
+        let key = "CaptainsLogHasLaunched"
+        let priorValue = defaults.object(forKey: key)
+        defer {
+            if let priorValue { defaults.set(priorValue, forKey: key) }
+            else { defaults.removeObject(forKey: key) }
+        }
+        defaults.removeObject(forKey: key)
+        let appState = AppState(config: ConfigManager())
+        appState.applyDesignFixture(named: "onboarding")
+        try expect(appState.needsFirstRun)
+        appState.completeFirstRun()
+        let reopened = AppState(config: ConfigManager())
+        reopened.applyDesignFixture(named: "onboarding")
+        try expect(!reopened.needsFirstRun, "The interactive fixture must preserve real setup completion")
     }
 
     test("Onboarding policy: first run appears only for an unlaunched non-demo app") {

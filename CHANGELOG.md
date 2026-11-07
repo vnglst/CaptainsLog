@@ -14,6 +14,8 @@ entry. Git links provide the complete commit history for each release.
 
 - Track app website visits in the existing self-hosted Plausible dashboard for koenvangilst.nl.
 
+- Save storage choices immediately and allow quitting during onboarding. The isolated onboarding harness now supports folder selection and completion across relaunches.
+
 ## [0.6.3] - 2026-11-07
 
 - Move Homebrew installation, updates, and release publication to `vnglst/tap/captainslog`.
