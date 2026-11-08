@@ -113,7 +113,7 @@ final class EvalReviewServer: @unchecked Sendable {
               !path.contains("\0"), !path.split(separator: "/").contains("..") else { return try jsonResponse(["error": "Invalid path"], status: 400) }
         if website {
             let relative = path == "/" ? "index.html" : String(path.dropFirst())
-            let allowed = relative == "index.html" || relative.hasPrefix("assets/")
+            let allowed = ["index.html", "technical.html"].contains(relative) || relative.hasPrefix("assets/")
             return try staticResponse(method: method, relative: relative, allowed: allowed, headers: headers)
         }
         if path == "/api/location" {

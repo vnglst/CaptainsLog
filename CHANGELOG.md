@@ -12,6 +12,8 @@ entry. Git links provide the complete commit history for each release.
 
 ## [Unreleased]
 
+- Add a technical overview subpage to the website, with architecture, pipeline, processing lifecycle and search diagrams, plus model roles.
+
 - Clarify on the website that the CLI works independently of the Mac app, using the same local models and processing pipeline.
 
 - Remove a personal microphone device name from a repository screenshot.

@@ -1,6 +1,6 @@
 # CaptainsLog website
 
-A static landing page styled after the Logs design system and the ImageGen concept in `design/`. The content presents CaptainsLog as a spoken journal for life, work, and side projects, with on-device processing and searchable Markdown logs.
+A static website styled after the Logs design system and the ImageGen concept in `design/`. The content presents CaptainsLog as a spoken journal for life, work, and side projects, with on-device processing and searchable Markdown logs.
 
 Open `index.html` directly, or preview from the repository root:
 
@@ -10,7 +10,7 @@ make website
 
 The preview uses the repository’s Swift tooling. Open <http://127.0.0.1:8765> and press Ctrl+C in the terminal when you’re done. To use another port, run `make website PORT=8766`.
 
-Deploy the contents of `website/` to a static host. There is no build step, package dependency, external font, or inference API. HTML, CSS, and JavaScript live in `index.html`.
+Deploy the contents of `website/` to a static host. There is no build step, package dependency, external font, or inference API. The main page is `index.html`; `technical.html` explains the architecture, pipeline checkpoints, processing ownership and search with inline SVG diagrams. Both pages contain their own styles and need no diagram rendering dependency.
 
 Website visits use the same self-hosted Plausible script and `koenvangilst.nl` dashboard as the main site. Filter by hostname `captainslog.koenvangilst.nl` to see app website traffic. The script ignores localhost previews. This tracking applies only to the website; the Mac app has no analytics.
 

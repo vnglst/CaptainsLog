@@ -3,6 +3,17 @@ import Foundation
 
 extension Tools {
     func testEvalReview() throws {
+        let website = try EvalReviewServer(root: path("website"), port: 0, website: true)
+        defer { website.stop() }
+        let websiteHeaders = ["host": "127.0.0.1:\(website.port)"]
+        for route in ["/", "/index.html", "/technical.html", "/assets/favicon.svg"] {
+            let response = try website.response(method: "GET", path: route, headers: websiteHeaders)
+            try require(response.status == 200, "Website preview failed to serve \(route)")
+        }
+        let privateFile = try website.response(method: "GET", path: "/README.md", headers: websiteHeaders)
+        try require(privateFile.status == 404, "Website preview exposed an unlisted file")
+        let traversal = try website.response(method: "GET", path: "/%2e%2e/README.md", headers: websiteHeaders)
+        try require(traversal.status == 400, "Website preview accepted path traversal")
         let timing: EvalItem = ["transcription": [
             ["text": "one two", "offsets": ["from": 0, "to": 2000]],
             ["text": "three four", "offsets": ["from": 2000, "to": 4000]],

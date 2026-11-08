@@ -191,6 +191,7 @@ Transcription uses Whisper Large-v2. Cleanup, categorization, filenames, and met
 
 ## Documentation
 
+- [Technical overview and architecture diagrams](website/technical.html)
 - [Changelog and release history](CHANGELOG.md)
 - [Testing decision](docs/0023-keep-framework-free-verification-evidence-outside-backlog-tasks.md)
 - [Development commands](scripts/README.md)
