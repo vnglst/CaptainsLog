@@ -1,6 +1,6 @@
 # Repository Instructions
 
-Read `README.md` before working here. Follow its product requirements, build instructions, and design decisions. Use its [repository navigation map](#repository-navigation) to find source entry points and the [tool implementation map](scripts/README.md#implementation-map) for development helpers.
+Read `README.md` for product requirements and [CONTRIBUTING.md](CONTRIBUTING.md) for build, testing and release instructions before working here. Use the [repository navigation map](#repository-navigation) to find source entry points and the [tool implementation map](scripts/README.md#implementation-map) for development helpers.
 
 ## Repository navigation
 
@@ -24,7 +24,7 @@ For code changes, use the entry points below.
 Use `rg --files Sources Tests Packages scripts eval/tools` to locate files before reading them. CLI command
 types share `CL.swift`, tests share `Tests/CaptainsLogTests/main.swift`, and tooling entrypoint
 names do not necessarily match their implementation filenames. Current commands
-and runtime setup live in README.md and the command guide; ADRs preserve dated
+and runtime setup live in CONTRIBUTING.md and the command guide; ADRs preserve dated
 decisions and may describe older implementation details.
 
 ## Backlog
@@ -104,10 +104,10 @@ or token savings without measurements and comparable timing scopes.
 
 - Minimize PR review effort and text. State the change, give one quick review action or tip, and summarize checks and material limits. Keep detailed evidence in optional expandable PR sections, not agent-authored task notes. Proactively include a short video for UI changes, or a concise example, screenshot or sample output suited to other changes. Use synthetic fixtures and isolated data for media. Never imply an unperformed check or recording. Help the owner assess behavior without reconstructing it from code or logs.
 - Keep `CHANGELOG.md` and release notes concise: describe meaningful changes under `Unreleased`, combining related work instead of listing every commit. Keep backlog updates, agent-policy and ADR bookkeeping, and planned work out of both. Backlog-only commits do not need a changelog entry; other changes still require coverage in the same commit. Review `git status`, `git diff`, and `git log` so nothing is missed. Backfill using release tags as boundaries; do not invent earlier history.
-- Prepare releases with `make release BUMP=auto|patch|minor|major|version` (preview with `ARGS=--dry-run`, push with `ARGS=--publish`). By default it infers the highest bump from commits after the latest reachable release tag: fix/perf → patch, feat → minor, breaking → major (minor for 0.x); maintenance-only commits do not trigger a release. Manual overrides remain available. It updates `VERSION`, dates and moves Unreleased entries, updates Git comparison links, runs sequential release checks, and creates a commit and tag. Record archive/cask publication in each release; generated cask-only version/checksum commits are covered by that entry. Follow the release checklist in `README.md` and review evaluation semantics before publishing.
+- Prepare releases with `make release BUMP=auto|patch|minor|major|version` (preview with `ARGS=--dry-run`, push with `ARGS=--publish`). By default it infers the highest bump from commits after the latest reachable release tag: fix/perf → patch, feat → minor, breaking → major (minor for 0.x); maintenance-only commits do not trigger a release. Manual overrides remain available. It updates `VERSION`, dates and moves Unreleased entries, updates Git comparison links, runs sequential release checks, and creates a commit and tag. Record archive/cask publication in each release; generated cask-only version/checksum commits are covered by that entry. Follow the release checklist in `CONTRIBUTING.md` and review evaluation semantics before publishing.
 - Existing ADRs are immutable. Never edit, shorten, rename, delete or change the status or date of an existing record. Document changes in a new numbered ADR that links to the record it supersedes; leave the original untouched. ALL content for a new ADR must come from the owner, including decisions, context, rationale, alternatives and consequences. Agents may edit or rewrite owner-supplied wording for the new record but must never originate ADR content. Create an ADR, including a superseding record, only when the owner explicitly requests it and supplies its content; ask for anything missing. Read relevant ADRs before architectural changes. For an authorized new ADR, use `adrs` and keep it within 300 words (up to 500 for essential owner-supplied rationale). This rule overrides conflicting architecture-documentation guidance.
 - Keep `docs/` exclusively for numbered ADRs, with no plans, reports, guides or subfolders. Use the CLI for authorized owner-supplied task content, status changes and checking existing items. Keep synthetic reference data under `eval/fixtures/`, separate from active suites when unused.
-- Keep current commands and isolation rules in README and the existing script/skill instructions. Report evaluation evidence, native UI limits and legacy-code review in chat or PRs; do not add them to tasks or ADRs yourself. Do not add new evidence to ADR-007. Check downstream SwiftPM clients, previews, debug flags and resource dependencies before deleting apparently unused public symbols or vendored headers.
+- Keep current commands and isolation rules in CONTRIBUTING.md and the existing script/skill instructions. Report evaluation evidence, native UI limits and legacy-code review in chat or PRs; do not add them to tasks or ADRs yourself. Do not add new evidence to ADR-007. Check downstream SwiftPM clients, previews, debug flags and resource dependencies before deleting apparently unused public symbols or vendored headers.
 
 ## Architecture decision tools
 

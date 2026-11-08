@@ -35,7 +35,7 @@ To replace the recording, update the video source, fallback link, dimensions and
 - `docs/0006-bundle-llama-runtime-in-app.md` and `docs/0009-distribute-app-and-cli-through-homebrew.md`: app and CLI installation together; no separate inference service needed.
 - `docs/0008-self-signed-macos-distribution.md`: signing, notarization, and quarantine trust notice alongside install instructions.
 - `docs/0012-homebrew-auto-updates.md`: network behavior and configurable update checks.
-- `README.md` semantic-review guidance: review limits of generated text; retained source audio/stage outputs support comparison.
+- `AGENTS.md` semantic-review guidance: review limits of generated text; retained source audio/stage outputs support comparison.
 - `docs/0013-isolated-tng-demo-data.md`: the “Logs” journal concept and distinction between demo presentation and actual app captures.
 
 The website does not promise knowledge graphs, automatic Obsidian synchronization, native saved-audio playback, or collections. Obsidian is mentioned only as an example of a tool that reads Markdown. Review current docs before changing product claims. ImageGen output is a design reference; verified HTML copy is authoritative.

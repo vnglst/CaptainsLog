@@ -12,6 +12,8 @@ entry. Git links provide the complete commit history for each release.
 
 ## [Unreleased]
 
+- Focus the README on app installation and use; move contributor instructions into a linked guide.
+
 - Add an app walkthrough to the website with a responsive video player, explain how personal name and term corrections improve the final transcript, and document the shared hosting publication process.
 - Show when paused processing is still stopping before Move to Trash becomes available.
 - Keep log rows compact and the same height before summaries and tags are available.
