@@ -14,11 +14,9 @@ Deploy the contents of `website/` to a static host. There is no build step, pack
 
 ## Publishing
 
-The public website at <https://captainslog.koenvangilst.nl/> runs on shared static hosting managed in `vnglst/static-sites`. Its Dockerfile selects a specific CaptainsLog commit and copies `website/` into the shared Nginx image. A push to the hosting repository’s `main` triggers deployment through Coolify on Hetzner.
+The public website at <https://captainslog.koenvangilst.nl/> is hosted through [vnglst/static-sites](https://github.com/vnglst/static-sites).
 
-Push website changes to this repository’s `main`. The source updater checks CaptainsLog every five minutes, advances the selected commit in `static-sites`, and triggers the shared deployment. Publication takes the next scheduled check plus deployment time. A source push alone does not confirm publication; verify the live page and its assets afterward.
-
-Infrastructure configuration and the operational procedure live in the sibling `coolify-agent` repository: [static hosting runbook](https://github.com/vnglst/coolify-agent/blob/main/features/static-sites.md).
+Push website changes to this repository’s `main`. The automatic updater checks for changes every five minutes and publishes them through `static-sites`. Allow time for deployment, then verify the live page and its assets.
 
 Website visits use the same self-hosted Plausible script and `koenvangilst.nl` dashboard as the main site. Filter by hostname `captainslog.koenvangilst.nl` to see app website traffic. The script ignores localhost previews. This tracking applies only to the website; the Mac app has no analytics.
 
