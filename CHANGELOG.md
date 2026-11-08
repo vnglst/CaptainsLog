@@ -12,8 +12,14 @@ entry. Git links provide the complete commit history for each release.
 
 ## [Unreleased]
 
+## [0.7.2] - 2026-11-08
+
 - Keep book audio recordings in evaluation suites only, excluding them from the demo library.
 - Show update installation progress in Settings.
+
+### Release
+
+- Publish the 0.7.2 app/CLI archive and matching Homebrew cask version and checksum.
 
 ## [0.7.1] - 2026-11-08
 
@@ -377,7 +383,8 @@ entry. Git links provide the complete commit history for each release.
 
 - Make release tests work on clean runners without preinstalled inference models.
 
-[Unreleased]: https://github.com/vnglst/CaptainsLog/compare/v0.7.1...HEAD
+[Unreleased]: https://github.com/vnglst/CaptainsLog/compare/v0.7.2...HEAD
+[0.7.2]: https://github.com/vnglst/CaptainsLog/compare/v0.7.1...v0.7.2
 [0.7.1]: https://github.com/vnglst/CaptainsLog/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/vnglst/CaptainsLog/compare/v0.6.3...v0.7.0
 [0.6.3]: https://github.com/vnglst/CaptainsLog/compare/v0.6.2...v0.6.3
