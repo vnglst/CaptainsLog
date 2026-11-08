@@ -2759,6 +2759,35 @@ func runCoordinatorCoverageTests() async {
         try expect(coordinator.processingStem == nil)
     }
 
+    await testAsync("AppState: global notification explains pause until processing releases Trash") {
+        for stage in [Pipeline.Stage.transcribing, .cleaning, .categorizing, .naming, .enriching] {
+            let gate = LockedValue<CheckedContinuation<Void, Never>?>(nil)
+            let coordinator = ProcessingCoordinator { stem, _, _, progress in
+                progress?(.init(stem: stem, stage: stage))
+                await withCheckedContinuation { gate.set($0) }
+                return result(for: stem)
+            }
+            let state = AppState(processing: coordinator)
+            let stem = "darmok-encounter"
+            coordinator.resumeEntry(stem: stem, fromStage: stage, dataDir: "/tmp/darmok-pause",
+                                    onComplete: {}, onError: { _ in })
+            for _ in 0..<1000 where gate.get() == nil { try await Task.sleep(for: .milliseconds(1)) }
+            guard let release = gate.get() else { throw NSError(domain: "PauseNotification", code: 1) }
+            state.pauseProcessing()
+            let cannotTrash = !state.canDeleteEntry(stem: stem)
+            let pausingMessage = state.statusMessage
+            let showsProgress = state.lifecycle.showsProgress && state.lifecycle.hasActivity
+            release.resume()
+            for _ in 0..<1000 where coordinator.hasScheduledWork { try await Task.sleep(for: .milliseconds(1)) }
+            try expect(cannotTrash, "Trash must remain blocked until cancellation drains at \(stage.rawValue)")
+            try expect(pausingMessage == "Pausing processing…",
+                       "Global notification must explain the pending pause at \(stage.rawValue), got: \(pausingMessage)")
+            try expect(showsProgress, "Pending native cancellation must retain activity and progress")
+            try expect(state.canDeleteEntry(stem: stem), "Trash must become available after native work returns")
+            try expect(state.statusMessage == "Paused" && !state.lifecycle.showsProgress)
+        }
+    }
+
     await testAsync("ProcessingCoordinator: pausing an active queue stays paused after cancellation") {
         let root = FileManager.default.temporaryDirectory
             .appendingPathComponent("CaptainsLogPausedQueue-\(UUID().uuidString)", isDirectory: true)
