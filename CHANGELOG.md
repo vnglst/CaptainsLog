@@ -12,6 +12,8 @@ entry. Git links provide the complete commit history for each release.
 
 ## [Unreleased]
 
+- Remove a personal microphone device name from a repository screenshot.
+
 - Organize production code, tests, local packages, resources and evaluation suites into conventional folders, remove source symlinks, and update development documentation.
 
 - Coordinate recording, model setup and processing through one shared state machine, keeping activity and queue status consistent during downloads and errors in Logs and the menu.
