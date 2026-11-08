@@ -12,6 +12,7 @@ entry. Git links provide the complete commit history for each release.
 
 ## [Unreleased]
 
+- Keep book audio recordings in evaluation suites only, excluding them from the demo library.
 - Show update installation progress in Settings.
 
 ## [0.7.1] - 2026-11-08

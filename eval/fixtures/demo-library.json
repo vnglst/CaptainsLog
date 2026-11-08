@@ -23,9 +23,6 @@
     }
   ],
   "pending": [
-    { "stem": "2025-01-16-0900", "transcript": "suites/cleanup/input/book-reference.md" },
-    { "stem": "alle-mensen-zijn-sterfelijk", "audio": "suites/transcribe/audio/alle-mensen-zijn-sterfelijk.m4a" },
-    { "stem": "durins-volk", "audio": "suites/transcribe/audio/durins-volk.m4a" },
-    { "stem": "world-war-z", "audio": "suites/transcribe/audio/world-war-z.m4a" }
+    { "stem": "2025-01-16-0900", "transcript": "suites/cleanup/input/book-reference.md" }
   ]
 }

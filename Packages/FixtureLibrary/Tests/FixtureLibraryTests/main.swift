@@ -25,7 +25,10 @@ func seedsCanonicalLibraryAndPreservesRuntimeChanges() throws {
     let metadata = try String(contentsOf: evalRoot().appendingPathComponent("suites/pipeline/tng-nl01/enriched.md"), encoding: .utf8)
     try require(try String(contentsOf: final, encoding: .utf8) == metadata + cleaned)
     try require(try Data(contentsOf: data.appendingPathComponent("audio/2025-04-27-1200.m4a")) == Data(contentsOf: evalRoot().appendingPathComponent("suites/transcribe/audio/tng-nl01-vrije-dag-enterprise-corrected.m4a")))
-    try require(try Data(contentsOf: data.appendingPathComponent("audio/world-war-z.m4a")) == Data(contentsOf: evalRoot().appendingPathComponent("suites/transcribe/audio/world-war-z.m4a")))
+    for stem in ["alle-mensen-zijn-sterfelijk", "durins-volk", "world-war-z"] {
+        try require(!fm.fileExists(atPath: data.appendingPathComponent("audio/\(stem).m4a").path))
+        try require(fm.fileExists(atPath: evalRoot().appendingPathComponent("suites/transcribe/audio/\(stem).m4a").path))
+    }
     try require(fm.fileExists(atPath: data.appendingPathComponent(".pipeline/01-transcribed/2025-01-16-0900.md").path))
     try require(fm.fileExists(atPath: data.appendingPathComponent("logs/professional/2025-01-15-work-week-review.md").path))
 
