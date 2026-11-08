@@ -14,20 +14,11 @@ Deploy the contents of `website/` to a static host. There is no build step, pack
 
 Website visits use the same self-hosted Plausible script and `koenvangilst.nl` dashboard as the main site. Filter by hostname `captainslog.koenvangilst.nl` to see app website traffic. The script ignores localhost previews. This tracking applies only to the website; the Mac app has no analytics.
 
-## Add your app recording
+## App walkthrough
 
-The hero walkthrough has a 16:9 placeholder and makes no request for missing media. In the `walkthrough` object near the bottom of `index.html`, set:
+The hero embeds the demo video hosted at <https://files.koenvangilst.nl/u/hV5EMz.mp4> with native playback controls and inline playback on mobile. It is a silent recording using demo data. The player preserves the recording’s proportions and fits the viewport width and height without cropping the app. Proportional corner clipping follows the captured macOS window and hides the blue desktop corners at every player size.
 
-```js
-const walkthrough = {
-  src: 'assets/app-walkthrough.mp4',
-  poster: 'assets/app-walkthrough.jpg',
-  captions: 'assets/app-walkthrough.vtt',
-  description: 'CaptainsLog: recording a voice log, processing it locally, and searching completed entries.'
-};
-```
-
-Place those files in `assets/`. A poster and captions are optional (`null` omits either); captions are recommended for accessibility. The video and descriptive caption automatically replace the placeholder. Adjust the description to what the recording actually shows. Use a static host with HTTP byte-range support for video seeking.
+To replace the recording, update the video source, fallback link, dimensions and descriptive caption in `index.html`, and refresh `assets/app-walkthrough.jpg`. Adjust the CSS aspect ratio if the new recording has different proportions. The video host must support HTTP byte ranges for seeking. There is no autoplay; only metadata loads before playback.
 
 ## Content sources
 

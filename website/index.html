@@ -52,10 +52,7 @@
     .section-title { font-size: 35px; font-weight: 500; line-height: 1.2; letter-spacing: -1px; margin: 0 0 18px; }
     .section-copy { color: var(--secondary); font-size: 16px; line-height: 1.8; max-width: 550px; margin: 0; }
     .walkthrough { margin: 0 0 61px; }
-    .media-placeholder { width: 100%; aspect-ratio: 16 / 9; border: 1px solid var(--stroke); border-radius: 13px; background: var(--surface); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 17px; text-align: center; padding: 24px; }
-    .media-placeholder svg { width: 37px; height: 37px; fill: none; stroke: #929387; stroke-width: 1.3; }
-    .media-placeholder strong { font-size: 19px; font-weight: 400; }
-    .walkthrough video { width: 100%; aspect-ratio: 16 / 9; border: 1px solid var(--stroke); border-radius: 13px; background: var(--surface); display: block; }
+    .walkthrough video { width: min(100%, 720px, 70svh); height: auto; aspect-ratio: 127 / 135; margin-inline: auto; border-radius: 2.5% / 2.35%; clip-path: inset(0 round 2.5% / 2.35%); background: var(--surface); display: block; }
     .media-caption { font-size: 12px; color: var(--muted); margin: 14px 0 0; line-height: 1.7; }
     .principles { border-top: 1px solid var(--stroke); padding-block: 58px 59px; display: grid; grid-template-columns: 1fr 1.1fr; gap: 80px; }
     .principles .section-title { max-width: 340px; }
@@ -132,9 +129,6 @@
       .section-title { font-size: 29px; letter-spacing: -.8px; }
       .section-copy { font-size: 14px; }
       .walkthrough { margin-bottom: 43px; }
-      .media-placeholder { min-height: 190px; gap: 13px; }
-      .media-placeholder strong { font-size: 16px; }
-      .media-placeholder svg { width: 28px; height: 28px; }
       .principles, .origin-inner, .faq { grid-template-columns: 1fr; gap: 27px; }
       .principles, .faq { padding-block: 44px; }
       .principles .section-title, .faq .section-title { max-width: none; }
@@ -152,7 +146,7 @@
       .prompt { display: none; }
       .copy { font-size: 11px; padding-inline: 11px; min-width: 64px; }
       .install-note { font-size: 10px; }
-      .footer { min-height: 82px; }
+      .footer { min-height: 82px; flex-wrap: wrap; padding-block: 20px; }
       .footer .brand { font-size: 12px; }
       .footer-links { font-size: 11px; gap: 17px; }
     }
@@ -173,13 +167,11 @@
       <div class="hero-actions"><a class="button" href="#install">Get CaptainsLog</a><a class="button secondary" href="#watch">App walkthrough</a></div>
       <p class="requirements">Tested on M4 with 16 GB unified memory · macOS 26 or later</p>
       <figure class="walkthrough" id="watch" aria-label="CaptainsLog walkthrough">
-        <div id="walkthrough-media">
-          <div class="media-placeholder">
-            <svg viewBox="0 0 40 40" aria-hidden="true"><rect x="5" y="8" width="30" height="24" rx="4"/><path d="m17 15 9 5-9 5z"/></svg>
-            <strong>App walkthrough coming soon</strong>
-          </div>
-        </div>
-        <figcaption class="media-caption" id="media-caption" hidden></figcaption>
+        <video controls playsinline preload="metadata" width="2032" height="2160" poster="assets/app-walkthrough.jpg" aria-label="CaptainsLog app walkthrough" aria-describedby="media-caption">
+          <source src="https://files.koenvangilst.nl/u/hV5EMz.mp4" type="video/mp4">
+          <a href="https://files.koenvangilst.nl/u/hV5EMz.mp4">Watch the CaptainsLog walkthrough</a>.
+        </video>
+        <figcaption class="media-caption" id="media-caption">An 82-second walkthrough using demo data: recording, processing, search, and personal context. No sound.</figcaption>
       </figure>
     </section>
     <section class="principles wrap" id="privacy" aria-labelledby="privacy-title">
@@ -230,31 +222,6 @@
   </main>
   <footer class="footer wrap"><a class="brand" href="#"><span class="mark" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>CaptainsLog</a><div class="footer-links"><a href="technical.html">Technical overview</a><a href="https://github.com/vnglst/CaptainsLog">Source</a><a href="https://github.com/vnglst/CaptainsLog/issues">Feedback</a></div></footer>
   <script>
-    // Replace null with your recording's relative URL; no missing files are requested.
-    const walkthrough = {
-      src: null, // e.g. 'assets/app-walkthrough.mp4'
-      poster: null, // e.g. 'assets/app-walkthrough.jpg'
-      captions: null, // e.g. 'assets/app-walkthrough.vtt'
-      description: 'CaptainsLog: recording a voice log, processing it locally, and searching completed entries.'
-    };
-    if (walkthrough.src) {
-      const video = document.createElement('video');
-      video.controls = true;
-      video.playsInline = true;
-      video.preload = 'metadata';
-      video.src = walkthrough.src;
-      video.setAttribute('aria-label', walkthrough.description);
-      if (walkthrough.poster) video.poster = walkthrough.poster;
-      if (walkthrough.captions) {
-        const track = document.createElement('track');
-        Object.assign(track, {kind: 'captions', src: walkthrough.captions, srclang: 'en', label: 'English', default: true});
-        video.append(track);
-      }
-      document.getElementById('walkthrough-media').replaceChildren(video);
-      const caption = document.getElementById('media-caption');
-      caption.textContent = walkthrough.description;
-      caption.hidden = false;
-    }
     document.getElementById('copy-command').addEventListener('click', async () => {
       const command = 'brew install --cask vnglst/tap/captainslog';
       let copied = false;

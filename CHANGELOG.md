@@ -12,6 +12,7 @@ entry. Git links provide the complete commit history for each release.
 
 ## [Unreleased]
 
+- Add an app walkthrough to the website with a responsive video player.
 - Show when paused processing is still stopping before Move to Trash becomes available.
 - Keep log rows compact and the same height before summaries and tags are available.
 - Remove model deletion from Settings and the CLI, show automatic model setup immediately at launch, and check startup performance with separate first-launch and warm-launch limits.
