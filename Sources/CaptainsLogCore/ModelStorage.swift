@@ -1,7 +1,6 @@
 import Foundation
 
-/// Storage operations shared by Settings and the CLI. Never remove a containing
-/// directory: custom model folders can also contain unrelated files.
+/// Read-only model disk usage shared by Settings and the CLI.
 public enum ModelStorage {
     public enum Model: String, CaseIterable, Sendable, Identifiable {
         case whisper, qwen, embeddings
@@ -76,23 +75,4 @@ public enum ModelStorage {
         return total
     }
 
-    public static func delete(
-        _ model: Model,
-        config: CaptainsLogConfig = CaptainsLogConfig.load(),
-        embeddingURL: URL = E5EmbeddingModel.modelURL()
-    ) throws {
-        for url in targets(for: model, config: config, embeddingURL: embeddingURL)
-            where FileManager.default.fileExists(atPath: url.path) {
-            try FileManager.default.removeItem(at: url)
-        }
-        guard model != .embeddings else { return }
-        // Retain model identifiers so the next download uses the user's selection.
-        try CaptainsLogConfig.update { saved in
-            switch model {
-            case .whisper: saved.whisperModelFolder = nil
-            case .qwen: saved.qwenModelFolder = nil
-            case .embeddings: break
-            }
-        }
-    }
 }

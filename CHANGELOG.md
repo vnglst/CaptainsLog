@@ -14,6 +14,7 @@ entry. Git links provide the complete commit history for each release.
 
 - Show when paused processing is still stopping before Move to Trash becomes available.
 - Keep log rows the same height before summaries and tags are available.
+- Remove model deletion from Settings and the CLI, and show automatic model setup immediately at launch.
 - Add a step-by-step demo video recording scenario.
 - Replace banking-themed demo and enrichment examples with an Enterprise engineer’s reflections on Darmok; rewrite the unrecorded English and German scripts around the encounter and align the log-loading checks with the updated fixture.
 

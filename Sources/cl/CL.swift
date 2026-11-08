@@ -663,19 +663,10 @@ struct UpdateCommand: AsyncParsableCommand {
 
 struct ModelsCommand: ParsableCommand {
     static let configuration = CommandConfiguration(
-        commandName: "models", abstract: "Show model disk usage or delete a model (quit the app first)."
+        commandName: "models", abstract: "Show model disk usage."
     )
 
-    @Option(name: .long, help: "Delete whisper, qwen, or embeddings. Downloads again on next use.")
-    var delete: String?
-
     func run() throws {
-        if let delete {
-            guard let model = ModelStorage.Model(rawValue: delete) else {
-                throw ValidationError("Choose whisper, qwen, or embeddings.")
-            }
-            try ModelStorage.delete(model)
-        }
         for usage in try ModelStorage.usage() {
             print("\(usage.model.rawValue): \(usage.installed ? ByteCountFormatter.string(fromByteCount: usage.bytes, countStyle: .file) : "Not downloaded")")
         }

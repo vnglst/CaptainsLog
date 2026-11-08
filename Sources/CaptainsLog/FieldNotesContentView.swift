@@ -1246,9 +1246,7 @@ private struct FieldNotesSettingsView: View {
     @Environment(AppState.self) private var appState
     @CLState private var showThirdPartyNotices = false
     @CLState private var modelUsage: [ModelStorage.Usage] = []
-    @CLState private var modelToDelete: ModelStorage.Model?
     @CLState private var storageMessage = ""
-    @CLState private var deletingModel = false
 
     var body: some View {
         @Bindable var state = appState
@@ -1328,15 +1326,10 @@ private struct FieldNotesSettingsView: View {
                                     : "Not downloaded" } ?? "Checking disk usage…")
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            FieldNotesButton(title: "Delete model", kind: .secondary,
-                                isDisabled: usage?.installed != true || !canDeleteModels) {
-                                modelToDelete = model
-                            }
-                            .accessibilityLabel("Delete " + model.title)
                         }
                         .frame(height: 52)
                     }
-                    helper("Deleted models download automatically when transcription or smart search needs them. Model paths and identifiers are managed through the CLI.")
+                    helper("Missing speech and text models download automatically at startup. Smart search downloads its model on first use.")
                     helper(storageMessage)
                         .lineLimit(2)
                         .frame(height: 36, alignment: .topLeading)
@@ -1364,38 +1357,12 @@ private struct FieldNotesSettingsView: View {
         }
         .sheet(isPresented: $showThirdPartyNotices) { ThirdPartyNoticesView() }
         .task(id: appState.models.modelsReady) { await refreshModelUsage() }
-        .alert("Delete model?", isPresented: Binding(
-            get: { modelToDelete != nil },
-            set: { if !$0 { modelToDelete = nil } }
-        ), presenting: modelToDelete) { model in
-            Button("Delete", role: .destructive) { Task { await deleteModel(model) } }
-            Button("Cancel", role: .cancel) { modelToDelete = nil }
-        } message: { model in
-            Text("Delete \(model.title) from disk? It will download again when needed. An internet connection will be required.")
-        }
-    }
-
-    private var canDeleteModels: Bool {
-        !deletingModel && appState.canDeleteModels
     }
 
     private func refreshModelUsage() async {
         do {
             modelUsage = try await Task.detached(priority: .utility) { try ModelStorage.usage() }.value
         } catch { storageMessage = error.localizedDescription }
-    }
-
-    private func deleteModel(_ model: ModelStorage.Model) async {
-        guard canDeleteModels else { return }
-        deletingModel = true
-        defer { deletingModel = false }
-        do {
-            try appState.deleteModel(model)
-            storageMessage = "Model deleted. It will download again when needed."
-        } catch {
-            storageMessage = error.localizedDescription
-        }
-        await refreshModelUsage()
     }
 
     private var updatePreferences: some View {
@@ -1597,6 +1564,21 @@ private struct FieldNotesOnboardingView: View {
                 VStack(alignment: .leading, spacing: FieldNotes.Spacing.xl) {
                     Text("Your thoughts. Kept private.").font(FieldNotes.Typography.title(32)).foregroundStyle(FieldNotes.ColorToken.primaryText)
                     Text("Turn your recordings into clear, organized notes. Choose where to save your recordings and notes.").font(FieldNotes.Typography.body(15)).foregroundStyle(FieldNotes.ColorToken.secondaryText).fixedSize(horizontal: false, vertical: true)
+                    if appState.modelState != .ready {
+                        HStack(spacing: FieldNotes.Spacing.s) {
+                            if case .downloading = appState.modelState {
+                                ProgressView().controlSize(.small)
+                            }
+                            Text(appState.lifecycle.modelStatusMessage)
+                                .font(FieldNotes.Typography.body(13))
+                                .foregroundStyle(FieldNotes.ColorToken.secondaryText)
+                            if case .error = appState.modelState {
+                                FieldNotesButton(title: "Retry download", kind: .secondary) {
+                                    appState.ensureModelsDownloaded()
+                                }
+                            }
+                        }
+                    }
                     VStack(alignment: .leading, spacing: FieldNotes.Spacing.s) {
                         Text("Storage location").font(FieldNotes.Typography.title(18)).foregroundStyle(FieldNotes.ColorToken.primaryText)
                         Text(shortenedPath(appState.dataDir)).font(FieldNotes.Typography.metadata(12)).foregroundStyle(FieldNotes.ColorToken.primaryText)
