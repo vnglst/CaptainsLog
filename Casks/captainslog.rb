@@ -1,6 +1,6 @@
 cask "captainslog" do
-  version "0.7.0"
-  sha256 "c120d3decbeee1f1771cdcb84634a8fa7d8c3429a848fc3760b55549a30bc1b5"
+  version "0.7.1"
+  sha256 "00ac87b390a3ffc0180d251f3b590b6b6e7dfb27be3e9bc74ca0c486c80591af"
 
   url "https://github.com/vnglst/CaptainsLog/releases/download/v#{version}/CaptainsLog-#{version}.zip"
   name "Captain's Log"
