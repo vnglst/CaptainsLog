@@ -20,7 +20,7 @@ SHA256 ?=
 # Directory timestamps also invalidate the app when source files are added or removed.
 DEV_INPUTS := Package.swift Package.resolved $(shell find Sources Vendor Packages/FixtureLibrary Resources -name .build -prune -o -name .swiftpm -prune -o -type f -print -o -type d -print)
 
-.PHONY: help build dev run website cli tests tests-unit tests-coverage tests-updates tests-release tests-evals tests-runtime tests-enrich tests-model tests-recorder tests-app-performance tests-search-shutdown ui evals evals-review evals-list evals-pipeline evals-suites packaging release release-notes release-check release-cask icons clean
+.PHONY: help build dev run website cli tests tests-unit tests-coverage tests-updates tests-release tests-evals tests-runtime tests-enrich tests-model tests-recorder tests-app-performance tests-startup tests-search-shutdown ui evals evals-review evals-list evals-pipeline evals-suites packaging release release-notes release-check release-cask icons clean
 
 help:
 	@printf '%s\n' \
@@ -91,6 +91,10 @@ tests-app-performance:
 	@test -n "$(RUN_DIR)"
 	$(SWIFT) build -c debug
 	$(SWIFT) scripts/test-app-performance.swift "$$($(SWIFT) build -c debug --show-bin-path)/CaptainsLogApp" "$(RUN_DIR)" $(ARGS)
+
+# The optimized loaded-library startup budget, using the existing native harness.
+tests-startup:
+	$(MAKE) tests-app-performance RUN_DIR="$(RUN_DIR)" ARGS="--startup-only --startup-entries=1000 --startup-max-seconds=1.2 $(ARGS)"
 
 tests-search-shutdown:
 	@test -n "$(RUN_DIR)"

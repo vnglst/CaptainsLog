@@ -74,7 +74,7 @@ public final class AppLifecycle {
     /// work. Recording remains visible independently while the pipeline runs.
     var modelStatusMessage: String {
         switch modelState {
-        case .ready: return needsModels ? "Models download on next transcription" : "Local models ready"
+        case .ready: return needsModels ? "Local models unavailable" : "Local models ready"
         case .downloading(let model, _):
             return model == "Initializing…" ? "Checking local models…" : "Downloading \(model)"
         case .error(let message): return message

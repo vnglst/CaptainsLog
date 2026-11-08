@@ -46,13 +46,6 @@ public final class ModelManager {
     }
     public var modelsReady: Bool { lifecycle.modelsReady }
 
-    func didDeleteModel(_ model: ModelStorage.Model) {
-        if model != .embeddings {
-            needsDownload = true
-            modelState = .ready
-        }
-    }
-
     public init() {
         self.dependencies = Dependencies(
             clearStaleConfig: { Self.clearStaleModelConfig() },

@@ -2303,7 +2303,47 @@ func runCoordinatorCoverageTests() async {
         await coordinator.stopForTermination()
     }
 
-    await testAsync("AppState: resuming after deletion downloads models before processing") {
+    await testAsync("AppState startup: missing models download before slow library restoration completes") {
+        let libraryGate = DispatchSemaphore(value: 0)
+        let libraryStarted = LockedValue(false)
+        let downloadGate = LockedValue<CheckedContinuation<Void, Never>?>(nil)
+        let events = LockedStringArray()
+        let models = ModelManager(dependencies: .init(
+            clearStaleConfig: {}, cleanCorruptedMetadata: {},
+            whisperIsDownloaded: { false }, qwenIsDownloaded: { true },
+            downloadWhisper: { _ in
+                events.append("download")
+                await withCheckedContinuation { downloadGate.set($0) }
+            }, downloadQwen: { _ in events.append("unexpected-qwen") }
+        ))
+        let state = AppState(config: ConfigManager(loadContextFiles: false), models: models,
+                             entryLoader: { _ in
+                                 libraryStarted.set(true)
+                                 libraryGate.wait()
+                                 return []
+                             })
+        let bootstrap = Task { await state.bootstrap() }
+        // Always unblock both owned operations, including when assertions fail.
+        defer { libraryGate.signal(); downloadGate.get()?.resume() }
+        for _ in 0..<1000 where downloadGate.get() == nil || !libraryStarted.get() {
+            try await Task.sleep(for: .milliseconds(1))
+        }
+        try expect(events.snapshot() == ["download"], "Missing models must download without a processing action")
+        try expect(state.statusMessage == "Downloading Whisper (speech-to-text)",
+                   "Global notification must identify the download while library restoration is still pending")
+        try expect(!state.modelsReady && !state.canInstallUpdate)
+        libraryGate.signal()
+        await bootstrap.value
+        state.directoryWatcher.stopWatching()
+        downloadGate.get()?.resume()
+        downloadGate.set(nil)
+        for _ in 0..<1000 where !state.modelsReady {
+            try await Task.sleep(for: .milliseconds(1))
+        }
+        try expect(state.modelsReady, "Startup download must transition to ready")
+    }
+
+    await testAsync("AppState: resuming with missing models downloads before processing") {
         let events = LockedStringArray()
         let models = ModelManager(dependencies: .init(
             clearStaleConfig: {}, cleanCorruptedMetadata: {},
@@ -2317,7 +2357,7 @@ func runCoordinatorCoverageTests() async {
         }
         let state = AppState(config: ConfigManager(loadContextFiles: false),
                              processing: coordinator, models: models)
-        models.didDeleteModel(.qwen)
+        models.lifecycle.send(.modelsMissing(true))
         state.resumeProcessing(stem: "2025-01-14-0830")
         for _ in 0..<1000 where events.snapshot().count < 3 {
             try await Task.sleep(for: .milliseconds(1))
@@ -3088,7 +3128,7 @@ func runCoordinatorCoverageTests() async {
             let coordinator = ProcessingCoordinator { stem, _, _, _ in calls.append(stem); return result(for: stem) }
             let config = ConfigManager(); config.dataDir = root.path
             let state = AppState(config: config, processing: coordinator, models: models)
-            state.loadEntries(); models.didDeleteModel(.whisper)
+            state.loadEntries(); models.lifecycle.send(.modelsMissing(true))
             if action == "resume" { state.resumeProcessing(stem: stem) }
             if action == "batch" { state.batchResumePending() }
             if action == "reprocess" { state.reprocessEntry(stem: stem) }
@@ -6294,7 +6334,7 @@ func runTests() async {
         try expect(reloads.snapshot() == ["reload"])
     }
 
-    test("ModelStorage: disk usage and deletion preserve unrelated files and model IDs") {
+    test("ModelStorage: disk usage preserves model files and configuration") {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: root) }
@@ -6320,75 +6360,9 @@ func runTests() async {
         try config.save()
         let usage = try ModelStorage.usage(config: config, embeddingURL: embedding)
         try expect(usage.count == 3 && usage.allSatisfy { $0.installed && $0.bytes >= 8192 })
-        try FileManager.default.setAttributes([.immutable: true], ofItemAtPath: qwen.path)
-        defer { try? FileManager.default.setAttributes([.immutable: false], ofItemAtPath: qwen.path) }
-        do {
-            try ModelStorage.delete(.qwen, config: config, embeddingURL: embedding)
-            try expect(false, "Deleting the locked model should fail")
-        } catch let error as CocoaError where error.code == .fileWriteNoPermission {}
-        try expect(CaptainsLogConfig.load().qwenModelFolder == root.path, "A failed deletion must preserve the model path for retry")
-        try FileManager.default.setAttributes([.immutable: false], ofItemAtPath: qwen.path)
-        try ModelStorage.delete(.whisper, config: config, embeddingURL: embedding)
-        try ModelStorage.delete(.qwen, config: config, embeddingURL: embedding)
-        try ModelStorage.delete(.embeddings, config: config, embeddingURL: embedding)
-        let saved = CaptainsLogConfig.load()
-        try expect(saved.whisperModelFolder == nil && saved.qwenModelFolder == nil)
-        try expect(saved.whisperModel == "selected-whisper" && saved.qwenModelId == "selected-qwen")
         try expect(FileManager.default.fileExists(atPath: unrelated.path))
         try expect(FileManager.default.fileExists(atPath: otherModel.path))
-        try expect(!FileManager.default.fileExists(atPath: qwen.path))
-        try expect(!FileManager.default.fileExists(atPath: embedding.path))
-        let after = try ModelStorage.usage(config: saved, embeddingURL: embedding)
-        try expect(after.allSatisfy { !$0.installed && $0.bytes == 0 })
-        // A wrongly selected directory must not lose an unrelated config.json.
-        let unrelatedConfig = whisper.appendingPathComponent("config.json")
-        try Data("keep".utf8).write(to: unrelatedConfig)
-        try ModelStorage.delete(.whisper, config: config, embeddingURL: embedding)
-        try expect(FileManager.default.fileExists(atPath: unrelatedConfig.path))
-    }
-
-    await testAsync("ModelManager: deleting a pipeline model defers download until preparation") {
-        let calls = LockedStringArray()
-        let manager = ModelManager(dependencies: .init(
-            clearStaleConfig: {}, cleanCorruptedMetadata: {},
-            whisperIsDownloaded: { false }, qwenIsDownloaded: { false },
-            downloadWhisper: { _ in calls.append("whisper") },
-            downloadQwen: { _ in calls.append("qwen") }
-        ))
-        manager.didDeleteModel(.embeddings)
-        try expect(manager.modelsReady)
-        manager.didDeleteModel(.whisper)
-        try expect(!manager.modelsReady && calls.snapshot().isEmpty)
-        let state = AppState(config: ConfigManager(loadContextFiles: false), models: manager)
-        try expect(state.canInstallUpdate, "Intentionally deleted models should not block an idle update")
-        await manager.downloadModelsIfNeeded()
-        try expect(manager.modelsReady && !manager.needsDownload)
-        try expect(calls.snapshot() == ["whisper", "qwen"])
-    }
-
-    test("AppState: model deletion rechecks busy state before touching files") {
-        let root = FileManager.default.temporaryDirectory.appendingPathComponent("ModelDeletion-\(UUID().uuidString)")
-        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
-        defer { try? FileManager.default.removeItem(at: root) }
-        let weights = root.appendingPathComponent("fixture.gguf")
-        try Data("synthetic model placeholder".utf8).write(to: weights)
-        let previousFolder = CaptainsLogConfig.load().qwenModelFolder
-        defer { try? CaptainsLogConfig.update { $0.qwenModelFolder = previousFolder } }
-        try CaptainsLogConfig.update { $0.qwenModelFolder = root.path }
-        let state = AppState(config: ConfigManager(loadContextFiles: false))
-        state.models.modelState = .downloading(model: "fixture", progress: 0)
-        try expect(!state.canDeleteModels)
-        var rejected = false
-        do { try state.deleteModel(.qwen) } catch { rejected = true }
-        try expect(rejected, "Deletion must reject an active model download")
-        try expect(FileManager.default.fileExists(atPath: weights.path))
         try expect(CaptainsLogConfig.load().qwenModelFolder == root.path)
-        state.models.modelState = .ready
-        try expect(state.canDeleteModels)
-        try state.deleteModel(.qwen)
-        try expect(!FileManager.default.fileExists(atPath: weights.path))
-        try expect(state.config.qwenModelFolder.isEmpty)
-        try expect(!state.models.modelsReady)
     }
 
     // MARK: - ModelManager Tests
@@ -7025,7 +6999,7 @@ func runTests() async {
         let config = ConfigManager(loadContextFiles: false)
         config.dataDir = root.path
         let models = ModelManager()
-        models.didDeleteModel(.whisper)
+        models.lifecycle.send(.modelsMissing(true))
         let appState = AppState(config: config, models: models)
         appState.loadEntries()
         try expect(appState.canDeleteProcessingOutputs, "Deletion should not require downloaded models")

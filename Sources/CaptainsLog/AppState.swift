@@ -388,8 +388,10 @@ public final class AppState {
     public func bootstrap() async {
         guard !hasBootstrapped else { return }
         hasBootstrapped = true
-        await Task.yield()
+        // Publish model setup before yielding so the first visible state never
+        // suggests readiness while a fresh installation still needs downloads.
         ensureModelsDownloaded()
+        await Task.yield()
         async let deviceRefresh: Void = recording.refreshDevicesInBackground()
         let dataDir = config.dataDir
         let loader = entryLoader

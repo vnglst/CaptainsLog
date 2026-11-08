@@ -12,6 +12,8 @@ entry. Git links provide the complete commit history for each release.
 
 ## [Unreleased]
 
+- Remove model deletion from Settings and the CLI, and show automatic model setup immediately at launch.
+
 - Add a step-by-step demo video recording scenario.
 - Replace banking-themed demo and enrichment examples with an Enterprise engineer’s reflections on Darmok; rewrite the unrecorded English and German scripts around the encounter.
 
