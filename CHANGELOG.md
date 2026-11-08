@@ -12,6 +12,8 @@ entry. Git links provide the complete commit history for each release.
 
 ## [Unreleased]
 
+## [0.7.1] - 2026-11-08
+
 - Add a technical overview subpage to the website, with architecture, pipeline, processing lifecycle and search diagrams, plus model roles.
 
 - Clarify on the website that the CLI works independently of the Mac app, using the same local models and processing pipeline.
@@ -26,6 +28,10 @@ entry. Git links provide the complete commit history for each release.
 - Consolidate evaluation tools, native preview fixtures, review assets and workflows under `eval/`, and replace redundant script aliases with one command dispatcher.
 - Keep recordings made in the same minute as separate logs, and process recordings after model setup without restarting.
 - Show downloads, retryable errors, processing and queue notifications in one status strip above the logs.
+
+### Release
+
+- Publish the 0.7.1 app/CLI archive and matching Homebrew cask version and checksum.
 
 ## [0.7.0] - 2026-11-07
 
@@ -368,7 +374,8 @@ entry. Git links provide the complete commit history for each release.
 
 - Make release tests work on clean runners without preinstalled inference models.
 
-[Unreleased]: https://github.com/vnglst/CaptainsLog/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/vnglst/CaptainsLog/compare/v0.7.1...HEAD
+[0.7.1]: https://github.com/vnglst/CaptainsLog/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/vnglst/CaptainsLog/compare/v0.6.3...v0.7.0
 [0.6.3]: https://github.com/vnglst/CaptainsLog/compare/v0.6.2...v0.6.3
 [0.6.2]: https://github.com/vnglst/CaptainsLog/compare/v0.6.1...v0.6.2
