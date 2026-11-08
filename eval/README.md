@@ -1,13 +1,15 @@
 # Evaluations
 
 Evaluation orchestration, scoring, validation, the listening-review app and its
-tests live in [`tools/`](tools/). Stage workflows live in [`skills/`](skills/).
-The CLI batch command lives in [`CLI/`](CLI/) and native UI preview states in
-[`UI/`](UI/); production inference stages remain
-in CaptainsLogCore. Make is the public entry point.
+tests live in [`tools/`](tools). Stage workflows live in [`skills/`](skills).
+The CLI batch command lives in [`Sources/cl/EvalBatch.swift`](../Sources/cl/EvalBatch.swift).
+Native UI previews live in [`Sources/CaptainsLog/Previews/`](../Sources/CaptainsLog/Previews/);
+production inference stages remain in CaptainsLogCore. Make is the public entry point.
+
+Suites live under `suites/`; shared synthetic material lives under `fixtures/`.
 
 Active stages are `transcribe`, `cleanup`, `categorize`, `filename` and `enrich`.
-Transcription inputs live in `transcribe/audio/`; text-stage inputs live in each
+Transcription inputs live in `suites/transcribe/audio/`; text-stage inputs live in each
 stage's `input/`. Expected outputs are semantic references, not the only valid
 wording. The transcription suite includes four owner-reviewed recordings.
 The end-to-end pipeline uses the reviewed Enterprise recording.
@@ -27,7 +29,7 @@ identity, and prints a review bundle under its temporary run directory. Text
 cases reuse one model sequentially with fresh contexts and samplers. Stage `history/generated/` and `history/reports/` folders preserve previous results; new run bundles contain their own outputs, validation and per-case reports.
 
 See [evaluation commands and isolation](../README.md#fixture-evaluations) and the
-[stage review skills](skills/) for semantic review. Discovery and saved-run
+[stage review skills](skills) for semantic review. Discovery and saved-run
 validation do not load inference models. Generation requires the selected models;
 never run concurrent inference jobs or use personal recordings. Model evaluations
 run separately from release preparation.
@@ -39,36 +41,36 @@ sterfelijk**, **Durins volk**, and **World War Z**. The last three were accepted
 after listening to the discrepancy passages in the two-model comparison on
 2026-11-05.
 
-- Audio: matching M4A files in `transcribe/audio/`.
-- Verbatim reference: matching file in `transcribe/expected/`.
-- Manifest: `transcribe/cases.json` pins both hashes and `audio-reviewed` status.
-- Passage timing and provenance: matching files in `transcribe/review/`.
+- Audio: matching M4A files in `suites/transcribe/audio/`.
+- Verbatim reference: matching file in `suites/transcribe/expected/`.
+- Manifest: `suites/transcribe/cases.json` pins both hashes and `audio-reviewed` status.
+- Passage timing and provenance: matching files in `suites/transcribe/review/`.
 
 Run `make evals STAGE=transcribe` to score all four WER cases. Every run snapshots
 inputs, raw output and an aligned WER report. WER measures word edits; semantic
 review still matters, especially for hallucinations and changed meaning.
 
-The [2026-11-05 baseline](transcribe/history/baselines/2026-11-05-whisper-large-v2/README.md) records the fresh four-case measurement.
+The [2026-11-05 baseline](suites/transcribe/history/baselines/2026-11-05-whisper-large-v2/README.md) records the fresh four-case measurement.
 
-Historical audio, references and review evidence live in `transcribe/history/`.
+Historical audio, references and review evidence live in `suites/transcribe/history/`.
 
-The two preserved review rounds in `transcribe/history/review-1/` and `review-2/`
+The two preserved review rounds in `suites/transcribe/history/review-1/` and `review-2/`
 contain raw outputs, measurements, owner decisions, replacement takes, timing maps
 and the browser review app. Reopen either with, for example:
 
 ```sh
-make evals-review RUN_DIR=eval/transcribe/history/review-2
+make evals-review RUN_DIR=eval/suites/transcribe/history/review-2
 ```
 
-The [TNG scripts](tng-reference/README.md) preserve the original script separately
+The [TNG scripts](fixtures/tng-reference/README.md) preserve the original script separately
 from the verbatim reference. English and German recordings are still to be supplied.
 The development demo and native UI harness copy the same canonical fixture library
-from [`demo-library.json`](demo-library.json) into isolated runtime storage.
-The shared Foundation-only package in `FixtureLibrary/` seeds completed logs and
+from [`demo-library.json`](fixtures/demo-library.json) into isolated runtime storage.
+The shared Foundation-only package in `Packages/FixtureLibrary/` seeds completed logs and
 pending recordings without copying fixture data into a second source folder.
-Run its model-free checks with `swift run --package-path eval/FixtureLibrary fixture-library-checks`.
-Run `make evals-pipeline` for transcription through search using `pipeline/cases.json`.
-The [2026-11-05 Enterprise run](pipeline/history/2026-11-05-enterprise/README.md)
+Run its model-free checks with `swift run --package-path Packages/FixtureLibrary fixture-library-checks`.
+Run `make evals-pipeline` for transcription through search using `suites/pipeline/cases.json`.
+The [2026-11-05 Enterprise run](suites/pipeline/history/2026-11-05-enterprise/README.md)
 records stage outputs, mechanical validation, resume and search checks, and
 semantic findings for owner review.
 
@@ -97,7 +99,7 @@ with context padding. Both models’ substitutions, omissions and insertions,
 including invented endings, contribute to selection across the whole recording.
 The prior completed checklists remain preserved as history.
 
-The pinned [two-model discrepancy review](transcribe/history/comparisons/2026-11-05-whisper-v2-v3/README.md)
+The pinned [two-model discrepancy review](suites/transcribe/history/comparisons/2026-11-05-whisper-v2-v3/README.md)
 contains only the four remaining recordings. The completed Dutch TNG review remains visible as completed; its contents and
 eval are unchanged and excluded from the new pending review; these historical comparisons do not add active transcription evals.
 
@@ -107,7 +109,7 @@ Every saved run containing transcription prepares `review-app/`. Use
 transcripts. The reference and raw output come from that run, not a global search
 for whatever output is newest. Audio must match a pinned synthetic fixture.
 
-`transcribe/review/` stores listening times and reference word ranges for the active
+`suites/transcribe/review/` stores listening times and reference word ranges for the active
 recordings. Definitions pin the audio and reference hashes; when a reference
 changes, the app falls back to the full recording until those offsets are updated.
 Additional recordings work without segment definitions, using their full audio.
@@ -147,4 +149,4 @@ minute limit per take. Native AVFoundation exports the combined M4A. Optional
 capture lifecycle tests run with `node --test eval/tools/tests/review-capture.mjs`;
 `make tests-evals` covers storage and native consolidation with repository fixtures.
 
-The fresh owner-reviewed Dutch baseline is preserved in `transcribe/history/baselines/2026-10-30-whisper-large-v2/`: WER 3.66% (44 edits / 1,203 words). Its report retains the remaining recognition errors and ungrounded Korean ending.
+The fresh owner-reviewed Dutch baseline is preserved in `suites/transcribe/history/baselines/2026-10-30-whisper-large-v2/`: WER 3.66% (44 edits / 1,203 words). Its report retains the remaining recognition errors and ungrounded Korean ending.

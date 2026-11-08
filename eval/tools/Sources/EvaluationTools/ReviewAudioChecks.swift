@@ -6,7 +6,7 @@ extension Tools {
     func testReviewAudio() throws {
         let dir = try temporary("captainslog-review-audio-"); defer { try? fm.removeItem(at: dir) }
         let source = dir.appendingPathComponent("assets/audio/original.m4a")
-        let fixture = path("eval/audio-formats/review-original.wav"), retake = path("eval/audio-formats/review-retake.wav")
+        let fixture = path("eval/suites/audio-formats/review-original.wav"), retake = path("eval/suites/audio-formats/review-retake.wav")
         _ = try consolidateReviewAudio(source: fixture, splices: [ReviewSplice(passageID: "seed", takeID: "seed", start: 0.4, end: 0.6, file: retake)], destination: source)
         let originalHash = try hash(source)
         let context1: EvalItem = ["audio_sha256": originalHash, "reference_sha256": "synthetic-reference", "start_seconds": 0.1, "end_seconds": 0.5]

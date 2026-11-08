@@ -2,7 +2,7 @@ import Foundation
 
 /// One inference produces the three independent metadata checkpoints.
 public enum Metadata {
-    public static let defaultPromptPath = "prompts/metadata.md"
+    public static let defaultPromptPath = "Resources/prompts/metadata.md"
 
     public struct Result: Encodable, Sendable {
         public let category: Categorize.Category

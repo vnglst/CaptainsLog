@@ -15,7 +15,7 @@ let package = Package(
         .package(url: "https://github.com/argmaxinc/argmax-oss-swift.git", from: "1.1.1"),
         .package(path: "Vendor/swift-transformers"),
         .package(path: "Vendor/swift-huggingface"),
-        .package(path: "eval/FixtureLibrary"),
+        .package(path: "Packages/FixtureLibrary"),
     ],
     targets: [
         .target(
@@ -70,7 +70,8 @@ let package = Package(
         ),
         .executableTarget(
             name: "run-tests",
-            dependencies: ["CaptainsLog", "CaptainsLogCore"]
+            dependencies: ["CaptainsLog", "CaptainsLogCore"],
+            path: "Tests/CaptainsLogTests"
         ),
     ]
 )

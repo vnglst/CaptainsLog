@@ -5,19 +5,19 @@ extension Evaluator {
     /// Require explicit provenance for every active recording and pin both sides
     /// of the comparison. A script is not automatically a verbatim transcript.
     func transcriptionCases(includingArchived: Bool = false) throws -> [String: EvalItem] {
-        let manifest = tools.path("eval/transcribe/cases.json")
+        let manifest = tools.path("eval/suites/transcribe/cases.json")
         guard let entries = try tools.json(manifest) as? [String: EvalItem] else { throw ToolFailure("Invalid transcription cases manifest") }
-        let names = Set(tools.files(tools.path("eval/transcribe/audio")).filter { $0.pathExtension == "m4a" }.map { $0.deletingPathExtension().lastPathComponent })
+        let names = Set(tools.files(tools.path("eval/suites/transcribe/audio")).filter { $0.pathExtension == "m4a" }.map { $0.deletingPathExtension().lastPathComponent })
         try tools.require(Set(entries.keys) == names, "Transcription manifest must cover every audio fixture exactly")
         for (name, entry) in entries {
             try tools.require(["script-unverified", "reference-unverified", "model-assisted", "audio-reviewed"].contains(entry["reference_status"] as? String ?? ""), "Invalid reference status: \(name)")
             try tools.require(!(entry["language"] as? String ?? "").isEmpty, "Missing language: \(name)")
             for (key, relative) in [("audio_sha256", "audio/\(name).m4a"), ("reference_sha256", "expected/\(name).md")] {
-                try tools.require(entry[key] as? String == tools.hash(tools.path("eval/transcribe/" + relative)), "Transcription fixture hash mismatch: \(relative)")
+                try tools.require(entry[key] as? String == tools.hash(tools.path("eval/suites/transcribe/" + relative)), "Transcription fixture hash mismatch: \(relative)")
             }
         }
         if includingArchived {
-            let archive = tools.path("eval/transcribe/history")
+            let archive = tools.path("eval/suites/transcribe/history")
             if let historical = (try? tools.json(archive.appendingPathComponent("cases.json"))) as? [String: EvalItem] {
                 for (name, entry) in historical where entries[name] == nil {
                     try tools.require(entry["audio_sha256"] as? String == tools.hash(archive.appendingPathComponent("audio/\(name).m4a")), "Archived recording hash mismatch: \(name)")

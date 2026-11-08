@@ -2,7 +2,7 @@ import Foundation
 
 public enum Filename {
 
-    public static let defaultPromptPath = "prompts/filename.md"
+    public static let defaultPromptPath = "Resources/prompts/filename.md"
     public static let defaultMaxTokens = 0
     public static let defaultTemperature: Float = 0.3
 

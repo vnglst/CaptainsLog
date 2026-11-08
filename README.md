@@ -16,7 +16,7 @@ brew install --cask vnglst/tap/captainslog
 
 The full pipeline was tested on an M4 MacBook Air with 16 GB of unified memory.
 Use that configuration as the recommended minimum for the default local
-models. See the [end-to-end evaluation](eval/pipeline/history/2026-11-05-enterprise/README.md).
+models. See the [end-to-end evaluation](eval/suites/pipeline/history/2026-11-05-enterprise/README.md).
 
 The installed app checks for updates at launch and once every 24 hours while open.
 Available updates install automatically once recording, processing, and model
@@ -95,13 +95,45 @@ See [vendored package provenance](Vendor/README.md) before refreshing them.
 To upgrade the runtime, select an immutable upstream release and source commit,
 verify the release asset's SHA-256 independently, update the URL/checksum/revision
 in `Package.swift` and this description, and refresh that revision's MIT and native helper license notices under
-`Sources/NativeRuntime/`. Review upstream `build-xcframework.sh` at the
+`Resources/licenses/llama.cpp/`. Review upstream `build-xcframework.sh` at the
 pinned commit for build flags and deployment requirements. Then run the runtime
 check, clean debug and release builds, deterministic tests, packaging/signature
 checks and sequential fixture evaluations before committing. Changing system
 llama.cpp, GGML or libomp installations has no effect on the selected artifact.
 
-For a safe development demo, run `make dev` (`make` and `make run` are aliases). It launches the cached debug app directly when sources and package manifests are unchanged, bypassing SwiftPM startup. If the app is missing or inputs changed (including added or removed source files), it incrementally builds only the app and its dependencies first. No packaging, tests or evaluations run. The first build needs dependency downloads and compilation. It creates an isolated data copy under `tmp/demo-runtime-eval/` from the same canonical audio and text fixtures used by evaluations and the native UI harness, selected in [`eval/demo-library.json`](./eval/demo-library.json). The demo copy persists between launches; move it aside to restore the original demo. See [`demo/`](./demo/) for details.
+For a safe development demo, run `make dev` (`make` and `make run` are aliases). It launches the cached debug app directly when sources and package manifests are unchanged, bypassing SwiftPM startup. If the app is missing or inputs changed (including added or removed source files), it incrementally builds only the app and its dependencies first. No packaging, tests or evaluations run. The first build needs dependency downloads and compilation. It creates an isolated data copy under `tmp/demo-runtime-eval/` from the same canonical audio and text fixtures used by evaluations and the native UI harness, selected in [`eval/fixtures/demo-library.json`](eval/fixtures/demo-library.json). The demo copy persists between launches; move it aside to restore the original demo. See [Development demo](#development-demo) for details.
+
+## Repository layout
+
+- `Sources/`: production Swift targets; native preview states live alongside the UI in `Sources/CaptainsLog/Previews/`.
+- `Tests/CaptainsLogTests/`: the framework-free deterministic test runner.
+- `Packages/`: shared local Swift packages for fixture loading and development-tool support.
+- `Resources/`: app icons, prompts and bundled native-runtime license notices.
+- `eval/suites/`: stage cases, inputs, expected outputs and historical evaluation evidence.
+- `eval/fixtures/`: shared demo context, the demo manifest and reference scripts.
+- `eval/tools/` and `eval/skills/`: evaluation automation, listening review and semantic review workflows.
+- `scripts/`: build, packaging, release and other development automation; start with [the command guide](scripts/README.md).
+- `docs/`: numbered architecture decisions. `backlog/` contains the owner-managed backlog.
+- `design/`, `website/`, `Casks/` and `Vendor/`: design references, the public site, Homebrew distribution and vendored dependencies.
+
+Swift targets and local packages use their module names. Evaluation suites and
+supporting content use lowercase names. Generated builds, app bundles and runtime
+copies stay in ignored `.build/`, `dist/` and `tmp/` directories.
+
+## Development demo
+
+`make dev` seeds an isolated copy of the canonical evaluation fixtures under
+`tmp/demo-runtime-eval/`, including completed logs, pending recordings, a fictional
+Enterprise officer's context and spelling corrections. The manifest is
+[`eval/fixtures/demo-library.json`](eval/fixtures/demo-library.json). Saved edits
+are retained; quit and move the runtime directory aside to reset the demo.
+Microphones, model storage and updates reflect the running app.
+
+`make ui` creates a fresh isolated copy and simulates UI states without downloading
+models or discovering recordings. Its processing and recording controls still use
+real inference and audio hardware. `make dev` uses the real processing pipeline.
+An explicit `CAPTAINS_LOG_CONFIG_PATH` bypasses demo seeding for isolated checks.
+Browsing a demo or preview does not verify inference.
 
 ## Use
 
@@ -159,16 +191,16 @@ Transcription uses Whisper Large-v2. Cleanup, categorization, filenames, and met
 
 ## Documentation
 
-- [Changelog and release history](./CHANGELOG.md)
-- [Testing decision](./docs/0023-keep-framework-free-verification-evidence-outside-backlog-tasks.md)
-- [Development commands](./scripts/README.md)
+- [Changelog and release history](CHANGELOG.md)
+- [Testing decision](docs/0023-keep-framework-free-verification-evidence-outside-backlog-tasks.md)
+- [Development commands](scripts/README.md)
 - [Troubleshooting](#troubleshooting)
-- [Backlog tasks](./backlog/tasks/)
+- [Backlog tasks](backlog/tasks)
 - [Release procedure](#changelog-and-releases)
-- [Third-party notices](./THIRD-PARTY-NOTICES.md)
-- [Active evaluation fixtures](./eval/)
-- [Three TNG recording scripts](./eval/tng-reference/README.md)
-- [Design references](./design/README.md)
+- [Third-party notices](THIRD-PARTY-NOTICES.md)
+- [Active evaluation fixtures](eval)
+- [Three TNG recording scripts](eval/fixtures/tng-reference/README.md)
+- [Design references](design/README.md)
 - [Architecture decisions](#architecture-decisions)
 
 ## License
@@ -181,13 +213,13 @@ texts in its Resources folder.
 
 ## Architecture decisions
 
-Numbered [architecture decision records](./docs/) document the project's design decisions.
-The [repository instructions](./AGENTS.md#documentation) describe how records are maintained.
+Numbered [architecture decision records](docs) document the project's design decisions.
+The [repository instructions](AGENTS.md#documentation) describe how records are maintained.
 
 ## Backlog
 
-The [Backlog.md tasks](./backlog/tasks/) track planned work and verification.
-Backlog ownership and workflow are documented in [AGENTS.md](./AGENTS.md#backlog).
+The [Backlog.md tasks](backlog/tasks) track planned work and verification.
+Backlog ownership and workflow are documented in [AGENTS.md](AGENTS.md#backlog).
 
 ## Testing
 
@@ -210,7 +242,7 @@ Use `make help` to discover commands and `NAME=value` for options; for example,
 `make build CONFIGURATION=release` or `make tests ARGS=--unit`. Make is the
 development entry point; scripts in `scripts/` are its implementation helpers.
 
-For the sequential model-backed fixture pipeline, run `make evals-pipeline`. Run every stage evaluation with `make evals-suites`; validate saved outputs without inference using `make evals ARGS="--validate-run <run-stamp>"`. Review generated files against `eval/*/expected/` and the matching stage skill. For native macOS UI checks, use `make ui`; it builds a temporary app bundle and isolates config/data under a temporary directory. Prepared-machine model checks use `make tests-model` with the four `CAPTAINSLOG_*_MODEL_*` environment variables set. Actual microphone capture is a separately confirmed, interactive check via `make tests-recorder`. Neither smoke check runs in GitHub Actions. Use isolated configuration/data, only repository eval fixtures, and no personal data. Demo material is for presentation. A transcript-seeded continuation cannot establish a successful full audio run.
+For the sequential model-backed fixture pipeline, run `make evals-pipeline`. Run every stage evaluation with `make evals-suites`; validate saved outputs without inference using `make evals ARGS="--validate-run <run-stamp>"`. Review generated files against `eval/suites/*/expected/` and the matching stage skill. For native macOS UI checks, use `make ui`; it builds a temporary app bundle and isolates config/data under a temporary directory. Prepared-machine model checks use `make tests-model` with the four `CAPTAINSLOG_*_MODEL_*` environment variables set. Actual microphone capture is a separately confirmed, interactive check via `make tests-recorder`. Neither smoke check runs in GitHub Actions. Use isolated configuration/data, only repository eval fixtures, and no personal data. Demo material is for presentation. A transcript-seeded continuation cannot establish a successful full audio run.
 
 ## Fixture evaluations
 
@@ -235,13 +267,13 @@ QWEN_FOLDER, QWEN_FILE, QWEN_LABEL, WHISPER_FOLDER and WHISPER_MODEL variables;
 seeds come from its case manifest; the pipeline and other stages retain their
 sampling defaults. Text cases reuse weights sequentially with fresh contexts and
 samplers. Compile before inference; never edit a running evaluator or start another
-model job concurrently. The [TNG reference folder](eval/tng-reference/README.md)
+model job concurrently. The [TNG reference folder](eval/fixtures/tng-reference/README.md)
 contains three personal log scripts aboard the Enterprise, each about ten
 minutes long, in English, Dutch and German, with paired expected outputs.
 The transcription suite includes three owner-reviewed Dutch recordings and one English recording.
-The [fresh transcription baseline](eval/transcribe/history/baselines/2026-11-05-whisper-large-v2/README.md) measures all four recordings.
-The [Enterprise pipeline run](eval/pipeline/history/2026-11-05-enterprise/README.md) covers audio through search. Earlier review rounds live under
-`eval/transcribe/history/`; English
+The [fresh transcription baseline](eval/suites/transcribe/history/baselines/2026-11-05-whisper-large-v2/README.md) measures all four recordings.
+The [Enterprise pipeline run](eval/suites/pipeline/history/2026-11-05-enterprise/README.md) covers audio through search. Earlier review rounds live under
+`eval/suites/transcribe/history/`; English
 and German TNG audio are still to be recorded by the owner.
 
 For opt-in native startup and quit performance checks, close the installed app,
@@ -277,7 +309,7 @@ Use `PORT=8778` for another local port or `ARGS=--prepare-only` to prepare files
 without serving them. The app uses bundled Swift tooling and browser audio seeking;
 Python, FFmpeg and additional model downloads are not required.
 
-Transcription cases are pinned in `eval/transcribe/cases.json`. Every transcription
+Transcription cases are pinned in `eval/suites/transcribe/cases.json`. Every transcription
 review includes aligned Word Error Rate (`wer.json`, `wer.md`); the run's
 `transcription-scores.json` contains a word-weighted aggregate. WER counts
 substitutions, deletions and insertions against verbatim spoken words. Unverified
@@ -287,7 +319,7 @@ The normalization and alignment policy lives in the transcription review skill.
 
 Evaluation bundles include source and generated text, validation results, model/runtime
 identity, hashes, settings and timings. Heuristic scores do not establish completeness
-or grounding; see the [semantic review guidance](./AGENTS.md#semantic-review).
+or grounding; see the [semantic review guidance](AGENTS.md#semantic-review).
 
 ## Troubleshooting
 
@@ -302,8 +334,8 @@ before investigating memory issues; preserve the original failing synthetic case
 
 ## Changelog and releases
 
-[CHANGELOG.md](./CHANGELOG.md) records changes under `Unreleased` until a release is prepared.
-Contribution rules are documented in [AGENTS.md](./AGENTS.md#documentation).
+[CHANGELOG.md](CHANGELOG.md) records changes under `Unreleased` until a release is prepared.
+Contribution rules are documented in [AGENTS.md](AGENTS.md#documentation).
 
 Use [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
 for new commits, for example `fix(updater): repair tap fetches` or
@@ -349,7 +381,7 @@ Run relevant development checks explicitly before releasing: `make tests`,
 `make tests-release`, and `make tests-runtime` remain available. Run `make evals`
 separately when evaluating model quality, and review its artifacts under the
 stage skills. See [the backlog
-tasks](./backlog/tasks/) for outstanding acceptance checks.
+tasks](backlog/tasks) for outstanding acceptance checks.
 
 After checks pass, the command bumps `VERSION`, moves Unreleased entries into a
 dated release section, adds the packaging entry, updates comparison links, and
@@ -365,7 +397,7 @@ the source cask and Homebrew tap. Reruns also refresh the release notes. Check t
 workflow results and test the published install/upgrade before announcing the
 release. `HOMEBREW_TAP_TOKEN` must grant Contents read/write access to
 `vnglst/homebrew-tap`. The release workflow publishes `Casks/captainslog.rb` there.
-See [ADR-024](./docs/0024-separate-release-publication-from-development-checks.md)
+See [ADR-024](docs/0024-separate-release-publication-from-development-checks.md)
 for the release publication decision.
 
 Release-tooling tests use Swift and Git:

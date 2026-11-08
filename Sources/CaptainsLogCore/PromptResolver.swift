@@ -28,5 +28,11 @@ public func resolvePromptPath(_ path: String) -> URL? {
         return relativeURL
     }
 
+    // Existing configs may still use the former repository-relative prompt paths.
+    if path.hasPrefix("prompts/") {
+        let resourceURL = URL(fileURLWithPath: "Resources").appendingPathComponent(path)
+        if FileManager.default.fileExists(atPath: resourceURL.path) { return resourceURL }
+    }
+
     return nil
 }

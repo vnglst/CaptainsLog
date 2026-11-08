@@ -21,4 +21,4 @@ In the shared report, give a short section-by-section account of actual differen
 
 ## Reporting
 
-Use each case's generated `report.md` and the [shared concise report format](../../../README.md#semantic-review). Read every selected case, record concrete differences and semantic impact, and identify regressions or improvements when a baseline is available. Avoid generic judgments such as “mostly good.” Mechanical checks and heuristic scores never replace semantic review or the owner's final judgment.
+Use each case's generated `report.md` and the [shared concise report format](../../../AGENTS.md#semantic-review). Read every selected case, record concrete differences and semantic impact, and identify regressions or improvements when a baseline is available. Avoid generic judgments such as “mostly good.” Mechanical checks and heuristic scores never replace semantic review or the owner's final judgment.

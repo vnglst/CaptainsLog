@@ -18,7 +18,7 @@ controls support owner verification. Exact words and decisions persist per run i
 `review-app/review-state.json` and can be exported.
 
 Use only the selected run's raw transcription. Segment definitions under
-`eval/transcribe/review/` pin audio/reference hashes and word offsets; stale offsets
+`eval/suites/transcribe/review/` pin audio/reference hashes and word offsets; stale offsets
 fall back to the full recording. Comparison outputs and approximate alignment
 remain navigation aids. Audio/reference changes invalidate earlier verification,
 without discarding the owner's saved text. The app does not edit fixture references
@@ -80,7 +80,7 @@ hyphens separate words. Internal apostrophes and diacritics remain. Numbers are
 not expanded and names are not aliased. Unit-cost Levenshtein ties prefer diagonal,
 then deletion, then insertion. This policy is recorded in every score.
 
-`eval/transcribe/cases.json` pins audio/reference hashes and reference status for
+`eval/suites/transcribe/cases.json` pins audio/reference hashes and reference status for
 every recording. Keep scripts separate from verbatim references. Compare script
 and raw transcript first, then check differences against the audio. Never turn
 the system under test's output into its own ground truth. Record confirmed reading
@@ -98,4 +98,4 @@ context; alignment does not distinguish reading slips from recognition errors.
 
 ## Reporting
 
-Use each case's generated `report.md` and the [shared concise report format](../../../README.md#semantic-review). Read every selected case, record concrete differences and semantic impact, and identify regressions or improvements when a baseline is available. Avoid generic judgments such as “mostly good.” Mechanical checks and heuristic scores never replace semantic review or the owner's final judgment.
+Use each case's generated `report.md` and the [shared concise report format](../../../AGENTS.md#semantic-review). Read every selected case, record concrete differences and semantic impact, and identify regressions or improvements when a baseline is available. Avoid generic judgments such as “mostly good.” Mechanical checks and heuristic scores never replace semantic review or the owner's final judgment.

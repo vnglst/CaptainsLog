@@ -27,8 +27,8 @@ func sha256(_ url: URL) throws -> String {
 }
 let embeddingHash = try sha256(embedding)
 require(embeddingHash == "e011debc1208e31bf7b6aebee2d9fc8bd2ca11694a77ed66ac9d0c9d0a877c93", "E5 model checksum must match the pinned model")
-let header = URL(fileURLWithPath: "eval/pipeline/tng-nl01/enriched.md")
-let body = URL(fileURLWithPath: "eval/pipeline/tng-nl01/cleaned.md")
+let header = URL(fileURLWithPath: "eval/suites/pipeline/tng-nl01/enriched.md")
+let body = URL(fileURLWithPath: "eval/suites/pipeline/tng-nl01/cleaned.md")
 require(fm.fileExists(atPath: header.path) && fm.fileExists(atPath: body.path), "Run from the repository root; use only eval fixtures")
 let data = root.appendingPathComponent("data")
 let logs = data.appendingPathComponent("logs/personal")
@@ -38,7 +38,7 @@ let slug = "2025-01-14-enterprise-vrije-dag-sensorcontrole"
 for relative in [".pipeline/01-transcribed", ".pipeline/02-logs", ".pipeline/03-category", ".pipeline/04-rename"] {
     try fm.createDirectory(at: data.appendingPathComponent(relative), withIntermediateDirectories: true)
 }
-try fm.copyItem(at: URL(fileURLWithPath: "eval/transcribe/expected/tng-nl01-vrije-dag-enterprise-corrected.md"),
+try fm.copyItem(at: URL(fileURLWithPath: "eval/suites/transcribe/expected/tng-nl01-vrije-dag-enterprise-corrected.md"),
                 to: data.appendingPathComponent(".pipeline/01-transcribed/\(stem).md"))
 try fm.copyItem(at: body, to: data.appendingPathComponent(".pipeline/02-logs/\(stem).md"))
 try fm.copyItem(at: body, to: data.appendingPathComponent(".pipeline/04-rename/\(slug).md"))

@@ -17,15 +17,15 @@ final class Evaluator {
             var enrichment: [String: EvalItem]?
             let transcription = stage == "transcribe" ? try transcriptionCases() : nil
             if stage == "enrich" {
-                try tools.validateEnrichCases(tools.path("eval/enrich/cases.json"), tools.path("eval/enrich/input"))
-                enrichment = try tools.json(tools.path("eval/enrich/cases.json")) as? [String: EvalItem]
+                try tools.validateEnrichCases(tools.path("eval/suites/enrich/cases.json"), tools.path("eval/suites/enrich/input"))
+                enrichment = try tools.json(tools.path("eval/suites/enrich/cases.json")) as? [String: EvalItem]
             }
             let ext = stage == "transcribe" ? "m4a" : "md", folder = stage == "transcribe" ? "audio" : "input"
-            let inputs = tools.files(tools.path("eval/\(stage)/\(folder)")).filter { $0.pathExtension == ext && (selected == nil || $0.deletingPathExtension().lastPathComponent == selected) }
+            let inputs = tools.files(tools.path("eval/suites/\(stage)/\(folder)")).filter { $0.pathExtension == ext && (selected == nil || $0.deletingPathExtension().lastPathComponent == selected) }
             try tools.require(!inputs.isEmpty, "No fixtures for \(stage)" + (selected.map { "/" + $0 } ?? ""))
             for input in inputs {
                 let name = input.deletingPathExtension().lastPathComponent
-                let expected = tools.path("eval/\(stage)/expected/\(name).\(stage == "categorize" ? "category" : "md")")
+                let expected = tools.path("eval/suites/\(stage)/expected/\(name).\(stage == "categorize" ? "category" : "md")")
                 try tools.require(tools.fm.fileExists(atPath: expected.path), "Missing expected fixture: \(expected.path)")
                 var item: EvalItem = ["stage": stage, "name": name, "input": input.path, "expected": expected.path]
                 if let settings = transcription?[name] { item.merge(settings) { _, new in new } }
@@ -184,7 +184,7 @@ final class Evaluator {
         for i in items.indices {
             let stage = string(items[i], "stage"), label = stage == "transcribe" ? tools.environment["CAPTAINS_LOG_EVAL_WHISPER_MODEL"] ?? "openai_whisper-large-v2" : tools.environment["CAPTAINS_LOG_EVAL_QWEN_LABEL"] ?? "Qwen3.5-9B-Q4_K_M"
             try tools.require(tools.match("\\A[\\w.-]+\\z", label) != nil, "Model label must be a filename component")
-            items[i]["output"] = tools.path("eval/\(stage)/history/generated/\(stamp)_\(label)_\(string(items[i], "name")).\(stage == "categorize" ? "json" : "md")").path
+            items[i]["output"] = tools.path("eval/suites/\(stage)/history/generated/\(stamp)_\(label)_\(string(items[i], "name")).\(stage == "categorize" ? "json" : "md")").path
             if items[i]["date"] == nil { items[i]["date"] = date }; if items[i]["recording_time"] == nil { items[i]["recording_time"] = time }
         }
     }
@@ -216,7 +216,7 @@ final class Evaluator {
     }
     func pipelineCases(_ run: URL, _ selected: String? = nil) throws -> [EvalItem] {
         let stem = selected ?? "tng-nl01-vrije-dag-enterprise-corrected", data = run.appendingPathComponent("data/.pipeline")
-        guard let cases = try tools.json(tools.path("eval/pipeline/cases.json")) as? [String: EvalItem],
+        guard let cases = try tools.json(tools.path("eval/suites/pipeline/cases.json")) as? [String: EvalItem],
               let settings = cases[stem], let expected = settings["expected"] as? [String: String],
               let transcription = try transcriptionCases()[stem] else { throw ToolFailure("No pipeline fixture: \(stem)", status: 2) }
         try tools.require(Set(expected.keys) == Set(stages), "Pipeline fixture must declare every expected stage: \(stem)")
@@ -226,7 +226,7 @@ final class Evaluator {
         let transcript = data.appendingPathComponent("01-transcribed/\(stem).md").path, cleaned = data.appendingPathComponent("02-logs/\(stem).md").path
         let formatter = DateFormatter(); formatter.dateFormat = "yyyy-MM-dd"
         let date = string(settings, "date") == "today" ? formatter.string(from: Date()) : string(settings, "date")
-        return [("transcribe", tools.path("eval/transcribe/audio/\(stem).m4a").path, transcript), ("cleanup", transcript, cleaned), ("categorize", cleaned, data.appendingPathComponent("03-category/\(stem).json").path), ("filename", cleaned, data.appendingPathComponent("04-rename/\(stem).slug.txt").path), ("enrich", cleaned, run.appendingPathComponent("data/logs/missing.md").path)].map {
+        return [("transcribe", tools.path("eval/suites/transcribe/audio/\(stem).m4a").path, transcript), ("cleanup", transcript, cleaned), ("categorize", cleaned, data.appendingPathComponent("03-category/\(stem).json").path), ("filename", cleaned, data.appendingPathComponent("04-rename/\(stem).slug.txt").path), ("enrich", cleaned, run.appendingPathComponent("data/logs/missing.md").path)].map {
             var item: EvalItem = ["scope": "pipeline", "stage": $0.0, "name": stem, "input": $0.1, "output": $0.2, "expected": tools.path(expected[$0.0]!).path, "date": date, "category": string(settings, "category"), "search_query": string(settings, "search_query")]
             if $0.0 == "transcribe" { item.merge(transcription) { _, new in new } }
             return item
@@ -304,7 +304,7 @@ final class Evaluator {
         var items = mode == "--pipeline" ? [] : try cases(chosen, selected)
         if combinedMetadata { seedCombinedCases(&items) }
         if list && mode == "--pipeline" {
-            guard let available = try tools.json(tools.path("eval/pipeline/cases.json")) as? [String: EvalItem] else { throw ToolFailure("Invalid pipeline cases") }
+            guard let available = try tools.json(tools.path("eval/suites/pipeline/cases.json")) as? [String: EvalItem] else { throw ToolFailure("Invalid pipeline cases") }
             items = try (selected.map { [$0] } ?? available.keys.sorted()).flatMap { try pipelineCases(tools.path("tmp/eval-list"), $0) }
         }
         if list { for item in items { print("\(string(item, "stage"))/\(string(item, "name"))") }; return }
@@ -318,7 +318,7 @@ final class Evaluator {
         var metadata: EvalItem = ["stamp": stamp, "started_at": ISO8601DateFormatter().string(from: Date()), "mode": mode, "revision": try tools.capture(["git", "rev-parse", "HEAD"]), "dirty_status": try tools.run(["git", "status", "--porcelain"], quiet: true).output, "generation": try settings(), "baseline": baselinePath as Any? ?? NSNull(), "status": "preparing"]
         if combinedMetadata {
             var combined = (try settings())["enrich"] as? EvalItem ?? [:]
-            combined["prompt"] = "prompts/metadata.md"
+            combined["prompt"] = "Resources/prompts/metadata.md"
             combined["stages"] = ["categorize", "filename", "enrich"]
             combined["scope"] = combinedMetadata ? "selected metadata suites and fresh pipeline entries" : "fresh pipeline entries only"
             combined["seed_policy"] = combinedMetadata ? "metadata fixtures use per-case manifest seed, default42; production/pipeline defaults remain random" : "production/pipeline defaults remain random"
@@ -327,11 +327,11 @@ final class Evaluator {
         errorStatus = 1
         do {
             if chosen.contains("transcribe") || ["--all", "--pipeline"].contains(mode) {
-                try tools.copy(tools.path("eval/transcribe/cases.json"), run.appendingPathComponent("transcription-cases.json"))
+                try tools.copy(tools.path("eval/suites/transcribe/cases.json"), run.appendingPathComponent("transcription-cases.json"))
                 metadata["transcription_cases_sha256"] = try tools.hash(run.appendingPathComponent("transcription-cases.json"))
             }
             if items.contains(where: { string($0, "stage") == "enrich" }) {
-                try tools.copy(tools.path("eval/enrich/cases.json"), run.appendingPathComponent("enrich-cases.json")); metadata["enrich_cases_sha256"] = try tools.hash(run.appendingPathComponent("enrich-cases.json"))
+                try tools.copy(tools.path("eval/suites/enrich/cases.json"), run.appendingPathComponent("enrich-cases.json")); metadata["enrich_cases_sha256"] = try tools.hash(run.appendingPathComponent("enrich-cases.json"))
                 for i in items.indices where string(items[i], "stage") == "enrich" { items[i]["diagnostics"] = run.appendingPathComponent("enrich-\(string(items[i], "name")).log").path }
             }
             try configure(run, chosen, mode, &metadata)
@@ -340,7 +340,7 @@ final class Evaluator {
                 for key in ["input", "expected"] { let source = file(items[i], key), destination = folder.appendingPathComponent((key == "input" ? string(items[i], "name") : "expected") + "." + source.pathExtension); try tools.copy(source, destination); items[i][key] = destination.path }
             }
             if ["--all", "--pipeline"].contains(mode) {
-                try tools.copy(tools.path("eval/pipeline/cases.json"), run.appendingPathComponent("pipeline-cases.json"))
+                try tools.copy(tools.path("eval/suites/pipeline/cases.json"), run.appendingPathComponent("pipeline-cases.json"))
                 var pipeline = try pipelineCases(run, selected)
                 for i in pipeline.indices {
                     let folder = run.appendingPathComponent("fixtures/pipeline/\(string(pipeline[i], "stage"))"), old = file(pipeline[i], "expected"), expected = folder.appendingPathComponent("expected." + old.pathExtension)
@@ -351,8 +351,8 @@ final class Evaluator {
             }
             try tools.json(run.appendingPathComponent("manifest.json"), items)
             metadata["fixture_hashes"] = try tools.hashes(items.flatMap { [file($0, "input"), file($0, "expected")] }.filter { tools.fm.fileExists(atPath: $0.path) }.uniquedURLs())
-            let source = ["Sources/CaptainsLogCore", "Sources/cl", "eval/CLI", "eval/tools/Sources/EvaluationTools", "scripts/Sources/Tools", "scripts/Support/Sources/ToolSupport"].flatMap { tools.files(tools.path($0)).filter { $0.pathExtension == "swift" } } + [tools.path("Package.resolved"), tools.path("eval/tools/Package.swift"), tools.path("scripts/Support/Package.swift"), tools.path("scripts/Package.swift"), tools.path("scripts/Package.resolved"), tools.path("scripts/tooling.swift")]
-            metadata["source_hashes"] = try tools.hashes(source); metadata["prompt_hashes"] = try tools.hashes(tools.files(tools.path("prompts")).filter { $0.pathExtension == "md" }); metadata["status"] = "running"
+            let source = ["Sources/CaptainsLogCore", "Sources/cl", "eval/tools/Sources/EvaluationTools", "scripts/Sources/Tools", "Packages/ToolSupport/Sources/ToolSupport"].flatMap { tools.files(tools.path($0)).filter { $0.pathExtension == "swift" } } + [tools.path("Package.resolved"), tools.path("eval/tools/Package.swift"), tools.path("Packages/ToolSupport/Package.swift"), tools.path("scripts/Package.swift"), tools.path("scripts/Package.resolved"), tools.path("scripts/tooling.swift")]
+            metadata["source_hashes"] = try tools.hashes(source); metadata["prompt_hashes"] = try tools.hashes(tools.files(tools.path("Resources/prompts")).filter { $0.pathExtension == "md" }); metadata["status"] = "running"
             try tools.json(run.appendingPathComponent("metadata.json"), metadata); print("Run: \(run.path) (\(items.count) cases)")
             try tools.run(["swift", "build", "--product", "cl"], log: run.appendingPathComponent("build.log"))
             let cl = try tools.capture(["swift", "build", "--show-bin-path"]) + "/cl"

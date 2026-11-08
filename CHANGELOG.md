@@ -12,6 +12,8 @@ entry. Git links provide the complete commit history for each release.
 
 ## [Unreleased]
 
+- Organize production code, tests, local packages, resources and evaluation suites into conventional folders, remove source symlinks, and update development documentation.
+
 - Coordinate recording, model setup and processing through one shared state machine, keeping activity and queue status consistent during downloads and errors in Logs and the menu.
 - Use one canonical evaluation fixture library for the development demo and native UI harness, with TNG personal context and spelling corrections, and processing previews showing one active log and the remaining queue.
 - Keep the current Logs design references directly in `design/` and remove the obsolete project prototype.

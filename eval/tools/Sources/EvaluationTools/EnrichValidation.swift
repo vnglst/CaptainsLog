@@ -79,7 +79,7 @@ extension Tools {
         return value
     }
     func testEnrichValidator() throws {
-        let input = try read(path("eval/enrich/input/01_work_week.md")), expected = try expectedFrontmatter(path("eval/enrich/expected/01_work_week.md"))
+        let input = try read(path("eval/suites/enrich/input/01_work_week.md")), expected = try expectedFrontmatter(path("eval/suites/enrich/expected/01_work_week.md"))
         var passed = 0
         func check(_ name: String, _ failure: String? = nil, _ mutate: (inout [String: Any], inout String) throws -> String?) throws {
             var data = expected, body = input
@@ -129,14 +129,14 @@ extension Tools {
         let cl = environment["CAPTAINS_LOG_EVAL_CL"] ?? path(".build/debug/cl").path
         try require(fm.isExecutableFile(atPath: cl), "Build cl before running this model-free check.", status: 2)
         let dir = try temporary("enrich-eval-checks-", in: path("tmp")); try isolated(dir)
-        try testEnrichValidator(); try validateEnrichCases(path("eval/enrich/cases.json"), path("eval/enrich/input"))
+        try testEnrichValidator(); try validateEnrichCases(path("eval/suites/enrich/cases.json"), path("eval/suites/enrich/input"))
         print("PASS: enrichment case manifest and regression fixture fingerprints")
         for seed in ["0", "42", "4294967294"] {
-            let result = try run([cl, "enrich", "--input", "eval/enrich/input/01_work_week.md", "--seed", seed, "--print-prompt"], quiet: true, log: dir.appendingPathComponent("seed-\(seed).txt"))
+            let result = try run([cl, "enrich", "--input", "eval/suites/enrich/input/01_work_week.md", "--seed", seed, "--print-prompt"], quiet: true, log: dir.appendingPathComponent("seed-\(seed).txt"))
             try require(result.output.contains("FinanceHub"), "Valid seed prompt lacks fixture content: \(seed)")
         }
         for seed in ["-1", "4294967295", "4294967296"] {
-            let result = try run([cl, "enrich", "--input", "eval/enrich/input/01_work_week.md", "--seed", seed, "--print-prompt"], quiet: true, allowFailure: true, log: dir.appendingPathComponent("invalid-\(seed).txt"))
+            let result = try run([cl, "enrich", "--input", "eval/suites/enrich/input/01_work_week.md", "--seed", seed, "--print-prompt"], quiet: true, allowFailure: true, log: dir.appendingPathComponent("invalid-\(seed).txt"))
             try require(result.status != 0 && match("Error:.*(seed|Seed)", result.output) != nil, "Invalid seed was accepted: \(seed)")
         }
         print("PASS: seed boundaries and reserved random-seed rejection; no model loaded.")

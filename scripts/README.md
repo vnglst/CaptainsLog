@@ -62,7 +62,7 @@ run model jobs concurrently. Evaluations use only repository `eval/` fixtures an
 isolated config/data. The UI harness is for presentation inspection; its processing
 and recording controls invoke real models or hardware. Checks bypass default demo
 seeding. See the [testing workflow](../README.md#testing) and stage skills in
-[`eval/skills/`](../eval/skills/) for quality gates and semantic review requirements.
+[`eval/skills/`](../eval/skills) for quality gates and semantic review requirements.
 
 ### Cached native search shutdown check
 
@@ -141,21 +141,22 @@ because they have their own process lifecycle or lightweight invocation.
 |---|---|
 | Packaging, framework bundling, runtime verification | [Native.swift](Sources/Tools/Native.swift) |
 | UI harness, updater/model/recorder checks | [Checks.swift](Sources/Tools/Checks.swift) |
-| Evaluations, review app, scoring, validation and their tests | [evaluation tools](../eval/tools/Sources/EvaluationTools/), [review skills](../eval/skills/) |
-| Landing page preview | [evaluation dispatcher](../eval/tools/Sources/EvaluationTools/Dispatch.swift), shared review HTTP server, [`website/`](../website/) |
+| Evaluations, review app, scoring, validation and their tests | [evaluation tools](../eval/tools/Sources/EvaluationTools), [review skills](../eval/skills) |
+| Landing page preview | [evaluation dispatcher](../eval/tools/Sources/EvaluationTools/Dispatch.swift), shared review HTTP server, [`website/`](../website) |
 | Coverage | [Coverage.swift](Sources/Tools/Coverage.swift) |
 | Release preparation, notes, changelog checks and cask updates | [release.swift](release.swift); release fixtures: [ReleaseChecks.swift](Sources/Tools/ReleaseChecks.swift) |
-| Temporary config/data, subprocesses and file helpers | [ToolSupport](Support/Sources/ToolSupport/Common.swift) |
+| Temporary config/data, subprocesses and file helpers | [ToolSupport](../Packages/ToolSupport/Sources/ToolSupport/Common.swift) |
 
 Before full tests, coverage or updater checks, quit the app when recording and
 processing have finished. Updater fixtures still inspect the real app process.
 Run checks from the repository root so relative `eval/` fixture paths resolve.
 
-The tooling executable depends on two local libraries: common filesystem/process
-support under `scripts/Support/`, and evaluation logic/resources under `eval/tools/`.
-Yams remains pinned in the evaluation package and the tooling lockfile. None is a
-dependency of the app package. The CLI's evaluation command source lives in
-`eval/CLI/`; its source link in `Sources/cl/` lets SwiftPM compile it with the CLI.
+Shared fixture loading lives in `Packages/FixtureLibrary/`; filesystem and process
+helpers live in `Packages/ToolSupport/`. Evaluation logic and review resources live
+in `eval/tools/`, which pins Yams alongside the tooling lockfile. The app uses the
+fixture-loading package for development setup. The CLI's evaluation command lives
+in `Sources/cl/EvalBatch.swift`; native preview states live in
+`Sources/CaptainsLog/Previews/`. Both compile directly in their owning targets.
 
 Use Make for workflows. For direct dispatch, run
 `swift scripts/tooling.swift COMMAND [ARGS...]`; for example,
@@ -184,7 +185,7 @@ only.
 |---|---|---|
 | First launch | Start `make ui ARGS=onboarding`; walk through onboarding, choose categories and context, then open Logs. | Every control is reachable; setup completes; choices appear in Context and Settings. This harness skips actual model download. |
 | Empty library | Start `make ui ARGS=eval-empty`; resize to a small supported window and a large window; open Context and Settings and return. | Empty-state content and recording controls remain readable and do not overlap; navigation remains usable. |
-| Import through completed log | Launch the candidate executable directly with `CAPTAINS_LOG_CONFIG_PATH` pointing to fresh isolated config and data, bypassing demo seeding. Configure prepared models; copy `eval/transcribe/audio/tng-nl01-vrije-dag-enterprise-corrected.m4a` into its `audio/` directory. Follow transcription, cleanup, categorization and completion; open the log. | The original audio survives; the completed log is readable and searchable. Compare transcript, cleaned text and final output with the corresponding eval references for omissions, changed meaning and invented content. Preview fixtures cannot establish this result. |
+| Import through completed log | Launch the candidate executable directly with `CAPTAINS_LOG_CONFIG_PATH` pointing to fresh isolated config and data, bypassing demo seeding. Configure prepared models; copy `eval/suites/transcribe/audio/tng-nl01-vrije-dag-enterprise-corrected.m4a` into its `audio/` directory. Follow transcription, cleanup, categorization and completion; open the log. | The original audio survives; the completed log is readable and searchable. Compare transcript, cleaned text and final output with the corresponding eval references for omissions, changed meaning and invented content. Preview fixtures cannot establish this result. |
 | Pause and resume | During real fixture processing, Pause, then Resume; repeat while cancellation is still draining. | UI remains responsive; work resumes from saved progress; requests run serially; no duplicate or partial completed log appears. |
 | Reprocess | Reprocess the completed fixture from the row action and from log detail; Pause a queued restart, then request it again. | Derived results clear immediately; original audio remains; all stages rerun; a later Pause discards waiting work without restoring deleted outputs. |
 | Search and filters | Search for a distinctive phrase from the completed fixture, change category filters, try a missing phrase and clear search. Open a result. | Results respect filters and open the expected log; empty results are understandable; clearing search restores Logs. Use prepared embedding models for real search. |

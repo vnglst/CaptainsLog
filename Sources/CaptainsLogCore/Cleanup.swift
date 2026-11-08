@@ -2,7 +2,7 @@ import Foundation
 
 public enum Cleanup {
 
-    public static let defaultPromptPath = "prompts/cleanup.md"
+    public static let defaultPromptPath = "Resources/prompts/cleanup.md"
 
     public typealias CommandOperation = @Sendable (
         _ transcript: String,

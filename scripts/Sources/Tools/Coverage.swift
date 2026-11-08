@@ -20,10 +20,10 @@ extension Tools {
         for directory in ["data/logs", "data/.pipeline/01-transcribed", "empty-data"] { try mkdir(local(directory)) }
         try json(local("config.json"), ["schemaVersion": 1, "dataDir": local("data").path])
         for (source, destination) in [
-            ("eval/cleanup/input/captains-log-nlm-llm.md", "input.md"),
-            ("eval/transcribe/expected/durins-volk.md", "data/.pipeline/01-transcribed/2025-01-14-0830.md"),
-            ("eval/filename/input/01_single_topic.md", "filename-input.md"),
-            ("eval/enrich/input/01_work_week.md", "enrich-input.md"),
+            ("eval/suites/cleanup/input/captains-log-nlm-llm.md", "input.md"),
+            ("eval/suites/transcribe/expected/durins-volk.md", "data/.pipeline/01-transcribed/2025-01-14-0830.md"),
+            ("eval/suites/filename/input/01_single_topic.md", "filename-input.md"),
+            ("eval/suites/enrich/input/01_work_week.md", "enrich-input.md"),
         ] { try copy(path(source), local(destination)) }
         let cliEnvironment = ["CAPTAINS_LOG_CONFIG_PATH": local("config.json").path,
                               "LLVM_PROFILE_FILE": coverage.appendingPathComponent("cl-%p.profraw").path]
@@ -109,7 +109,7 @@ extension Tools {
         try contains(cli(["cleanup", "--input", local("input.md").path, "--print-prompt"]).output, ["<transcript>", "Obsidian"], "Cleanup prompt omitted transcript.")
         try contains(cli(["filename", "--input", local("filename-input.md").path, "--date", "2025-01-14", "--print-prompt"]).output,
                      ["2025-01-14", "<log_entry>"], "Filename prompt omitted date/log entry.")
-        for input in files(path("eval/categorize/input")) where input.pathExtension == "md" {
+        for input in files(path("eval/suites/categorize/input")) where input.pathExtension == "md" {
             let prompt = try cli(["categorize", "--input", input.path, "--output", local(input.deletingPathExtension().lastPathComponent + ".json").path, "--print-prompt"]).output
             try contains(prompt, ["- personal:", "- professional:", "- side_project:", "<log_entry>"], "Categorize prompt omitted rubric: " + input.lastPathComponent)
             var fixture = try read(input)
@@ -131,7 +131,7 @@ extension Tools {
         try write(coverage.appendingPathComponent("coverage.json"), capture(["xcrun", "llvm-cov", "export"] + objects + sources) + "\n")
         let exclusions: Set<String> = [
             "Sources/CaptainsLog/FieldNotesContentView.swift", "Sources/CaptainsLog/Theme.swift",
-            "Sources/CaptainsLog/FieldNotesTheme.swift", "Sources/CaptainsLog/DesignFixtures.swift", "Sources/CaptainsLogCore/Recorder.swift",
+            "Sources/CaptainsLog/FieldNotesTheme.swift", "Sources/CaptainsLog/Previews/DesignFixtures.swift", "Sources/CaptainsLogCore/Recorder.swift",
             "Sources/CaptainsLogCore/Transcriber.swift", "Sources/CaptainsLogCore/LLM.swift", "Sources/CaptainsLogCore/Embeddings.swift",
         ]
         let report = try capture(["xcrun", "llvm-cov", "report"] + objects + sources.filter { !exclusions.contains($0) })

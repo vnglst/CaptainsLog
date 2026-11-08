@@ -13,8 +13,8 @@ processed/
 dist/
 
 # Eval generated outputs and reports (not version-controlled)
-eval/*/generated/
-eval/*/reports/
+eval/suites/*/generated/
+eval/suites/*/reports/
 
 # Local temp directory
 tmp/

@@ -2,7 +2,7 @@ import Foundation
 
 public enum Enrich {
 
-    public static let defaultPromptPath = "prompts/enrich.md"
+    public static let defaultPromptPath = "Resources/prompts/enrich.md"
     public static let defaultMaxTokens = 4_096
     public static let defaultTemperature: Float = 0.3
 

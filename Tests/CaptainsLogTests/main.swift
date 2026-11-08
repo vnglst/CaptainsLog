@@ -1,0 +1,7829 @@
+import AVFoundation
+import Foundation
+@testable import CaptainsLog
+@testable import CaptainsLogCore
+
+// Simple test runner using Swift's built-in assertions
+// No external testing framework required - works with command-line Swift only
+
+@MainActor
+var testsRun = 0
+@MainActor
+var testsPassed = 0
+@MainActor
+var testsFailed = 0
+@MainActor
+var lightweightUnitOnly = false
+
+func configureIsolatedTestEnvironment() -> URL {
+    let fm = FileManager.default
+    let root = fm.temporaryDirectory.appendingPathComponent(
+        "CaptainsLogTests-\(UUID().uuidString)",
+        isDirectory: true
+    )
+    let dataDir = root.appendingPathComponent("data", isDirectory: true)
+    try? fm.createDirectory(at: dataDir, withIntermediateDirectories: true)
+
+    let configURL = root.appendingPathComponent("config.json")
+    setenv("CAPTAINS_LOG_CONFIG_PATH", configURL.path, 1)
+    try? CaptainsLogConfig(dataDir: dataDir.path).save()
+
+    return root
+}
+
+@MainActor
+func test(_ name: String, _ block: () throws -> Void) {
+    testsRun += 1
+    do {
+        try block()
+        print("✅ \(name)")
+        testsPassed += 1
+    } catch {
+        print("❌ \(name): \(error)")
+        testsFailed += 1
+    }
+}
+
+@MainActor
+func testAsync(_ name: String, _ block: () async throws -> Void) async {
+    testsRun += 1
+
+    do {
+        try await block()
+        print("✅ \(name)")
+        testsPassed += 1
+    } catch {
+        print("❌ \(name): \(error)")
+        testsFailed += 1
+    }
+}
+
+func expect(_ condition: Bool, _ message: String = "Assertion failed") throws {
+    if !condition {
+        throw NSError(domain: "TestError", code: 1, userInfo: [NSLocalizedDescriptionKey: message])
+    }
+}
+
+final class LockedStringArray: @unchecked Sendable {
+    private let lock = NSLock()
+    private var values: [String] = []
+
+    func append(_ value: String) {
+        lock.withLock {
+            values.append(value)
+        }
+    }
+
+    func snapshot() -> [String] {
+        lock.withLock {
+            values
+        }
+    }
+}
+
+final class LockedValue<Value>: @unchecked Sendable {
+    private let lock = NSLock()
+    private var value: Value
+
+    init(_ value: Value) { self.value = value }
+
+    func get() -> Value { lock.withLock { value } }
+    func set(_ newValue: Value) { lock.withLock { value = newValue } }
+}
+
+private final class TestRecorderAudioEngine: RecorderAudioEngine, @unchecked Sendable {
+    let inputFormat = RecorderAudioFormat(sampleRate: 48_000, channelCount: 1)
+    let events: LockedStringArray
+    let started: @Sendable () -> Void
+    let installError: Error?
+    let startError: Error?
+    private let lock = NSLock()
+    private var tapHandler: (@Sendable (RecorderAudioBuffer) -> Void)?
+
+    init(
+        events: LockedStringArray,
+        installError: Error? = nil,
+        startError: Error? = nil,
+        started: @escaping @Sendable () -> Void = {}
+    ) {
+        self.events = events
+        self.installError = installError
+        self.startError = startError
+        self.started = started
+    }
+
+    func installTap(
+        bufferSize: UInt32,
+        handler: @escaping @Sendable (RecorderAudioBuffer) -> Void
+    ) throws {
+        events.append("install:\(bufferSize)")
+        if let installError { throw installError }
+        lock.withLock { tapHandler = handler }
+    }
+
+    func start() throws {
+        events.append("start")
+        started()
+        if let startError { throw startError }
+    }
+
+    func stop() { events.append("stop") }
+    func removeTap() { events.append("removeTap") }
+
+    func emit(_ samples: [Float]) {
+        let handler = lock.withLock { tapHandler }
+        handler?(RecorderAudioBuffer(
+            frameLength: samples.count,
+            rootMeanSquare: samples.withUnsafeBufferPointer {
+                AudioLevel.rootMeanSquare(of: $0)
+            }
+        ))
+    }
+}
+
+private final class TestRecorderAudioWriter: RecorderAudioWriter, @unchecked Sendable {
+    let events: LockedStringArray
+    let writeError: Error?
+
+    init(events: LockedStringArray, writeError: Error? = nil) {
+        self.events = events
+        self.writeError = writeError
+    }
+
+    func write(from buffer: RecorderAudioBuffer) throws {
+        events.append("write:\(buffer.frameLength)")
+        if let writeError { throw writeError }
+    }
+}
+
+actor FakeEmbeddingModel: TextEmbeddingModel {
+    nonisolated let identity = "fake-search-model-v1"
+    private(set) var embedCallCount = 0
+    private(set) var chunkCallCount = 0
+    private(set) var embeddedTexts: [String] = []
+
+    func embed(_ text: String, as kind: EmbeddingInputKind) -> [Float] {
+        embedCallCount += 1
+        embeddedTexts.append(text)
+        let lowered = text.lowercased()
+        let index: Int
+        if lowered.contains("cycling") || lowered.contains("bicycle") || lowered.contains("bike") {
+            index = 0
+        } else if lowered.contains("database") || lowered.contains("sqlite") || lowered.contains("storage") {
+            index = 1
+        } else if lowered.contains("holiday") || lowered.contains("vacation") || lowered.contains("travel") {
+            index = 2
+        } else {
+            index = 3
+        }
+        var vector = [Float](repeating: 0, count: E5EmbeddingModel.dimension)
+        vector[index] = 1
+        return vector
+    }
+
+    func chunks(for text: String, maxTokens: Int, overlap: Int) -> [String] {
+        chunkCallCount += 1
+        return text.isEmpty ? [] : [text]
+    }
+}
+
+actor LifetimeEmbeddingModel: TextEmbeddingModel {
+    nonisolated let identity = "lifetime-search-model"
+    private let lifecycle: LockedStringArray
+
+    init(lifecycle: LockedStringArray) {
+        self.lifecycle = lifecycle
+        lifecycle.append("created")
+    }
+
+    deinit { lifecycle.append("released") }
+
+    func embed(_ text: String, as kind: EmbeddingInputKind) -> [Float] {
+        var vector = [Float](repeating: 0, count: E5EmbeddingModel.dimension)
+        vector[0] = 1
+        return vector
+    }
+
+    func chunks(for text: String, maxTokens: Int, overlap: Int) -> [String] {
+        text.isEmpty ? [] : [text]
+    }
+}
+
+actor AsyncTestGate {
+    private var isOpen = false
+    private var waiters: [CheckedContinuation<Void, Never>] = []
+
+    func wait() async {
+        guard !isOpen else { return }
+        await withCheckedContinuation { continuation in
+            waiters.append(continuation)
+        }
+    }
+
+    func open() {
+        isOpen = true
+        let pending = waiters
+        waiters.removeAll()
+        for waiter in pending { waiter.resume() }
+    }
+}
+
+actor GatedEmbeddingModel: TextEmbeddingModel {
+    nonisolated let identity = "gated-search-model-v1"
+    private let gate: AsyncTestGate
+    private let queryLog: LockedStringArray
+
+    init(gate: AsyncTestGate, queryLog: LockedStringArray) {
+        self.gate = gate
+        self.queryLog = queryLog
+    }
+
+    func embed(_ text: String, as kind: EmbeddingInputKind) async throws -> [Float] {
+        if case .query = kind {
+            queryLog.append(text)
+            if text == "bike" { await gate.wait() }
+        }
+
+        let lowered = text.lowercased()
+        let index = lowered.contains("bicycle") || lowered.contains("bike") ? 0
+            : lowered.contains("sqlite") ? 1 : 2
+        var vector = [Float](repeating: 0, count: E5EmbeddingModel.dimension)
+        vector[index] = 1
+        return vector
+    }
+
+    func chunks(for text: String, maxTokens: Int, overlap: Int) -> [String] {
+        text.isEmpty ? [] : [text]
+    }
+}
+
+func makeCompletedSearchEntry(
+    root: URL,
+    stem: String,
+    slug: String,
+    category: Categorize.Category,
+    content: String
+) throws -> URL {
+    let transcript = root.appendingPathComponent(".pipeline/01-transcribed/\(stem).md")
+    let cleaned = root.appendingPathComponent(".pipeline/02-logs/\(stem).md")
+    let renameDir = root.appendingPathComponent(".pipeline/04-rename")
+    let enriched = root.appendingPathComponent("logs/\(category.folderName)/\(slug).md")
+    for directory in [
+        transcript.deletingLastPathComponent(), cleaned.deletingLastPathComponent(),
+        renameDir, enriched.deletingLastPathComponent(),
+    ] {
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    }
+    try "raw".write(to: transcript, atomically: true, encoding: .utf8)
+    try content.write(to: cleaned, atomically: true, encoding: .utf8)
+    try Categorize.writeManifest(.init(sourceStem: stem, category: category), dataDirURL: root)
+    try slug.write(
+        to: renameDir.appendingPathComponent("\(stem).slug.txt"),
+        atomically: true,
+        encoding: .utf8
+    )
+    try content.write(
+        to: renameDir.appendingPathComponent("\(slug).md"), atomically: true, encoding: .utf8)
+    try content.write(to: enriched, atomically: true, encoding: .utf8)
+    return enriched
+}
+
+@MainActor
+func runSearchCoverageTests() async {
+    func makeTemporaryDirectory() throws -> URL {
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent("CaptainsLogSearchTests-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
+        return url
+    }
+    await testAsync("Semantic search: indexes, ranks, updates, and removes completed entries") {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("SemanticSearchTests-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let cycling = try makeCompletedSearchEntry(
+            root: root,
+            stem: "2026-07-10-0800",
+            slug: "2026-07-10-riverside-cycling",
+            category: .personal,
+            content: "---\nsummary: A riverside cycling route.\n---\n\nI planned a long bicycle ride beside the river."
+        )
+        _ = try makeCompletedSearchEntry(
+            root: root,
+            stem: "2026-07-11-0900",
+            slug: "2026-07-11-sqlite-storage",
+            category: .sideProject,
+            content: "---\nsummary: Local database design.\n---\n\nSQLite stores the application index on this Mac."
+        )
+
+        let search = try SemanticSearch(dataDir: root.path, model: FakeEmbeddingModel())
+        let first = try await search.synchronize()
+        try expect(first.added == 2)
+        try expect(first.chunks == 2)
+
+        let bicycleResults = try await search.search("ideas for a bike ride", synchronizeFirst: false)
+        try expect(bicycleResults.first?.slug == "2026-07-10-riverside-cycling")
+        try expect(bicycleResults.first?.excerpt.contains("bicycle") == true)
+
+        let hybridResults = try await search.search(
+            "SQLite bike", limit: 2, synchronizeFirst: false)
+        try expect(hybridResults.count == 2)
+        try expect(hybridResults[0].slug == "2026-07-11-sqlite-storage")
+        try expect(hybridResults[0].matchKind == .keyword)
+        try expect(hybridResults[0].matchedTerms == ["sqlite"])
+        try expect(hybridResults[0].excerpt.contains("SQLite"))
+        try expect(hybridResults[1].slug == "2026-07-10-riverside-cycling")
+        try expect(hybridResults[1].matchKind == .semantic)
+
+        let unchanged = try await search.synchronize()
+        try expect(unchanged.unchanged == 2)
+
+        try "A holiday and vacation travel plan.".write(
+            to: cycling, atomically: true, encoding: .utf8)
+        let updated = try await search.synchronize()
+        try expect(updated.updated == 1)
+
+        try FileManager.default.removeItem(at: cycling)
+        let removed = try await search.synchronize()
+        try expect(removed.removed == 1)
+        let remaining = try await search.search("bike", synchronizeFirst: false)
+        try expect(remaining.count == 1)
+        try expect(remaining.first?.slug == "2026-07-11-sqlite-storage")
+    }
+
+    await testAsync("Category search: exclusions precede keyword limits and semantic nearest-neighbor candidates") {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("CategorySearch-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let fixture = try String(contentsOfFile: "eval/suites/categorize/input/side-project-voice-app.md", encoding: .utf8)
+        let research = Categorize.Category(rawValue: "research")!
+        let wanted = try makeCompletedSearchEntry(root: root, stem: "2026-07-12-0800",
+            slug: "2026-07-12-fixture-00", category: research, content: fixture)
+        // More excluded results than both the UI's 20 results and sqlite-vec's 40 candidate floor.
+        for index in 0..<45 {
+            _ = try makeCompletedSearchEntry(root: root, stem: "2026-07-11-\(String(format: "%04d", index))",
+                slug: "2026-07-11-fixture-\(String(format: "%02d", index))", category: .personal, content: fixture)
+        }
+        let search = try SemanticSearch(dataDir: root.path, model: FakeEmbeddingModel())
+        _ = try await search.synchronize()
+        let limited = try await search.search("voice", limit: 20, synchronizeFirst: false)
+        try expect(limited.count == 20)
+        try expect(!limited.contains { $0.path == wanted.path }, "Fixture must reproduce a selected category below the global cutoff")
+        let keyword = try await search.search("voice", limit: 1,
+            excludedCategoryFolders: ["personal"], synchronizeFirst: false)
+        try expect(keyword.count == 1 && keyword[0].path == wanted.path)
+        try expect(keyword[0].matchKind == .keyword)
+        // Make the selected entry semantically farther away than all 45 excluded entries.
+        let distantFixture = try String(contentsOfFile: "eval/suites/categorize/input/personal-weekend.md", encoding: .utf8)
+        try distantFixture.write(to: wanted, atomically: true, encoding: .utf8)
+        _ = try await search.synchronize()
+        let unfilteredSemantic = try await search.search("database", limit: 1, synchronizeFirst: false)
+        try expect(unfilteredSemantic.first?.path != wanted.path)
+        let semantic = try await search.search("database", limit: 1,
+            excludedCategoryFolders: ["personal"], synchronizeFirst: false)
+        try expect(semantic.count == 1 && semantic[0].path == wanted.path)
+        try expect(semantic[0].matchKind == .semantic)
+        let none = try await search.search("voice", limit: 20,
+            excludedCategoryFolders: ["personal", "research"], synchronizeFirst: false)
+        try expect(none.isEmpty)
+        let restored = try await search.search("voice", limit: 20, synchronizeFirst: false)
+        try expect(restored.count == 20)
+
+        let manager = SearchManager(debounceInterval: .zero) { dataDir, _ in
+            try SemanticSearch(dataDir: dataDir, model: FakeEmbeddingModel())
+        }
+        manager.updateQuery("voice", dataDir: root.path)
+        for _ in 0..<150 where manager.state != .ready { try await Task.sleep(for: .milliseconds(10)) }
+        try expect(manager.results.count == 20)
+        manager.updateCategoryFilter(["personal"], dataDir: root.path)
+        for _ in 0..<150 where manager.results.first?.path != wanted.path { try await Task.sleep(for: .milliseconds(10)) }
+        try expect(manager.query == "voice", "Changing category selection must rerun the current query")
+        try expect(manager.results.count == 1 && manager.results[0].path == wanted.path)
+        manager.updateCategoryFilter([], dataDir: root.path)
+        for _ in 0..<150 where manager.results.count != 20 { try await Task.sleep(for: .milliseconds(10)) }
+        try expect(manager.results.count == 20)
+    }
+
+    await testAsync("Hybrid search: keyword passage is centered and highlighted") {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("HybridPassageTests-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let preface = Array(repeating: "Background context without the target term.", count: 12)
+            .joined(separator: " ")
+        _ = try makeCompletedSearchEntry(
+            root: root,
+            stem: "2026-07-12-1000",
+            slug: "2026-07-12-late-keyword",
+            category: .professional,
+            content: "\(preface) The quantum decision is the passage that should be shown."
+        )
+        let search = try SemanticSearch(dataDir: root.path, model: FakeEmbeddingModel())
+        _ = try await search.synchronize()
+        let results = try await search.search("quantum", limit: 1, synchronizeFirst: false)
+        try expect(results.first?.matchKind == .keyword)
+        try expect(results.first?.matchedTerms == ["quantum"])
+        try expect(results.first?.excerpt.contains("quantum decision") == true)
+        try expect(results.first?.excerpt.hasPrefix("…") == true)
+        try expect((results.first?.excerpt.count ?? 1_000) < 290)
+    }
+
+    await testAsync("Semantic search: frontmatter remains searchable when the body is empty") {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("SemanticSearchFrontmatter-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        _ = try makeCompletedSearchEntry(
+            root: root,
+            stem: "2026-07-13-1000",
+            slug: "2026-07-13-passport-planning",
+            category: .personal,
+            content: "---\nsummary: Renew passport before the Lisbon trip.\ntags: travel\n---\n\n"
+        )
+
+        let search = try SemanticSearch(dataDir: root.path, model: FakeEmbeddingModel())
+        let indexed = try await search.synchronize()
+        let results = try await search.search("Lisbon passport", synchronizeFirst: false)
+
+        try expect(indexed.added == 1 && indexed.chunks == 1)
+        try expect(results.count == 1, "Frontmatter summary should be indexed as the fallback passage")
+        try expect(results[0].slug == "2026-07-13-passport-planning")
+        try expect(results[0].matchKind == .keyword)
+        try expect(results[0].excerpt.contains("Lisbon trip"))
+    }
+
+    await testAsync("Semantic search: blank and zero-limit queries return without inference") {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("SemanticSearchEmptyQuery-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let model = FakeEmbeddingModel()
+        let search = try SemanticSearch(dataDir: root.path, model: model)
+
+        let blankResults = try await search.search(" \n\t", synchronizeFirst: true)
+        let zeroLimitResults = try await search.search("bike", limit: 0, synchronizeFirst: true)
+        try expect(blankResults.isEmpty)
+        try expect(zeroLimitResults.isEmpty)
+        let embedCallCount = await model.embedCallCount
+        let chunkCallCount = await model.chunkCallCount
+        try expect(embedCallCount == 0, "Invalid queries must not embed text")
+        try expect(chunkCallCount == 0, "Invalid queries must not index documents")
+
+        try expect(E5EmbeddingModel.dimension == 384)
+        try expect(E5EmbeddingModel.maximumTokens == 511)
+        try expect(E5EmbeddingModel.expectedSHA256.count == 64)
+        try expect(E5EmbeddingModel.modelURL().lastPathComponent == E5EmbeddingModel.filename)
+    }
+
+    await testAsync("Semantic search: manager debounces, invalidates, retries, and cancels stale queries") {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("SearchManagerDebounce-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let model = FakeEmbeddingModel()
+        let factories = LockedStringArray()
+        let manager = SearchManager(debounceInterval: .milliseconds(400)) { dataDir, _ in
+            factories.append(dataDir)
+            return try SemanticSearch(dataDir: dataDir, model: model)
+        }
+        try expect(manager.state == .idle)
+        try expect(!manager.isActive)
+
+        manager.updateQuery("bike", dataDir: root.path)
+        try await Task.sleep(for: .milliseconds(20))
+        let initialFactories = factories.snapshot()
+        try expect(initialFactories.isEmpty, "Search must wait for the debounce interval")
+
+        manager.updateQuery("sqlite", dataDir: root.path)
+        try await Task.sleep(for: .milliseconds(20))
+        let supersededFactories = factories.snapshot()
+        try expect(supersededFactories.isEmpty, "Updating a query restarts the debounce interval")
+        try expect(manager.isActive)
+        try expect(manager.query == "sqlite")
+
+        for _ in 0..<100 where manager.state != .ready {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        try expect(manager.state == .ready, "Debounced query should complete")
+        try expect(factories.snapshot() == [root.path], "Only the latest query should create an engine")
+        var embeddedTexts = await model.embeddedTexts
+        try expect(embeddedTexts == ["sqlite"], "The superseded query must not run")
+
+        manager.invalidateIndex(dataDir: root.path)
+        for _ in 0..<100 where (await model.embedCallCount) < 2 {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        let invalidationCount = await model.embedCallCount
+        try expect(invalidationCount == 2, "Invalidating the index should rerun the current query")
+        try expect(factories.snapshot().count == 1, "Index invalidation should reuse the loaded engine")
+
+        manager.retry(dataDir: root.path)
+        for _ in 0..<100 where factories.snapshot().count < 2 {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        try expect(factories.snapshot().count == 2, "Retry should reload the search engine")
+        for _ in 0..<100 where (await model.embedCallCount) < 3 {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        let retryEmbedCount = await model.embedCallCount
+        try expect(retryEmbedCount == 3, "Retry should execute a search with the reloaded engine")
+        embeddedTexts = await model.embeddedTexts
+        try expect(embeddedTexts.count == 3, "Retry should run the current query again")
+
+        manager.updateQuery("", dataDir: root.path)
+        try expect(manager.state == .idle)
+        try expect(manager.results.isEmpty)
+        try expect(!manager.isActive)
+        try await Task.sleep(for: .milliseconds(450))
+        let finalEmbedCount = await model.embedCallCount
+        try expect(finalEmbedCount == 3, "Clearing the query should cancel pending work")
+    }
+
+    await testAsync("Search shutdown: release a cached model before returning and reject new queries") {
+        let root = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let lifecycle = LockedStringArray()
+        let factories = LockedValue(0)
+        let manager = SearchManager(debounceInterval: .zero) { dataDir, _ in
+            factories.set(factories.get() + 1)
+            return try SemanticSearch(dataDir: dataDir, model: LifetimeEmbeddingModel(lifecycle: lifecycle))
+        }
+        manager.updateQuery("side project", dataDir: root.path)
+        for _ in 0..<100 where manager.state != .ready { try await Task.sleep(for: .milliseconds(10)) }
+        try expect(manager.state == .ready)
+        try expect(lifecycle.snapshot() == ["created"], "A successful search retains the model while the UI is open")
+        await manager.stopForTermination()
+        try expect(lifecycle.snapshot() == ["created", "released"], "Cached native model ownership must end before shutdown returns")
+        manager.updateQuery("late query", dataDir: root.path)
+        manager.invalidateIndex(dataDir: root.path)
+        manager.retry(dataDir: root.path)
+        try await Task.sleep(for: .milliseconds(20))
+        try expect(factories.get() == 1, "Shutdown must not allow a new model load")
+        try expect(manager.query == "side project" && manager.state == .idle && manager.results.isEmpty)
+        await manager.stopForTermination()
+        try expect(lifecycle.snapshot() == ["created", "released"], "Repeated shutdown must not double release")
+    }
+
+    await testAsync("Search shutdown: drain an in-flight factory and suppress its late progress") {
+        let root = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let lifecycle = LockedStringArray()
+        let gate = AsyncTestGate()
+        let manager = SearchManager(debounceInterval: .zero) { dataDir, progress in
+            let search = try SemanticSearch(dataDir: dataDir, model: LifetimeEmbeddingModel(lifecycle: lifecycle))
+            await gate.wait() // A noncooperative native/model factory must still be awaited.
+            progress(Progress(totalUnitCount: 1))
+            return search
+        }
+        manager.updateQuery("side project", dataDir: root.path)
+        for _ in 0..<100 where lifecycle.snapshot().isEmpty { try await Task.sleep(for: .milliseconds(10)) }
+        try expect(lifecycle.snapshot() == ["created"])
+        let drained = LockedValue(false)
+        let shutdown = Task { await manager.stopForTermination(); drained.set(true) }
+        try await Task.sleep(for: .milliseconds(20))
+        try expect(!drained.get(), "Termination must not return while the model factory still owns resources")
+        await gate.open()
+        await shutdown.value
+        try await Task.sleep(for: .milliseconds(20))
+        try expect(lifecycle.snapshot() == ["created", "released"])
+        try expect(drained.get() && manager.state == .idle && manager.results.isEmpty,
+                   "Late progress must not restore preparing/indexing state after shutdown")
+    }
+
+    await testAsync("Search shutdown: drain superseded canceled model factories as well as the latest query") {
+        let root = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let lifecycle = LockedStringArray()
+        let factories = LockedValue(0)
+        let oldFactory = AsyncTestGate()
+        let oldProgress = LockedValue<(@Sendable (Progress) -> Void)?>(nil)
+        let manager = SearchManager(debounceInterval: .zero) { dataDir, progress in
+            factories.set(factories.get() + 1)
+            let first = factories.get() == 1
+            let search = try SemanticSearch(dataDir: dataDir, model: LifetimeEmbeddingModel(lifecycle: lifecycle))
+            if first {
+                oldProgress.set(progress)
+                await oldFactory.wait()
+            }
+            return search
+        }
+        manager.updateQuery("first query", dataDir: root.path)
+        for _ in 0..<100 where oldProgress.get() == nil { try await Task.sleep(for: .milliseconds(10)) }
+        manager.updateQuery("replacement query", dataDir: root.path)
+        for _ in 0..<100 where manager.state != .ready { try await Task.sleep(for: .milliseconds(10)) }
+        let replacementFinished = manager.state == .ready && factories.get() == 2
+        oldProgress.get()?(Progress(totalUnitCount: 1))
+        try await Task.sleep(for: .milliseconds(20))
+        let replacementStayedReady = manager.state == .ready
+        let drained = LockedValue(false)
+        let shutdown = Task { await manager.stopForTermination(); drained.set(true) }
+        try await Task.sleep(for: .milliseconds(20))
+        let waitedForOldFactory = !drained.get()
+        await oldFactory.open()
+        await shutdown.value
+        try expect(replacementFinished && replacementStayedReady, "Superseded factory progress must not overwrite completed results")
+        try expect(waitedForOldFactory, "A finished latest query must not conceal a canceled factory that still owns native resources")
+        try expect(lifecycle.snapshot().filter { $0 == "released" }.count == 2)
+        try expect(drained.get() && manager.state == .idle)
+    }
+
+    await testAsync("Search shutdown: cancel debounced work before loading native resources") {
+        let root = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let factories = LockedValue(0)
+        let manager = SearchManager(debounceInterval: .milliseconds(200)) { dataDir, _ in
+            factories.set(factories.get() + 1)
+            return try SemanticSearch(dataDir: dataDir, model: FakeEmbeddingModel())
+        }
+        manager.updateQuery("side project", dataDir: root.path)
+        await manager.stopForTermination()
+        try expect(factories.get() == 0 && manager.state == .idle)
+    }
+
+    await testAsync("Semantic search: in-flight canceled query cannot replace the newer result") {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("SearchManagerInFlightCancel-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        _ = try makeCompletedSearchEntry(
+            root: root,
+            stem: "2026-07-14-0800",
+            slug: "2026-07-14-riverside-cycling",
+            category: .personal,
+            content: "A long bicycle ride beside the river."
+        )
+        _ = try makeCompletedSearchEntry(
+            root: root,
+            stem: "2026-07-15-0900",
+            slug: "2026-07-15-sqlite-storage",
+            category: .sideProject,
+            content: "SQLite stores the local application index."
+        )
+
+        let gate = AsyncTestGate()
+        let queryLog = LockedStringArray()
+        let model = GatedEmbeddingModel(gate: gate, queryLog: queryLog)
+        let manager = SearchManager(debounceInterval: .milliseconds(250)) { dataDir, _ in
+            try SemanticSearch(dataDir: dataDir, model: model)
+        }
+
+        manager.updateQuery("bike", dataDir: root.path)
+        for _ in 0..<150 where !queryLog.snapshot().contains("bike") {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        try expect(queryLog.snapshot() == ["bike"], "The first query should be blocked inside embedding")
+
+        manager.updateQuery("", dataDir: root.path)
+        await gate.open()
+        try await Task.sleep(for: .milliseconds(80))
+        try expect(manager.state == .idle, "Canceled query progress must not revive a cleared search")
+        manager.updateQuery("sqlite", dataDir: root.path)
+        try expect(
+            manager.results.isEmpty,
+            "The completed but canceled query must not publish its stale results"
+        )
+        try expect(manager.query == "sqlite")
+
+        for _ in 0..<150 where manager.state != .ready {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        try expect(manager.state == .ready, "The newer query should finish after the canceled one")
+        try expect(manager.results.first?.slug == "2026-07-15-sqlite-storage")
+        try expect(queryLog.snapshot() == ["bike", "sqlite"])
+    }
+
+    test("Semantic search: visible result and error states retain the query and clear cleanly") {
+        let manager = SearchManager()
+        let result = SearchResult(
+            stem: "2025-01-15-1200",
+            slug: "2025-01-15-weekend-with-family",
+            displayName: "2025-01-15-weekend-with-family",
+            path: "/tmp/2025-01-15-weekend-with-family.md",
+            excerpt: "A relaxing weekend spent at the beach with the family.",
+            distance: 0,
+            matchKind: .keyword,
+            matchedTerms: ["family"]
+        )
+
+        manager.applyFixture(query: "time with family", results: [result])
+        try expect(manager.isActive)
+        try expect(manager.state == .ready)
+        try expect(manager.results.count == 1)
+        try expect(manager.results[0].displayName == result.displayName)
+
+        manager.applyFixture(query: "time with family", results: [], state: .error("Index unavailable"))
+        try expect(manager.state == .error("Index unavailable"))
+        try expect(manager.query == "time with family")
+
+        manager.updateQuery("", dataDir: "/tmp/captainslog-search-manager")
+        try expect(manager.state == .idle)
+        try expect(manager.results.isEmpty)
+        try expect(!manager.isActive)
+    }
+
+    if ProcessInfo.processInfo.environment["CAPTAINS_LOG_SEARCH_INTEGRATION"] == "1" {
+        await testAsync("Semantic search: real E5 model retrieves multilingual notes") {
+            let root = FileManager.default.temporaryDirectory
+                .appendingPathComponent("SemanticSearchIntegration-\(UUID().uuidString)", isDirectory: true)
+            defer { try? FileManager.default.removeItem(at: root) }
+            _ = try makeCompletedSearchEntry(
+                root: root,
+                stem: "2026-07-20-0800",
+                slug: "2026-07-20-fietsen-langs-de-rivier",
+                category: .personal,
+                content: "Ik wil zaterdag een lange fietstocht langs de rivier maken. Onderweg stop ik bij het oude veerhuis."
+            )
+            _ = try makeCompletedSearchEntry(
+                root: root,
+                stem: "2026-07-21-0900",
+                slug: "2026-07-21-local-search-storage",
+                category: .sideProject,
+                content: "The app will store vector embeddings in a local SQLite database. The index remains offline and disposable."
+            )
+            _ = try makeCompletedSearchEntry(
+                root: root,
+                stem: "2026-07-22-1000",
+                slug: "2026-07-22-sommerurlaub-in-italien",
+                category: .personal,
+                content: "Wir planen den Sommerurlaub in Italien und suchen eine ruhige Unterkunft in der Nähe der Berge."
+            )
+
+            let search = try await SemanticSearch.live(dataDir: root.path)
+            _ = try await search.synchronize(rebuild: true)
+            let cases = [
+                ("bike ride beside the water", "2026-07-20-fietsen-langs-de-rivier"),
+                ("lokale opslag voor de zoekindex", "2026-07-21-local-search-storage"),
+                ("planning a summer trip to Italy", "2026-07-22-sommerurlaub-in-italien"),
+            ]
+            for (query, expectedSlug) in cases {
+                let matches = try await search.search(query, limit: 3, synchronizeFirst: false)
+                try expect(matches.first?.slug == expectedSlug, "Unexpected top result for \(query)")
+            }
+        }
+    }
+}
+
+@MainActor
+func runAppWorkflowCoverageTests() async {
+    await testAsync("Transcribe CLI: fake inference uses its options and default output path") {
+        let fm = FileManager.default
+        let root = fm.temporaryDirectory
+            .appendingPathComponent("CaptainsLogTranscribeCommand-\(UUID().uuidString)", isDirectory: true)
+        defer { try? fm.removeItem(at: root) }
+        let audioDir = root.appendingPathComponent("audio", isDirectory: true)
+        try fm.createDirectory(at: audioDir, withIntermediateDirectories: true)
+
+        let repository = URL(fileURLWithPath: fm.currentDirectoryPath)
+        let audioFixture = repository.appendingPathComponent("eval/suites/transcribe/history/audio/durins-volk.m4a")
+        let audioInput = audioDir.appendingPathComponent("synthetic-recording.m4a")
+        try fm.copyItem(at: audioFixture, to: audioInput)
+        let transcriptFixture = repository.appendingPathComponent("eval/suites/transcribe/history/expected/durins-volk.md")
+        let expectedTranscript = try String(contentsOf: transcriptFixture, encoding: .utf8)
+        let expectedOutput = audioDir.appendingPathComponent("synthetic-recording.md")
+        let calls = LockedStringArray()
+
+        let transcript = try await Transcriber.runCommand(
+            inputPath: audioInput.path,
+            model: "synthetic-whisper-model",
+            language: "nl"
+        ) { path, model, language in
+            try expect(path == audioInput.path)
+            try expect(model == "synthetic-whisper-model")
+            try expect(language == "nl")
+            calls.append("transcribe")
+            return expectedTranscript
+        }
+
+        try expect(transcript == expectedTranscript)
+        try expect(calls.snapshot() == ["transcribe"])
+        try expect(try String(contentsOf: expectedOutput, encoding: .utf8) == expectedTranscript)
+    }
+
+    await testAsync("Transcribe CLI: failed fake inference preserves an existing output") {
+        let fm = FileManager.default
+        let root = fm.temporaryDirectory
+            .appendingPathComponent("CaptainsLogTranscribeFailure-\(UUID().uuidString)", isDirectory: true)
+        defer { try? fm.removeItem(at: root) }
+        try fm.createDirectory(at: root, withIntermediateDirectories: true)
+        let audioInput = root.appendingPathComponent("synthetic-recording.m4a")
+        try Data([0, 1, 2, 3]).write(to: audioInput)
+        let output = root.appendingPathComponent("transcript.md")
+        try "Previous transcript".write(to: output, atomically: true, encoding: .utf8)
+
+        do {
+            _ = try await Transcriber.runCommand(inputPath: audioInput.path, outputPath: output.path) { _, _, _ in
+                throw NSError(domain: "TranscribeCommandTests", code: 1, userInfo: [
+                    NSLocalizedDescriptionKey: "Synthetic transcription failure",
+                ])
+            }
+            try expect(false, "The injected transcription error should propagate")
+        } catch let error as NSError {
+            try expect(error.localizedDescription == "Synthetic transcription failure")
+        }
+
+        try expect(try String(contentsOf: output, encoding: .utf8) == "Previous transcript")
+    }
+
+    await testAsync("Transcribe CLI: output write failure is surfaced after inference") {
+        let fm = FileManager.default
+        let root = fm.temporaryDirectory
+            .appendingPathComponent("CaptainsLogTranscribeWriteFailure-\(UUID().uuidString)", isDirectory: true)
+        defer { try? fm.removeItem(at: root) }
+        try fm.createDirectory(at: root, withIntermediateDirectories: true)
+
+        let fixture = URL(fileURLWithPath: fm.currentDirectoryPath)
+            .appendingPathComponent("eval/suites/transcribe/history/audio/durins-volk.m4a")
+        let input = root.appendingPathComponent("synthetic-recording.m4a")
+        try fm.copyItem(at: fixture, to: input)
+        let originalAudio = try Data(contentsOf: input)
+        let outputDirectory = root.appendingPathComponent("transcript.md", isDirectory: true)
+        try fm.createDirectory(at: outputDirectory, withIntermediateDirectories: true)
+        let inferenceCalls = LockedStringArray()
+
+        do {
+            _ = try await Transcriber.runCommand(
+                inputPath: input.path,
+                outputPath: outputDirectory.path,
+                model: "synthetic-whisper-model",
+                language: "nl"
+            ) { audioPath, model, language in
+                try expect(audioPath == input.path)
+                try expect(model == "synthetic-whisper-model")
+                try expect(language == "nl")
+                inferenceCalls.append("transcribe")
+                return "Synthetic transcript."
+            }
+            try expect(false, "A directory at the transcript path should cause a write error")
+        } catch let error as CaptainsLogFileSystemError {
+            guard case .writeFailed(let path, _) = error else {
+                try expect(false, "Expected a writeFailed filesystem error")
+                return
+            }
+            try expect(path == outputDirectory.path)
+        }
+
+        try expect(inferenceCalls.snapshot() == ["transcribe"], "Inference should complete before the output write fails")
+        try expect(fm.fileExists(atPath: outputDirectory.path), "The pre-existing output directory must be preserved")
+        try expect(try Data(contentsOf: input) == originalAudio, "The eval audio input must remain unchanged")
+    }
+
+    await testAsync("Filename CLI: fake inference receives the date and returns its slug") {
+        let repository = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+        let input = repository.appendingPathComponent("eval/suites/filename/input/01_single_topic.md")
+        let expectedText = try String(contentsOf: input, encoding: .utf8)
+        let calls = LockedStringArray()
+        let expectedFilename = "2025-01-14-garden-planning.md"
+
+        let filename = try await Filename.runCommand(
+            inputPath: input.path,
+            date: "2025-01-14"
+        ) { logText, date, promptPath in
+            try expect(logText == expectedText)
+            try expect(date == "2025-01-14")
+            try expect(promptPath == Filename.defaultPromptPath)
+            calls.append("filename")
+            return expectedFilename
+        }
+
+        try expect(filename == expectedFilename)
+        try expect(calls.snapshot() == ["filename"])
+    }
+
+    await testAsync("Filename CLI: print-prompt renders the request without running inference") {
+        let input = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+            .appendingPathComponent("eval/suites/filename/input/01_single_topic.md")
+        let calls = LockedStringArray()
+
+        let result = try await Filename.runCommand(
+            inputPath: input.path,
+            date: "2025-01-14",
+            printPrompt: true
+        ) { _, _, _ in
+            calls.append("inference")
+            throw NSError(domain: "FilenameCommandTests", code: 1, userInfo: [
+                NSLocalizedDescriptionKey: "Prompt-only mode must not run inference",
+            ])
+        }
+
+        try expect(result == nil, "Prompt-only mode should not return a generated filename")
+        try expect(calls.snapshot().isEmpty, "Prompt-only mode must not invoke inference")
+    }
+
+    await testAsync("Filename CLI: fake inference errors propagate without returning a slug") {
+        let input = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+            .appendingPathComponent("eval/suites/filename/input/01_single_topic.md")
+        do {
+            _ = try await Filename.runCommand(inputPath: input.path, date: "2025-01-14") { _, _, _ in
+                throw NSError(domain: "FilenameCommandTests", code: 1, userInfo: [
+                    NSLocalizedDescriptionKey: "Synthetic filename failure",
+                ])
+            }
+            try expect(false, "The injected filename error should propagate")
+        } catch let error as NSError {
+            try expect(error.localizedDescription == "Synthetic filename failure")
+        }
+    }
+
+    await testAsync("Enrich CLI: fake inference receives metadata and writes the requested output") {
+        let fm = FileManager.default
+        let root = fm.temporaryDirectory
+            .appendingPathComponent("CaptainsLogEnrichCommand-\(UUID().uuidString)", isDirectory: true)
+        defer { try? fm.removeItem(at: root) }
+
+        let repository = URL(fileURLWithPath: fm.currentDirectoryPath)
+        let input = repository.appendingPathComponent("eval/suites/enrich/input/01_work_week.md")
+        let expectedText = try String(contentsOf: input, encoding: .utf8)
+        try fm.createDirectory(at: root, withIntermediateDirectories: true)
+        let output = root.appendingPathComponent("enriched.md")
+        let config = CaptainsLogConfig(dataDir: root.path)
+        let calls = LockedStringArray()
+        let expectedEnriched = "---\nsummary: synthetic\n---\n\n\(expectedText)"
+
+        let result = try await Enrich.runCommand(
+            inputPath: input.path,
+            outputPath: output.path,
+            date: "2025-01-14",
+            recordingTime: "08:30",
+            config: config
+        ) { logText, date, recordingTime, receivedConfig, promptPath in
+            try expect(logText == expectedText)
+            try expect(date == "2025-01-14")
+            try expect(recordingTime == "08:30")
+            try expect(receivedConfig.dataDir == root.path)
+            try expect(promptPath == Enrich.defaultPromptPath)
+            calls.append("enrich")
+            return expectedEnriched
+        }
+
+        try expect(result == expectedEnriched)
+        try expect(calls.snapshot() == ["enrich"])
+        try expect(try String(contentsOf: output, encoding: .utf8) == expectedEnriched)
+    }
+
+    await testAsync("Cleanup and Enrich CLI: omitted output paths write to the isolated working directory") {
+        let fm = FileManager.default
+        let originalDirectory = fm.currentDirectoryPath
+        let root = fm.temporaryDirectory
+            .appendingPathComponent("CaptainsLogDefaultCommandOutputs-\(UUID().uuidString)", isDirectory: true)
+        try fm.createDirectory(at: root, withIntermediateDirectories: true)
+        defer {
+            _ = fm.changeCurrentDirectoryPath(originalDirectory)
+            try? fm.removeItem(at: root)
+        }
+        try expect(fm.changeCurrentDirectoryPath(root.path), "The test should isolate relative CLI outputs")
+
+        let repository = URL(fileURLWithPath: originalDirectory)
+        let cleanupInput = repository.appendingPathComponent("eval/suites/cleanup/input/book-reference.md")
+        let cleanupOutput = root.appendingPathComponent(cleanupInput.lastPathComponent)
+        let cleanupPrompt = repository.appendingPathComponent(Cleanup.defaultPromptPath).path
+        let cleanupResult = try await Cleanup.runCommand(inputPath: cleanupInput.path, promptPath: cleanupPrompt) { _, _, _ in
+            return "synthetic cleaned transcript"
+        }
+        try expect(cleanupResult == "synthetic cleaned transcript")
+        try expect(
+            try String(contentsOf: cleanupOutput, encoding: .utf8) == "synthetic cleaned transcript",
+            "Cleanup should use the input basename when no output path is supplied"
+        )
+
+        let enrichInput = repository.appendingPathComponent("eval/suites/enrich/input/01_work_week.md")
+        let enrichOutput = root.appendingPathComponent(enrichInput.lastPathComponent)
+        let enrichPrompt = repository.appendingPathComponent(Enrich.defaultPromptPath).path
+        let enrichResult = try await Enrich.runCommand(
+            inputPath: enrichInput.path,
+            date: "2025-01-14",
+            promptPath: enrichPrompt
+        ) {
+            _, _, _, _, _ in "synthetic enriched entry"
+        }
+        try expect(enrichResult == "synthetic enriched entry")
+        try expect(
+            try String(contentsOf: enrichOutput, encoding: .utf8) == "synthetic enriched entry",
+            "Enrich should use the input basename when no output path is supplied"
+        )
+    }
+
+    await testAsync("Enrich CLI: failed fake inference preserves an existing output") {
+        let fm = FileManager.default
+        let root = fm.temporaryDirectory
+            .appendingPathComponent("CaptainsLogEnrichFailure-\(UUID().uuidString)", isDirectory: true)
+        defer { try? fm.removeItem(at: root) }
+
+        let input = URL(fileURLWithPath: fm.currentDirectoryPath)
+            .appendingPathComponent("eval/suites/enrich/input/01_work_week.md")
+        try fm.createDirectory(at: root, withIntermediateDirectories: true)
+        let output = root.appendingPathComponent("enriched.md")
+        try "Previous enriched text".write(to: output, atomically: true, encoding: .utf8)
+
+        do {
+            _ = try await Enrich.runCommand(
+                inputPath: input.path,
+                outputPath: output.path,
+                date: "2025-01-14",
+                recordingTime: "08:30",
+                config: CaptainsLogConfig(dataDir: root.path)
+            ) { _, _, _, _, _ in
+                throw NSError(domain: "EnrichCommandTests", code: 1, userInfo: [
+                    NSLocalizedDescriptionKey: "Synthetic enrichment failure",
+                ])
+            }
+            try expect(false, "The injected enrichment error should propagate")
+        } catch let error as NSError {
+            try expect(error.localizedDescription == "Synthetic enrichment failure")
+        }
+
+        try expect(try String(contentsOf: output, encoding: .utf8) == "Previous enriched text")
+    }
+
+    await testAsync("Enrich CLI: output write failure is surfaced after inference") {
+        let fm = FileManager.default
+        let root = fm.temporaryDirectory
+            .appendingPathComponent("CaptainsLogEnrichWriteFailure-\(UUID().uuidString)", isDirectory: true)
+        defer { try? fm.removeItem(at: root) }
+
+        let input = URL(fileURLWithPath: fm.currentDirectoryPath)
+            .appendingPathComponent("eval/suites/enrich/input/01_work_week.md")
+        let originalInput = try String(contentsOf: input, encoding: .utf8)
+        let outputDirectory = root.appendingPathComponent("enriched.md", isDirectory: true)
+        try fm.createDirectory(at: outputDirectory, withIntermediateDirectories: true)
+        let inferenceCalls = LockedStringArray()
+
+        do {
+            _ = try await Enrich.runCommand(
+                inputPath: input.path,
+                outputPath: outputDirectory.path,
+                date: "2025-01-14",
+                recordingTime: "08:30",
+                config: CaptainsLogConfig(dataDir: root.path)
+            ) { logText, date, recordingTime, _, _ in
+                try expect(logText == originalInput)
+                try expect(date == "2025-01-14")
+                try expect(recordingTime == "08:30")
+                inferenceCalls.append("enrich")
+                return "Synthetic enriched output."
+            }
+            try expect(false, "A directory at the output path should cause a write error")
+        } catch let error as CaptainsLogFileSystemError {
+            guard case .writeFailed(let path, _) = error else {
+                try expect(false, "Expected a writeFailed filesystem error")
+                return
+            }
+            try expect(path == outputDirectory.path)
+        }
+
+        try expect(inferenceCalls.snapshot() == ["enrich"], "Inference should complete before the output write fails")
+        try expect(fm.fileExists(atPath: outputDirectory.path), "The pre-existing output directory must be preserved")
+        try expect(try String(contentsOf: input, encoding: .utf8) == originalInput, "The eval input must remain unchanged")
+    }
+
+    await testAsync("Cleanup CLI: fake inference writes the requested output") {
+        let fm = FileManager.default
+        let root = fm.temporaryDirectory
+            .appendingPathComponent("CaptainsLogCleanupCommand-\(UUID().uuidString)", isDirectory: true)
+        defer { try? fm.removeItem(at: root) }
+
+        let repository = URL(fileURLWithPath: fm.currentDirectoryPath)
+        let input = repository.appendingPathComponent("eval/suites/cleanup/input/book-reference.md")
+        let expectedTranscript = try String(contentsOf: input, encoding: .utf8)
+        try fm.createDirectory(at: root, withIntermediateDirectories: true)
+        let output = root.appendingPathComponent("cleaned.md")
+        let config = CaptainsLogConfig(dataDir: root.path)
+        let calls = LockedStringArray()
+        let expectedCleanup = "Cleaned synthetic transcript."
+
+        let result = try await Cleanup.runCommand(
+            inputPath: input.path,
+            outputPath: output.path,
+            config: config
+        ) { transcript, receivedConfig, promptPath in
+            try expect(transcript == expectedTranscript)
+            try expect(receivedConfig.dataDir == root.path)
+            try expect(promptPath == Cleanup.defaultPromptPath)
+            calls.append("cleanup")
+            return expectedCleanup
+        }
+
+        try expect(result == expectedCleanup)
+        try expect(calls.snapshot() == ["cleanup"])
+        try expect(try String(contentsOf: output, encoding: .utf8) == expectedCleanup)
+    }
+
+    await testAsync("Cleanup CLI: failed fake inference preserves an existing output") {
+        let fm = FileManager.default
+        let root = fm.temporaryDirectory
+            .appendingPathComponent("CaptainsLogCleanupFailure-\(UUID().uuidString)", isDirectory: true)
+        defer { try? fm.removeItem(at: root) }
+
+        let input = URL(fileURLWithPath: fm.currentDirectoryPath)
+            .appendingPathComponent("eval/suites/cleanup/input/book-reference.md")
+        let output = root.appendingPathComponent("cleaned.md")
+        try fm.createDirectory(at: root, withIntermediateDirectories: true)
+        try "Previous cleaned text".write(to: output, atomically: true, encoding: .utf8)
+
+        do {
+            _ = try await Cleanup.runCommand(
+                inputPath: input.path,
+                outputPath: output.path,
+                config: CaptainsLogConfig(dataDir: root.path)
+            ) { _, _, _ in
+                throw NSError(domain: "CleanupCommandTests", code: 1, userInfo: [
+                    NSLocalizedDescriptionKey: "Synthetic cleanup failure",
+                ])
+            }
+            try expect(false, "The injected cleanup error should propagate")
+        } catch let error as NSError {
+            try expect(error.localizedDescription == "Synthetic cleanup failure")
+        }
+
+        try expect(try String(contentsOf: output, encoding: .utf8) == "Previous cleaned text")
+    }
+
+    await testAsync("Cleanup CLI: output write failure is surfaced after inference") {
+        let fm = FileManager.default
+        let root = fm.temporaryDirectory
+            .appendingPathComponent("CaptainsLogCleanupWriteFailure-\(UUID().uuidString)", isDirectory: true)
+        defer { try? fm.removeItem(at: root) }
+
+        let input = URL(fileURLWithPath: fm.currentDirectoryPath)
+            .appendingPathComponent("eval/suites/cleanup/input/book-reference.md")
+        let originalInput = try String(contentsOf: input, encoding: .utf8)
+        let outputDirectory = root.appendingPathComponent("cleaned.md", isDirectory: true)
+        try fm.createDirectory(at: outputDirectory, withIntermediateDirectories: true)
+        let inferenceCalls = LockedStringArray()
+
+        do {
+            _ = try await Cleanup.runCommand(
+                inputPath: input.path,
+                outputPath: outputDirectory.path,
+                config: CaptainsLogConfig(dataDir: root.path)
+            ) { transcript, _, _ in
+                try expect(transcript == originalInput)
+                inferenceCalls.append("cleanup")
+                return "Cleaned synthetic transcript."
+            }
+            try expect(false, "A directory at the output path should cause a write error")
+        } catch let error as CaptainsLogFileSystemError {
+            guard case .writeFailed(let path, _) = error else {
+                try expect(false, "Expected a writeFailed filesystem error")
+                return
+            }
+            try expect(path == outputDirectory.path)
+        }
+
+        try expect(inferenceCalls.snapshot() == ["cleanup"], "Inference should complete before the output write fails")
+        try expect(fm.fileExists(atPath: outputDirectory.path), "The pre-existing output directory must be preserved")
+        try expect(try String(contentsOf: input, encoding: .utf8) == originalInput, "The eval input must remain unchanged")
+    }
+
+    await testAsync("Categorize CLI: fake inference writes its manifest and diagnostics") {
+        let fm = FileManager.default
+        let root = fm.temporaryDirectory
+            .appendingPathComponent("CaptainsLogCategorizeCommand-\(UUID().uuidString)", isDirectory: true)
+        defer { try? fm.removeItem(at: root) }
+
+        let repository = URL(fileURLWithPath: fm.currentDirectoryPath)
+        let input = repository.appendingPathComponent("eval/suites/categorize/input/side-project-voice-app.md")
+        let expectedText = try String(contentsOf: input, encoding: .utf8)
+        let output = root.appendingPathComponent("nested/custom-manifest.json")
+        let config = CaptainsLogConfig(dataDir: root.path)
+        let calls = LockedStringArray()
+
+        let category = try await Categorize.runCommand(
+            inputPath: input.path,
+            outputPath: output.path,
+            config: config
+        ) { text, receivedConfig, promptPath, diagnostic in
+            try expect(text == expectedText, "The categorize command should pass the fixture text to its operation")
+            try expect(receivedConfig.dataDir == root.path, "The command should pass through its configured data folder")
+            try expect(promptPath == Categorize.defaultPromptPath)
+            calls.append("inference")
+            await diagnostic("Synthetic category operation completed")
+            return .sideProject
+        }
+
+        try expect(category == .sideProject)
+        try expect(calls.snapshot() == ["inference"], "The injected operation should run exactly once")
+        let manifest = try JSONDecoder().decode(Categorize.Manifest.self, from: Data(contentsOf: output))
+        try expect(manifest.sourceStem == "side-project-voice-app")
+        try expect(manifest.category == .sideProject)
+        let diagnosticText = try String(contentsOfFile: output.path + ".log", encoding: .utf8)
+        try expect(diagnosticText.contains("Synthetic category operation completed"))
+    }
+
+    await testAsync("Categorize CLI: fake inference failure preserves diagnostics without a manifest") {
+        let fm = FileManager.default
+        let root = fm.temporaryDirectory
+            .appendingPathComponent("CaptainsLogCategorizeFailure-\(UUID().uuidString)", isDirectory: true)
+        defer { try? fm.removeItem(at: root) }
+
+        let input = URL(fileURLWithPath: fm.currentDirectoryPath)
+            .appendingPathComponent("eval/suites/categorize/input/side-project-voice-app.md")
+        let output = root.appendingPathComponent("nested/category.json")
+        do {
+            _ = try await Categorize.runCommand(
+                inputPath: input.path,
+                outputPath: output.path,
+                config: CaptainsLogConfig(dataDir: root.path)
+            ) { _, _, _, diagnostic in
+                await diagnostic("Synthetic category inference failed")
+                throw NSError(domain: "CategorizeCommandTests", code: 1, userInfo: [
+                    NSLocalizedDescriptionKey: "Synthetic inference failure",
+                ])
+            }
+            try expect(false, "The injected inference error should propagate")
+        } catch let error as NSError {
+            try expect(error.localizedDescription == "Synthetic inference failure")
+        }
+
+        try expect(!fm.fileExists(atPath: output.path), "A failed command must not leave a category manifest")
+        let diagnosticText = try String(contentsOfFile: output.path + ".log", encoding: .utf8)
+        try expect(diagnosticText.contains("Synthetic category inference failed"))
+    }
+
+    await testAsync("Categorize CLI: manifest write failure preserves diagnostics and the existing directory") {
+        let fm = FileManager.default
+        let root = fm.temporaryDirectory
+            .appendingPathComponent("CaptainsLogCategorizeWriteFailure-\(UUID().uuidString)", isDirectory: true)
+        defer { try? fm.removeItem(at: root) }
+
+        let input = URL(fileURLWithPath: fm.currentDirectoryPath)
+            .appendingPathComponent("eval/suites/categorize/input/side-project-voice-app.md")
+        let originalInput = try String(contentsOf: input, encoding: .utf8)
+        let outputDirectory = root.appendingPathComponent("nested/category.json", isDirectory: true)
+        try fm.createDirectory(at: outputDirectory, withIntermediateDirectories: true)
+        let calls = LockedStringArray()
+
+        do {
+            _ = try await Categorize.runCommand(
+                inputPath: input.path,
+                outputPath: outputDirectory.path,
+                config: CaptainsLogConfig(dataDir: root.path)
+            ) { text, _, _, diagnostic in
+                try expect(text == originalInput)
+                calls.append("categorize")
+                await diagnostic("Synthetic category completed before manifest write")
+                return .sideProject
+            }
+            try expect(false, "A directory at the manifest path should cause a write error")
+        } catch let error as CaptainsLogFileSystemError {
+            guard case .writeFailed(let path, _) = error else {
+                try expect(false, "Expected a writeFailed filesystem error")
+                return
+            }
+            try expect(path == outputDirectory.path)
+        }
+
+        try expect(calls.snapshot() == ["categorize"], "Inference should complete before the manifest write fails")
+        try expect(fm.fileExists(atPath: outputDirectory.path), "The pre-existing manifest directory must be preserved")
+        let diagnosticText = try String(contentsOfFile: outputDirectory.path + ".log", encoding: .utf8)
+        try expect(diagnosticText.contains("Synthetic category completed before manifest write"))
+        try expect(try String(contentsOf: input, encoding: .utf8) == originalInput, "The eval input must remain unchanged")
+    }
+
+    test("AppState: loads completed and pending eval entries for the Logs screen") {
+        let fm = FileManager.default
+        let root = fm.temporaryDirectory
+            .appendingPathComponent("CaptainsLogAppWorkflow-\(UUID().uuidString)", isDirectory: true)
+        defer { try? fm.removeItem(at: root) }
+
+        let repository = URL(fileURLWithPath: fm.currentDirectoryPath)
+        let completedFixture = repository.appendingPathComponent("eval/suites/enrich/expected/02_personal_only.md")
+        let pendingFixture = repository.appendingPathComponent("eval/suites/transcribe/history/expected/durins-volk.md")
+        try expect(fm.fileExists(atPath: completedFixture.path), "Missing repository enrichment fixture")
+        try expect(fm.fileExists(atPath: pendingFixture.path), "Missing repository transcription fixture")
+
+        let completedStem = "2025-01-15-1200"
+        let completedSlug = "2025-01-15-weekend-with-family"
+        let completedURL = root.appendingPathComponent("logs/personal/\(completedSlug).md")
+        try fm.createDirectory(at: completedURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try fm.copyItem(at: completedFixture, to: completedURL)
+        let markerDir = root.appendingPathComponent(".pipeline/04-rename")
+        try fm.createDirectory(at: markerDir, withIntermediateDirectories: true)
+        try fm.copyItem(at: completedURL, to: markerDir.appendingPathComponent("\(completedSlug).md"))
+        let cleanedDir = root.appendingPathComponent(".pipeline/02-logs")
+        try fm.createDirectory(at: cleanedDir, withIntermediateDirectories: true)
+        try fm.copyItem(at: completedURL, to: cleanedDir.appendingPathComponent("\(completedStem).md"))
+        let completedTranscript = root.appendingPathComponent(".pipeline/01-transcribed/\(completedStem).md")
+        try fm.createDirectory(at: completedTranscript.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try fm.copyItem(at: pendingFixture, to: completedTranscript)
+        try completedSlug.write(
+            to: markerDir.appendingPathComponent("\(completedStem).slug.txt"),
+            atomically: true,
+            encoding: .utf8
+        )
+        try Categorize.writeManifest(
+            .init(sourceStem: completedStem, category: .personal), dataDirURL: root
+        )
+
+        let pendingStem = "2025-01-14-0830"
+        let transcriptURL = root.appendingPathComponent(".pipeline/01-transcribed/\(pendingStem).md")
+        try fm.createDirectory(at: transcriptURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try fm.copyItem(at: pendingFixture, to: transcriptURL)
+
+        let config = ConfigManager()
+        config.dataDir = root.path
+        let coordinator = ProcessingCoordinator()
+        let appState = AppState(config: config, processing: coordinator)
+        appState.loadEntries()
+
+        try expect(appState.allEntries.count == 2, "Expected one completed and one pending log")
+        try expect(appState.pendingEntries.count == 1, "Expected transcript-only log to remain pending")
+        guard let completed = appState.allEntries.first(where: { $0.stem == completedStem }),
+              let pending = appState.pendingEntries.first else {
+            throw NSError(domain: "TestError", code: 1, userInfo: [
+                NSLocalizedDescriptionKey: "Expected completed and pending log entries",
+            ])
+        }
+        try expect(completed.stage == .done, "Completed eval note should be marked done")
+        try expect(completed.slug == completedSlug, "Completed note should retain its display slug")
+        try expect(completed.path == completedURL.path, "Completed note should point at the enriched Markdown")
+        try expect(completed.summary?.contains("relaxing weekend") == true, "Completed note summary should load")
+        try expect(completed.tags.contains("family"), "Completed note tags should load")
+        try expect(completed.projects.isEmpty, "Completed note without projects should show none")
+        try expect(completed.recordingTime == "12:00", "Frontmatter recording time should be shown")
+        try expect(try completed.readableBody().isEmpty, "Entry without a body should present its empty-content state")
+
+        try expect(pending.stem == pendingStem, "Pending note should retain its recording stem")
+        try expect(pending.stage == .cleaning, "Transcript-only note should offer cleanup as next step")
+        try expect(pending.slug == nil, "Un-named note should not have a slug")
+        try expect(pending.recordingTime == "08:30", "Pending note time should fall back to timestamp")
+        try expect(pending.path == transcriptURL.path, "Pending note should open its latest transcript")
+
+        coordinator.recordPreparationFailure(
+            NSError(domain: "SyntheticPipeline", code: 1, userInfo: [
+                NSLocalizedDescriptionKey: "Synthetic retryable failure",
+            ]),
+            for: pendingStem
+        )
+        let displayedPending = appState.allEntries.first(where: { $0.stem == pendingStem })
+        try expect(displayedPending?.processingError == "Synthetic retryable failure", "Pending row should show a retryable processing error")
+        try expect(displayedPending?.isActive == false)
+        try expect(appState.pendingEntries.count == 1)
+    }
+
+    test("AppState: deleting a completed eval log moves every artifact and removes its row") {
+        let fm = FileManager.default
+        let root = fm.temporaryDirectory
+            .appendingPathComponent("CaptainsLogDeleteWorkflow-\(UUID().uuidString)", isDirectory: true)
+        defer { try? fm.removeItem(at: root) }
+        let repository = URL(fileURLWithPath: fm.currentDirectoryPath)
+        let completedFixture = repository.appendingPathComponent("eval/suites/enrich/expected/02_personal_only.md")
+        let transcriptFixture = repository.appendingPathComponent("eval/suites/transcribe/history/expected/durins-volk.md")
+        let audioFixture = repository.appendingPathComponent("eval/suites/transcribe/history/audio/durins-volk.m4a")
+        let stem = "2025-01-15-1200"
+        let slug = "2025-01-15-weekend-with-family"
+
+        let enriched = root.appendingPathComponent("logs/personal/\(slug).md")
+        let renamedDir = root.appendingPathComponent(".pipeline/04-rename")
+        let cleaned = root.appendingPathComponent(".pipeline/02-logs/\(stem).md")
+        let transcript = root.appendingPathComponent(".pipeline/01-transcribed/\(stem).md")
+        let audio = root.appendingPathComponent("audio/\(stem).m4a")
+        try fm.createDirectory(at: enriched.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try fm.createDirectory(at: renamedDir, withIntermediateDirectories: true)
+        try fm.createDirectory(at: cleaned.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try fm.createDirectory(at: transcript.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try fm.createDirectory(at: audio.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try fm.copyItem(at: completedFixture, to: enriched)
+        try fm.copyItem(at: completedFixture, to: renamedDir.appendingPathComponent("\(slug).md"))
+        try fm.copyItem(at: completedFixture, to: cleaned)
+        try fm.copyItem(at: transcriptFixture, to: transcript)
+        try fm.copyItem(at: audioFixture, to: audio)
+        try slug.write(
+            to: renamedDir.appendingPathComponent("\(stem).slug.txt"),
+            atomically: true,
+            encoding: .utf8
+        )
+        try Categorize.writeManifest(.init(sourceStem: stem, category: .personal), dataDirURL: root)
+
+        let moved = LockedStringArray()
+        let config = ConfigManager()
+        config.dataDir = root.path
+        let appState = AppState(config: config, moveToTrash: { url in
+            moved.append(url.path)
+            if fm.fileExists(atPath: url.path) { try? fm.removeItem(at: url) }
+        })
+        appState.loadEntries()
+        try expect(appState.allEntries.count == 1, "Completed log should appear before deletion")
+        try expect(appState.allEntries[0].stage == .done, "Fixture entry should be complete before deletion")
+
+        let candidates = Pipeline.deletionCandidatePaths(stem: stem, slug: slug, dataDir: root.path)
+        appState.deleteEntry(stem: stem, slug: slug)
+
+        try expect(moved.snapshot().sorted() == candidates.sorted(), "Delete should send every pipeline artifact to Trash")
+        try expect(appState.allEntries.isEmpty, "Deleted entry should disappear from the Logs list")
+        try expect(candidates.allSatisfy { !fm.fileExists(atPath: $0) }, "Delete should remove all fixture artifacts from the data directory")
+    }
+
+    test("AppState: cannot delete an entry while its pipeline is processing it") {
+        let fm = FileManager.default
+        let root = fm.temporaryDirectory
+            .appendingPathComponent("CaptainsLogDeleteActive-\(UUID().uuidString)", isDirectory: true)
+        defer { try? fm.removeItem(at: root) }
+        let stem = "2025-01-14-0830"
+        let transcript = root.appendingPathComponent(".pipeline/01-transcribed/\(stem).md")
+        let fixture = URL(fileURLWithPath: fm.currentDirectoryPath)
+            .appendingPathComponent("eval/suites/transcribe/history/expected/durins-volk.md")
+        try fm.createDirectory(at: transcript.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try fm.copyItem(at: fixture, to: transcript)
+
+        let moved = LockedStringArray()
+        let config = ConfigManager()
+        config.dataDir = root.path
+        let processing = ProcessingCoordinator()
+        processing.processingStem = stem
+        let appState = AppState(config: config, processing: processing, moveToTrash: { moved.append($0.path) })
+        appState.loadEntries()
+
+        appState.deleteEntry(stem: stem, slug: nil)
+
+        try expect(moved.snapshot().isEmpty, "Active entry artifacts must not be sent to Trash")
+        try expect(fm.fileExists(atPath: transcript.path), "Active transcript must remain on disk")
+        try expect(appState.allEntries.map(\.stem) == [stem], "Active entry must remain visible")
+    }
+
+    test("AppState: a failed Trash move leaves the fixture entry visible") {
+        let fm = FileManager.default
+        let root = fm.temporaryDirectory
+            .appendingPathComponent("CaptainsLogDeleteFailure-\(UUID().uuidString)", isDirectory: true)
+        defer { try? fm.removeItem(at: root) }
+        let stem = "2025-01-14-0830"
+        let transcript = root.appendingPathComponent(".pipeline/01-transcribed/\(stem).md")
+        let fixture = URL(fileURLWithPath: fm.currentDirectoryPath)
+            .appendingPathComponent("eval/suites/transcribe/history/expected/durins-volk.md")
+        try fm.createDirectory(at: transcript.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try fm.copyItem(at: fixture, to: transcript)
+
+        let attempted = LockedStringArray()
+        let config = ConfigManager()
+        config.dataDir = root.path
+        let appState = AppState(config: config, moveToTrash: { attempted.append($0.path) })
+        appState.loadEntries()
+        try expect(appState.allEntries.map(\.stem) == [stem], "Fixture entry should be listed before deletion")
+
+        appState.deleteEntry(stem: stem, slug: nil)
+
+        try expect(attempted.snapshot().contains(transcript.path), "Deletion should attempt to move the transcript")
+        try expect(fm.fileExists(atPath: transcript.path), "Fake failed move should preserve the source artifact")
+        try expect(appState.allEntries.map(\.stem) == [stem], "Entry should remain visible when its artifact remains")
+    }
+
+    await testAsync("AppState: failed resume keeps the log pending and reports its stage") {
+        let fm = FileManager.default
+        let root = fm.temporaryDirectory
+            .appendingPathComponent("CaptainsLogPreparationFailure-\(UUID().uuidString)", isDirectory: true)
+        defer { try? fm.removeItem(at: root) }
+        let stem = "2025-01-14-0830"
+        let transcript = root.appendingPathComponent(".pipeline/01-transcribed/\(stem).md")
+        let fixture = URL(fileURLWithPath: fm.currentDirectoryPath)
+            .appendingPathComponent("eval/suites/transcribe/history/expected/durins-volk.md")
+        try fm.createDirectory(at: transcript.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try fm.copyItem(at: fixture, to: transcript)
+
+        let config = ConfigManager()
+        config.dataDir = root.path
+        let processing = ProcessingCoordinator { _, _, _, _ in
+            throw NSError(domain: "SyntheticPipeline", code: 1, userInfo: [
+                NSLocalizedDescriptionKey: "cleanup prompt unavailable",
+            ])
+        }
+        let appState = AppState(config: config, processing: processing)
+        appState.loadEntries()
+        appState.resumeProcessing(stem: stem, fromStage: .cleaning)
+        for _ in 0..<1_000 where appState.errorMessage == nil {
+            try await Task.sleep(for: .milliseconds(1))
+        }
+
+        try expect(appState.allEntries.count == 1)
+        try expect(appState.allEntries[0].stage == .cleaning, "Failed preparation should retain cleanup as the next stage")
+        try expect(appState.allEntries[0].processingError?.contains("prompt") == true, "A missing cleanup prompt should be attached to the pending row")
+        try expect(appState.errorMessage?.contains("prompt") == true)
+        try expect(appState.statusMessage == "Processing failed. Retry available.")
+        try expect(fm.fileExists(atPath: transcript.path), "A failed resume must preserve its source transcript")
+    }
+
+    await testAsync("AppState: resumes a pending log through injected pipeline operations") {
+        let fm = FileManager.default
+        let root = fm.temporaryDirectory
+            .appendingPathComponent("CaptainsLogResumeWorkflow-\(UUID().uuidString)", isDirectory: true)
+        defer { try? fm.removeItem(at: root) }
+        let repository = URL(fileURLWithPath: fm.currentDirectoryPath)
+        let fixture = repository.appendingPathComponent("eval/suites/transcribe/history/expected/durins-volk.md")
+        let stem = "2025-01-14-0830"
+        let transcriptURL = root.appendingPathComponent(".pipeline/01-transcribed/\(stem).md")
+        try fm.createDirectory(at: transcriptURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try fm.copyItem(at: fixture, to: transcriptURL)
+
+        let calls = LockedStringArray()
+        let operations = Pipeline.Operations(
+            transcribe: { _, _ in calls.append("transcribe"); return "unexpected" },
+            cleanup: { transcript, _ in
+                calls.append("cleanup")
+                try await Task.sleep(for: .milliseconds(80))
+                return "A synthetic completed entry derived from the repository fixture."
+            },
+            categorize: { _, _, _ in calls.append("categorize"); return .personal },
+            filename: { _, date in calls.append("filename"); return "\(date)-fixture-resume.md" },
+            enrich: { cleaned, date, time, _ in
+                calls.append("enrich")
+                return """
+                ---
+                date: "\(date)"
+                recording_time: "\(time)"
+                summary: "Fixture resumed"
+                ---
+
+                \(cleaned)
+                """
+            }
+        )
+        let coordinator = ProcessingCoordinator { stem, dataDir, fromStage, progress in
+            try await Pipeline.resume(
+                stem: stem,
+                dataDir: dataDir,
+                fromStage: fromStage,
+                operations: operations,
+                progress: progress
+            )
+        }
+        let config = ConfigManager()
+        config.dataDir = root.path
+        let appState = AppState(config: config, processing: coordinator)
+        appState.loadEntries()
+        try expect(appState.pendingEntries.count == 1)
+
+        appState.resumeProcessing(stem: stem)
+        for _ in 0..<100 where coordinator.processingStem != stem || coordinator.stage != .cleaning {
+            await Task.yield()
+        }
+        try expect(coordinator.processingStem == stem, "Resume action should set the active stem")
+        try expect(coordinator.stage == .cleaning, "Resume action should expose the active pipeline stage")
+        try expect(appState.allEntries.first?.isActive == true, "Logs row should show the active state")
+
+        for _ in 0..<200 where coordinator.processingStem != nil {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        try expect(coordinator.processingStem == nil, "Completed resume should clear the active stem")
+        try expect(coordinator.stage == .done, "Completed resume should report done")
+        try expect(appState.allEntries.count == 1, "Resume should preserve one log entry")
+        // Coordinator completion schedules a separate asynchronous entries reload.
+        for _ in 0..<200 where appState.allEntries.first?.stage != .done {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        try expect(appState.allEntries[0].stage == .done, "Enriched eval should no longer be pending; stage is \(appState.allEntries[0].stage.rawValue)")
+        try expect(appState.allEntries[0].displayName == "2025-01-14-fixture-resume", "Logs row should adopt the generated display name")
+        try expect(appState.pendingEntries.isEmpty, "Completed resume should clear the queue")
+        try expect(calls.snapshot() == ["cleanup", "categorize", "filename", "enrich"], "Resume should run each remaining local stage once")
+    }
+}
+
+@MainActor
+func runCoreCoverageTests() {
+    func makeTemporaryDirectory() throws -> URL {
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent("CaptainsLogCoreTests-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
+        return url
+    }
+
+    test("Core coverage: config round-trips context files") {
+        let root = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let config = CaptainsLogConfig(dataDir: root.path)
+        try config.writePersonalInfo("Works on local-first software.")
+        try config.writeCorrections("Pikard -> Picard")
+        try expect(config.readPersonalInfo() == "Works on local-first software.")
+        try expect(config.readCorrections() == "Pikard -> Picard")
+        try expect(config.contextDir().path == root.appendingPathComponent("context").path)
+    }
+
+    test("Core coverage: CLI data directory follows explicit-config-environment-default precedence") {
+        try expect(
+            CaptainsLogConfig.resolveDataDir(
+                explicit: "/explicit", configured: "/configured", environment: "/environment"
+            ) == "/explicit"
+        )
+        try expect(
+            CaptainsLogConfig.resolveDataDir(
+                explicit: nil, configured: "/configured", environment: "/environment"
+            ) == "/configured"
+        )
+        try expect(
+            CaptainsLogConfig.resolveDataDir(
+                explicit: nil, configured: nil, environment: "/environment"
+            ) == "/environment"
+        )
+        try expect(
+            CaptainsLogConfig.resolveDataDir(explicit: nil, configured: nil, environment: nil)
+                == "processed"
+        )
+    }
+
+    test("Core coverage: prompt loader replaces tokens") {
+        let root = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let promptURL = root.appendingPathComponent("prompt.md")
+        try "Date: {date}; context: {context}".write(to: promptURL, atomically: true, encoding: .utf8)
+        let prompt = try PromptLoader.load(
+            path: promptURL.path,
+            replacements: ["{date}": "2026-07-10", "{context}": "private"]
+        )
+        try expect(prompt == "Date: 2026-07-10; context: private")
+    }
+
+    test("Prompt paths: saved configurations resolve relocated bundled prompts") {
+        let current = try PromptLoader.load(path: "Resources/prompts/cleanup.md")
+        let legacy = try PromptLoader.load(path: "prompts/cleanup.md")
+        try expect(!current.isEmpty && current == legacy)
+    }
+
+    test("Core coverage: prompt loader rejects missing prompt") {
+        do {
+            _ = try PromptLoader.load(path: "/definitely/missing/captains-log-prompt.md")
+            try expect(false, "Expected missing prompt to throw")
+        } catch {
+            try expect(error.localizedDescription.contains("Prompt file not found"))
+        }
+    }
+
+    test("Core coverage: filesystem guard writes text and preserves target in errors") {
+        let root = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let output = root.appendingPathComponent("nested/output.md")
+        try FileManager.default.createDirectory(at: output.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try FileSystemGuard.writeText("hello", to: output.path)
+        try expect(try String(contentsOf: output, encoding: .utf8) == "hello")
+        do {
+            try FileSystemGuard.writeText("nope", to: root.path)
+            try expect(false, "Expected writing to a directory to fail")
+        } catch {
+            try expect(error.localizedDescription.contains(root.path))
+        }
+    }
+
+    test("Core coverage: filename normalizes whitespace, backticks, and extension") {
+        try expect(Filename.cleanFilename("  `2026-07-10-focus`  ") == "2026-07-10-focus.md")
+        try expect(Filename.cleanFilename("2026-07-10-focus.md") == "2026-07-10-focus.md")
+    }
+
+    test("Core coverage: LLM model resolution prioritizes explicit, configured, then default IDs") {
+        let root = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let priorConfigPath = getenv("CAPTAINS_LOG_CONFIG_PATH").map { String(cString: $0) }
+        let isolatedConfigPath = root.appendingPathComponent("config.json").path
+        setenv("CAPTAINS_LOG_CONFIG_PATH", isolatedConfigPath, 1)
+        defer {
+            if let priorConfigPath {
+                setenv("CAPTAINS_LOG_CONFIG_PATH", priorConfigPath, 1)
+            } else {
+                unsetenv("CAPTAINS_LOG_CONFIG_PATH")
+            }
+        }
+
+        try CaptainsLogConfig(dataDir: root.path, qwenModelId: "configured/model").save()
+        try expect(LLM.resolveModelId() == "configured/model")
+        try expect(LLM.resolveModelId("custom/model") == "custom/model")
+
+        try CaptainsLogConfig(dataDir: root.path).save()
+        try expect(LLM.resolveModelId() == LLM.defaultModelId)
+    }
+
+    test("Core coverage: enrich prompt omits recording time when unknown") {
+        let root = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let promptURL = root.appendingPathComponent("prompt.md")
+        try "date: {date}\nrecording_time: {recording_time}\ninstruction: Preserve mentions of recording_time in prose.\n{ENRICH_SPEAKER_CONTEXT_SECTION}".write(
+            to: promptURL, atomically: true, encoding: .utf8)
+        let prompt = try Enrich.loadPrompt(
+            from: promptURL.path, date: "2026-07-10", recordingTime: nil,
+            config: CaptainsLogConfig(dataDir: root.path)
+        )
+        try expect(prompt.contains("date: 2026-07-10"))
+        try expect(!prompt.contains("recording_time:"), "The empty YAML field should be removed")
+        try expect(
+            prompt.contains("Preserve mentions of recording_time in prose."),
+            "Unrelated instructions mentioning the field should remain in the prompt"
+        )
+    }
+
+    test("Core coverage: category manifests round-trip and missing manifests fail") {
+        let root = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let expectedFolders: [Categorize.Category: String] = [
+            .personal: "personal",
+            .professional: "professional",
+            .sideProject: "side-project",
+        ]
+        for (index, category) in Categorize.Category.allCases.enumerated() {
+            let stem = "2026-07-10-category-\(index)"
+            let manifest = Categorize.Manifest(sourceStem: stem, category: category)
+            try Categorize.writeManifest(manifest, dataDirURL: root)
+            try expect(try Categorize.loadManifest(stem: stem, dataDirURL: root) == manifest)
+            try expect(category.folderName == expectedFolders[category])
+        }
+        do {
+            _ = try Categorize.loadManifest(stem: "missing", dataDirURL: root)
+            try expect(false, "Expected missing category manifest")
+        } catch let error as Categorize.CategorizeError {
+            if case .missingManifest(let path) = error {
+                try expect(path.hasSuffix("missing.json"))
+            } else {
+                try expect(false, "Expected missingManifest error")
+            }
+        }
+    }
+
+    test("Core coverage: pipeline detects the first missing stage") {
+        let root = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let stem = "2026-07-10-1200"
+        let transcribed = root.appendingPathComponent(".pipeline/01-transcribed/\(stem).md")
+        let cleaned = root.appendingPathComponent(".pipeline/02-logs/\(stem).md")
+        try FileManager.default.createDirectory(at: transcribed.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try "transcript".write(to: transcribed, atomically: true, encoding: .utf8)
+        try expect(Pipeline.detectNextStage(stem: stem, dataDir: root.path) == .cleaning)
+        try FileManager.default.createDirectory(at: cleaned.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try "cleaned".write(to: cleaned, atomically: true, encoding: .utf8)
+        try expect(Pipeline.detectNextStage(stem: stem, dataDir: root.path) == .categorizing)
+    }
+
+    test("Core coverage: pipeline advances through category, naming, and enriching") {
+        let root = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let stem = "2026-07-10-1200"
+        let slug = "2026-07-10-coverage"
+        let transcript = root.appendingPathComponent(".pipeline/01-transcribed/\(stem).md")
+        let cleaned = root.appendingPathComponent(".pipeline/02-logs/\(stem).md")
+        try FileManager.default.createDirectory(at: transcript.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: cleaned.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try "transcript".write(to: transcript, atomically: true, encoding: .utf8)
+        try "cleaned".write(to: cleaned, atomically: true, encoding: .utf8)
+        try expect(Pipeline.detectNextStage(stem: stem, dataDir: root.path) == .categorizing)
+
+        try Categorize.writeManifest(.init(sourceStem: stem, category: .sideProject), dataDirURL: root)
+        try expect(Pipeline.detectNextStage(stem: stem, dataDir: root.path) == .naming)
+
+        let renameDir = root.appendingPathComponent(".pipeline/04-rename")
+        try FileManager.default.createDirectory(at: renameDir, withIntermediateDirectories: true)
+        try slug.write(to: renameDir.appendingPathComponent("\(stem).slug.txt"), atomically: true, encoding: .utf8)
+        try "cleaned".write(to: renameDir.appendingPathComponent("\(slug).md"), atomically: true, encoding: .utf8)
+        try expect(Pipeline.detectNextStage(stem: stem, dataDir: root.path) == .enriching)
+
+        let enriched = root.appendingPathComponent("logs/side-project/\(slug).md")
+        try FileManager.default.createDirectory(at: enriched.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try "enriched".write(to: enriched, atomically: true, encoding: .utf8)
+        try expect(Pipeline.detectNextStage(stem: stem, dataDir: root.path) == .done)
+    }
+
+    test("Core coverage: pipeline extracts date and recording time from a stem fallback") {
+        try expect(Pipeline.extractDate(from: "2026-07-10-1205-idea") == "2026-07-10")
+        try expect(Pipeline.extractRecordingTime(
+            stem: "2026-07-10-1205-idea", dataDirURL: URL(fileURLWithPath: "/definitely/missing")
+        ) == "12:05")
+        try expect(Pipeline.extractRecordingTime(
+            stem: "not-a-timestamp", dataDirURL: URL(fileURLWithPath: "/definitely/missing")
+        ) == "00:00")
+    }
+
+    test("Logs: metadata, recording and creation dates share chronological ordering") {
+        let root = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let repository = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+        let fixture = try String(contentsOf: repository.appendingPathComponent(
+            "eval/suites/pipeline/tng-nl01/enriched.md"
+        ), encoding: .utf8)
+        let metadataStem = "2024-01-01-0900"
+        let note = try makeCompletedSearchEntry(
+            root: root, stem: metadataStem, slug: "metadata-first", category: .sideProject,
+            content: fixture.replacingOccurrences(of: "2025-04-27", with: "2025-01-16")
+        )
+        let audioDir = root.appendingPathComponent("audio")
+        try FileManager.default.createDirectory(at: audioDir, withIntermediateDirectories: true)
+        let audioFixture = repository.appendingPathComponent("eval/suites/transcribe/audio/tng-nl01-vrije-dag-enterprise-corrected.m4a")
+        for stem in ["2025-01-15-0900", "2025-01-15-1700", "imported-memo"] {
+            let audio = audioDir.appendingPathComponent("\(stem).m4a")
+            try FileManager.default.copyItem(at: audioFixture, to: audio)
+            try FileManager.default.setAttributes(
+                [.creationDate: Date(timeIntervalSince1970: 1_600_000_000)], ofItemAtPath: audio.path
+            )
+        }
+        let listings = Pipeline.listEntries(dataDir: root.path)
+        try expect(listings.map(\.stem) == [metadataStem, "2025-01-15-1700", "2025-01-15-0900", "imported-memo"],
+                   "Metadata date must override the original stem, followed by recording and creation dates")
+        let entry = LogEntry.from(listings[0])
+        try expect(entry.sortDate == listings[0].sortDate, "UI grouping must use the CLI's resolved date")
+        let parts = Calendar.current.dateComponents([.year, .month, .day, .hour], from: entry.sortDate!)
+        try expect(parts.year == 2025 && parts.month == 1 && parts.day == 16 && parts.hour == 12)
+        let creationDate = try FileManager.default.attributesOfItem(
+            atPath: audioDir.appendingPathComponent("imported-memo.m4a").path
+        )[.creationDate] as? Date
+        try expect(listings.last?.sortDate == creationDate, "Undated imports use source creation date")
+
+        for invalid in ["", "not-a-date", "2025-02-30"] {
+            try fixture.replacingOccurrences(of: "2025-04-27", with: invalid)
+                .write(to: note, atomically: true, encoding: .utf8)
+            let fallback = Pipeline.listEntries(dataDir: root.path).first { $0.stem == metadataStem }!
+            let day = Calendar.current.dateComponents([.year, .month, .day, .hour], from: fallback.sortDate!)
+            try expect(day.year == 2024 && day.month == 1 && day.day == 1 && day.hour == 9,
+                       "Invalid metadata \(invalid) must fall back to the recording timestamp: \(day)")
+        }
+        try "date: 2099-01-01\n".write(to: note, atomically: true, encoding: .utf8)
+        let noFrontmatter = Pipeline.listEntries(dataDir: root.path).first { $0.stem == metadataStem }!
+        try expect(Calendar.current.component(.year, from: noFrontmatter.sortDate!) == 2024,
+                   "Body text must not be treated as metadata")
+    }
+
+    test("Logs: repeated startup sorting preserves canonical dates and current time zone") {
+        let root = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let fixture = try String(contentsOfFile: "eval/suites/pipeline/tng-nl01/enriched.md", encoding: .utf8)
+        let note = try makeCompletedSearchEntry(root: root, stem: "2024-01-01-0900", slug: "dated", category: .sideProject, content: fixture)
+        for offset in [0, 3600, -18000] {
+            let zone = TimeZone(secondsFromGMT: offset)!
+            for _ in 0..<20 {
+                let entries = Pipeline.listEntries(dataDir: root.path)
+                let date = EntryDate.parse(day: "2025-04-27", time: "12:00", timeZone: zone)!
+                var calendar = Calendar(identifier: .gregorian)
+                calendar.timeZone = zone
+                let components = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: date)
+                try expect(components.year == 2025 && components.month == 4 && components.day == 27 && components.hour == 12 && components.minute == 0)
+                let reference = DateFormatter()
+                reference.locale = Locale(identifier: "en_US_POSIX")
+                reference.calendar = Calendar(identifier: .gregorian)
+                reference.timeZone = zone
+                reference.dateFormat = "yyyy-MM-dd HH:mm"
+                reference.isLenient = false
+                try expect(date == reference.date(from: "2025-04-27 12:00"), "Cached parsing must match a fresh formatter after changing time zones")
+                reference.timeZone = .current
+                try expect(entries[0].sortDate == reference.date(from: "2025-04-27 12:00"), "Sorting must resolve dates in the current time zone")
+            }
+        }
+        for invalid in ["2025-2-014", "2025-02-30", "2025-13-14", "2025-01-00"] {
+            try fixture.replacingOccurrences(of: "2025-04-27", with: invalid).write(to: note, atomically: true, encoding: .utf8)
+            let date = Pipeline.listEntries(dataDir: root.path)[0].sortDate!
+            try expect(Calendar.current.component(.year, from: date) == 2024, "Noncanonical metadata must retain recording-date fallback")
+        }
+    }
+
+    test("AppState: LogEntry parses completed-entry frontmatter") {
+        let root = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let entryURL = root.appendingPathComponent("2026-07-10-review.md")
+        try """
+        ---
+        summary: "Shipped the review"
+        tags:
+          - work
+          - release
+        projects:
+          - CaptainsLog
+        recording_time: "08:30"
+        ---
+
+        Entry body.
+        """.write(to: entryURL, atomically: true, encoding: .utf8)
+
+        let entry = LogEntry.from(Pipeline.EntryListing(
+            displayName: "2026-07-10-review",
+            stem: "2026-07-10-0815",
+            slug: "2026-07-10-review",
+            nextStage: .done,
+            latestPath: entryURL.path
+        ))
+
+        try expect(entry.summary == "Shipped the review")
+        try expect(entry.tags == ["work", "release"])
+        try expect(entry.projects == ["CaptainsLog"])
+        try expect(entry.recordingTime == "08:30")
+        try expect(entry.readableBody() == "Entry body.")
+        guard let recordingDate = entry.recordingDate else {
+            throw NSError(domain: "TestError", code: 1, userInfo: [NSLocalizedDescriptionKey: "Expected recording date"])
+        }
+        let utc = TimeZone(secondsFromGMT: 0)!
+        let dateParts = Calendar(identifier: .gregorian).dateComponents(in: utc, from: recordingDate)
+        try expect(dateParts.year == 2026 && dateParts.month == 7 && dateParts.day == 10)
+
+        let invalidCalendarDate = LogEntry(
+            stem: "2026-02-30-0815",
+            slug: nil,
+            displayName: "Impossible date",
+            path: entryURL.path,
+            summary: nil,
+            tags: [],
+            projects: [],
+            frontmatterTime: nil,
+            stage: .cleaning
+        )
+        try expect(invalidCalendarDate.recordingDate == nil, "Impossible stem dates should not normalize into a different day")
+    }
+
+    test("AppState: complete cleaned fixture body excludes enrichment metadata") {
+        let repository = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+        let cleaned = try String(contentsOf: repository.appendingPathComponent(
+            "eval/suites/pipeline/tng-nl01/cleaned.md"
+        ), encoding: .utf8)
+        let metadata = try String(contentsOf: repository.appendingPathComponent(
+            "eval/suites/pipeline/tng-nl01/enriched.md"
+        ), encoding: .utf8)
+        let root = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let note = root.appendingPathComponent("complete.md")
+        try (metadata + cleaned).write(to: note, atomically: true, encoding: .utf8)
+        let entry = LogEntry.from(Pipeline.EntryListing(
+            displayName: "Complete fixture", stem: "2025-01-14-0730",
+            slug: "complete", nextStage: .done, latestPath: note.path
+        ))
+        try expect(entry.readableBody() == cleaned.trimmingCharacters(in: .whitespacesAndNewlines),
+                   "The copy source must include every cleaned paragraph without the summary or YAML")
+    }
+
+    test("AppState: LogEntry preserves Markdown without frontmatter") {
+        let root = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let entryURL = root.appendingPathComponent("plain.md")
+        try "# Heading\n\nBody text.".write(to: entryURL, atomically: true, encoding: .utf8)
+        let entry = LogEntry(
+            stem: "2026-07-10-1200",
+            slug: nil,
+            displayName: "Plain",
+            path: entryURL.path,
+            summary: nil,
+            tags: [],
+            projects: [],
+            frontmatterTime: nil,
+            stage: .done
+        )
+
+        try expect(entry.readableBody() == "# Heading\n\nBody text.")
+    }
+
+    test("AppState: LogEntry tolerates incomplete frontmatter and preserves the note") {
+        let root = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let entryURL = root.appendingPathComponent("incomplete.md")
+        let content = "---\nsummary: [unfinished YAML\ntags:\n  - work\n\nDraft body."
+        try content.write(to: entryURL, atomically: true, encoding: .utf8)
+
+        let entry = LogEntry.from(Pipeline.EntryListing(
+            displayName: "Incomplete note",
+            stem: "2026-07-10-1200",
+            slug: "incomplete-note",
+            nextStage: .done,
+            latestPath: entryURL.path
+        ))
+
+        try expect(entry.summary == nil && entry.tags.isEmpty && entry.projects.isEmpty)
+        try expect(entry.recordingTime == "12:00", "Timestamp fallback should remain available when frontmatter is incomplete")
+        try expect(entry.readableBody() == content, "Malformed frontmatter should not make the note unreadable")
+    }
+
+    test("Entry row behavior: actions and status follow active, paused, failed, and completed state") {
+        func entry(
+            stage: Pipeline.Stage,
+            isActive: Bool = false,
+            error: String? = nil,
+            path: String = "/tmp/eval-entry.md"
+        ) -> LogEntry {
+            LogEntry(
+                stem: "2025-01-14-0830",
+                slug: "2025-01-14-eval-entry",
+                displayName: "Eval entry",
+                path: path,
+                summary: nil,
+                tags: [],
+                projects: [],
+                frontmatterTime: nil,
+                stage: stage,
+                isActive: isActive,
+                processingError: error
+            )
+        }
+
+        let active = EntryRowBehavior(entry: entry(stage: .cleaning, isActive: true))
+        try expect(active.status == .active("Cleaning"), "active stage should be shown")
+        try expect(active.compactStatusLabel == "LIVE", "active row should show LIVE")
+        try expect(!active.canOpen && !active.canResume, "active row should not expose completed or retry actions")
+
+        let paused = EntryRowBehavior(entry: entry(stage: .transcribing))
+        try expect(paused.status == .paused, "inactive unfinished entry should be paused")
+        try expect(paused.compactStatusLabel == "PAUSED", "paused row should show PAUSED")
+        try expect(paused.canResume && paused.resumeTitle == "Resume processing", "paused row should offer resume")
+        try expect(!paused.canOpen, "paused row should not expose completed actions")
+
+        let failed = EntryRowBehavior(entry: entry(stage: .cleaning, error: "fixture failure"))
+        try expect(failed.status == .failed, "error should take status precedence over paused")
+        try expect(failed.compactStatusLabel == "ERROR" && failed.isFailure, "failed row should show its error status")
+        try expect(failed.canResume && failed.resumeTitle == "Retry processing", "failed row should offer retry")
+        try expect(!failed.canOpen, "failed row should not expose completed actions")
+
+        let completed = EntryRowBehavior(entry: entry(stage: .done))
+        try expect(completed.status == .processed, "done entries should be processed")
+        try expect(completed.canOpen, "done entries should open")
+        try expect(completed.canReprocess && !active.canReprocess && !paused.canReprocess && !failed.canReprocess)
+        try expect(!completed.canResume && completed.resumeTitle == nil, "done entries should not resume")
+        try expect(completed.canRevealInFinder, "non-empty path should be revealable")
+
+        var waiting = entry(stage: .done)
+        waiting.isQueued = true
+        let queued = EntryRowBehavior(entry: waiting)
+        try expect(queued.status == .queued && queued.compactStatusLabel == "QUEUED",
+                   "A queued Reprocess must be visible while its existing outputs are preserved")
+        try expect(queued.canOpen && !queued.canResume && !queued.canReprocess,
+                   "Existing output remains readable, but queued work cannot be submitted again")
+
+        let pathless = EntryRowBehavior(entry: entry(stage: .done, path: ""))
+        try expect(!pathless.canRevealInFinder, "pathless entry should not reveal in Finder")
+    }
+
+    test("Entry navigation state: selecting a log opens detail and back clears selection") {
+        let entry = LogEntry(
+            stem: "2025-01-14-0830",
+            slug: "2025-01-14-eval-entry",
+            displayName: "Eval entry",
+            path: "/tmp/eval-entry.md",
+            summary: nil,
+            tags: [],
+            projects: [],
+            frontmatterTime: nil,
+            stage: .done
+        )
+        var navigation = EntryNavigationState()
+        try expect(navigation.selectedStem == nil, "The initial view should show the list")
+        navigation.categoryFilter.select("professional", selected: false)
+        navigation.show(entry)
+        try expect(navigation.selectedStem == entry.stem, "Selecting an entry should open its detail")
+        navigation.returnToList()
+        try expect(navigation.selectedStem == nil, "Returning should restore the list")
+        try expect(!navigation.categoryFilter.includes("professional"), "Returning must retain the category selection")
+        try expect(navigation.categoryFilter.includes("personal"))
+    }
+
+    test("Record dock behavior: start, stop, pause, input selection, and meter follow recorder state") {
+        let idle = RecordDockBehavior(isRecording: false, isPaused: false, inputDeviceCount: 0)
+        try expect(idle.primaryAction == .start && idle.pauseAction == nil)
+        try expect(!idle.canSelectInputDevice && !idle.showsAudioLevel)
+
+        let recording = RecordDockBehavior(isRecording: true, isPaused: false, inputDeviceCount: 1)
+        try expect(recording.primaryAction == .stop && recording.pauseAction == .pause)
+        try expect(recording.canSelectInputDevice && recording.showsAudioLevel)
+
+        let paused = RecordDockBehavior(isRecording: true, isPaused: true, inputDeviceCount: 1)
+        try expect(paused.primaryAction == .stop && paused.pauseAction == .resume)
+        try expect(!paused.showsAudioLevel)
+    }
+
+    test("Queue strip behavior: processing pauses; an idle queue offers pending work") {
+        let processing = QueueStripBehavior(isProcessing: true, statusMessage: "Cleaning up", pendingCount: 3)
+        try expect(processing.action == .pause && processing.statusLabel == "Cleaning up")
+
+        let idle = QueueStripBehavior(isProcessing: false, statusMessage: "Stale status", pendingCount: 3)
+        try expect(idle.action == .processPending && idle.statusLabel == "3 logs waiting")
+
+        let downloading = QueueStripBehavior(isProcessing: false, statusMessage: "Downloading Whisper",
+                                             pendingCount: 0, hasActivity: true)
+        try expect(downloading.action == nil && downloading.statusLabel == "Downloading Whisper",
+                   "Model setup must stay visible without offering an empty processing action")
+
+        let failed = QueueStripBehavior(isProcessing: false, statusMessage: "Download failed",
+                                       pendingCount: 3, hasActivity: true)
+        try expect(failed.action == .processPending && failed.statusLabel == "Download failed",
+                   "Pending logs must not hide the notification or its retryable error")
+    }
+
+    test("Field Notes: entry Markdown keeps explicit line breaks") {
+        let rendered = try AttributedString(
+            markdown: "**First line**\nSecond line",
+            options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)
+        )
+        try expect(String(rendered.characters) == "First line\nSecond line")
+    }
+
+    test("AppState: network cancellation detection handles direct and wrapped errors") {
+        let cancelled = NSError(domain: NSURLErrorDomain, code: NSURLErrorCancelled)
+        let wrapped = NSError(domain: "Transport", code: 1, userInfo: [NSUnderlyingErrorKey: cancelled])
+        let failure = NSError(domain: NSURLErrorDomain, code: NSURLErrorNotConnectedToInternet)
+        try expect(cancelled.isNetworkCancellation)
+        try expect(wrapped.isNetworkCancellation)
+        try expect(failure.isNetworkCancellation == false)
+    }
+}
+
+/// Inspect only this test process's assertions; other apps may legitimately keep
+/// the system or display awake during a test run.
+func processingSleepAssertions() throws -> [String] {
+    let output = Pipe()
+    let check = Process()
+    check.executableURL = URL(fileURLWithPath: "/usr/bin/pmset")
+    check.arguments = ["-g", "assertions"]
+    check.standardOutput = output
+    try check.run()
+    let text = String(data: output.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
+    check.waitUntilExit()
+    try expect(check.terminationStatus == 0)
+    return text.components(separatedBy: .newlines).filter {
+        $0.contains("pid \(ProcessInfo.processInfo.processIdentifier)(")
+            && $0.contains("Processing CaptainsLog")
+    }
+}
+
+func expectProcessingPreventsIdleSleep() throws {
+    let assertions = try processingSleepAssertions()
+    try expect(assertions.contains { $0.contains("PreventUserIdleSystemSleep") },
+               "Processing must hold an actual idle system sleep assertion")
+    try expect(!assertions.contains { $0.contains("PreventUserIdleDisplaySleep") },
+               "Processing must allow idle display sleep")
+}
+
+@MainActor
+func runCoordinatorCoverageTests() async {
+    @Sendable func result(for stem: String) -> Pipeline.Result {
+        Pipeline.Result(
+            audioPath: "\(stem).m4a",
+            transcriptPath: "\(stem).transcript.md",
+            cleanedPath: "\(stem).cleaned.md",
+            renamedPath: "\(stem).renamed.md",
+            enrichedPath: "\(stem).enriched.md",
+            slug: stem,
+            category: .personal
+        )
+    }
+
+    await testAsync("Processing sleep: queue holds system assertion across files and releases after completion") {
+        let processed = LockedStringArray()
+        let coordinator = ProcessingCoordinator { stem, _, _, _ in
+            try expectProcessingPreventsIdleSleep()
+            processed.append(stem)
+            return result(for: stem)
+        }
+        coordinator.queueProcessing(stem: "first")
+        coordinator.queueProcessing(stem: "second")
+        coordinator.startProcessing(dataDir: "/tmp/sleep-fixture", isRecording: false,
+                                    onProgress: {}, onComplete: {}, onError: { _ in })
+        for _ in 0..<1000 where coordinator.hasScheduledWork {
+            try await Task.sleep(for: .milliseconds(1))
+        }
+        try expect(processed.snapshot() == ["first", "second"])
+        try expect(try processingSleepAssertions().isEmpty, "Completion must release sleep prevention")
+    }
+
+    await testAsync("Processing sleep: single retry releases system assertion on failure") {
+        let entered = LockedStringArray()
+        let coordinator = ProcessingCoordinator { _, _, _, _ in
+            try expectProcessingPreventsIdleSleep()
+            entered.append("entered")
+            throw NSError(domain: "Fixture", code: 1)
+        }
+        coordinator.resumeEntry(stem: "failure", dataDir: "/tmp/sleep-fixture", onComplete: {}, onError: { _ in })
+        for _ in 0..<1000 where coordinator.hasScheduledWork {
+            try await Task.sleep(for: .milliseconds(1))
+        }
+        try expect(entered.snapshot() == ["entered"])
+        try expect(try processingSleepAssertions().isEmpty, "Failure must release sleep prevention")
+    }
+
+    await testAsync("Processing sleep: pause retains assertion until the worker actually stops") {
+        let gate = LockedValue<CheckedContinuation<Void, Never>?>(nil)
+        let stopped = LockedStringArray()
+        let coordinator = ProcessingCoordinator { stem, _, _, _ in
+            await withCheckedContinuation { gate.set($0) }
+            stopped.append("stopped")
+            return result(for: stem)
+        }
+        coordinator.resumeEntry(stem: "cancel", dataDir: "/tmp/sleep-fixture", onComplete: {}, onError: { _ in })
+        for _ in 0..<1000 where gate.get() == nil {
+            try await Task.sleep(for: .milliseconds(1))
+        }
+        defer { if stopped.snapshot().isEmpty { gate.get()?.resume() } }
+        try expect(gate.get() != nil)
+        coordinator.pauseProcessing()
+        try expectProcessingPreventsIdleSleep()
+        gate.get()?.resume()
+        gate.set(nil)
+        for _ in 0..<1000 {
+            if try processingSleepAssertions().isEmpty { break }
+            try await Task.sleep(for: .milliseconds(1))
+        }
+        try expect(stopped.snapshot() == ["stopped"])
+        try expect(try processingSleepAssertions().isEmpty, "Stopped worker must release sleep prevention")
+    }
+
+    await testAsync("Processing sleep: fixture CLI pipeline holds assertion through stages and releases on success or error") {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("SleepPipeline-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: root) }
+        let fixture = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+            .appendingPathComponent("eval/suites/transcribe/history/audio/durins-volk.m4a")
+        let checked = LockedStringArray()
+        let operations = Pipeline.Operations(
+            transcribe: { _, _ in try expectProcessingPreventsIdleSleep(); checked.append("transcribe"); return "Fixture" },
+            cleanup: { text, _ in try expectProcessingPreventsIdleSleep(); checked.append("cleanup"); return text },
+            categorize: { _, _, _ in try expectProcessingPreventsIdleSleep(); checked.append("category"); return .personal },
+            filename: { _, _ in try expectProcessingPreventsIdleSleep(); checked.append("filename"); return "2025-01-14-fixture.md" },
+            enrich: { text, _, _, _ in try expectProcessingPreventsIdleSleep(); checked.append("enrich"); return text }
+        )
+        _ = try await Pipeline.runCommand(audioInput: fixture.path, dataDir: root.path, operations: operations)
+        try expect(checked.snapshot() == ["transcribe", "cleanup", "category", "filename", "enrich"])
+        try expect(try processingSleepAssertions().isEmpty)
+        let failing = Pipeline.Operations(
+            transcribe: { _, _ in try expectProcessingPreventsIdleSleep(); throw NSError(domain: "Fixture", code: 1) },
+            cleanup: operations.cleanup, categorize: operations.categorize,
+            filename: operations.filename, enrich: operations.enrich
+        )
+        do {
+            _ = try await Pipeline.resumeCommand(stem: "durins-volk", dataDir: root.path, fromStage: .transcribing, operations: failing)
+            try expect(false, "Expected injected failure")
+        } catch { try expect((error as NSError).domain == "Fixture") }
+        try expect(try processingSleepAssertions().isEmpty, "Pipeline errors must release sleep prevention")
+    }
+
+    await testAsync("AppState: recording after startup progress completes without restarting or unblocking pending work") {
+        let defaults = UserDefaults.standard
+        let launchKey = "CaptainsLogHasLaunched"
+        let previousLaunch = defaults.object(forKey: launchKey)
+        defer {
+            if let previousLaunch { defaults.set(previousLaunch, forKey: launchKey) }
+            else { defaults.removeObject(forKey: launchKey) }
+        }
+        defaults.removeObject(forKey: launchKey)
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("StartupRecording-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: root) }
+        let fixture = URL(fileURLWithPath: "eval/suites/transcribe/audio/tng-nl01-vrije-dag-enterprise-corrected.m4a")
+        let transcript = try String(contentsOfFile: "eval/suites/transcribe/expected/tng-nl01-vrije-dag-enterprise-corrected.md", encoding: .utf8)
+        let cleaned = try String(contentsOfFile: "eval/suites/pipeline/tng-nl01/cleaned.md", encoding: .utf8)
+        let enriched = try String(contentsOfFile: "eval/suites/pipeline/tng-nl01/enriched.md", encoding: .utf8)
+        let lateProgress = LockedValue<(@Sendable (Progress) -> Void)?>(nil)
+        let processed = LockedStringArray()
+        let models = ModelManager(dependencies: .init(
+            clearStaleConfig: {}, cleanCorruptedMetadata: {},
+            whisperIsDownloaded: { false }, qwenIsDownloaded: { true },
+            downloadWhisper: { report in lateProgress.set(report) }, downloadQwen: { _ in }
+        ))
+        let operations = Pipeline.Operations(
+            transcribe: { _, _ in transcript }, cleanup: { _, _ in cleaned },
+            categorize: { _, _, _ in .personal },
+            filename: { _, _ in "2025-04-27-startup-fixture.md" },
+            enrich: { _, _, _, _ in enriched }
+        )
+        let coordinator = ProcessingCoordinator { stem, dataDir, fromStage, progress in
+            processed.append(stem)
+            return try await Pipeline.resumeCommand(
+                stem: stem, dataDir: dataDir, fromStage: fromStage,
+                operations: operations, progress: progress
+            )
+        }
+        let recording = RecordingState(dependencies: .init(
+            listInputDevices: { [] }, defaultInputDevice: { nil },
+            record: { destination, _, stop, _, _ in
+                try FileManager.default.copyItem(at: fixture, to: destination)
+                for await _ in stop { break }
+            }
+        ))
+        let config = ConfigManager(loadContextFiles: false)
+        config.dataDir = root.path
+        let state = AppState(config: config, recording: recording, processing: coordinator, models: models)
+        await state.bootstrap()
+        for _ in 0..<1000 where !models.modelsReady {
+            try await Task.sleep(for: .milliseconds(1))
+        }
+        try expect(models.modelsReady, "Synthetic startup model preparation must complete")
+        // A download delegate can deliver queued progress after its operation returns.
+        let progress = Progress(totalUnitCount: 4)
+        progress.completedUnitCount = 2
+        guard let report = lateProgress.get() else { throw NSError(domain: "StartupRecording", code: 1) }
+        report(progress)
+        try await Task.sleep(for: .milliseconds(10))
+        try expect(state.needsFirstRun, "Fresh setup must present onboarding")
+        state.completeFirstRun()
+        try expect(!state.needsFirstRun, "Completing onboarding must dismiss setup")
+        state.startRecording()
+        state.stopRecording()
+        for _ in 0..<1000 where state.isRecording {
+            try await Task.sleep(for: .milliseconds(1))
+        }
+        state.loadEntries()
+        state.batchResumePending()
+        for _ in 0..<1000 where processed.snapshot().isEmpty || coordinator.hasScheduledWork {
+            try await Task.sleep(for: .milliseconds(1))
+        }
+        try expect(processed.snapshot().count == 1, "The stopped recording must process exactly once without an app restart")
+        state.loadEntries()
+        try expect(state.allEntries.count == 1 && state.pendingEntries.isEmpty,
+                   "A stopped fixture recording must produce one completed log")
+        await coordinator.stopForTermination()
+    }
+
+    await testAsync("AppState: resuming after deletion downloads models before processing") {
+        let events = LockedStringArray()
+        let models = ModelManager(dependencies: .init(
+            clearStaleConfig: {}, cleanCorruptedMetadata: {},
+            whisperIsDownloaded: { false }, qwenIsDownloaded: { false },
+            downloadWhisper: { _ in events.append("whisper") },
+            downloadQwen: { _ in events.append("qwen") }
+        ))
+        let coordinator = ProcessingCoordinator { stem, _, _, _ in
+            events.append("processing")
+            return result(for: stem)
+        }
+        let state = AppState(config: ConfigManager(loadContextFiles: false),
+                             processing: coordinator, models: models)
+        models.didDeleteModel(.qwen)
+        state.resumeProcessing(stem: "2025-01-14-0830")
+        for _ in 0..<1000 where events.snapshot().count < 3 {
+            try await Task.sleep(for: .milliseconds(1))
+        }
+        try expect(events.snapshot() == ["whisper", "qwen", "processing"])
+        try expect(models.modelsReady)
+    }
+
+    test("Design fixtures: processing shows one active recording and the remaining serial queue") {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("SerialProcessingPreview-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: root) }
+        let audio = root.appendingPathComponent("audio")
+        try FileManager.default.createDirectory(at: audio, withIntermediateDirectories: true)
+        let fixture = URL(fileURLWithPath: "eval/suites/transcribe/audio/tng-nl01-vrije-dag-enterprise-corrected.m4a")
+        for stem in ["2025-01-14-0730", "2025-01-14-0830", "2025-01-14-0930"] {
+            try FileManager.default.copyItem(at: fixture, to: audio.appendingPathComponent("\(stem).m4a"))
+        }
+        let config = ConfigManager(loadContextFiles: false)
+        config.dataDir = root.path
+        let state = AppState(config: config)
+        state.applyDesignFixture(named: "eval-processing")
+        let entries = state.allEntries
+        let active = entries.filter(\.isActive)
+        let queued = entries.filter(\.isQueued)
+        try expect(entries.count == 3 && active.count == 1 && queued.count == 2,
+                   "A serial preview must display exactly one LIVE row and all other pending rows as QUEUED")
+        try expect(active.first?.stem == state.processingStem && active.first?.stage == .cleaning)
+        try expect(queued.allSatisfy { EntryRowBehavior(entry: $0).status == .queued && !$0.isActive })
+        try expect(state.statusMessage.contains("Cleaning Up:") && state.statusMessage.contains("2 queued"),
+                   "The shared preview summary must agree with the active row and visible queue")
+    }
+
+    await testAsync("App lifecycle: model setup and recording share one cancelable queue and visible status") {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("LifecycleQueue-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: root) }
+        let download = LockedValue<CheckedContinuation<Void, Never>?>(nil)
+        let processed = LockedStringArray()
+        let models = ModelManager(dependencies: .init(
+            clearStaleConfig: {}, cleanCorruptedMetadata: {},
+            whisperIsDownloaded: { false }, qwenIsDownloaded: { true },
+            downloadWhisper: { _ in await withCheckedContinuation { download.set($0) } },
+            downloadQwen: { _ in }
+        ))
+        let processing = ProcessingCoordinator { stem, _, _, _ in
+            processed.append(stem)
+            return result(for: stem)
+        }
+        let fixture = URL(fileURLWithPath: "eval/suites/transcribe/audio/tng-nl01-vrije-dag-enterprise-corrected.m4a")
+        let recording = RecordingState(dependencies: .init(
+            listInputDevices: { [] }, defaultInputDevice: { nil },
+            record: { destination, _, stop, _, _ in
+                try FileManager.default.copyItem(at: fixture, to: destination)
+                for await _ in stop { break }
+            }
+        ))
+        let config = ConfigManager(loadContextFiles: false)
+        config.dataDir = root.path
+        let state = AppState(config: config, recording: recording, processing: processing, models: models)
+        state.ensureModelsDownloaded()
+        for _ in 0..<1000 where download.get() == nil { try await Task.sleep(for: .milliseconds(1)) }
+        guard let release = download.get() else { throw NSError(domain: "LifecycleQueue", code: 1) }
+        state.resumeProcessing(stem: "2025-01-14-0730", fromStage: .cleaning)
+        state.resumeProcessing(stem: "2025-01-14-0830", fromStage: .enriching)
+        state.resumeProcessing(stem: "2025-01-14-0730", fromStage: .cleaning)
+        try expect(processing.isQueued(stem: "2025-01-14-0730") && processing.isQueued(stem: "2025-01-14-0830"))
+        try expect(state.statusMessage.contains("2 queued") && state.statusMessage.contains("Downloading Whisper"))
+        let waiting = QueueStripBehavior(isProcessing: state.isProcessing, statusMessage: state.statusMessage,
+                                        pendingCount: 2, hasScheduledWork: processing.hasScheduledWork)
+        try expect(waiting.action == .pause && waiting.statusLabel == state.statusMessage,
+                   "Waiting model work must be visible and cancelable from the shared status")
+        state.startRecording()
+        try expect(state.isRecording && state.statusMessage.contains("Recording"))
+        try expect(!state.canInstallUpdate && !state.canChangeDataDirectory)
+        state.pauseProcessing()
+        try expect(!processing.isQueued(stem: "2025-01-14-0730") && !state.statusMessage.contains("queued"))
+        release.resume()
+        for _ in 0..<1000 where !models.modelsReady { try await Task.sleep(for: .milliseconds(1)) }
+        try expect(models.modelsReady && processed.snapshot().isEmpty,
+                   "A completed download must not resurrect requests discarded by Pause")
+        try expect(state.isRecording, "Pausing the queue must preserve the concurrent recording")
+        recording.cancelRecording()
+        await recording.stopForTermination()
+        await processing.stopForTermination()
+    }
+
+    await testAsync("App lifecycle: waiting resumes keep order and requested stage when models become ready") {
+        let download = LockedValue<CheckedContinuation<Void, Never>?>(nil)
+        let calls = LockedStringArray()
+        let models = ModelManager(dependencies: .init(
+            clearStaleConfig: {}, cleanCorruptedMetadata: {},
+            whisperIsDownloaded: { false }, qwenIsDownloaded: { true },
+            downloadWhisper: { _ in await withCheckedContinuation { download.set($0) } },
+            downloadQwen: { _ in }
+        ))
+        let processing = ProcessingCoordinator { stem, _, stage, _ in
+            calls.append("\(stem):\(stage?.rawValue ?? "none")")
+            return result(for: stem)
+        }
+        let state = AppState(config: ConfigManager(loadContextFiles: false), processing: processing, models: models)
+        state.ensureModelsDownloaded()
+        for _ in 0..<1000 where download.get() == nil { try await Task.sleep(for: .milliseconds(1)) }
+        guard let release = download.get() else { throw NSError(domain: "LifecycleQueue", code: 2) }
+        state.resumeProcessing(stem: "first", fromStage: .cleaning)
+        state.resumeProcessing(stem: "second", fromStage: .enriching)
+        try expect(calls.snapshot().isEmpty && state.statusMessage.contains("2 queued"))
+        release.resume()
+        for _ in 0..<1000 where calls.snapshot().count < 2 || processing.hasScheduledWork {
+            try await Task.sleep(for: .milliseconds(1))
+        }
+        try expect(calls.snapshot() == ["first:cleaning", "second:enriching"],
+                   "Model readiness must preserve queue order and the requested checkpoints")
+        try expect(state.statusMessage == "Done" && state.canInstallUpdate)
+    }
+
+    await testAsync("AppState: finishing a recording does not block the main thread on slow entry reads") {
+        let models = ModelManager(dependencies: .init(
+            clearStaleConfig: {}, cleanCorruptedMetadata: {},
+            whisperIsDownloaded: { true }, qwenIsDownloaded: { true },
+            downloadWhisper: { _ in }, downloadQwen: { _ in }
+        ))
+        let coordinator = ProcessingCoordinator { stem, _, _, _ in result(for: stem) }
+        // Simulates a dataless iCloud file whose read stalls.
+        let gate = DispatchSemaphore(value: 0)
+        let loaderCalls = LockedStringArray()
+        let state = AppState(
+            config: ConfigManager(loadContextFiles: false),
+            processing: coordinator, models: models,
+            entryLoader: { _ in
+                loaderCalls.append("load")
+                if gate.wait(timeout: .now() + 3) == .success { gate.signal() }
+                return []
+            }
+        )
+        defer { gate.signal() }
+        let start = Date()
+        state.onRecordingComplete(stem: "2025-01-14-0830")
+        let elapsed = Date().timeIntervalSince(start)
+        try expect(elapsed < 1, "Recording completion blocked the main thread for \(elapsed)s on entry loading")
+        for _ in 0..<500 where loaderCalls.snapshot().isEmpty {
+            try await Task.sleep(for: .milliseconds(2))
+        }
+        try expect(!loaderCalls.snapshot().isEmpty, "Entries should still be loaded in the background")
+    }
+
+    await testAsync("ProcessingCoordinator: drains queued work through injected pipeline") {
+        let processed = LockedStringArray()
+        let coordinator = ProcessingCoordinator { stem, _, fromStage, progress in
+            processed.append("\(stem):\(fromStage?.rawValue ?? "nil")")
+            progress?(.init(stem: stem, stage: .cleaning))
+            return result(for: stem)
+        }
+        coordinator.queueProcessing(stem: "first")
+        coordinator.queueProcessing(stem: "second")
+
+        let completed: Bool = await withCheckedContinuation { continuation in
+            coordinator.startProcessing(
+                dataDir: "/tmp/coverage",
+                isRecording: false,
+                onProgress: {},
+                onComplete: { continuation.resume(returning: true) },
+                onError: { _ in continuation.resume(returning: false) }
+            )
+        }
+
+        try expect(completed)
+        try expect(processed.snapshot() == ["first:transcribing", "second:transcribing"])
+        try expect(coordinator.stage == .done)
+        try expect(coordinator.statusMessage == "Done")
+        try expect(coordinator.processingStem == nil)
+    }
+
+    await testAsync("ProcessingCoordinator: fixture pipeline delivers done before refreshing completed entries") {
+        let fm = FileManager.default
+        let root = fm.temporaryDirectory.appendingPathComponent("CaptainsLogProgress-\(UUID().uuidString)")
+        defer { try? fm.removeItem(at: root) }
+        let repo = URL(fileURLWithPath: fm.currentDirectoryPath)
+        let stem = "tng-nl01-vrije-dag-enterprise-corrected"
+        let audio = root.appendingPathComponent("audio/\(stem).m4a")
+        try fm.createDirectory(at: audio.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try fm.copyItem(at: repo.appendingPathComponent("eval/suites/transcribe/audio/\(stem).m4a"), to: audio)
+        let transcript = try String(contentsOf: repo.appendingPathComponent("eval/suites/transcribe/expected/\(stem).md"), encoding: .utf8)
+        let cleaned = try String(contentsOf: repo.appendingPathComponent("eval/suites/pipeline/tng-nl01/cleaned.md"), encoding: .utf8)
+        let filename = try String(contentsOf: repo.appendingPathComponent("eval/suites/pipeline/tng-nl01/filename.md"), encoding: .utf8)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let enriched = try String(contentsOf: repo.appendingPathComponent("eval/suites/pipeline/tng-nl01/enriched.md"), encoding: .utf8) + cleaned
+        let operations = Pipeline.Operations(
+            transcribe: { _, _ in transcript },
+            cleanup: { _, _ in cleaned },
+            categorize: { _, _, _ in .sideProject },
+            filename: { _, _ in filename },
+            enrich: { _, _, _, _ in enriched }
+        )
+        let coordinator = ProcessingCoordinator { stem, dataDir, fromStage, progress in
+            try await Pipeline.resume(stem: stem, dataDir: dataDir, fromStage: fromStage,
+                                      operations: operations, progress: progress)
+        }
+        let config = ConfigManager(loadContextFiles: false)
+        config.dataDir = root.path
+        let appState = AppState(config: config, processing: coordinator)
+        appState.loadEntries()
+        coordinator.queueProcessing(stem: stem)
+        var refreshStage: AppStage?
+        let completed: Bool = await withCheckedContinuation { continuation in
+            coordinator.startProcessing(
+                dataDir: root.path, isRecording: false,
+                onProgress: {
+                    refreshStage = coordinator.stage
+                    appState.loadEntries()
+                },
+                onComplete: {
+                    appState.loadEntries()
+                    continuation.resume(returning: true)
+                },
+                onError: { _ in continuation.resume(returning: false) }
+            )
+        }
+        try expect(completed)
+        try expect(refreshStage == .done, "Completion progress must reach the UI before the finished log refresh")
+        try expect(appState.allEntries.count == 1 && appState.allEntries[0].stage == .done)
+        try expect(EntryRowBehavior(entry: appState.allEntries[0]).status == .processed)
+        try expect(!appState.allEntries[0].isActive && !coordinator.hasScheduledWork)
+        try expect(coordinator.stage == .done && coordinator.statusMessage == "Done")
+        await Task.yield()
+        try expect(coordinator.stage == .done && coordinator.processingStem == nil,
+                   "Deferred progress must not reactivate the completed recording")
+    }
+
+    await testAsync("ProcessingCoordinator: cancelled attempt cannot overwrite a retry of the same recording") {
+        let calls = LockedStringArray()
+        let firstGate = LockedValue<CheckedContinuation<Void, Never>?>(nil)
+        let retryGate = LockedValue<CheckedContinuation<Void, Never>?>(nil)
+        let staleProgress = LockedValue<(@Sendable (Pipeline.Progress) -> Void)?>(nil)
+        let stem = "2025-01-14-0830"
+        let coordinator = ProcessingCoordinator { stem, _, _, progress in
+            calls.append(stem)
+            if calls.snapshot().count == 1 {
+                staleProgress.set(progress)
+                progress?(.init(stem: stem, stage: .transcribing))
+                await withCheckedContinuation { firstGate.set($0) }
+            } else {
+                progress?(.init(stem: stem, stage: .enriching))
+                await withCheckedContinuation { retryGate.set($0) }
+            }
+            return result(for: stem)
+        }
+        let completions = LockedStringArray()
+        coordinator.resumeEntry(stem: stem, dataDir: "/tmp/captainslog-retry",
+                                onComplete: { completions.append("cancelled") },
+                                onError: { _ in completions.append("cancelled-error") })
+        for _ in 0..<100 where firstGate.get() == nil {
+            try await Task.sleep(for: .milliseconds(1))
+        }
+        try expect(firstGate.get() != nil)
+        coordinator.pauseProcessing()
+        try expect(coordinator.hasScheduledWork, "Cancelled native work must retain ownership until it returns")
+        coordinator.resumeEntry(stem: stem, dataDir: "/tmp/captainslog-retry",
+                                onComplete: { completions.append("retry") },
+                                onError: { _ in completions.append("retry-error") })
+        try await Task.sleep(for: .milliseconds(10))
+        try expect(calls.snapshot().count == 1, "Retry cannot overlap the cancelled worker")
+        firstGate.get()?.resume()
+        for _ in 0..<100 where retryGate.get() == nil || coordinator.stage != .enriching {
+            try await Task.sleep(for: .milliseconds(1))
+        }
+        try expect(retryGate.get() != nil && coordinator.stage == .enriching)
+        // Even an uncooperative producer retaining its callback must not change the retry.
+        staleProgress.get()?(.init(stem: stem, stage: .transcribing))
+        try await Task.sleep(for: .milliseconds(30))
+        let retryPreserved = coordinator.stage == .enriching
+            && coordinator.processingStem == stem && coordinator.hasScheduledWork
+        retryGate.get()?.resume()
+        for _ in 0..<100 where coordinator.hasScheduledWork {
+            try await Task.sleep(for: .milliseconds(1))
+        }
+        try expect(retryPreserved, "Cancelled attempt must not restore Transcribing or clear the active retry")
+        try expect(completions.snapshot() == ["retry"], "Only the active retry should report completion")
+        try expect(coordinator.stage == .done && coordinator.processingStem == nil)
+    }
+
+    await testAsync("ProcessingCoordinator: records an injected pipeline failure") {
+        let coordinator = ProcessingCoordinator { _, _, _, _ in
+            throw NSError(domain: "Coverage", code: 1, userInfo: [NSLocalizedDescriptionKey: "Synthetic failure"])
+        }
+
+        let failed: Bool = await withCheckedContinuation { continuation in
+            coordinator.resumeEntry(
+                stem: "failed-entry",
+                dataDir: "/tmp/coverage",
+                onComplete: { continuation.resume(returning: false) },
+                onError: { _ in continuation.resume(returning: true) }
+            )
+        }
+
+        try expect(failed)
+        try expect(coordinator.stage == .idle)
+        try expect(coordinator.statusMessage == "Processing failed. Retry available.")
+        try expect(coordinator.failureMessage(for: "failed-entry") == "Synthetic failure")
+        try expect(coordinator.errorMessage == "Synthetic failure")
+    }
+
+    await testAsync("ProcessingCoordinator: retry clears a prior failure after success") {
+        let attempts = LockedStringArray()
+        let coordinator = ProcessingCoordinator { stem, _, _, _ in
+            attempts.append(stem)
+            if attempts.snapshot().count == 1 {
+                throw NSError(domain: "Coverage", code: 2, userInfo: [NSLocalizedDescriptionKey: "Temporary failure"])
+            }
+            return result(for: stem)
+        }
+
+        let firstFailed: Bool = await withCheckedContinuation { continuation in
+            coordinator.resumeEntry(
+                stem: "retry-entry",
+                dataDir: "/tmp/coverage",
+                onComplete: { continuation.resume(returning: false) },
+                onError: { _ in continuation.resume(returning: true) }
+            )
+        }
+        try expect(firstFailed)
+        try expect(coordinator.failureMessage(for: "retry-entry") == "Temporary failure")
+
+        let retried: Bool = await withCheckedContinuation { continuation in
+            coordinator.resumeEntry(
+                stem: "retry-entry",
+                dataDir: "/tmp/coverage",
+                onComplete: { continuation.resume(returning: true) },
+                onError: { _ in continuation.resume(returning: false) }
+            )
+        }
+        try expect(retried)
+        try expect(attempts.snapshot() == ["retry-entry", "retry-entry"], "Retry should invoke the failed entry again")
+        try expect(coordinator.failureMessage(for: "retry-entry") == nil, "Successful retry should clear the entry failure")
+        try expect(coordinator.errorMessage == nil, "Successful retry should clear the visible error")
+        try expect(coordinator.stage == .done && coordinator.statusMessage == "Done")
+        try expect(coordinator.processingStem == nil)
+    }
+
+    await testAsync("ProcessingCoordinator: process pending runs each discovered stage and reports completion") {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("CaptainsLogBatchResume-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let repository = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+        let fixture = repository.appendingPathComponent("eval/suites/transcribe/history/expected/durins-volk.md")
+        let stems = ["2025-01-14-0830", "2025-01-15-1015"]
+        for stem in stems {
+            let transcript = root.appendingPathComponent(".pipeline/01-transcribed/\(stem).md")
+            try FileManager.default.createDirectory(at: transcript.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try FileManager.default.copyItem(at: fixture, to: transcript)
+        }
+        let processed = LockedStringArray()
+        let coordinator = ProcessingCoordinator { stem, _, fromStage, progress in
+            processed.append("\(stem):\(fromStage?.rawValue ?? "nil")")
+            progress?(.init(stem: stem, stage: .cleaning))
+            return result(for: stem)
+        }
+        let pending = stems.map { stem in
+            LogEntry(
+                stem: stem,
+                slug: nil,
+                displayName: stem,
+                path: root.appendingPathComponent(".pipeline/01-transcribed/\(stem).md").path,
+                summary: nil,
+                tags: [],
+                projects: [],
+                frontmatterTime: nil,
+                stage: .cleaning
+            )
+        }
+        var updates = 0
+        let completed: Bool = await withCheckedContinuation { continuation in
+            coordinator.batchResumePending(
+                pendingEntries: pending,
+                dataDir: root.path,
+                onProgress: { updates += 1 },
+                onComplete: { continuation.resume(returning: true) },
+                onError: { _ in continuation.resume(returning: false) }
+            )
+        }
+
+        try expect(completed, "Process pending should report completion")
+        try expect(processed.snapshot() == stems.map { "\($0):cleaning" }, "Queue should resume in list order from each discovered stage")
+        try expect(updates == stems.count, "Each completed entry should refresh the log list")
+        try expect(coordinator.stage == .done, "Finished queue should show done")
+        try expect(coordinator.statusMessage == "Done", "Finished queue should show completion status")
+        try expect(coordinator.processingStem == nil, "Finished queue should clear the active stem")
+    }
+
+    await testAsync("ProcessingCoordinator: batch resume continues after one entry fails") {
+        let fm = FileManager.default
+        let root = fm.temporaryDirectory
+            .appendingPathComponent("CaptainsLogBatchResumeFailure-\(UUID().uuidString)", isDirectory: true)
+        defer { try? fm.removeItem(at: root) }
+        let fixture = URL(fileURLWithPath: fm.currentDirectoryPath)
+            .appendingPathComponent("eval/suites/transcribe/history/expected/durins-volk.md")
+        let stems = ["2025-01-14-0830", "2025-01-15-1015"]
+        let entries = try stems.map { stem -> LogEntry in
+            let transcript = root.appendingPathComponent(".pipeline/01-transcribed/\(stem).md")
+            try fm.createDirectory(at: transcript.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try fm.copyItem(at: fixture, to: transcript)
+            return LogEntry(
+                stem: stem,
+                slug: nil,
+                displayName: stem,
+                path: transcript.path,
+                summary: nil,
+                tags: [],
+                projects: [],
+                frontmatterTime: nil,
+                stage: .cleaning
+            )
+        }
+        let processed = LockedStringArray()
+        let coordinator = ProcessingCoordinator { stem, _, _, _ in
+            processed.append(stem)
+            if stem == stems[0] {
+                throw NSError(domain: "Coverage", code: 3, userInfo: [NSLocalizedDescriptionKey: "First entry failed"])
+            }
+            return result(for: stem)
+        }
+        let errors = LockedStringArray()
+        var updates = 0
+        let completed: Bool = await withCheckedContinuation { continuation in
+            coordinator.batchResumePending(
+                pendingEntries: entries,
+                dataDir: root.path,
+                onProgress: { updates += 1 },
+                onComplete: { continuation.resume(returning: true) },
+                onError: { error in errors.append(error.localizedDescription) }
+            )
+        }
+
+        try expect(completed, "A failed item should not prevent the rest of the batch from finishing")
+        try expect(processed.snapshot() == stems, "Batch should attempt each pending entry in order")
+        try expect(errors.snapshot() == ["First entry failed"], "Only the failed entry should report an error")
+        try expect(updates == 2, "Both the failed and successful entries should refresh progress")
+        try expect(coordinator.failureMessage(for: stems[0]) == "First entry failed")
+        try expect(coordinator.failureMessage(for: stems[1]) == nil)
+        try expect(coordinator.stage == .done && coordinator.statusMessage == "Done")
+        try expect(coordinator.processingStem == nil)
+    }
+
+    await testAsync("ProcessingCoordinator: pausing an active queue stays paused after cancellation") {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("CaptainsLogPausedQueue-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let repository = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+        let fixture = repository.appendingPathComponent("eval/suites/transcribe/history/expected/durins-volk.md")
+        let stem = "2025-01-14-0830"
+        let transcript = root.appendingPathComponent(".pipeline/01-transcribed/\(stem).md")
+        try FileManager.default.createDirectory(at: transcript.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try FileManager.default.copyItem(at: fixture, to: transcript)
+        let coordinator = ProcessingCoordinator { stem, _, _, progress in
+            progress?(.init(stem: stem, stage: .cleaning))
+            try await Task.sleep(for: .seconds(30))
+            return result(for: stem)
+        }
+        let appState = AppState(
+            config: {
+                let config = ConfigManager()
+                config.dataDir = root.path
+                return config
+            }(),
+            processing: coordinator
+        )
+        appState.loadEntries()
+        try expect(appState.pendingEntries.count == 1)
+        appState.batchResumePending()
+        for _ in 0..<100 where coordinator.processingStem == nil {
+            await Task.yield()
+        }
+        try expect(coordinator.processingStem == stem, "Queue should start the pending log")
+        appState.pauseProcessing()
+        try expect(coordinator.stage == .idle, "Pause should clear the active stage")
+        try expect(coordinator.statusMessage == "Paused", "Pause should update the queue status")
+        try expect(coordinator.processingStem == nil, "Pause should clear the active stem")
+        try await Task.sleep(for: .milliseconds(30))
+        try expect(coordinator.stage == .idle, "Cancelled queue should not overwrite Paused with Done")
+        try expect(coordinator.statusMessage == "Paused", "Cancelled queue should preserve the paused status")
+    }
+
+    await testAsync("ProcessingCoordinator: pending restart waits for cancellation and respects later stop") {
+        for action in ["restart", "pause", "terminate"] {
+            let root = FileManager.default.temporaryDirectory
+                .appendingPathComponent("CaptainsLogPendingRestart-\(UUID().uuidString)", isDirectory: true)
+            defer { try? FileManager.default.removeItem(at: root) }
+            let fixture = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+                .appendingPathComponent("eval/suites/transcribe/history/expected/durins-volk.md")
+            let stem = "2025-01-14-0830"
+            let transcript = root.appendingPathComponent(".pipeline/01-transcribed/\(stem).md")
+            try FileManager.default.createDirectory(at: transcript.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try FileManager.default.copyItem(at: fixture, to: transcript)
+            let gate = LockedValue<CheckedContinuation<Void, Never>?>(nil)
+            let stages = LockedStringArray()
+            let staleProgress = LockedValue<(@Sendable (Pipeline.Progress) -> Void)?>(nil)
+            let coordinator = ProcessingCoordinator { stem, _, fromStage, progress in
+                stages.append(fromStage?.rawValue ?? "nil")
+                if stages.snapshot().count == 1 {
+                    staleProgress.set(progress)
+                    progress?(.init(stem: stem, stage: .cleaning))
+                    // Simulate native inference that cannot return immediately on cancellation.
+                    await withCheckedContinuation { gate.set($0) }
+                } else {
+                    progress?(.init(stem: stem, stage: .categorizing))
+                }
+                return result(for: stem)
+            }
+            let appState = AppState(config: {
+                let config = ConfigManager()
+                config.dataDir = root.path
+                return config
+            }(), processing: coordinator)
+            appState.loadEntries()
+            appState.batchResumePending()
+            for _ in 0..<200 where gate.get() == nil {
+                try await Task.sleep(for: .milliseconds(1))
+            }
+            guard let continuation = gate.get() else {
+                coordinator.pauseProcessing()
+                throw NSError(domain: "PendingRestartTest", code: 1, userInfo: [NSLocalizedDescriptionKey: "Pending pipeline did not enter its native-work gate"])
+            }
+            var gateReleased = false
+            defer { if !gateReleased { continuation.resume() } }
+            appState.pauseProcessing()
+            appState.batchResumePending()
+            appState.batchResumePending() // Repeated clicks must not create overlapping retries.
+            let heldOwnership = coordinator.hasScheduledWork && stages.snapshot() == ["cleaning"]
+            let restartFeedback = QueueStripBehavior(isProcessing: coordinator.isProcessing, statusMessage: coordinator.statusMessage, pendingCount: appState.pendingEntries.count)
+            // The old worker can finish a checkpoint before observing cancellation.
+            let cleaned = root.appendingPathComponent(Pipeline.Directory.logs.path).appendingPathComponent("\(stem).md")
+            try FileManager.default.createDirectory(at: cleaned.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try FileManager.default.copyItem(at: fixture, to: cleaned)
+            if action == "pause" { appState.pauseProcessing() }
+            let terminationStarted = LockedValue(false)
+            let termination: Task<Void, Never>? = action == "terminate" ? Task {
+                terminationStarted.set(true)
+                await coordinator.stopForTermination()
+            } : nil
+            if termination != nil {
+                for _ in 0..<200 where !terminationStarted.get() {
+                    try await Task.sleep(for: .milliseconds(1))
+                }
+            }
+            gateReleased = true
+            continuation.resume()
+            await termination?.value
+            for _ in 0..<200 where coordinator.hasScheduledWork {
+                try await Task.sleep(for: .milliseconds(1))
+            }
+            staleProgress.get()?(.init(stem: stem, stage: .transcribing))
+            await Task.yield()
+            try expect(heldOwnership, "Restart must wait for cancelled native work")
+            try expect(restartFeedback.action == .pause && restartFeedback.statusLabel != "Paused", "Accepted restart must visibly acknowledge waiting for cancelled transcription")
+            try expect(!coordinator.hasScheduledWork, "Processing must release ownership after draining")
+            if action == "restart" {
+                try expect(stages.snapshot() == ["cleaning", "categorizing"], "Restart must run once from the checkpoint present after cancellation")
+                try expect(coordinator.stage == .done, "Stale cancelled progress must not overwrite restart completion")
+            } else {
+                try expect(stages.snapshot() == ["cleaning"], "A later pause or termination must discard the requested restart")
+                try expect(coordinator.stage == .idle && coordinator.statusMessage == "Paused")
+            }
+        }
+    }
+
+    await testAsync("AppState: reprocess queues another entry and ignores duplicate requests") {
+        for mode in ["reprocess", "resume", "batch", "failure"] {
+            let fm = FileManager.default
+            let root = fm.temporaryDirectory.appendingPathComponent("ReprocessQueue-\(UUID().uuidString)")
+            defer { try? fm.removeItem(at: root) }
+            let fixture = URL(fileURLWithPath: fm.currentDirectoryPath).appendingPathComponent("eval/suites/transcribe/audio/tng-nl01-vrije-dag-enterprise-corrected.m4a")
+            let stems = ["2025-01-14-0730", "2025-01-14-0830"]
+            for stem in stems {
+                let audio = root.appendingPathComponent("audio/\(stem).m4a")
+                try fm.createDirectory(at: audio.deletingLastPathComponent(), withIntermediateDirectories: true)
+                try fm.copyItem(at: fixture, to: audio)
+                let output = root.appendingPathComponent(".pipeline/01-transcribed/\(stem).md")
+                try fm.createDirectory(at: output.deletingLastPathComponent(), withIntermediateDirectories: true)
+                try "synthetic prior transcript".write(to: output, atomically: true, encoding: .utf8)
+            }
+            let calls = LockedStringArray()
+            let gate = LockedValue<CheckedContinuation<Void, Never>?>(nil)
+            let coordinator = ProcessingCoordinator { stem, _, fromStage, progress in
+                calls.append(stem)
+                progress?(.init(stem: stem, stage: .transcribing))
+                if calls.snapshot().count == 1 { await withCheckedContinuation { gate.set($0) } }
+                if mode == "failure" && stem == stems[0] { throw NSError(domain: "SyntheticPipelineFailure", code: 1) }
+                return result(for: stem)
+            }
+            let config = ConfigManager()
+            config.dataDir = root.path
+            let state = AppState(config: config, processing: coordinator)
+            state.loadEntries()
+            if mode == "resume" { state.resumeProcessing(stem: stems[0]) }
+            else if mode == "batch" {
+                state.entries.sort { $0.stem < $1.stem }
+                state.batchResumePending()
+            }
+            else { state.reprocessEntry(stem: stems[0]) }
+            for _ in 0..<200 where gate.get() == nil { try await Task.sleep(for: .milliseconds(1)) }
+            guard let continuation = gate.get() else { throw NSError(domain: "ReprocessQueue", code: 1) }
+            state.reprocessEntry(stem: "2025-01-01-missing-audio")
+            let activePreserved = coordinator.processingStem == stems[0]
+            state.reprocessEntry(stem: stems[1])
+            state.reprocessEntry(stem: stems[1])
+            let secondHasOutputsWhileQueued = fm.fileExists(atPath: root.appendingPathComponent(".pipeline/01-transcribed/\(stems[1]).md").path)
+            let queuedLabel = state.allEntries.first { $0.stem == stems[1] }.map { EntryRowBehavior(entry: $0).compactStatusLabel }
+            let serialized = calls.snapshot() == [stems[0]]
+            continuation.resume()
+            for _ in 0..<500 where coordinator.hasScheduledWork { try await Task.sleep(for: .milliseconds(1)) }
+            try expect(queuedLabel == "QUEUED", "Accepted Reprocess should be visibly queued")
+            try expect(activePreserved, "A rejected Reprocess must preserve the current worker and its progress")
+            try expect(secondHasOutputsWhileQueued == (mode == "batch"), "Accepted Reprocess must clear outputs immediately; an already queued batch request remains unchanged (\(mode))")
+            try expect(serialized && calls.snapshot() == stems, "Queued Reprocess must run once after the first finishes")
+            try expect(!coordinator.hasScheduledWork)
+            for stem in stems { try expect(fm.fileExists(atPath: root.appendingPathComponent("audio/\(stem).m4a").path)) }
+        }
+    }
+
+    await testAsync("AppState: global pause then row Resume survives every cancelled pipeline stage") {
+        for stage in [Pipeline.Stage.transcribing, .cleaning, .categorizing, .naming, .enriching] {
+            let root = FileManager.default.temporaryDirectory.appendingPathComponent("RowResume-\(UUID().uuidString)")
+            defer { try? FileManager.default.removeItem(at: root) }
+            let stem = "2025-01-14-0730"
+            let audio = root.appendingPathComponent("audio/\(stem).m4a")
+            try FileManager.default.createDirectory(at: audio.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try FileManager.default.copyItem(at: URL(fileURLWithPath: "eval/suites/transcribe/audio/tng-nl01-vrije-dag-enterprise-corrected.m4a"), to: audio)
+            let gate = LockedValue<CheckedContinuation<Void, Never>?>(nil)
+            let calls = LockedStringArray()
+            let coordinator = ProcessingCoordinator { stem, _, fromStage, progress in
+                calls.append(fromStage?.rawValue ?? "nil")
+                progress?(.init(stem: stem, stage: stage))
+                if calls.snapshot().count == 1 { await withCheckedContinuation { gate.set($0) } }
+                return result(for: stem)
+            }
+            let config = ConfigManager(); config.dataDir = root.path
+            let state = AppState(config: config, processing: coordinator)
+            state.loadEntries(); state.batchResumePending()
+            for _ in 0..<300 where gate.get() == nil { try await Task.sleep(for: .milliseconds(1)) }
+            guard let release = gate.get() else { throw NSError(domain: "RowResume", code: 1) }
+            state.pauseProcessing()
+            state.resumeProcessing(stem: stem)
+            state.resumeProcessing(stem: stem)
+            let acknowledged = coordinator.isQueued(stem: stem) && coordinator.isProcessing
+            let serialized = calls.snapshot().count == 1
+            // A cancelled native call may save a checkpoint before returning.
+            let transcript = root.appendingPathComponent(".pipeline/01-transcribed/\(stem).md")
+            try FileManager.default.createDirectory(at: transcript.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try FileManager.default.copyItem(at: URL(fileURLWithPath: "eval/suites/transcribe/expected/tng-nl01-vrije-dag-enterprise-corrected.md"), to: transcript)
+            release.resume()
+            for _ in 0..<500 where coordinator.hasScheduledWork { try await Task.sleep(for: .milliseconds(1)) }
+            try expect(acknowledged, "Row Resume must visibly queue while \(stage.rawValue) cancels")
+            try expect(serialized && calls.snapshot() == ["transcribing", "cleaning"], "Resume must run once after cancellation using the latest checkpoint")
+            try expect(!coordinator.hasScheduledWork && coordinator.stage == .done)
+        }
+    }
+
+    await testAsync("AppState: row resumes and batch requests share one deduplicated queue") {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("MixedResume-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: root) }
+        let stems = ["2025-01-14-0730", "2025-01-14-0830", "2025-01-14-0930"]
+        for stem in stems {
+            let audio = root.appendingPathComponent("audio/\(stem).m4a")
+            try FileManager.default.createDirectory(at: audio.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try FileManager.default.copyItem(at: URL(fileURLWithPath: "eval/suites/transcribe/audio/tng-nl01-vrije-dag-enterprise-corrected.m4a"), to: audio)
+        }
+        let gate = LockedValue<CheckedContinuation<Void, Never>?>(nil)
+        let calls = LockedStringArray()
+        let coordinator = ProcessingCoordinator { stem, _, _, progress in
+            calls.append(stem); progress?(.init(stem: stem, stage: .transcribing))
+            if calls.snapshot().count == 1 { await withCheckedContinuation { gate.set($0) } }
+            return result(for: stem)
+        }
+        let config = ConfigManager(); config.dataDir = root.path
+        let state = AppState(config: config, processing: coordinator)
+        state.loadEntries(); state.resumeProcessing(stem: stems[0])
+        for _ in 0..<300 where gate.get() == nil { try await Task.sleep(for: .milliseconds(1)) }
+        guard let release = gate.get() else { throw NSError(domain: "MixedResume", code: 1) }
+        state.resumeProcessing(stem: stems[1]); state.resumeProcessing(stem: stems[1])
+        state.entries.sort { $0.stem < $1.stem }
+        state.batchResumePending(); state.batchResumePending()
+        let queued = coordinator.isQueued(stem: stems[1]) && coordinator.isQueued(stem: stems[2])
+        release.resume()
+        for _ in 0..<500 where coordinator.hasScheduledWork { try await Task.sleep(for: .milliseconds(1)) }
+        try expect(queued && calls.snapshot() == stems, "Every accepted row/batch request must run exactly once in order")
+    }
+
+    await testAsync("AppState: queued restart survives cancellation but later Pause and Quit discard it") {
+        for mode in ["resume", "reprocess", "recording"] {
+            for action in ["run", "pause", "quit"] {
+                let root = FileManager.default.temporaryDirectory.appendingPathComponent("RestartLifecycle-\(UUID().uuidString)")
+                defer { try? FileManager.default.removeItem(at: root) }
+                let stem = "2025-01-14-0730"
+                let audio = root.appendingPathComponent("audio/\(stem).m4a")
+                let transcript = root.appendingPathComponent(".pipeline/01-transcribed/\(stem).md")
+                try FileManager.default.createDirectory(at: audio.deletingLastPathComponent(), withIntermediateDirectories: true)
+                try FileManager.default.copyItem(at: URL(fileURLWithPath: "eval/suites/transcribe/audio/tng-nl01-vrije-dag-enterprise-corrected.m4a"), to: audio)
+                let gate = LockedValue<CheckedContinuation<Void, Never>?>(nil)
+                let calls = LockedStringArray()
+                let coordinator = ProcessingCoordinator { stem, _, fromStage, progress in
+                    calls.append(fromStage?.rawValue ?? "nil")
+                    progress?(.init(stem: stem, stage: .transcribing))
+                    if calls.snapshot().count == 1 {
+                        await withCheckedContinuation { gate.set($0) }
+                        // Simulate an in-flight write finishing after immediate invalidation.
+                        try "late cancelled checkpoint".write(to: transcript, atomically: true, encoding: .utf8)
+                    }
+                    return result(for: stem)
+                }
+                let config = ConfigManager(); config.dataDir = root.path
+                let trashed = LockedStringArray()
+                let state = AppState(config: config, processing: coordinator, moveToTrash: { trashed.append($0.path) })
+                state.resumeProcessing(stem: stem)
+                for _ in 0..<300 where gate.get() == nil { try await Task.sleep(for: .milliseconds(1)) }
+                guard let release = gate.get() else { throw NSError(domain: "RestartLifecycle", code: 1) }
+                state.pauseProcessing()
+                try FileManager.default.createDirectory(at: transcript.deletingLastPathComponent(), withIntermediateDirectories: true)
+                try FileManager.default.copyItem(at: URL(fileURLWithPath: "eval/suites/transcribe/expected/tng-nl01-vrije-dag-enterprise-corrected.md"), to: transcript)
+                if mode == "resume" { state.resumeProcessing(stem: stem) }
+                if mode == "reprocess" { state.reprocessEntry(stem: stem) }
+                if mode == "recording" {
+                    coordinator.queueProcessing(stem: stem)
+                    coordinator.startProcessing(dataDir: root.path, isRecording: false, onProgress: {}, onComplete: {}, onError: { _ in })
+                }
+                state.deleteEntry(stem: stem, slug: nil)
+                let protected = trashed.snapshot().isEmpty && FileManager.default.fileExists(atPath: transcript.path) == (mode != "reprocess")
+                if action == "pause" { state.pauseProcessing() }
+                let shutdownStarted = LockedValue(false)
+                let shutdown = action == "quit" ? Task {
+                    shutdownStarted.set(true)
+                    await coordinator.stopForTermination()
+                } : nil
+                if shutdown != nil {
+                    for _ in 0..<300 where !shutdownStarted.get() { try await Task.sleep(for: .milliseconds(1)) }
+                }
+                release.resume()
+                await shutdown?.value
+                for _ in 0..<500 where coordinator.hasScheduledWork { try await Task.sleep(for: .milliseconds(1)) }
+                try expect(protected, "Reprocess must clear immediately while cancelled/queued work still blocks Trash")
+                if action == "run" {
+                    try expect(calls.snapshot() == ["transcribing", mode == "resume" ? "cleaning" : "transcribing"], "Accepted \(mode) must run after cancellation")
+                    if mode == "reprocess" { try expect(!FileManager.default.fileExists(atPath: transcript.path), "Reprocess has cleared old outputs") }
+                } else {
+                    try expect(calls.snapshot() == ["transcribing"], "Later \(action) cancels queued \(mode)")
+                    try expect(coordinator.statusMessage == "Paused" && !coordinator.hasScheduledWork)
+                    try expect(FileManager.default.fileExists(atPath: transcript.path) == (mode != "reprocess"), "Pause/quit discard queued processing but do not undo an explicit output deletion")
+                }
+            }
+        }
+    }
+
+    await testAsync("AppState: Pause invalidates row, batch and reprocess actions waiting for models") {
+        for action in ["resume", "batch", "reprocess"] {
+            let root = FileManager.default.temporaryDirectory.appendingPathComponent("ModelWaitPause-\(UUID().uuidString)")
+            defer { try? FileManager.default.removeItem(at: root) }
+            let stem = "2025-01-14-0730"
+            let audio = root.appendingPathComponent("audio/\(stem).m4a")
+            try FileManager.default.createDirectory(at: audio.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try FileManager.default.copyItem(at: URL(fileURLWithPath: "eval/suites/transcribe/audio/tng-nl01-vrije-dag-enterprise-corrected.m4a"), to: audio)
+            let transcript = root.appendingPathComponent(".pipeline/01-transcribed/\(stem).md")
+            try FileManager.default.createDirectory(at: transcript.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try FileManager.default.copyItem(at: URL(fileURLWithPath: "eval/suites/transcribe/expected/tng-nl01-vrije-dag-enterprise-corrected.md"), to: transcript)
+            let gate = LockedValue<CheckedContinuation<Void, Never>?>(nil)
+            let calls = LockedStringArray()
+            let models = ModelManager(dependencies: .init(
+                clearStaleConfig: {}, cleanCorruptedMetadata: {},
+                whisperIsDownloaded: { false }, qwenIsDownloaded: { true },
+                downloadWhisper: { _ in await withCheckedContinuation { gate.set($0) } }, downloadQwen: { _ in }
+            ))
+            let coordinator = ProcessingCoordinator { stem, _, _, _ in calls.append(stem); return result(for: stem) }
+            let config = ConfigManager(); config.dataDir = root.path
+            let state = AppState(config: config, processing: coordinator, models: models)
+            state.loadEntries(); models.didDeleteModel(.whisper)
+            if action == "resume" { state.resumeProcessing(stem: stem) }
+            if action == "batch" { state.batchResumePending() }
+            if action == "reprocess" { state.reprocessEntry(stem: stem) }
+            let immediatelyCleared = !FileManager.default.fileExists(atPath: transcript.path)
+            for _ in 0..<300 where gate.get() == nil { try await Task.sleep(for: .milliseconds(1)) }
+            guard let release = gate.get() else { throw NSError(domain: "ModelWaitPause", code: 1) }
+            state.pauseProcessing(); release.resume()
+            for _ in 0..<300 where !models.modelsReady { try await Task.sleep(for: .milliseconds(1)) }
+            try expect(immediatelyCleared == (action == "reprocess"), "Reprocess must delete immediately even while models download")
+            try expect(models.modelsReady && calls.snapshot().isEmpty && !coordinator.hasScheduledWork,
+                       "Finishing a model download must not resurrect a paused \(action) request")
+        }
+    }
+
+    await testAsync("AppState: Reprocess immediately removes every result while another log is processing") {
+        let fm = FileManager.default
+        let root = fm.temporaryDirectory.appendingPathComponent("ImmediateReprocess-\(UUID().uuidString)")
+        defer { try? fm.removeItem(at: root) }
+        let stem = "2025-01-14-0730"
+        let active = "2025-01-14-0830"
+        let slug = "2025-01-14-old-fixture-result"
+        let fixture = URL(fileURLWithPath: "eval/suites/transcribe/audio/tng-nl01-vrije-dag-enterprise-corrected.m4a")
+        let expectedAudio = try Data(contentsOf: fixture)
+        let text = try String(contentsOfFile: "eval/suites/pipeline/tng-nl01/cleaned.md", encoding: .utf8)
+        for name in [stem, active] {
+            let audio = root.appendingPathComponent("audio/\(name).m4a")
+            try fm.createDirectory(at: audio.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try expectedAudio.write(to: audio)
+        }
+        for relative in [".pipeline/01-transcribed/\(stem).md", ".pipeline/02-logs/\(stem).md",
+                         ".pipeline/03-category/\(stem).log", ".pipeline/04-rename/\(slug).md",
+                         "logs/\(slug).md", "logs/side-project/\(slug).md", "logs/personal/unrelated.md"] {
+            let file = root.appendingPathComponent(relative)
+            try fm.createDirectory(at: file.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try text.write(to: file, atomically: true, encoding: .utf8)
+        }
+        try Categorize.writeManifest(.init(sourceStem: stem, category: .sideProject), dataDirURL: root)
+        try slug.write(to: root.appendingPathComponent(".pipeline/04-rename/\(stem).slug.txt"),
+                       atomically: true, encoding: .utf8)
+        let paths = Pipeline.processingResultPaths(stem: stem, dataDir: root.path)
+        let gate = LockedValue<CheckedContinuation<Void, Never>?>(nil)
+        let calls = LockedStringArray()
+        let coordinator = ProcessingCoordinator { requested, _, _, progress in
+            calls.append(requested)
+            progress?(.init(stem: requested, stage: .transcribing))
+            if requested == active { await withCheckedContinuation { gate.set($0) } }
+            return result(for: requested)
+        }
+        let config = ConfigManager(); config.dataDir = root.path
+        let state = AppState(config: config, processing: coordinator)
+        state.resumeProcessing(stem: active)
+        for _ in 0..<300 where gate.get() == nil { try await Task.sleep(for: .milliseconds(1)) }
+        guard let release = gate.get() else { throw NSError(domain: "ImmediateReprocess", code: 1) }
+        state.reprocessEntry(stem: stem)
+        state.reprocessEntry(stem: stem)
+        // Capture before releasing the unrelated worker: no stage can finish first.
+        let deletedImmediately = paths.allSatisfy { !fm.fileExists(atPath: $0) }
+        let preservedAudio = try Data(contentsOf: root.appendingPathComponent("audio/\(stem).m4a")) == expectedAudio
+        let preservedOther = try String(contentsOf: root.appendingPathComponent("logs/personal/unrelated.md"), encoding: .utf8) == text
+        let queued = coordinator.isQueued(stem: stem) && calls.snapshot() == [active]
+        release.resume()
+        for _ in 0..<500 where coordinator.hasScheduledWork { try await Task.sleep(for: .milliseconds(1)) }
+        try expect(paths.count >= 8 && deletedImmediately, "Every derived result must be deleted before Reprocess returns")
+        try expect(preservedAudio && preservedOther, "Immediate deletion must preserve original audio and other logs")
+        try expect(queued && calls.snapshot() == [active, stem], "Inference must remain serial and duplicate Reprocess must be ignored")
+    }
+
+    await testAsync("App termination: deadline waits for closed audio and replies only once") {
+        for graceful in [true, false] {
+            let native = LockedValue<CheckedContinuation<Void, Never>?>(nil)
+            let deadline = LockedValue<CheckedContinuation<Void, Never>?>(nil)
+            let audio = LockedValue<CheckedContinuation<Void, Never>?>(nil)
+            let events = LockedStringArray()
+            let termination = AppTerminationCoordinator(waitForDeadline: {
+                await withCheckedContinuation { deadline.set($0) }
+            })
+            let prepare: @Sendable () async -> Void = {
+                events.append("cancel-requested")
+                await withCheckedContinuation { native.set($0) }
+            }
+            termination.begin(prepare: prepare, waitForAudio: {
+                await withCheckedContinuation { audio.set($0) }
+            }, onGraceful: { events.append("graceful") }, onDeadline: { events.append("bounded-exit") })
+            termination.begin(prepare: prepare, waitForAudio: {},
+                              onGraceful: { events.append("duplicate") }, onDeadline: { events.append("duplicate") })
+            for _ in 0..<500 where native.get() == nil || deadline.get() == nil { try await Task.sleep(for: .milliseconds(1)) }
+            guard let releaseNative = native.get(), let releaseDeadline = deadline.get() else {
+                throw NSError(domain: "TerminationTest", code: 1)
+            }
+            if graceful {
+                releaseNative.resume()
+                for _ in 0..<500 where !events.snapshot().contains("graceful") { try await Task.sleep(for: .milliseconds(1)) }
+            }
+            releaseDeadline.resume()
+            for _ in 0..<500 where audio.get() == nil { try await Task.sleep(for: .milliseconds(1)) }
+            guard let releaseAudio = audio.get() else { throw NSError(domain: "TerminationTest", code: 2) }
+            let beforeClose = events.snapshot()
+            releaseAudio.resume()
+            if !graceful {
+                for _ in 0..<500 where !events.snapshot().contains("bounded-exit") { try await Task.sleep(for: .milliseconds(1)) }
+                releaseNative.resume()
+            }
+            try await Task.sleep(for: .milliseconds(10))
+            try expect(!beforeClose.contains("bounded-exit"), "Never exit before the recording writer closes")
+            try expect(events.snapshot() == ["cancel-requested", graceful ? "graceful" : "bounded-exit"],
+                       "Quit must choose one outcome even when native cleanup returns late or Quit is repeated")
+        }
+    }
+
+    await testAsync("ProcessingCoordinator: quit rejects late queued work") {
+        let calls = LockedStringArray()
+        let coordinator = ProcessingCoordinator { stem, _, _, _ in
+            calls.append(stem)
+            return result(for: stem)
+        }
+        await coordinator.stopForTermination()
+        coordinator.queueProcessing(stem: "2025-01-14-0830")
+        coordinator.startProcessing(dataDir: "/tmp/captainslog-quit", isRecording: false,
+                                    onProgress: {}, onComplete: {}, onError: { _ in })
+        coordinator.resumeEntry(stem: "2025-01-14-0830", dataDir: "/tmp/captainslog-quit",
+                                onComplete: {}, onError: { _ in })
+        try await Task.sleep(for: .milliseconds(10))
+        try expect(!coordinator.hasScheduledWork)
+        try expect(calls.snapshot().isEmpty)
+    }
+
+    await testAsync("ProcessingCoordinator: pausing newly recorded work does not report completion") {
+        let stem = "2025-01-14-0830"
+        let coordinator = ProcessingCoordinator { stem, _, _, progress in
+            progress?(.init(stem: stem, stage: .transcribing))
+            try await Task.sleep(for: .seconds(30))
+            return result(for: stem)
+        }
+        let completions = LockedStringArray()
+        coordinator.queueProcessing(stem: stem)
+        coordinator.startProcessing(
+            dataDir: "/tmp/captainslog-paused-recording",
+            isRecording: false,
+            onProgress: {},
+            onComplete: { completions.append("complete") },
+            onError: { _ in completions.append("error") }
+        )
+        for _ in 0..<100 where coordinator.processingStem == nil {
+            await Task.yield()
+        }
+        try expect(coordinator.processingStem == stem, "New recording should enter the processing queue")
+        coordinator.pauseProcessing()
+        try await Task.sleep(for: .milliseconds(30))
+        try expect(coordinator.stage == .idle, "Paused recording queue should remain idle")
+        try expect(coordinator.statusMessage == "Paused", "Paused recording queue should retain its status")
+        try expect(coordinator.processingStem == nil, "Paused recording queue should clear its active stem")
+        try expect(completions.snapshot().isEmpty, "Cancelled recording must not report completion")
+    }
+}
+
+@MainActor
+func runPipelineOrchestrationCoverageTests() async {
+    test("Pipeline: legacy public function references remain source compatible") {
+        typealias ProgressCallback = @Sendable (Pipeline.Progress) -> Void
+        let legacyRun: (String?, String, String?, TimeInterval?, String?, ProgressCallback?) async throws -> Pipeline.Result = Pipeline.run
+        let legacyCommand: (String?, String, String?, TimeInterval?, String?, Pipeline.Operations?, ProgressCallback?) async throws -> Pipeline.Result = Pipeline.runCommand
+        _ = legacyRun
+        _ = legacyCommand
+    }
+
+    await testAsync("Pipeline: explicit experiment flag preserves injected command routing and checkpoints") {
+        let fm = FileManager.default
+        let root = fm.temporaryDirectory.appendingPathComponent("PipelineOptIn-\(UUID().uuidString)")
+        defer { try? fm.removeItem(at: root) }
+        let fixture = URL(fileURLWithPath: fm.currentDirectoryPath).appendingPathComponent("eval/suites/transcribe/audio/tng-nl01-vrije-dag-enterprise-corrected.m4a")
+        for enabled in [false, true] {
+            let calls = LockedStringArray()
+            let operations = Pipeline.Operations(
+                transcribe: { _, _ in calls.append("transcribe"); return "fixture transcript" },
+                cleanup: { _, _ in calls.append("cleanup"); return "fixture cleanup" },
+                categorize: { _, _, _ in calls.append("categorize"); return .personal },
+                filename: { _, date in calls.append("filename"); return "\(date)-flag-routing-fixture.md" },
+                enrich: { _, _, _, _ in calls.append("enrich"); return "fixture enriched" }
+            )
+            let result = try await Pipeline.runCommand(audioInput: fixture.path,
+                dataDir: root.appendingPathComponent(String(enabled)).path,
+                combinedMetadata: enabled, operations: operations)
+            try expect(calls.snapshot() == ["transcribe", "cleanup", "categorize", "filename", "enrich"])
+            try expect(try String(contentsOfFile: result.enrichedPath, encoding: .utf8) == "fixture enriched")
+            try expect(result.category == .personal)
+        }
+    }
+
+    await testAsync("Reprocess: replaces every stage for one recording and preserves other entries and audio") {
+        let fm = FileManager.default
+        let root = fm.temporaryDirectory.appendingPathComponent("Reprocess-\(UUID().uuidString)")
+        defer { try? fm.removeItem(at: root) }
+        let fixture = URL(fileURLWithPath: fm.currentDirectoryPath)
+            .appendingPathComponent("eval/suites/transcribe/audio/tng-nl01-vrije-dag-enterprise-corrected.m4a")
+        let calls = LockedStringArray()
+        let operations = Pipeline.Operations(
+            transcribe: { _, _ in calls.append("transcribe"); return "fixture transcript" },
+            cleanup: { _, _ in calls.append("cleanup"); return "cleaned fixture" },
+            categorize: { _, _, _ in
+                calls.append("categorize")
+                return calls.snapshot().count <= 5 ? .sideProject : .personal
+            },
+            filename: { _, _ in
+                calls.append("filename")
+                return calls.snapshot().count <= 5 ? "2025-01-14-old-name.md" : "2025-01-14-new-name.md"
+            },
+            enrich: { _, _, _, _ in calls.append("enrich"); return "---\nsummary: fixture\n---\nnew result" }
+        )
+        let result = try await Pipeline.runCommand(audioInput: fixture.path, dataDir: root.path, operations: operations)
+        let stem = "tng-nl01-vrije-dag-enterprise-corrected"
+        let originalAudio = try Data(contentsOf: URL(fileURLWithPath: result.audioPath))
+        let other = root.appendingPathComponent("logs/personal/unrelated.md")
+        try fm.createDirectory(at: other.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try Data("unrelated fixture".utf8).write(to: other)
+        try Pipeline.prepareReprocessing(stem: stem, dataDir: root.path)
+        try expect(Pipeline.detectNextStage(stem: stem, dataDir: root.path) == .transcribing)
+        for path in [result.transcriptPath, result.cleanedPath, result.renamedPath, result.enrichedPath] {
+            try expect(!fm.fileExists(atPath: path))
+        }
+        let regenerated = try await Pipeline.resumeCommand(stem: stem, dataDir: root.path,
+            fromStage: .transcribing, operations: operations)
+        try expect(calls.snapshot() == Array(repeating: ["transcribe", "cleanup", "categorize", "filename", "enrich"], count: 2).flatMap { $0 })
+        try expect(Pipeline.detectNextStage(stem: stem, dataDir: root.path) == .done)
+        try expect(regenerated.category == .personal && regenerated.enrichedPath != result.enrichedPath)
+        try expect(!fm.fileExists(atPath: result.enrichedPath) && !fm.fileExists(atPath: result.renamedPath))
+        try expect(try Data(contentsOf: URL(fileURLWithPath: regenerated.audioPath)) == originalAudio)
+        try expect(try Data(contentsOf: other) == Data("unrelated fixture".utf8))
+        try fm.removeItem(atPath: regenerated.audioPath)
+        let finalBytes = try Data(contentsOf: URL(fileURLWithPath: regenerated.enrichedPath))
+        do {
+            try Pipeline.prepareReprocessing(stem: stem, dataDir: root.path)
+            try expect(false, "Missing source audio must reject reprocessing before deleting outputs")
+        } catch is CocoaError { }
+        try expect(try Data(contentsOf: URL(fileURLWithPath: regenerated.enrichedPath)) == finalBytes)
+    }
+
+    func makeRoot(stem: String) throws -> URL {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("PipelineOperationsTests-\(UUID().uuidString)", isDirectory: true)
+        let transcript = root.appendingPathComponent(".pipeline/01-transcribed/\(stem).md")
+        try FileManager.default.createDirectory(at: transcript.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try "raw transcript".write(to: transcript, atomically: true, encoding: .utf8)
+        return root
+    }
+
+    await testAsync("Pipeline: M4A and QuickTime discovery, import, output deletion and resume") {
+        let fm = FileManager.default
+        let repository = URL(fileURLWithPath: fm.currentDirectoryPath)
+        for ext in ["m4a", "mov", "MOV", "qt", "qta", "QTA"] {
+            let root = fm.temporaryDirectory.appendingPathComponent("AudioFormats-\(UUID().uuidString)")
+            defer { try? fm.removeItem(at: root) }
+            let data = root.appendingPathComponent("data")
+            let audio = data.appendingPathComponent("audio")
+            try fm.createDirectory(at: audio, withIntermediateDirectories: true)
+            let stem = "2025-01-14-0900"
+            let filename = "\(stem).\(ext)"
+            let fixture = repository.appendingPathComponent(ext == "m4a"
+                ? "eval/suites/transcribe/history/audio/durins-volk.m4a" : "eval/suites/audio-formats/quicktime.mov")
+            let source = root.appendingPathComponent(filename)
+            try fm.copyItem(at: fixture, to: source)
+            let stored = audio.appendingPathComponent(filename)
+            try fm.copyItem(at: source, to: stored)
+            try fm.createDirectory(at: audio.appendingPathComponent("ignore.mov"), withIntermediateDirectories: true)
+            try "not audio".write(to: audio.appendingPathComponent("ignore.txt"), atomically: true, encoding: .utf8)
+            let entries = Pipeline.listEntries(dataDir: data.path)
+            try expect(entries.count == 1, "Discovery for \(ext): \(entries)")
+            try expect(entries[0].stem == stem && entries[0].latestPath == stored.path, "Source for \(ext): \(entries[0].latestPath), expected \(stored.path)")
+            try expect(entries[0].nextStage == .transcribing)
+            let calls = LockedStringArray()
+            let operations = Pipeline.Operations(
+                transcribe: { path, _ in
+                    calls.append(path)
+                    try expect(try Data(contentsOf: URL(fileURLWithPath: path)) == Data(contentsOf: fixture))
+                    return "synthetic transcript"
+                },
+                cleanup: { text, _ in text },
+                categorize: { _, _, _ in .personal },
+                filename: { _, _ in "2025-01-14-audio-format.md" },
+                enrich: { _, _, _, _ in "synthetic entry" }
+            )
+            let imported = try await Pipeline.runCommand(audioInput: source.path, dataDir: data.path, operations: operations)
+            try expect(imported.audioPath == stored.path)
+            try Pipeline.deleteProcessingOutputs(dataDir: data.path)
+            try expect(fm.fileExists(atPath: stored.path))
+            let resumed = try await Pipeline.resumePendingCommand(dataDir: data.path, operations: operations)
+            try expect(resumed.count == 1 && resumed[0].audioPath == stored.path)
+            try expect(calls.snapshot() == [stored.path, stored.path])
+            try expect(Pipeline.detectNextStage(stem: stem, dataDir: data.path) == .done)
+            let candidates = Pipeline.deletionCandidatePaths(stem: stem, slug: nil, dataDir: data.path)
+            try expect(candidates.contains(stored.path))
+            for path in candidates where fm.fileExists(atPath: path) { try fm.removeItem(atPath: path) }
+            try expect(Pipeline.listEntries(dataDir: data.path).isEmpty)
+        }
+    }
+
+    await testAsync("Resume CLI: batch resumes each pending fixture from its detected stage") {
+        let fm = FileManager.default
+        let root = fm.temporaryDirectory
+            .appendingPathComponent("PipelineBatchResumeCommand-\(UUID().uuidString)", isDirectory: true)
+        defer { try? fm.removeItem(at: root) }
+
+        func write(_ relativePath: String, _ text: String) throws {
+            let url = root.appendingPathComponent(relativePath)
+            try fm.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try text.write(to: url, atomically: true, encoding: .utf8)
+        }
+
+        let newerStem = "2025-01-15-0900"
+        let olderStem = "2025-01-14-0800"
+        try write(".pipeline/01-transcribed/\(newerStem).md", "newer raw")
+        try write(".pipeline/02-logs/\(newerStem).md", "newer cleaned")
+        try write(".pipeline/01-transcribed/\(olderStem).md", "older raw")
+
+        let calls = LockedStringArray()
+        let operations = Pipeline.Operations(
+            transcribe: { _, _ in calls.append("transcribe"); return "unexpected" },
+            cleanup: { transcript, _ in calls.append("cleanup:\(transcript)"); return "\(transcript) cleaned" },
+            categorize: { cleaned, _, _ in calls.append("categorize:\(cleaned)"); return .professional },
+            filename: { cleaned, date in
+                calls.append("filename:\(cleaned)")
+                return "\(date)-cli-\(cleaned.contains("newer") ? "newer" : "older").md"
+            },
+            enrich: { cleaned, date, recordingTime, _ in
+                calls.append("enrich:\(cleaned):\(date):\(recordingTime)")
+                return "---\nsummary: \(cleaned)\n---\n"
+            }
+        )
+
+        let results = try await Pipeline.resumePendingCommand(dataDir: root.path, operations: operations)
+        try expect(results.map { URL(fileURLWithPath: $0.audioPath).lastPathComponent } == [
+            "\(newerStem).m4a", "\(olderStem).m4a",
+        ])
+        try expect(Pipeline.detectNextStage(stem: newerStem, dataDir: root.path) == .done)
+        try expect(Pipeline.detectNextStage(stem: olderStem, dataDir: root.path) == .done)
+        try expect(calls.snapshot() == [
+            "categorize:newer cleaned",
+            "filename:newer cleaned",
+            "enrich:newer cleaned:2025-01-15:09:00",
+            "cleanup:older raw",
+            "categorize:older raw cleaned",
+            "filename:older raw cleaned",
+            "enrich:older raw cleaned:2025-01-14:08:00",
+        ])
+
+        let priorCalls = calls.snapshot()
+        let noPendingResults = try await Pipeline.resumePendingCommand(dataDir: root.path, operations: operations)
+        try expect(noPendingResults.isEmpty)
+        try expect(calls.snapshot() == priorCalls, "An empty batch should not invoke any stage operations")
+    }
+
+    await testAsync("Pipeline CLI: injected operations require explicit audio input") {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("PipelineCommandMissingInput-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let calls = LockedStringArray()
+        let operations = Pipeline.Operations(
+            transcribe: { _, _ in calls.append("transcribe"); return "unused" },
+            cleanup: { _, _ in calls.append("cleanup"); return "unused" },
+            categorize: { _, _, _ in calls.append("categorize"); return .personal },
+            filename: { _, _ in calls.append("filename"); return "unused.md" },
+            enrich: { _, _, _, _ in calls.append("enrich"); return "unused" }
+        )
+
+        do {
+            _ = try await Pipeline.runCommand(dataDir: root.path, operations: operations)
+            try expect(false, "Injected operations without audio must fail before recording")
+        } catch let error as Pipeline.PipelineError {
+            guard case .injectedOperationsRequireAudioInput = error else {
+                throw NSError(domain: "TestError", code: 1, userInfo: [
+                    NSLocalizedDescriptionKey: "Unexpected pipeline command error: \(error)",
+                ])
+            }
+        }
+
+        try expect(calls.snapshot().isEmpty, "Missing audio should never start a model or recorder operation")
+        try expect(!FileManager.default.fileExists(atPath: root.appendingPathComponent("audio").path))
+    }
+
+    await testAsync("Pipeline: fake operations run cleanup through enrichment") {
+        let stem = "2026-07-10-0815"
+        let root = try makeRoot(stem: stem)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let calls = LockedStringArray()
+        let progress = LockedStringArray()
+        let operations = Pipeline.Operations(
+            transcribe: { _, _ in throw NSError(domain: "PipelineTests", code: 1) },
+            cleanup: { transcript, _ in
+                calls.append("cleanup:\(transcript)")
+                return "cleaned entry"
+            },
+            categorize: { cleaned, _, diagnostic in
+                calls.append("categorize:\(cleaned)")
+                await diagnostic("fake category selected")
+                return .professional
+            },
+            filename: { cleaned, date in
+                calls.append("filename:\(date):\(cleaned)")
+                return "2026-07-10-fake-entry.md"
+            },
+            enrich: { cleaned, date, recordingTime, _ in
+                calls.append("enrich:\(date):\(recordingTime):\(cleaned)")
+                return "---\nsummary: Fake\n---\n\n\(cleaned)"
+            }
+        )
+
+        let result = try await Pipeline.resume(
+            stem: stem,
+            dataDir: root.path,
+            fromStage: .cleaning,
+            operations: operations,
+            progress: { progress.append($0.stage.rawValue) }
+        )
+
+        try expect(progress.snapshot() == ["cleaning", "categorizing", "naming", "enriching", "done"])
+        try expect(calls.snapshot().count == 4)
+        try expect(result.category == .professional)
+        try expect(result.slug == "2026-07-10-fake-entry.md")
+        try expect(FileManager.default.fileExists(atPath: result.cleanedPath))
+        try expect(FileManager.default.fileExists(atPath: result.renamedPath))
+        try expect(FileManager.default.fileExists(atPath: result.enrichedPath))
+
+        let unexpectedCalls = LockedStringArray()
+        let failIfCalled = Pipeline.Operations(
+            transcribe: { _, _ in unexpectedCalls.append("transcribe"); return "unused" },
+            cleanup: { _, _ in unexpectedCalls.append("cleanup"); return "unused" },
+            categorize: { _, _, _ in unexpectedCalls.append("categorize"); return .personal },
+            filename: { _, _ in unexpectedCalls.append("filename"); return "unused.md" },
+            enrich: { _, _, _, _ in unexpectedCalls.append("enrich"); return "unused" }
+        )
+        _ = try await Pipeline.resume(stem: stem, dataDir: root.path, operations: failIfCalled)
+        try expect(unexpectedCalls.snapshot().isEmpty)
+    }
+
+    await testAsync("Categories: custom pipeline placement and non-destructive removal use eval audio") {
+        let previous = CaptainsLogConfig.load()
+        defer { try? previous.save() }
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("CategoryPipeline-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let fixture = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+            .appendingPathComponent("eval/suites/transcribe/audio/tng-nl01-vrije-dag-enterprise-corrected.m4a")
+        let input = try String(contentsOfFile: "eval/suites/categorize/input/side-project-voice-app.md", encoding: .utf8)
+        var config = previous.withDataDir(root.path)
+        config.categories = ["research", "travel"]
+        try config.save()
+        let research = Categorize.Category(rawValue: "research")!
+        let operations = Pipeline.Operations(
+            transcribe: { _, _ in input },
+            cleanup: { text, _ in text },
+            categorize: { _, cfg, _ in
+                try expect(cfg.configuredCategories.map(\.rawValue) == ["research", "travel"])
+                return research
+            },
+            filename: { _, date in "\(date)-research-fixture.md" },
+            enrich: { text, _, _, _ in text }
+        )
+        let result = try await Pipeline.run(audioInput: fixture.path, dataDir: root.path, operations: operations)
+        try expect(result.enrichedPath.contains("/logs/research/"))
+        try expect(FileManager.default.fileExists(atPath: root.appendingPathComponent("logs/travel").path))
+        try expect(!FileManager.default.fileExists(atPath: root.appendingPathComponent("logs/personal").path))
+        let bytes = try Data(contentsOf: URL(fileURLWithPath: result.enrichedPath))
+        config.categories = ["travel"]
+        try config.save()
+        try expect(try Data(contentsOf: URL(fileURLWithPath: result.enrichedPath)) == bytes)
+        try expect(Pipeline.listEntries(dataDir: root.path).contains { $0.latestPath == result.enrichedPath })
+    }
+
+    await testAsync("Pipeline CLI: fake fresh run copies eval audio and writes all stage artifacts") {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("PipelineFreshRun-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let fixture = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+            .appendingPathComponent("eval/suites/transcribe/audio/tng-nl01-vrije-dag-enterprise-corrected.m4a")
+        let fixtureBytes = try Data(contentsOf: fixture)
+        let stem = "2025-01-14-enterprise-fixture"
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        let datedInput = root.appendingPathComponent(stem + ".m4a")
+        try FileManager.default.copyItem(at: fixture, to: datedInput)
+        let calls = LockedStringArray()
+        let enrichMetadata = LockedStringArray()
+        let progress = LockedStringArray()
+        let operations = Pipeline.Operations(
+            transcribe: { audioPath, _ in
+                calls.append("transcribe")
+                try expect(FileManager.default.fileExists(atPath: audioPath), "Transcriber should receive copied audio")
+                try expect(try Data(contentsOf: URL(fileURLWithPath: audioPath)) == fixtureBytes, "Copied audio should match the eval fixture")
+                return "fixture transcript"
+            },
+            cleanup: { transcript, _ in
+                calls.append("cleanup")
+                try expect(transcript == "fixture transcript")
+                return "cleaned fixture entry"
+            },
+            categorize: { cleaned, _, _ in
+                calls.append("categorize")
+                try expect(cleaned == "cleaned fixture entry")
+                return .sideProject
+            },
+            filename: { cleaned, date in
+                calls.append("filename")
+                try expect(date == "2025-01-14")
+                try expect(cleaned == "cleaned fixture entry")
+                return "\(date)-fixture-fresh-run.md"
+            },
+            enrich: { cleaned, date, recordingTime, _ in
+                calls.append("enrich")
+                enrichMetadata.append("\(date)|\(recordingTime)")
+                try expect(cleaned == "cleaned fixture entry")
+                return "---\nsummary: Fresh fixture run\n---\n\n\(cleaned)"
+            }
+        )
+
+        let result = try await Pipeline.runCommand(
+            audioInput: datedInput.path,
+            dataDir: root.path,
+            language: "nl",
+            operations: operations,
+            progress: { progress.append($0.stage.rawValue) }
+        )
+
+        try expect(calls.snapshot() == ["transcribe", "cleanup", "categorize", "filename", "enrich"])
+        try expect(enrichMetadata.snapshot().count == 1)
+        try expect(enrichMetadata.snapshot()[0].hasPrefix("2025-01-14|"), "Enrich should receive the date parsed from the fixture name")
+        try expect(enrichMetadata.snapshot()[0].split(separator: "|").last?.count == 5, "Enrich should receive an HH:mm recording time")
+        try expect(progress.snapshot() == ["transcribing", "cleaning", "categorizing", "naming", "enriching", "done"])
+        try expect(try Data(contentsOf: URL(fileURLWithPath: result.audioPath)) == fixtureBytes)
+        try expect(try String(contentsOfFile: result.transcriptPath, encoding: .utf8) == "fixture transcript")
+        try expect(try String(contentsOfFile: result.cleanedPath, encoding: .utf8) == "cleaned fixture entry")
+        try expect(try String(contentsOfFile: result.renamedPath, encoding: .utf8) == "cleaned fixture entry")
+        try expect(try String(contentsOfFile: result.enrichedPath, encoding: .utf8).contains("summary: Fresh fixture run"))
+        try expect(result.category == .sideProject)
+        try expect(result.slug == "2025-01-14-fixture-fresh-run.md")
+        try expect(Pipeline.detectNextStage(stem: stem, dataDir: root.path) == .done)
+    }
+
+    await testAsync("Pipeline CLI: failure at each fresh stage preserves prior artifacts and retry stage") {
+        let fm = FileManager.default
+        let repository = URL(fileURLWithPath: fm.currentDirectoryPath)
+        let fixture = repository.appendingPathComponent("eval/suites/transcribe/audio/tng-nl01-vrije-dag-enterprise-corrected.m4a")
+        let stem = "tng-nl01-vrije-dag-enterprise-corrected"
+        let stages: [Pipeline.Stage] = [.transcribing, .cleaning, .categorizing, .naming, .enriching]
+        let operationNames = ["transcribe", "cleanup", "categorize", "filename", "enrich"]
+
+        for (failedIndex, failedStage) in stages.enumerated() {
+            let root = fm.temporaryDirectory
+                .appendingPathComponent("PipelineFreshFailure-\(failedStage.rawValue)-\(UUID().uuidString)", isDirectory: true)
+            defer { try? fm.removeItem(at: root) }
+
+            let failIfRequested: @Sendable (Pipeline.Stage) throws -> Void = { stage in
+                guard failedStage == stage else { return }
+                throw NSError(domain: "PipelineFreshCommandTests", code: failedIndex + 1, userInfo: [
+                    NSLocalizedDescriptionKey: "Synthetic \(stage.rawValue) failure",
+                ])
+            }
+
+            let calls = LockedStringArray()
+            let progress = LockedStringArray()
+            let operations = Pipeline.Operations(
+                transcribe: { _, _ in
+                    calls.append("transcribe")
+                    try failIfRequested(.transcribing)
+                    return "fixture transcript"
+                },
+                cleanup: { _, _ in
+                    calls.append("cleanup")
+                    try failIfRequested(.cleaning)
+                    return "cleaned fixture"
+                },
+                categorize: { _, _, _ in
+                    calls.append("categorize")
+                    try failIfRequested(.categorizing)
+                    return .sideProject
+                },
+                filename: { _, date in
+                    calls.append("filename")
+                    try failIfRequested(.naming)
+                    return "\(date)-fake-failure.md"
+                },
+                enrich: { _, _, _, _ in
+                    calls.append("enrich")
+                    try failIfRequested(.enriching)
+                    return "---\nsummary: should not be written\n---\n"
+                }
+            )
+
+            do {
+                _ = try await Pipeline.runCommand(
+                    audioInput: fixture.path,
+                    dataDir: root.path,
+                    operations: operations,
+                    progress: { progress.append($0.stage.rawValue) }
+                )
+                try expect(false, "Fresh pipeline should surface the injected \(failedStage.rawValue) failure")
+            } catch let error as NSError {
+                try expect(error.localizedDescription == "Synthetic \(failedStage.rawValue) failure")
+            }
+
+            try expect(calls.snapshot() == Array(operationNames.prefix(failedIndex + 1)))
+            try expect(progress.snapshot() == stages.prefix(failedIndex + 1).map(\.rawValue))
+            try expect(Pipeline.detectNextStage(stem: stem, dataDir: root.path) == failedStage)
+            try expect(fm.fileExists(atPath: root.appendingPathComponent("audio/\(stem).m4a").path))
+            try expect(
+                fm.fileExists(atPath: root.appendingPathComponent(".pipeline/01-transcribed/\(stem).md").path)
+                    == (failedIndex >= 1),
+                "Transcript existence should reflect whether transcription completed"
+            )
+            try expect(
+                fm.fileExists(atPath: root.appendingPathComponent(".pipeline/02-logs/\(stem).md").path)
+                    == (failedIndex >= 2),
+                "Cleaned output should exist only after cleanup completed"
+            )
+            try expect(
+                fm.fileExists(atPath: root.appendingPathComponent(".pipeline/03-category/\(stem).json").path)
+                    == (failedIndex >= 3),
+                "Category manifest should exist only after categorization completed"
+            )
+            try expect(
+                fm.fileExists(atPath: root.appendingPathComponent(".pipeline/04-rename/\(stem).slug.txt").path)
+                    == (failedIndex >= 4),
+                "Slug marker should exist only after filename generation completed"
+            )
+            let enriched = root.appendingPathComponent("logs/side-project/2025-01-14-fake-failure.md")
+            try expect(!fm.fileExists(atPath: enriched.path), "Failed pipeline must not leave enriched output")
+        }
+    }
+
+    await testAsync("Pipeline CLI: importing destination audio preserves it and missing input fails safely") {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("PipelineAudioSelfImport-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let fixture = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+            .appendingPathComponent("eval/suites/transcribe/history/audio/durins-volk.m4a")
+        let expectedBytes = try Data(contentsOf: fixture)
+        let stem = fixture.deletingPathExtension().lastPathComponent
+        let audioURL = root.appendingPathComponent("audio/\(stem).m4a")
+        try FileManager.default.createDirectory(
+            at: audioURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try FileManager.default.copyItem(at: fixture, to: audioURL)
+
+        let operations = Pipeline.Operations(
+            transcribe: { _, _ in "fixture transcript" },
+            cleanup: { _, _ in "fixture cleanup" },
+            categorize: { _, _, _ in .personal },
+            filename: { _, date in "\(date)-self-import.md" },
+            enrich: { cleaned, _, _, _ in cleaned }
+        )
+        let result = try await Pipeline.runCommand(
+            audioInput: audioURL.path, dataDir: root.path, operations: operations)
+        try expect(result.audioPath == audioURL.path)
+        try expect(try Data(contentsOf: audioURL) == expectedBytes)
+
+        let missingInput = root.appendingPathComponent("not-present/\(stem).m4a")
+        do {
+            _ = try await Pipeline.runCommand(
+                audioInput: missingInput.path, dataDir: root.path, operations: operations)
+            try expect(false, "A missing source audio file should fail before processing")
+        } catch {
+            try expect(try Data(contentsOf: audioURL) == expectedBytes,
+                "A failed import must not delete the existing destination audio")
+        }
+    }
+
+    await testAsync("Resume CLI: auto-detects each stage and only runs remaining fake operations") {
+        let resumeCases: [(Pipeline.Stage, [String])] = [
+            (.transcribing, ["transcribe", "cleanup", "categorize", "filename", "enrich"]),
+            (.cleaning, ["cleanup", "categorize", "filename", "enrich"]),
+            (.categorizing, ["categorize", "filename", "enrich"]),
+            (.naming, ["filename", "enrich"]),
+            (.enriching, ["enrich"]),
+            (.done, []),
+        ]
+
+        for (startStage, expectedCalls) in resumeCases {
+            let stem = "2026-07-10-0815"
+            let root = FileManager.default.temporaryDirectory
+                .appendingPathComponent("PipelineResume-\(startStage.rawValue)-\(UUID().uuidString)", isDirectory: true)
+            defer { try? FileManager.default.removeItem(at: root) }
+
+            func write(_ relativePath: String, _ content: String) throws {
+                let url = root.appendingPathComponent(relativePath)
+                try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+                try content.write(to: url, atomically: true, encoding: .utf8)
+            }
+
+            if startStage != .transcribing {
+                try write(".pipeline/01-transcribed/\(stem).md", "raw transcript")
+            } else {
+                let audio = root.appendingPathComponent("audio/\(stem).m4a")
+                try FileManager.default.createDirectory(at: audio.deletingLastPathComponent(), withIntermediateDirectories: true)
+                let fixture = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+                    .appendingPathComponent("eval/suites/transcribe/history/audio/durins-volk.m4a")
+                try FileManager.default.copyItem(at: fixture, to: audio)
+            }
+            let order: [Pipeline.Stage] = [.transcribing, .cleaning, .categorizing, .naming, .enriching, .done]
+            let startIndex = order.firstIndex(of: startStage)!
+            if startIndex >= order.firstIndex(of: .categorizing)! {
+                try write(".pipeline/02-logs/\(stem).md", "cleaned entry")
+            }
+            if startIndex >= order.firstIndex(of: .naming)! {
+                try Categorize.writeManifest(.init(sourceStem: stem, category: .professional), dataDirURL: root)
+            }
+            let slug = "2026-07-10-resume-\(startStage.rawValue)"
+            if startIndex >= order.firstIndex(of: .enriching)! {
+                try write(".pipeline/04-rename/\(stem).slug.txt", slug)
+                try write(".pipeline/04-rename/\(slug).md", "renamed entry")
+            }
+            if startStage == .done {
+                try write("logs/professional/\(slug).md", "---\nsummary: already complete\n---\n")
+            }
+
+            let calls = LockedStringArray()
+            let progress = LockedStringArray()
+            let operations = Pipeline.Operations(
+                transcribe: { _, _ in calls.append("transcribe"); return "raw transcript" },
+                cleanup: { _, _ in calls.append("cleanup"); return "cleaned entry" },
+                categorize: { _, _, _ in calls.append("categorize"); return .professional },
+                filename: { _, _ in calls.append("filename"); return "\(stem)-resume-\(startStage.rawValue).md" },
+                enrich: { _, _, _, _ in calls.append("enrich"); return "---\nsummary: resumed\n---\n" }
+            )
+
+            _ = try await Pipeline.resumeCommand(
+                stem: stem,
+                dataDir: root.path,
+                fromStage: startStage,
+                language: "nl",
+                operations: operations,
+                progress: { progress.append($0.stage.rawValue) }
+            )
+
+            try expect(calls.snapshot() == expectedCalls, "Resume from \(startStage.rawValue) called \(calls.snapshot()), expected \(expectedCalls)")
+            try expect(progress.snapshot().first == (startStage == .done ? "done" : startStage.rawValue), "Resume should report \(startStage.rawValue) as its first stage")
+            try expect(progress.snapshot().last == "done", "Resume from \(startStage.rawValue) should finish at done")
+        }
+    }
+
+    await testAsync("Resume CLI: an explicit later stage falls back when an intermediate artifact is missing") {
+        let fm = FileManager.default
+        let stem = "2026-07-10-1015"
+        let root = fm.temporaryDirectory
+            .appendingPathComponent("PipelineResumeMissingIntermediate-\(UUID().uuidString)", isDirectory: true)
+        defer { try? fm.removeItem(at: root) }
+        let transcript = root.appendingPathComponent(".pipeline/01-transcribed/\(stem).md")
+        try fm.createDirectory(at: transcript.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try "raw transcript".write(to: transcript, atomically: true, encoding: .utf8)
+
+        let calls = LockedStringArray()
+        let progress = LockedStringArray()
+        let operations = Pipeline.Operations(
+            transcribe: { _, _ in calls.append("transcribe"); return "unexpected transcript" },
+            cleanup: { input, _ in
+                calls.append("cleanup:\(input)")
+                return "recovered cleaned entry"
+            },
+            categorize: { _, _, _ in calls.append("categorize"); return .personal },
+            filename: { _, _ in calls.append("filename"); return "2026-07-10-recovered.md" },
+            enrich: { _, _, _, _ in calls.append("enrich"); return "recovered enriched entry" }
+        )
+
+        let result = try await Pipeline.resumeCommand(
+            stem: stem,
+            dataDir: root.path,
+            fromStage: .categorizing,
+            operations: operations,
+            progress: { progress.append($0.stage.rawValue) }
+        )
+
+        try expect(calls.snapshot() == [
+            "cleanup:raw transcript", "categorize", "filename", "enrich",
+        ], "Resume should fall back to cleanup when its output is absent")
+        try expect(progress.snapshot().first == "cleaning", "The first reported stage must match the missing prerequisite")
+        try expect(Pipeline.detectNextStage(stem: stem, dataDir: root.path) == .done)
+        try expect(result.category == .personal)
+        try expect(try String(contentsOf: transcript, encoding: .utf8) == "raw transcript")
+    }
+
+    await testAsync("Resume CLI: fake cleanup failure preserves the transcript and stage") {
+        let stem = "2026-07-10-0915"
+        let root = try makeRoot(stem: stem)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let transcriptURL = root.appendingPathComponent(".pipeline/01-transcribed/\(stem).md")
+        let originalTranscript = try Data(contentsOf: transcriptURL)
+        let laterCalls = LockedStringArray()
+        let operations = Pipeline.Operations(
+            transcribe: { _, _ in "unused" },
+            cleanup: { _, _ in
+                throw NSError(domain: "PipelineTests", code: 2, userInfo: [
+                    NSLocalizedDescriptionKey: "Synthetic cleanup failure",
+                ])
+            },
+            categorize: { _, _, _ in laterCalls.append("categorize"); return .personal },
+            filename: { _, _ in laterCalls.append("filename"); return "unused.md" },
+            enrich: { _, _, _, _ in laterCalls.append("enrich"); return "unused" }
+        )
+
+        do {
+            _ = try await Pipeline.resumeCommand(
+                stem: stem,
+                dataDir: root.path,
+                fromStage: .cleaning,
+                operations: operations
+            )
+            try expect(false, "Expected cleanup failure")
+        } catch {
+            try expect(error.localizedDescription == "Synthetic cleanup failure")
+        }
+        try expect(laterCalls.snapshot().isEmpty)
+        try expect(
+            try Data(contentsOf: transcriptURL) == originalTranscript,
+            "A failed cleanup stage must leave the transcript from the prior stage unchanged"
+        )
+        try expect(
+            Pipeline.detectNextStage(stem: stem, dataDir: root.path) == .cleaning,
+            "A failed cleanup stage should remain resumable at cleaning"
+        )
+        try expect(!FileManager.default.fileExists(
+            atPath: root.appendingPathComponent(".pipeline/02-logs/\(stem).md").path
+        ))
+    }
+
+    await testAsync("Resume CLI: cleanup cancellation preserves the transcript and remains retryable") {
+        let stem = "2026-07-10-1115"
+        let root = try makeRoot(stem: stem)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let transcript = root.appendingPathComponent(".pipeline/01-transcribed/\(stem).md")
+        let originalTranscript = try Data(contentsOf: transcript)
+        let calls = LockedStringArray()
+        let progress = LockedStringArray()
+        let operations = Pipeline.Operations(
+            transcribe: { _, _ in calls.append("transcribe"); return "unused" },
+            cleanup: { _, _ in
+                calls.append("cleanup")
+                throw CancellationError()
+            },
+            categorize: { _, _, _ in calls.append("categorize"); return .personal },
+            filename: { _, _ in calls.append("filename"); return "unused.md" },
+            enrich: { _, _, _, _ in calls.append("enrich"); return "unused" }
+        )
+
+        do {
+            _ = try await Pipeline.resumeCommand(
+                stem: stem,
+                dataDir: root.path,
+                fromStage: .cleaning,
+                operations: operations,
+                progress: { progress.append($0.stage.rawValue) }
+            )
+            try expect(false, "Cleanup cancellation should propagate")
+        } catch is CancellationError {
+            // Expected: cancellation is visible to the coordinator for cleanup.
+        }
+
+        try expect(calls.snapshot() == ["cleanup"], "Cancellation must stop later stages")
+        try expect(progress.snapshot() == ["cleaning"], "Only the cancelled stage should be reported")
+        try expect(try Data(contentsOf: transcript) == originalTranscript)
+        try expect(Pipeline.detectNextStage(stem: stem, dataDir: root.path) == .cleaning)
+        try expect(!FileManager.default.fileExists(
+            atPath: root.appendingPathComponent(".pipeline/02-logs/\(stem).md").path
+        ))
+    }
+
+    await testAsync("Resume CLI: cancellation after uncooperative inference preserves retry stage") {
+        let stem = "2026-07-10-1115"
+        let root = try makeRoot(stem: stem)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let gate = LockedValue<CheckedContinuation<Void, Never>?>(nil)
+        let later = LockedStringArray()
+        let operations = Pipeline.Operations(
+            transcribe: { _, _ in "unused" },
+            cleanup: { _, _ in
+                await withCheckedContinuation { gate.set($0) }
+                return "cancelled output"
+            },
+            categorize: { _, _, _ in later.append("categorize"); return .personal },
+            filename: { _, _ in later.append("filename"); return "unused.md" },
+            enrich: { _, _, _, _ in later.append("enrich"); return "unused" }
+        )
+        let worker = Task {
+            try await Pipeline.resumeCommand(stem: stem, dataDir: root.path,
+                                             fromStage: .cleaning, operations: operations)
+        }
+        for _ in 0..<100 where gate.get() == nil {
+            try await Task.sleep(for: .milliseconds(1))
+        }
+        try expect(gate.get() != nil)
+        worker.cancel()
+        gate.get()?.resume()
+        do {
+            _ = try await worker.value
+            try expect(false, "Cancelled stage must be discarded")
+        } catch is CancellationError {}
+        try expect(later.snapshot().isEmpty)
+        try expect(Pipeline.detectNextStage(stem: stem, dataDir: root.path) == .cleaning)
+        try expect(!FileManager.default.fileExists(atPath: root.appendingPathComponent(".pipeline/02-logs/\(stem).md").path))
+    }
+
+    await testAsync("Resume CLI: malformed category manifest reruns categorization before later stages") {
+        let stem = "2026-07-10-1215"
+        let root = try makeRoot(stem: stem)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let cleaned = root.appendingPathComponent(".pipeline/02-logs/\(stem).md")
+        try FileManager.default.createDirectory(at: cleaned.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try "cleaned entry".write(to: cleaned, atomically: true, encoding: .utf8)
+        let manifestURL = Categorize.manifestURL(stem: stem, dataDirURL: root)
+        try FileManager.default.createDirectory(at: manifestURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try "{broken json".write(to: manifestURL, atomically: true, encoding: .utf8)
+
+        let calls = LockedStringArray()
+        let operations = Pipeline.Operations(
+            transcribe: { _, _ in calls.append("transcribe"); return "unused" },
+            cleanup: { _, _ in calls.append("cleanup"); return "unused" },
+            categorize: { input, _, _ in
+                try expect(input == "cleaned entry")
+                calls.append("categorize")
+                return .professional
+            },
+            filename: { _, _ in calls.append("filename"); return "2026-07-10-recovered-category.md" },
+            enrich: { _, _, _, _ in calls.append("enrich"); return "recovered entry" }
+        )
+
+        let result = try await Pipeline.resumeCommand(
+            stem: stem,
+            dataDir: root.path,
+            fromStage: .naming,
+            operations: operations
+        )
+
+        try expect(calls.snapshot() == ["categorize", "filename", "enrich"])
+        try expect(try Categorize.loadManifest(stem: stem, dataDirURL: root).category == .professional)
+        try expect(result.category == .professional)
+        try expect(Pipeline.detectNextStage(stem: stem, dataDir: root.path) == .done)
+    }
+
+    await testAsync("Resume CLI: failed categorization leaves a malformed manifest retryable") {
+        let stem = "2026-07-10-1315"
+        let root = try makeRoot(stem: stem)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let cleaned = root.appendingPathComponent(".pipeline/02-logs/\(stem).md")
+        try FileManager.default.createDirectory(at: cleaned.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try "cleaned entry".write(to: cleaned, atomically: true, encoding: .utf8)
+        let manifestURL = Categorize.manifestURL(stem: stem, dataDirURL: root)
+        try FileManager.default.createDirectory(at: manifestURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+        let malformedManifest = "{incomplete category manifest"
+        try malformedManifest.write(to: manifestURL, atomically: true, encoding: .utf8)
+        let calls = LockedStringArray()
+        let operations = Pipeline.Operations(
+            transcribe: { _, _ in calls.append("transcribe"); return "unused" },
+            cleanup: { _, _ in calls.append("cleanup"); return "unused" },
+            categorize: { _, _, _ in
+                calls.append("categorize")
+                throw NSError(domain: "PipelineResumeTests", code: 1, userInfo: [
+                    NSLocalizedDescriptionKey: "Synthetic categorization failure",
+                ])
+            },
+            filename: { _, _ in calls.append("filename"); return "unused.md" },
+            enrich: { _, _, _, _ in calls.append("enrich"); return "unused" }
+        )
+
+        do {
+            _ = try await Pipeline.resumeCommand(
+                stem: stem,
+                dataDir: root.path,
+                fromStage: .naming,
+                operations: operations
+            )
+            try expect(false, "Categorization failure should propagate")
+        } catch let error as NSError {
+            try expect(error.localizedDescription == "Synthetic categorization failure")
+        }
+
+        try expect(calls.snapshot() == ["categorize"])
+        try expect(try String(contentsOf: manifestURL, encoding: .utf8) == malformedManifest)
+        try expect(Pipeline.detectNextStage(stem: stem, dataDir: root.path) == .categorizing)
+        try expect(!FileManager.default.fileExists(
+            atPath: root.appendingPathComponent(".pipeline/04-rename/\(stem).slug.txt").path
+        ))
+    }
+
+    await testAsync("Resume CLI: rejects unsafe filename values before writing in the rename stage") {
+        let fm = FileManager.default
+        let stem = "2026-07-10-1415"
+        let root = try makeRoot(stem: stem)
+        defer { try? fm.removeItem(at: root) }
+        let cleaned = root.appendingPathComponent(".pipeline/02-logs/\(stem).md")
+        try fm.createDirectory(at: cleaned.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try "cleaned entry".write(to: cleaned, atomically: true, encoding: .utf8)
+        try Categorize.writeManifest(.init(sourceStem: stem, category: .personal), dataDirURL: root)
+
+        let outsideName = "escaped-\(UUID().uuidString).md"
+        let outsidePath = root.deletingLastPathComponent().appendingPathComponent(outsideName)
+        defer { try? fm.removeItem(at: outsidePath) }
+        let invalidSlugs = ["../../../\(outsideName)", "..\\\(outsideName)", "", ".", ".."]
+        let calls = LockedStringArray()
+        for invalidSlug in invalidSlugs {
+            let operations = Pipeline.Operations(
+                transcribe: { _, _ in calls.append("transcribe"); return "unused" },
+                cleanup: { _, _ in calls.append("cleanup"); return "unused" },
+                categorize: { _, _, _ in calls.append("categorize"); return .professional },
+                filename: { _, _ in calls.append("filename:\(invalidSlug)"); return invalidSlug },
+                enrich: { _, _, _, _ in calls.append("enrich"); return "unused" }
+            )
+
+            do {
+                _ = try await Pipeline.resumeCommand(
+                    stem: stem,
+                    dataDir: root.path,
+                    fromStage: .naming,
+                    operations: operations
+                )
+                try expect(false, "Unsafe generated filename should be rejected: \(invalidSlug)")
+            } catch let error as Pipeline.PipelineError {
+                guard case .invalidSlug(let value) = error else {
+                    try expect(false, "Expected the invalidSlug error")
+                    return
+                }
+                try expect(value == invalidSlug)
+            }
+
+            try expect(calls.snapshot().last == "filename:\(invalidSlug)")
+            try expect(!fm.fileExists(atPath: root.appendingPathComponent(".pipeline/04-rename/\(stem).slug.txt").path))
+            try expect(Pipeline.detectNextStage(stem: stem, dataDir: root.path) == .naming)
+        }
+
+        try expect(calls.snapshot().count == invalidSlugs.count, "Only filename generation should run for invalid values")
+        try expect(!fm.fileExists(atPath: outsidePath.path), "The stage must not write outside the data folder")
+    }
+
+    test("Pipeline: unsafe stored slugs cannot expose or delete files outside the data folder") {
+        let fm = FileManager.default
+        let sandbox = fm.temporaryDirectory
+            .appendingPathComponent("CaptainsLogStoredSlugBoundary-\(UUID().uuidString)", isDirectory: true)
+        let root = sandbox.appendingPathComponent("data", isDirectory: true)
+        let stem = "2026-07-10-1515"
+        let unsafeSlug = "../../../outside-\(UUID().uuidString)"
+        let victimName = "\(unsafeSlug).md"
+        let renameVictim = root.appendingPathComponent(".pipeline/04-rename/\(victimName)").standardizedFileURL
+        let enrichedVictim = root.appendingPathComponent("logs/\(victimName)").standardizedFileURL
+        defer {
+            try? fm.removeItem(at: sandbox)
+            try? fm.removeItem(at: enrichedVictim)
+        }
+        try fm.createDirectory(at: root, withIntermediateDirectories: true)
+
+        let marker = root.appendingPathComponent(".pipeline/04-rename/\(stem).slug.txt")
+        try fm.createDirectory(at: marker.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try unsafeSlug.write(to: marker, atomically: true, encoding: .utf8)
+
+        let transcript = root.appendingPathComponent(".pipeline/01-transcribed/\(stem).md")
+        let cleaned = root.appendingPathComponent(".pipeline/02-logs/\(stem).md")
+        try fm.createDirectory(at: transcript.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try fm.createDirectory(at: cleaned.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try "transcript".write(to: transcript, atomically: true, encoding: .utf8)
+        try "cleaned".write(to: cleaned, atomically: true, encoding: .utf8)
+        try Categorize.writeManifest(.init(sourceStem: stem, category: .personal), dataDirURL: root)
+
+        for victim in [renameVictim, enrichedVictim] {
+            try fm.createDirectory(at: victim.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try "preserve synthetic outside file".write(to: victim, atomically: true, encoding: .utf8)
+        }
+
+        let entries = Pipeline.listEntries(dataDir: root.path).filter { $0.stem == stem }
+        try expect(entries.count == 1)
+        try expect(entries[0].slug == nil, "Invalid markers should be treated as incomplete naming state")
+        try expect(entries[0].nextStage == .naming)
+        try expect(entries[0].latestPath.hasPrefix(root.path + "/"))
+
+        let protectedPaths = Set([renameVictim.path, enrichedVictim.path])
+        for candidate in Pipeline.deletionCandidatePaths(stem: stem, slug: unsafeSlug, dataDir: root.path) {
+            let standardized = URL(fileURLWithPath: candidate).standardizedFileURL.path
+            try expect(!protectedPaths.contains(standardized))
+        }
+        let audio = root.appendingPathComponent("audio/\(stem).m4a")
+        try fm.createDirectory(at: audio.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try Data("synthetic source audio".utf8).write(to: audio)
+        try Pipeline.deleteProcessingOutputs(dataDir: root.path)
+
+        try expect(!fm.fileExists(atPath: marker.path))
+        try expect(try String(contentsOf: renameVictim, encoding: .utf8) == "preserve synthetic outside file")
+        try expect(try String(contentsOf: enrichedVictim, encoding: .utf8) == "preserve synthetic outside file")
+        try expect(try Data(contentsOf: audio) == Data("synthetic source audio".utf8))
+    }
+}
+
+@MainActor
+func runTests() async {
+    let suiteName = lightweightUnitOnly ? "Lightweight CaptainsLog Unit Tests" : "Full CaptainsLog Tests"
+    print("\nRunning \(suiteName)...\n")
+
+    test("System requirements: supported platform passes; unsupported capabilities explain every failure") {
+        try expect(SystemRequirements.unmetRequirements(
+            macOSMajorVersion: 26, isAppleSilicon: true, hasMetalDevice: true).isEmpty)
+        try expect(SystemRequirements.unmetRequirements(
+            macOSMajorVersion: 27, isAppleSilicon: true, hasMetalDevice: true).isEmpty)
+        let oldOS = SystemRequirements.unmetRequirements(
+            macOSMajorVersion: 25, isAppleSilicon: true, hasMetalDevice: true)
+        try expect(oldOS.count == 1 && oldOS[0].contains("macOS 26"))
+        let intel = SystemRequirements.unmetRequirements(
+            macOSMajorVersion: 26, isAppleSilicon: false, hasMetalDevice: true)
+        try expect(intel.count == 1 && intel[0].contains("Apple Silicon"))
+        let noGPU = SystemRequirements.unmetRequirements(
+            macOSMajorVersion: 26, isAppleSilicon: true, hasMetalDevice: false)
+        try expect(noGPU.count == 1 && noGPU[0].contains("Metal"))
+        try expect(SystemRequirements.unmetRequirements(
+            macOSMajorVersion: 25, isAppleSilicon: false, hasMetalDevice: false).count == 3)
+    }
+
+    await testAsync("Transcriber: genuine QuickTime audio converts to readable audio without changing the source") {
+        let fm = FileManager.default
+        let fixture = URL(fileURLWithPath: fm.currentDirectoryPath)
+            .appendingPathComponent("eval/suites/audio-formats/quicktime.mov")
+        let original = try Data(contentsOf: fixture)
+        for ext in ["mov", "MOV", "qt", "qta", "QTA"] {
+            let input = fm.temporaryDirectory.appendingPathComponent("QuickTime-\(UUID().uuidString).\(ext)")
+            try fm.copyItem(at: fixture, to: input)
+            defer { try? fm.removeItem(at: input) }
+            let output = try await Transcriber.prepareAudio(input)
+            defer { try? fm.removeItem(at: output) }
+            try expect(output != input && output.pathExtension == "m4a")
+            let audio = try AVAudioFile(forReading: output)
+            let duration = Double(audio.length) / audio.fileFormat.sampleRate
+            try expect(duration > 2.9 && duration < 3.2, "Conversion must preserve the fixture's three seconds of audio")
+            let buffer = AVAudioPCMBuffer(pcmFormat: audio.processingFormat, frameCapacity: 1024)!
+            try audio.read(into: buffer)
+            try expect(buffer.frameLength > 0)
+            try expect(try Data(contentsOf: input) == original)
+        }
+        let m4a = URL(fileURLWithPath: fm.currentDirectoryPath)
+            .appendingPathComponent("eval/suites/transcribe/history/audio/durins-volk.m4a")
+        let unchanged = try await Transcriber.prepareAudio(m4a)
+        try expect(unchanged == m4a)
+    }
+
+    await testAsync("Saved audio: transport loads fixture, pauses, seeks and stops") {
+        let playback = SavedAudioPlayback()
+        let fixture = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+            .appendingPathComponent("eval/suites/transcribe/audio/tng-nl01-vrije-dag-enterprise-corrected.m4a")
+        await playback.load(url: fixture)
+        try expect(playback.error == nil && !playback.isLoading && playback.duration > 1)
+        try expect(!playback.isPlaying && playback.position == 0)
+        playback.togglePlayback()
+        try expect(playback.isPlaying)
+        playback.togglePlayback()
+        try expect(!playback.isPlaying)
+        let target = playback.duration / 2
+        playback.seek(to: target)
+        try await Task.sleep(for: .milliseconds(300))
+        playback.refresh()
+        try expect(abs(playback.position - target) < 0.1, "Native playback must seek to the requested time")
+        playback.stop()
+        playback.togglePlayback()
+        try expect(!playback.isPlaying, "Leaving the detail must release the player")
+    }
+
+    await testAsync("Saved audio: QuickTime, missing and unreadable recordings") {
+        let playback = SavedAudioPlayback()
+        let fixture = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+            .appendingPathComponent("eval/suites/audio-formats/quicktime.mov")
+        await playback.load(url: fixture)
+        try expect(playback.error == nil && playback.duration > 2.9 && playback.duration < 3.2)
+        await playback.load(url: nil)
+        try expect(playback.error != nil && !playback.isLoading && playback.duration == 0)
+        let invalid = FileManager.default.temporaryDirectory.appendingPathComponent("invalid-audio-\(UUID().uuidString).m4a")
+        try Data("invalid audio".utf8).write(to: invalid)
+        defer { try? FileManager.default.removeItem(at: invalid) }
+        await playback.load(url: invalid)
+        try expect(playback.error != nil && !playback.isLoading)
+    }
+
+    // MARK: - ConfigManager Tests
+
+    test("Corrections: retain spelling pairs and discard legacy notes") {
+        let fixture = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+            .appendingPathComponent("eval/suites/settings/context/corrections.md")
+        let source = try String(contentsOf: fixture, encoding: .utf8)
+        var document = CorrectionDocument(source + "Keep this legacy instruction.\nRik → Rick\n")
+        try expect(document.text == "Koenh -> Koen\nRik → Rick")
+        try expect(document.entries.count == 2)
+        try expect(document.entries[0].misspelling == "Koenh")
+        try expect(document.entries[0].spelling == "Koen")
+        document.entries[0].spelling = "Koen van Gilst"
+        document.remove(document.entries[1].id)
+        try expect(document.text.contains("Koenh → Koen van Gilst"))
+        try expect(!document.text.contains("Keep this legacy instruction."))
+        try expect(!document.text.contains("Rik"))
+        try expect(CorrectionDocument("Legacy notes only.\n").text.isEmpty)
+        document.add()
+        document.entries[1].misspelling = "Whisper kit"
+        document.entries[1].spelling = "WhisperKit"
+        let reloaded = CorrectionDocument(document.text)
+        try expect(reloaded.entries.count == 2)
+        try expect(reloaded.entries[1].spelling == "WhisperKit")
+        let dir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let config = CaptainsLogConfig().withDataDir(dir.path)
+        try config.writeCorrections(document.text)
+        try expect(config.readCorrections() == document.text)
+        try expect(Cleanup.nameCorrectionsSection(config.readCorrections()).contains("Whisper kit → WhisperKit"))
+    }
+
+    test("Categories: multi-selection filters current and retained folders, with all selected by default") {
+        var filter = CategoryFilter()
+        try expect(filter.includesAll)
+        try expect(filter.includes(path: "/isolated/logs/personal/fixture.md"))
+        try expect(filter.includes(path: "/isolated/logs/research/fixture.md"))
+        filter.select("personal", selected: false)
+        try expect(!filter.includes(path: "/isolated/logs/personal/fixture.md"))
+        try expect(filter.includes(path: "/isolated/logs/side-project/fixture.md"))
+        try expect(filter.includes(path: "/isolated/logs/professional/fixture.md"))
+        filter.select("professional", selected: false)
+        try expect(!filter.includes(path: "/isolated/logs/professional/fixture.md"))
+        filter.select("personal", selected: true)
+        try expect(filter.includes(path: "/isolated/logs/personal/fixture.md"))
+        try expect(!filter.includes(path: "/isolated/logs/professional/fixture.md"))
+        try expect(CategoryFilter.key(for: "/isolated/.pipeline/02-logs/fixture.md") == "uncategorized")
+        filter.selectAll()
+        try expect(filter.includesAll)
+        try expect(filter.includes(path: "/isolated/logs/professional/fixture.md"))
+    }
+
+    test("ConfigManager: categories persist immediately without removing existing folders") {
+        let previous = CaptainsLogConfig.load()
+        defer { try? previous.save() }
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("CategoryConfig-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        var isolated = previous.withDataDir(root.path)
+        isolated.categories = ["personal", "research"]
+        try isolated.save()
+        let retained = root.appendingPathComponent("logs/personal/fixture.md")
+        try FileManager.default.createDirectory(at: retained.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try "fixture".write(to: retained, atomically: true, encoding: .utf8)
+        let manager = ConfigManager(loadContextFiles: false)
+        manager.categories.removeAll { $0 == "personal" }
+        try expect(CaptainsLogConfig.load().configuredCategories.map(\.rawValue) == ["research"])
+        try expect(try String(contentsOf: retained, encoding: .utf8) == "fixture")
+        manager.categories.append("travel")
+        try expect(CaptainsLogConfig.load().configuredCategories.map(\.rawValue) == ["research", "travel"])
+        manager.categories.removeAll()
+        try expect(CaptainsLogConfig.load().configuredCategories.isEmpty)
+    }
+
+    test("ConfigManager: initial dataDir uses configured path or the documented default") {
+        let priorConfig = CaptainsLogConfig.load()
+        defer { try? priorConfig.save() }
+
+        try priorConfig.withDataDir(nil).save()
+        let defaultConfig = ConfigManager(loadContextFiles: false)
+        let expectedDefault = FileManager.default.homeDirectoryForCurrentUser
+            .appendingPathComponent("Documents/CaptainsLog").path
+        try expect(
+            defaultConfig.dataDir == expectedDefault,
+            "Missing configuration should use the documented Documents/CaptainsLog directory"
+        )
+
+        let expectedConfiguredPath = FileManager.default.temporaryDirectory
+            .appendingPathComponent("CaptainsLogConfiguredDataDir-\(UUID().uuidString)").path
+        try priorConfig.withDataDir(expectedConfiguredPath).save()
+        let configured = ConfigManager(loadContextFiles: false)
+        try expect(
+            configured.dataDir == expectedConfiguredPath,
+            "ConfigManager should load the data folder saved in config.json"
+        )
+    }
+
+    test("ConfigManager: personal context can be read and written") {
+        let config = ConfigManager()
+        let original = config.personalContext
+        config.personalContext = "test-value"
+        try expect(config.personalContext == "test-value")
+        config.personalContext = original
+    }
+
+    test("ConfigManager: corrections can be read and written") {
+        let config = ConfigManager()
+        let original = config.corrections
+        config.corrections = "test-value"
+        try expect(config.corrections == "test-value")
+        config.corrections = original
+    }
+
+    test("ConfigManager: whisper model can be read and written") {
+        let config = ConfigManager()
+        let original = config.whisperModel
+        config.whisperModel = "test-model"
+        try expect(config.whisperModel == "test-model")
+        config.whisperModel = original
+    }
+
+    test("ConfigManager: qwen model ID defaults to empty") {
+        let config = ConfigManager()
+        try expect(config.qwenModelId == "")
+    }
+
+    test("ConfigManager: personal context can be set") {
+        let config = ConfigManager()
+        config.personalContext = "Test context"
+        try expect(config.personalContext == "Test context")
+    }
+
+    test("ConfigManager: corrections can be set") {
+        let config = ConfigManager()
+        config.corrections = "Test corrections"
+        try expect(config.corrections == "Test corrections")
+    }
+
+    test("ConfigManager: data dir can be set") {
+        let config = ConfigManager()
+        config.dataDir = "./tmp/test"
+        try expect(config.dataDir == "./tmp/test")
+    }
+
+    test("ConfigManager: deferred context load reads files when requested") {
+        let fm = FileManager.default
+        let root = fm.temporaryDirectory.appendingPathComponent(
+            "CaptainsLogDeferredContext-\(UUID().uuidString)", isDirectory: true
+        )
+        try fm.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? fm.removeItem(at: root) }
+
+        let priorConfigPath = getenv("CAPTAINS_LOG_CONFIG_PATH").map { String(cString: $0) }
+        let isolatedConfigPath = root.appendingPathComponent("config.json").path
+        setenv("CAPTAINS_LOG_CONFIG_PATH", isolatedConfigPath, 1)
+        defer {
+            if let priorConfigPath {
+                setenv("CAPTAINS_LOG_CONFIG_PATH", priorConfigPath, 1)
+            } else {
+                unsetenv("CAPTAINS_LOG_CONFIG_PATH")
+            }
+        }
+
+        let savedContext = "Synthetic project context."
+        let savedCorrections = "Mira -> Myra"
+        let persistedConfig = CaptainsLogConfig(dataDir: root.path)
+        try persistedConfig.writePersonalInfo(savedContext)
+        try persistedConfig.writeCorrections(savedCorrections + "\nLegacy correction note.\n")
+        try persistedConfig.save()
+
+        let manager = ConfigManager(loadContextFiles: false)
+        try expect(manager.personalContext.isEmpty && manager.corrections.isEmpty)
+        manager.loadContextFilesIfNeeded()
+        try expect(manager.personalContext == savedContext)
+        try expect(manager.corrections == savedCorrections)
+        try expect(persistedConfig.readCorrections() == savedCorrections)
+        try persistedConfig.writeCorrections(savedCorrections + "\nAnother legacy note.\n")
+        let initiallyLoaded = ConfigManager()
+        try expect(initiallyLoaded.corrections == savedCorrections)
+        try expect(persistedConfig.readCorrections() == savedCorrections)
+    }
+
+    await testAsync("Settings: data folder, model choices, context, and corrections persist") {
+        let fm = FileManager.default
+        let root = fm.temporaryDirectory
+            .appendingPathComponent("CaptainsLogSettings-\(UUID().uuidString)", isDirectory: true)
+        try fm.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? fm.removeItem(at: root) }
+
+        let priorConfigPath = getenv("CAPTAINS_LOG_CONFIG_PATH").map { String(cString: $0) }
+        let isolatedConfigPath = root.appendingPathComponent("config.json").path
+        setenv("CAPTAINS_LOG_CONFIG_PATH", isolatedConfigPath, 1)
+        defer {
+            if let priorConfigPath {
+                setenv("CAPTAINS_LOG_CONFIG_PATH", priorConfigPath, 1)
+            } else {
+                unsetenv("CAPTAINS_LOG_CONFIG_PATH")
+            }
+        }
+
+        let manager = ConfigManager()
+        manager.dataDir = root.path
+        manager.whisperModel = "fixture-whisper-model"
+        manager.whisperModelFolder = root.appendingPathComponent("whisper-model").path
+        manager.qwenModelId = "fixture/qwen-model"
+        manager.qwenModelFolder = root.appendingPathComponent("qwen-model.gguf").path
+        let settingsFixtures = URL(fileURLWithPath: fm.currentDirectoryPath)
+            .appendingPathComponent("eval/suites/settings/context")
+        let personalContext = try String(contentsOf: settingsFixtures.appendingPathComponent("personal_info.md"), encoding: .utf8)
+        let corrections = CorrectionDocument(try String(contentsOf: settingsFixtures.appendingPathComponent("corrections.md"), encoding: .utf8)).text
+        let transcript = try String(contentsOf: settingsFixtures.appendingPathComponent("transcript.md"), encoding: .utf8)
+        manager.personalContext = personalContext
+        manager.corrections = corrections
+
+        try await Task.sleep(for: .milliseconds(450))
+        let saved = CaptainsLogConfig.load()
+        try expect(saved.dataDir == root.path)
+        try expect(saved.whisperModel == "fixture-whisper-model")
+        try expect(saved.whisperModelFolder == root.appendingPathComponent("whisper-model").path)
+        try expect(saved.qwenModelId == "fixture/qwen-model")
+        try expect(saved.qwenModelFolder == root.appendingPathComponent("qwen-model.gguf").path)
+        try expect(saved.readPersonalInfo() == personalContext)
+        try expect(saved.readCorrections() == corrections)
+
+        let reloadedManager = ConfigManager()
+        try expect(reloadedManager.dataDir == root.path, "Reloaded settings should restore the selected data folder")
+        try expect(reloadedManager.whisperModel == "fixture-whisper-model", "Reloaded settings should restore the Whisper model choice")
+        try expect(
+            reloadedManager.whisperModelFolder == root.appendingPathComponent("whisper-model").path,
+            "Reloaded settings should restore the local Whisper model folder"
+        )
+        try expect(reloadedManager.qwenModelId == "fixture/qwen-model", "Reloaded settings should restore the Qwen model choice")
+        try expect(
+            reloadedManager.qwenModelFolder == root.appendingPathComponent("qwen-model.gguf").path,
+            "Reloaded settings should restore the local Qwen model file"
+        )
+        try expect(reloadedManager.personalContext == personalContext)
+        try expect(reloadedManager.corrections == corrections)
+        let rendered = try Cleanup.renderedPrompt(transcript: transcript)
+        try expect(
+            rendered.systemPrompt.contains("<speaker_context>")
+                && rendered.systemPrompt.contains(personalContext.trimmingCharacters(in: .whitespacesAndNewlines)),
+            "Saved personal context should appear in the cleanup system prompt"
+        )
+        try expect(rendered.systemPrompt.contains("<name_corrections>"), "Saved corrections should add a name-corrections section")
+        try expect(rendered.systemPrompt.contains(corrections.trimmingCharacters(in: .whitespacesAndNewlines)), "Saved correction text should appear in the cleanup system prompt")
+        try expect(
+            rendered.userMessage.contains("<transcript>")
+                && rendered.userMessage.contains(transcript.trimmingCharacters(in: .whitespacesAndNewlines)),
+            "The raw transcript should appear in the cleanup user message"
+        )
+
+        let alternateDataDir = root.appendingPathComponent("alternate-data", isDirectory: true)
+        try fm.createDirectory(at: alternateDataDir, withIntermediateDirectories: true)
+        reloadedManager.dataDir = alternateDataDir.path
+        try expect(reloadedManager.personalContext.isEmpty, "Switching folders should not carry over personal context")
+        try expect(reloadedManager.corrections.isEmpty, "Switching folders should not carry over corrections")
+        try expect(
+            CaptainsLogConfig(dataDir: root.path).readPersonalInfo() == personalContext,
+            "Switching folders must leave the prior context file intact"
+        )
+        try await Task.sleep(for: .milliseconds(450))
+        let configAfterSwitch = CaptainsLogConfig.load()
+        try expect(configAfterSwitch.dataDir == alternateDataDir.path, "Selected data folder should persist after switching")
+        try expect(configAfterSwitch.readPersonalInfo() == "", "The alternate folder should retain its own empty context")
+        try expect(configAfterSwitch.readCorrections() == "", "The alternate folder should retain its own empty corrections")
+    }
+
+    await testAsync("Settings: selecting a data folder loads its entries and context; cancel preserves the selection") {
+        let fm = FileManager.default
+        let root = fm.temporaryDirectory
+            .appendingPathComponent("CaptainsLogDataFolderPicker-\(UUID().uuidString)", isDirectory: true)
+        let currentDataDir = root.appendingPathComponent("current-data", isDirectory: true)
+        let selectedDataDir = root.appendingPathComponent("selected-data", isDirectory: true)
+        try fm.createDirectory(at: currentDataDir, withIntermediateDirectories: true)
+        try fm.createDirectory(at: selectedDataDir, withIntermediateDirectories: true)
+        defer { try? fm.removeItem(at: root) }
+
+        let priorConfigPath = getenv("CAPTAINS_LOG_CONFIG_PATH").map { String(cString: $0) }
+        setenv("CAPTAINS_LOG_CONFIG_PATH", root.appendingPathComponent("config.json").path, 1)
+        defer {
+            if let priorConfigPath {
+                setenv("CAPTAINS_LOG_CONFIG_PATH", priorConfigPath, 1)
+            } else {
+                unsetenv("CAPTAINS_LOG_CONFIG_PATH")
+            }
+        }
+        let priorDemoMode = getenv("CAPTAINSLOG_DEMO_MODE").map { String(cString: $0) }
+        setenv("CAPTAINSLOG_DEMO_MODE", "0", 1)
+        defer {
+            if let priorDemoMode {
+                setenv("CAPTAINSLOG_DEMO_MODE", priorDemoMode, 1)
+            } else {
+                unsetenv("CAPTAINSLOG_DEMO_MODE")
+            }
+        }
+
+        try CaptainsLogConfig(dataDir: currentDataDir.path).save()
+        let selectedContext = "Synthetic selected-folder context."
+        let selectedCorrections = "Nila -> Neela"
+        let selectedConfig = CaptainsLogConfig(dataDir: selectedDataDir.path)
+        try selectedConfig.writePersonalInfo(selectedContext)
+        try selectedConfig.writeCorrections(selectedCorrections)
+        let stem = "2025-01-14-0830"
+        let transcript = selectedDataDir.appendingPathComponent(".pipeline/01-transcribed/\(stem).md")
+        let fixture = URL(fileURLWithPath: fm.currentDirectoryPath)
+            .appendingPathComponent("eval/suites/transcribe/history/expected/durins-volk.md")
+        try fm.createDirectory(at: transcript.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try fm.copyItem(at: fixture, to: transcript)
+
+        let initialDirectories = LockedStringArray()
+        let manager = ConfigManager(dataDirectoryPicker: { initialDirectory in
+            initialDirectories.append(initialDirectory?.path ?? "nil")
+            return selectedDataDir
+        })
+        let watcher = DirectoryWatcher()
+        defer { watcher.stopWatching() }
+        let appState = AppState(config: manager, directoryWatcher: watcher)
+        appState.pickDataDirectory()
+
+        try expect(initialDirectories.snapshot() == [currentDataDir.path], "The folder picker should open at the currently configured folder")
+        try expect(appState.dataDir == selectedDataDir.path, "Selecting a folder should update the app data directory")
+        try expect(appState.allEntries.map(\.stem) == [stem], "Selecting a folder should reload its pending Logs entries")
+        try expect(manager.personalContext == selectedContext, "Selecting a folder should load its personal context")
+        try expect(manager.corrections == selectedCorrections, "Selecting a folder should load its corrections")
+
+        try await Task.sleep(for: .milliseconds(350))
+        try expect(CaptainsLogConfig.load().dataDir == selectedDataDir.path, "The selected folder should persist to config.json")
+
+        let cancelManager = ConfigManager(dataDirectoryPicker: { initialDirectory in
+            initialDirectories.append(initialDirectory?.path ?? "nil")
+            return nil
+        })
+        cancelManager.pickDataDirectory()
+        try expect(cancelManager.dataDir == selectedDataDir.path, "Canceling the picker should preserve the current selection")
+        try expect(
+            initialDirectories.snapshot() == [currentDataDir.path, selectedDataDir.path],
+            "A later picker should start at the newly selected folder"
+        )
+
+        setenv("CAPTAINSLOG_DEMO_MODE", "1", 1)
+        let demoPickerCalls = LockedStringArray()
+        let demoManager = ConfigManager(dataDirectoryPicker: { _ in
+            demoPickerCalls.append("opened")
+            return currentDataDir
+        })
+        demoManager.pickDataDirectory()
+        try expect(demoPickerCalls.snapshot().isEmpty, "Demo mode should not open the data-folder picker")
+        try expect(demoManager.dataDir == selectedDataDir.path, "Demo mode should preserve the configured data folder")
+
+        setenv("CAPTAINSLOG_DEMO_MODE", "0", 1)
+        let missingDataDir = root.appendingPathComponent("removed-data", isDirectory: true)
+        try CaptainsLogConfig(dataDir: missingDataDir.path).save()
+        let missingInitialDirectories = LockedStringArray()
+        let missingFolderManager = ConfigManager(dataDirectoryPicker: { initialDirectory in
+            missingInitialDirectories.append(initialDirectory?.path ?? "nil")
+            return nil
+        })
+        missingFolderManager.pickDataDirectory()
+        try expect(missingInitialDirectories.snapshot() == ["nil"], "A missing configured folder should not be sent as the picker start location")
+        try expect(missingFolderManager.dataDir == missingDataDir.path, "Canceling with a missing configured folder should preserve the saved path")
+    }
+
+    test("Config: config path can be overridden for tests") {
+        try expect(CaptainsLogConfig.configURL.lastPathComponent == "config.json")
+        try expect(CaptainsLogConfig.configURL.path.contains("CaptainsLogTests-"))
+    }
+
+    test("Config: malformed JSON falls back to defaults without replacing the file") {
+        let fm = FileManager.default
+        let root = fm.temporaryDirectory.appendingPathComponent(
+            "CaptainsLogMalformedConfig-\(UUID().uuidString)", isDirectory: true
+        )
+        try fm.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? fm.removeItem(at: root) }
+
+        let priorConfigPath = getenv("CAPTAINS_LOG_CONFIG_PATH").map { String(cString: $0) }
+        let isolatedConfigPath = root.appendingPathComponent("config.json").path
+        setenv("CAPTAINS_LOG_CONFIG_PATH", isolatedConfigPath, 1)
+        defer {
+            if let priorConfigPath {
+                setenv("CAPTAINS_LOG_CONFIG_PATH", priorConfigPath, 1)
+            } else {
+                unsetenv("CAPTAINS_LOG_CONFIG_PATH")
+            }
+        }
+
+        let malformed = Data("{not-json".utf8)
+        try malformed.write(to: URL(fileURLWithPath: isolatedConfigPath))
+        let loaded = CaptainsLogConfig.load()
+        try expect(loaded.dataDir == nil, "Malformed config should fall back to the default data directory")
+        try expect(loaded.whisperModel == nil && loaded.qwenModelId == nil, "Malformed config should not leak partially decoded values")
+        try expect(
+            try Data(contentsOf: URL(fileURLWithPath: isolatedConfigPath)) == malformed,
+            "Loading malformed config should leave the user's file untouched"
+        )
+    }
+
+    test("Transcriber: resolveModel uses configured Whisper model") {
+        let config = CaptainsLogConfig(whisperModel: "configured-whisper")
+        try expect(Transcriber.resolveModel(config: config) == "configured-whisper")
+    }
+
+    test("Transcriber: explicit Whisper model overrides config") {
+        let config = CaptainsLogConfig(whisperModel: "configured-whisper")
+        try expect(
+            Transcriber.resolveModel("explicit-whisper", config: config) == "explicit-whisper"
+        )
+    }
+
+    test("FileSystemGuard: wraps write failures with target path") {
+        let fm = FileManager.default
+        let dir = fm.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
+        defer { try? fm.removeItem(at: dir) }
+        try fm.createDirectory(at: dir, withIntermediateDirectories: true)
+
+        do {
+            try FileSystemGuard.writeText("test", to: dir.path)
+            try expect(false, "Expected writing to a directory path to fail")
+        } catch let error as CaptainsLogFileSystemError {
+            try expect(error.localizedDescription.contains(dir.path))
+        }
+    }
+
+    test("FileSystem errors distinguish disk-full writes and report low-space details") {
+        let path = "/tmp/synthetic-captainslog-output.md"
+        let noSpace = NSError(domain: NSPOSIXErrorDomain, code: Int(ENOSPC))
+        let direct = CaptainsLogFileSystemError.writeFailed(path: path, underlying: noSpace)
+        try expect(direct.localizedDescription.contains("disk is full"))
+
+        let wrappedNoSpace = NSError(
+            domain: "SyntheticWrapper",
+            code: 1,
+            userInfo: [NSUnderlyingErrorKey: noSpace]
+        )
+        let wrapped = CaptainsLogFileSystemError.writeFailed(path: path, underlying: wrappedNoSpace)
+        try expect(wrapped.localizedDescription.contains("disk is full"))
+
+        let textualNoSpace = NSError(
+            domain: "SyntheticWrapper",
+            code: 2,
+            userInfo: [NSLocalizedDescriptionKey: "No space left on device"]
+        )
+        let textual = CaptainsLogFileSystemError.writeFailed(path: path, underlying: textualNoSpace)
+        try expect(textual.localizedDescription.contains("disk is full"))
+
+        let lowSpace = CaptainsLogFileSystemError.insufficientDiskSpace(
+            path: path,
+            availableBytes: 10,
+            requiredBytes: FileSystemGuard.minimumFreeBytesBeforeTranscription
+        )
+        try expect(lowSpace.localizedDescription.contains("Not enough free disk space"))
+        try expect(lowSpace.localizedDescription.contains(path))
+    }
+
+    test("FileSystemGuard: transcription space check rejects low capacity and allows exact or unknown capacity") {
+        let path = "/tmp/synthetic-captainslog-audio.m4a"
+        let minimum = FileSystemGuard.minimumFreeBytesBeforeTranscription
+        do {
+            try FileSystemGuard.requireFreeSpaceForTranscription(paths: [path]) { _ in minimum - 1 }
+            try expect(false, "Transcription must be rejected below the free-space threshold")
+        } catch let error as CaptainsLogFileSystemError {
+            guard case .insufficientDiskSpace(let failedPath, let available, let required) = error else {
+                try expect(false, "Expected insufficientDiskSpace for a low-capacity volume")
+                return
+            }
+            try expect(failedPath == path)
+            try expect(available == minimum - 1)
+            try expect(required == minimum)
+        }
+
+        try FileSystemGuard.requireFreeSpaceForTranscription(paths: [path]) { _ in minimum }
+        try FileSystemGuard.requireFreeSpaceForTranscription(paths: [path]) { _ in nil }
+    }
+
+    test("Config: withDataDir overrides context location without mutating original") {
+        let original = CaptainsLogConfig(dataDir: "./tmp/original")
+        let overridden = original.withDataDir("./tmp/override")
+        try expect(original.dataDir == "./tmp/original")
+        try expect(overridden.dataDir == "./tmp/override")
+        try expect(overridden.contextDir().lastPathComponent == "context")
+        try expect(overridden.contextDir().path.contains("/override/context"))
+    }
+
+    test("Prompt XML: wraps sections in XML-like tags") {
+        let document = PromptXML.document([
+            PromptXML.element("instructions", "Do the thing."),
+            PromptXML.optionalElement("context", "Helpful background."),
+            PromptXML.optionalElement("empty", "   "),
+        ])
+        try expect(document.contains("<instructions>"))
+        try expect(document.contains("</instructions>"))
+        try expect(document.contains("<context>"))
+        try expect(document.contains("Helpful background."))
+        try expect(document.contains("<empty>") == false)
+    }
+
+    test("Cleanup: prompt helpers wrap context and transcript in XML tags") {
+        let speaker = Cleanup.speakerContextSection("Works on ML systems.")
+        let corrections = Cleanup.nameCorrectionsSection("Pikard -> Picard")
+        let transcript = Cleanup.userMessage(transcript: "Uh, I shipped it.")
+
+        try expect(speaker.contains("<speaker_context>"))
+        try expect(speaker.contains("Works on ML systems."))
+        try expect(corrections.contains("<name_corrections>"))
+        try expect(corrections.contains("Pikard -> Picard"))
+        try expect(transcript.contains("<transcript>"))
+        try expect(transcript.contains("Uh, I shipped it."))
+    }
+
+    await testAsync("Whisper load recovery: healthy loads never scan caches") {
+        let calls = LockedValue(0)
+        let value = try await Transcriber.loadWithRecovery(
+            lifecycle: NativeInferenceLifecycle(), load: { 42 },
+            recover: { _ in calls.set(calls.get() + 1) },
+            clearConfig: { calls.set(calls.get() + 1) }
+        )
+        try expect(value == 42 && calls.get() == 0)
+    }
+
+    await testAsync("Whisper load recovery: genuine failure retries once without clearing repaired settings") {
+        let loads = LockedValue(0), repairs = LockedValue(0), clears = LockedValue(0)
+        let value = try await Transcriber.loadWithRecovery(
+            lifecycle: NativeInferenceLifecycle(),
+            load: { loads.set(loads.get() + 1); if loads.get() == 1 { throw NSError(domain: "SyntheticCoreML", code: 1) }; return 42 },
+            recover: { _ in repairs.set(repairs.get() + 1) },
+            clearConfig: { clears.set(clears.get() + 1) }
+        )
+        try expect(value == 42 && loads.get() == 2 && repairs.get() == 1 && clears.get() == 0)
+    }
+
+    await testAsync("Whisper load recovery: cancellation never repairs or clears settings") {
+        let repairs = LockedValue(0), clears = LockedValue(0)
+        for error in [CancellationError() as Error, NSError(domain: NSURLErrorDomain, code: NSURLErrorCancelled)] {
+            var propagated = false
+            do {
+                let _: Int = try await Transcriber.loadWithRecovery(
+                    lifecycle: NativeInferenceLifecycle(), load: { throw error },
+                    recover: { _ in repairs.set(repairs.get() + 1) }, clearConfig: { clears.set(clears.get() + 1) }
+                )
+            } catch { propagated = true }
+            try expect(propagated, "Cancellation must propagate")
+        }
+        try expect(repairs.get() == 0 && clears.get() == 0)
+    }
+
+    await testAsync("Whisper load recovery: failed repair preserves original error and clears stale settings") {
+        let loads = LockedValue(0), repairs = LockedValue(0), clears = LockedValue(0)
+        var reported: NSError?
+        do {
+            let _: Int = try await Transcriber.loadWithRecovery(
+                lifecycle: NativeInferenceLifecycle(),
+                load: { loads.set(loads.get() + 1); throw NSError(domain: "SyntheticCoreML", code: loads.get()) },
+                recover: { _ in repairs.set(repairs.get() + 1) }, clearConfig: { clears.set(clears.get() + 1) }
+            )
+        } catch { reported = error as NSError }
+        try expect(reported?.domain == "SyntheticCoreML" && reported?.code == 1, "Preserve the original initialization failure")
+        try expect(loads.get() == 2 && repairs.get() == 1 && clears.get() == 1)
+    }
+
+    test("Whisper cache recovery: remove only the reported temporary compiled bundle") {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("WhisperRecovery-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: root) }
+        let temporary = root.appendingPathComponent("temp")
+        let target = temporary.appendingPathComponent("reported.mlmodelc")
+        let unrelated = temporary.appendingPathComponent("unrelated.mlmodelc")
+        let outside = root.appendingPathComponent("outside.mlmodelc")
+        for bundle in [target, unrelated, outside] {
+            try FileManager.default.createDirectory(at: bundle, withIntermediateDirectories: true)
+            try Data("synthetic metadata".utf8).write(to: bundle.appendingPathComponent("model.mlmodel.metadata"))
+        }
+        let failure = NSError(domain: "SyntheticCoreML", code: 1, userInfo: [NSFilePathErrorKey: target.appendingPathComponent("model.mlmodel.metadata").path])
+        try WhisperModelRecovery.removeReportedCompiledCache(from: failure, temporaryRoot: temporary)
+        try expect(!FileManager.default.fileExists(atPath: target.path))
+        try expect(FileManager.default.fileExists(atPath: unrelated.path))
+        let outsideFailure = NSError(domain: "SyntheticCoreML", code: 1, userInfo: [NSFilePathErrorKey: outside.appendingPathComponent("model.mlmodel.metadata").path])
+        try WhisperModelRecovery.removeReportedCompiledCache(from: outsideFailure, temporaryRoot: temporary)
+        try expect(FileManager.default.fileExists(atPath: outside.path), "Recovery must not remove a bundle outside the temporary cache")
+    }
+
+    test("LLM prompt responsiveness: CLI and app share one bounded Core default") {
+        try expect(LLM.promptChunkSize(batchSize: 512) == 128)
+        try expect(LLM.promptChunkSize(batchSize: 64) == 64)
+    }
+
+    test("Recording transcription: admission protects CPU and thermal headroom") {
+        try expect(RecordingTranscription.hasCapacity(load: 1, cores: 8, thermal: .nominal))
+        try expect(!RecordingTranscription.hasCapacity(load: 7, cores: 8, thermal: .nominal))
+        try expect(!RecordingTranscription.hasCapacity(load: 0, cores: 8, thermal: .serious))
+        try expect(!RecordingTranscription.hasCapacity(load: 0, cores: 1, thermal: .nominal))
+    }
+
+    test("Recording transcription: idle admission cannot overlap another native model") {
+        let lifecycle = NativeInferenceLifecycle()
+        try lifecycle.beginOperation()
+        do {
+            try lifecycle.beginOperation(onlyIfIdle: true)
+            try expect(false, "Speculative Whisper must not overlap Qwen or transcription")
+        } catch is NativeInferenceBusy {}
+        lifecycle.endOperation()
+        try lifecycle.beginOperation(onlyIfIdle: true)
+        lifecycle.endOperation()
+    }
+
+    await testAsync("Recording transcription: finalized fixture audio is reused once; unsafe work falls back") {
+        let fixture = URL(fileURLWithPath: "eval/suites/transcribe/history/audio/world-war-z.m4a")
+        let audio = try AVAudioFile(forReading: fixture)
+        let pcm = AVAudioPCMBuffer(pcmFormat: audio.processingFormat, frameCapacity: 4096)!
+        try audio.read(into: pcm)
+        let calls = LockedValue(0)
+        let expectedFrames = Int64(pcm.frameLength)
+        let early = try RecordingTranscription(requireCachedModel: false, capacity: { true }) { path in
+            let chunk = try AVAudioFile(forReading: URL(fileURLWithPath: path))
+            try expect(chunk.length == expectedFrames, "Only finalized audio reaches inference")
+            calls.set(calls.get() + 1)
+            return "Synthetic fixture transcript"
+        }
+        early.append(RecorderAudioBuffer(frameLength: Int(pcm.frameLength), rootMeanSquare: 0, nativeBuffer: pcm))
+        await early.finish(audioPath: fixture.path, cancelled: false)
+        let prepared = await RecordingTranscription.take(fixture.path)
+        try expect(prepared == "Synthetic fixture transcript" && calls.get() == 1)
+        let consumed = await RecordingTranscription.take(fixture.path)
+        try expect(consumed == nil)
+        let busy = try RecordingTranscription(requireCachedModel: false, capacity: { false }) { _ in
+            try expect(false, "No inference without headroom")
+            return "wrong"
+        }
+        busy.append(RecorderAudioBuffer(frameLength: Int(pcm.frameLength), rootMeanSquare: 0, nativeBuffer: pcm))
+        await busy.finish(audioPath: fixture.path, cancelled: false)
+        let skipped = await RecordingTranscription.take(fixture.path)
+        try expect(skipped == nil, "Unavailable speculation must leave the full-file fallback intact")
+        let cancelled = try RecordingTranscription(requireCachedModel: false, capacity: { true }) { _ in "partial" }
+        cancelled.append(RecorderAudioBuffer(frameLength: Int(pcm.frameLength), rootMeanSquare: 0, nativeBuffer: pcm))
+        await cancelled.finish(audioPath: fixture.path, cancelled: true)
+        let partial = await RecordingTranscription.take(fixture.path)
+        try expect(partial == nil, "Cancelled recording cannot publish partial text")
+        let changedModel = try RecordingTranscription(requireCachedModel: false, capacity: { true }) { _ in "cached" }
+        changedModel.append(RecorderAudioBuffer(frameLength: Int(pcm.frameLength), rootMeanSquare: 0, nativeBuffer: pcm))
+        await changedModel.finish(audioPath: fixture.path, cancelled: false)
+        let wrongModel = await RecordingTranscription.take(fixture.path, model: "different-model")
+        try expect(wrongModel == nil, "A changed model must force ordinary transcription")
+
+    }
+
+    await testAsync("Recording transcription: Stop hands pending tail to processing without waiting") {
+        let fixture = URL(fileURLWithPath: "eval/suites/transcribe/history/audio/world-war-z.m4a")
+        let audio = try AVAudioFile(forReading: fixture)
+        let pcm = AVAudioPCMBuffer(pcmFormat: audio.processingFormat, frameCapacity: 4096)!
+        try audio.read(into: pcm)
+        let started = LockedValue(false)
+        let release = LockedValue(false)
+        let early = try RecordingTranscription(requireCachedModel: false, capacity: { true }) { _ in
+            started.set(true)
+            while !release.get() { try await Task.sleep(for: .milliseconds(1)) }
+            return "completed tail"
+        }
+        early.append(RecorderAudioBuffer(frameLength: Int(pcm.frameLength), rootMeanSquare: 0, nativeBuffer: pcm))
+        await early.finish(audioPath: fixture.path, cancelled: false)
+        // This point must be reachable while inference still awaits release.
+        while !started.get() { await Task.yield() }
+        release.set(true)
+        let text = await RecordingTranscription.take(fixture.path)
+        try expect(text == "completed tail")
+    }
+
+    await testAsync("Recording transcription: bounded queue absorbs a delayed cold model load") {
+        let fixture = URL(fileURLWithPath: "eval/suites/transcribe/history/audio/world-war-z.m4a")
+        let audio = try AVAudioFile(forReading: fixture)
+        let pcm = AVAudioPCMBuffer(pcmFormat: audio.processingFormat, frameCapacity: 4096)!
+        try audio.read(into: pcm)
+        let started = LockedValue(false)
+        let release = LockedValue(false)
+        let calls = LockedValue(0)
+        let early = try RecordingTranscription(requireCachedModel: false, capacity: { true }) { _ in
+            calls.set(calls.get() + 1)
+            started.set(true)
+            while !release.get() { try await Task.sleep(for: .milliseconds(1)) }
+            return "chunk"
+        }
+        let buffersPerChunk = Int(ceil(40 * pcm.format.sampleRate / Double(pcm.frameLength)))
+        func appendChunk() {
+            for _ in 0..<buffersPerChunk {
+                early.append(RecorderAudioBuffer(frameLength: Int(pcm.frameLength), rootMeanSquare: 1, nativeBuffer: pcm))
+            }
+        }
+        appendChunk()
+        while !started.get() { await Task.yield() }
+        // Simulate capture continuing while the first native load is suspended:
+        // one active chunk plus four queued chunks must survive until Stop.
+        for _ in 0..<4 { appendChunk() }
+        await early.finish(audioPath: fixture.path, cancelled: false)
+        release.set(true)
+        let text = await RecordingTranscription.take(fixture.path)
+        try expect(text == "chunk chunk chunk chunk chunk" && calls.get() == 5,
+                   "A slow initial model load must not discard the bounded recording backlog")
+    }
+
+    await testAsync("Native shutdown: retained recording model drains before termination") {
+        let lifecycle = NativeInferenceLifecycle()
+        try lifecycle.beginResource()
+        let finished = LockedValue(false)
+        let shutdown = Task { await lifecycle.stopAndWait(); finished.set(true) }
+        while Transcriber.shouldContinueDecoding(lifecycle: lifecycle) { await Task.yield() }
+        try expect(!finished.get())
+        lifecycle.endResource()
+        await shutdown.value
+        try expect(finished.get())
+    }
+
+    await testAsync("Whisper shutdown: callback stops decoding and discards partial output") {
+        let lifecycle = NativeInferenceLifecycle()
+        try lifecycle.beginOperation()
+        try expect(Transcriber.shouldContinueDecoding(lifecycle: lifecycle))
+        let stopping = Task { await lifecycle.stopAndWait() }
+        while Transcriber.shouldContinueDecoding(lifecycle: lifecycle) { await Task.yield() }
+        do { try lifecycle.checkCancellation(); try expect(false, "Partial transcription must be rejected") }
+        catch is CancellationError {}
+        lifecycle.endOperation()
+        await stopping.value
+        try expect(!Transcriber.shouldContinueDecoding(lifecycle: lifecycle))
+    }
+
+    await testAsync("Native shutdown: reject new operations and wait for active teardown") {
+        let lifecycle = NativeInferenceLifecycle()
+        try lifecycle.beginOperation()
+        let finished = LockedValue(false)
+        let shutdown = Task { await lifecycle.stopAndWait(); finished.set(true) }
+        try await Task.sleep(for: .milliseconds(10))
+        try expect(!finished.get(), "Shutdown cannot race an active native operation")
+        do {
+            try lifecycle.beginOperation()
+            try expect(false, "Shutdown must reject new native operations")
+        } catch is CancellationError {}
+        lifecycle.endOperation()
+        await shutdown.value
+        try expect(finished.get())
+        await lifecycle.stopAndWait()
+    }
+
+    await testAsync("LLM: cancellation discards unfinished output before the next decode") {
+        let samples = LockedValue(0)
+        let worker = Task.detached {
+            try LLM.generateTokens(
+                generationLimit: 100, maxTokens: 100, promptTokenCount: 1,
+                allocatedContextSize: 128,
+                sampleToken: {
+                    samples.set(samples.get() + 1)
+                    withUnsafeCurrentTask { $0?.cancel() }
+                    return 1
+                },
+                isEndToken: { _ in false }, tokenString: { _ in "partial" },
+                decodeToken: { _ in }
+            )
+        }
+        do {
+            _ = try await worker.value
+            try expect(false, "Cancelled inference cannot return partial output")
+        } catch is CancellationError {}
+        try expect(samples.get() == 1, "Cancellation stops without completing the output budget")
+    }
+
+    test("LLM: reproduces reported context exhaustion and rejects partial text") {
+        for (prompt, expectedContext, generated) in [(8_115, 16_384, 8_269),
+                                                     (9_376, 18_944, 9_568),
+                                                     (9_254, 18_688, 9_434)] {
+            let allocated = try LLM.plannedContextSize(promptTokenCount: prompt, maxTokens: 0,
+                                                       modelContextSize: 262_144)
+            var sampled = 0
+            var decoded = 0
+            do {
+                _ = try LLM.generateTokens(
+                    generationLimit: allocated - prompt, maxTokens: 0,
+                    promptTokenCount: prompt, allocatedContextSize: allocated,
+                    sampleToken: { sampled += 1; return 1 },
+                    isEndToken: { _ in false },
+                    tokenString: { _ in "repeated " },
+                    decodeToken: { _ in decoded += 1 }
+                )
+                try expect(false, "Runaway output must throw rather than return partial text")
+            } catch let error as LLM.LLMError {
+                try expect(allocated == expectedContext && decoded == generated)
+                try expect(sampled == generated + 1, "Check for EOG without decoding past capacity")
+                try expect(error == .contextExhausted(promptTokens: prompt, generatedTokens: generated,
+                                                     allocatedContextTokens: allocated))
+                try expect(error.localizedDescription.contains("allocated \(allocated)-token context"))
+                try expect(!error.localizedDescription.contains("262144"))
+            }
+        }
+    }
+
+    test("LLM: an explicit output budget rejects unfinished text without decoding past the limit") {
+        var sampled = 0
+        var decoded = 0
+        do {
+            _ = try LLM.generateTokens(
+                generationLimit: 16, maxTokens: 16, promptTokenCount: 10, allocatedContextSize: 128,
+                sampleToken: { sampled += 1; return 1 },
+                isEndToken: { _ in false },
+                tokenString: { _ in "unfinished " },
+                decodeToken: { _ in decoded += 1 }
+            )
+            try expect(false, "A token cap must not turn a truncated response into success")
+        } catch let error as LLM.LLMError {
+            try expect(error == .outputLimitReached(16))
+            try expect(decoded == 16 && sampled == 17)
+        }
+    }
+
+    test("LLM: EOG immediately after the output or context budget completes the response") {
+        for maxTokens in [0, 2] {
+            var tokens: [Int32] = [1, 2, 0]
+            var decoded: [Int32] = []
+            let output = try LLM.generateTokens(
+                generationLimit: 2, maxTokens: maxTokens, promptTokenCount: 2, allocatedContextSize: 4,
+                sampleToken: { tokens.removeFirst() },
+                isEndToken: { $0 == 0 },
+                tokenString: { $0 == 1 ? "complete " : "entry" },
+                decodeToken: { decoded.append($0) }
+            )
+            try expect(output == "complete entry" && decoded == [1, 2] && tokens.isEmpty)
+        }
+    }
+
+    test("LLM: normal end-of-generation returns only completed output") {
+        var tokens: [Int32] = [1, 2, 0]
+        var decoded: [Int32] = []
+        let output = try LLM.generateTokens(
+            generationLimit: 8, maxTokens: 0, promptTokenCount: 8, allocatedContextSize: 16,
+            sampleToken: { tokens.removeFirst() },
+            isEndToken: { $0 == 0 },
+            tokenString: { $0 == 1 ? "complete " : "entry" },
+            decodeToken: { decoded.append($0) }
+        )
+        try expect(output == "complete entry" && decoded == [1, 2])
+    }
+
+    test("LLM: context planning grows with an unbounded rewrite request") {
+        let contextSize = try LLM.plannedContextSize(
+            promptTokenCount: 6_000,
+            maxTokens: 0,
+            modelContextSize: 262_144
+        )
+        try expect(contextSize == 12_032)
+    }
+
+    test("LLM: context planning respects an explicit small output limit") {
+        let contextSize = try LLM.plannedContextSize(
+            promptTokenCount: 1_000,
+            maxTokens: 64,
+            modelContextSize: 262_144
+        )
+        try expect(contextSize == 1_280)
+    }
+
+    test("LLM: context planning rejects requests beyond model capacity") {
+        do {
+            _ = try LLM.plannedContextSize(
+                promptTokenCount: 900,
+                maxTokens: 200,
+                modelContextSize: 1_000
+            )
+            try expect(false, "Expected an oversized request to fail")
+        } catch let error as LLM.LLMError {
+            try expect(error == .requestedOutputTooLarge(
+                promptTokens: 900,
+                requestedTokens: 200,
+                modelContextTokens: 1_000
+            ))
+        }
+    }
+
+    test("LLM: configured model lookup prefers the expected file then falls back deterministically") {
+        let fm = FileManager.default
+        let root = fm.temporaryDirectory.appendingPathComponent(
+            "CaptainsLogGGUFSelection-\(UUID().uuidString)", isDirectory: true
+        )
+        try fm.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? fm.removeItem(at: root) }
+
+        let alpha = root.appendingPathComponent("a-model.gguf")
+        let zeta = root.appendingPathComponent("z-model.gguf")
+        let unrelated = root.appendingPathComponent("readme.txt")
+        try Data("fixture model marker".utf8).write(to: alpha)
+        try Data("fixture model marker".utf8).write(to: zeta)
+        try Data("not a model".utf8).write(to: unrelated)
+
+        try expect(LLM.configuredModelFile(in: root.path) == alpha.path)
+        let preferred = root.appendingPathComponent(LLM.ggufFilename)
+        try Data("preferred fixture marker".utf8).write(to: preferred)
+        try expect(LLM.configuredModelFile(in: root.path) == preferred.path)
+        try expect(LLM.configuredModelFile(in: "") == nil)
+        try expect(LLM.configuredModelFile(in: root.appendingPathComponent("missing").path) == nil)
+    }
+
+    test("Combined metadata: grammar uses the supplied date and exact custom category identifiers") {
+        let categories = CaptainsLogConfig(categories: ["Research", "Travel"]).configuredCategories
+        let grammar = try Metadata.grammar(date: "2026-10-17", categories: categories)
+        try expect(grammar.contains(#""2026-10-17-""#))
+        try expect(grammar.contains(#"category ::= "research" | "travel""#))
+        let filingRule = grammar.components(separatedBy: .newlines).first { $0.hasPrefix("category ::=") }!
+        try expect(!filingRule.contains(#""professional""#) && !filingRule.contains(#""work""#))
+        let metadataRule = grammar.components(separatedBy: .newlines).first { $0.hasPrefix("metadata-categories ::=") }!
+        try expect(metadataRule.components(separatedBy: " | ").count == 15, "Every distinct 1–3 category permutation must be available")
+        try expect(grammar.contains(#"list ::= " []\n" | "\n" item{1,64}"#), "Named lists must be empty arrays or scalar string block lists")
+        try expect(grammar.contains(#"item ::= "  - " string "\n""#), "Nested arrays and mappings must be excluded from list items")
+        try expect(grammar.contains(#"tags:\n" item{3,8}"#), "Tags must contain exactly 3–8 scalar strings")
+        for key in ["language", "categories", "tags", "persons", "projects", "companies", "entities", "summary"] {
+            try expect(grammar.components(separatedBy: key + ":").count == 2, "Every schema key must occur exactly once")
+        }
+        try expect(!metadataRule.contains("professional") && !metadataRule.contains("side_project"))
+        try expect(metadataRule.contains("side-project") && metadataRule.contains("personal") && metadataRule.contains("work"))
+        do {
+            _ = try Metadata.grammar(date: "2026-10-17", categories: [])
+            throw NSError(domain: "EmptyGrammarCategoriesAccepted", code: 1)
+        } catch Categorize.CategorizeError.noCategories { }
+    }
+
+    await testAsync("Combined metadata: category, filename and enrichment share one generation") {
+        let calls = LockedValue(0)
+        let combined = PipelineMetadata { _, _ in
+            calls.set(calls.get() + 1)
+            return try Metadata.parse(
+                "<category>personal</category><filename>2026-10-16-garden-bulb-planting.md</filename><metadata>summary: Planted bulbs.</metadata>",
+                date: "2026-10-16", recordingTime: "09:30", categories: [.personal]
+            )
+        }
+        let config = CaptainsLogConfig()
+        let category = try await combined.result(logText: "Planted bulbs.", config: config).category
+        let filename = try await combined.result(logText: "Planted bulbs.", config: config).filename
+        let enriched = try await combined.result(logText: "Planted bulbs.", config: config).enriched(logText: "Planted bulbs.")
+        try expect(calls.get() == 1)
+        try expect(category == .personal && filename.hasSuffix(".md") && enriched.hasSuffix("Planted bulbs."))
+    }
+
+    test("Combined metadata: preserves memo and supplies date and recording time without inference") {
+        let yaml = "summary: \"Planted bulbs.\""
+        let valid = "<category>personal</category><filename>2026-10-16-planting-garden-bulbs.md</filename><metadata>\n\(yaml)\n</metadata>"
+        let parsed = try Metadata.parse(valid, date: "2026-10-16", recordingTime: "09:30", categories: [.personal])
+        try expect(parsed.category == .personal)
+        try expect(parsed.filename == "2026-10-16-planting-garden-bulbs.md")
+        try expect(parsed.enriched(logText: "Memo unchanged.\n") == "---\ndate: \"2026-10-16\"\nrecording_time: \"09:30\"\n\(yaml)\n---\n\nMemo unchanged.\n")
+        for invalid in [
+            valid.replacingOccurrences(of: "planting-garden-bulbs", with: "../outside"),
+            valid.replacingOccurrences(of: "2026-10-16-planting", with: "2025-01-01-planting"),
+            valid.replacingOccurrences(of: "<category>personal</category>", with: "<category>unknown</category>"),
+            valid + "<filename>2026-10-16-another-file.md</filename>",
+            valid.replacingOccurrences(of: "</metadata>", with: ""),
+            valid.replacingOccurrences(of: "summary:", with: "date: 2026-10-17\nsummary:"),
+            valid.replacingOccurrences(of: "summary:", with: "recording_time: 14:30\nsummary:"),
+        ] {
+            do {
+                _ = try Metadata.parse(invalid, date: "2026-10-16", recordingTime: "09:30", categories: [.personal])
+                throw NSError(domain: "InvalidMetadataAccepted", code: 1)
+            } catch is Metadata.MetadataError { }
+        }
+    }
+
+    test("Filename and Enrich: user messages wrap log entries in XML tags") {
+        let filenameMessage = Filename.userMessage(logText: "Shipped a feature.")
+        let enrichMessage = Enrich.userMessage(logText: "Shipped a feature.")
+
+        try expect(filenameMessage.contains("<log_entry>"))
+        try expect(filenameMessage.contains("Shipped a feature."))
+        try expect(enrichMessage.contains("<log_entry>"))
+        try expect(enrichMessage.contains("Shipped a feature."))
+    }
+
+    test("PromptDebug: renders system and user prompts together") {
+        let rendered = PromptDebug.render(RenderedPrompt(
+            systemPrompt: "<instructions>Do the thing.</instructions>",
+            userMessage: "<question>What changed?</question>"
+        ))
+        try expect(rendered.contains("<system_prompt>"))
+        try expect(rendered.contains("<user_prompt>"))
+        try expect(rendered.contains("Do the thing."))
+        try expect(rendered.contains("What changed?"))
+    }
+
+    test("Categories: custom configuration renders only selected categories and keeps legacy manifests") {
+        let config = CaptainsLogConfig(categories: ["Research", "Travel", "research", "../"])
+        try expect(config.configuredCategories.map(\.rawValue) == ["research", "travel"])
+        let prompt = try Categorize.renderedPrompt(logText: "fixture", config: config)
+        try expect(prompt.systemPrompt.contains("- research: Research"))
+        try expect(prompt.systemPrompt.contains("- travel: Travel"))
+        try expect(!prompt.systemPrompt.contains("- professional:"))
+        try expect(try Categorize.parseCategory("<category>research</category>", categories: config.configuredCategories).folderName == "research")
+        do {
+            _ = try Categorize.parseCategory("<category>personal</category>", categories: config.configuredCategories)
+            try expect(false, "A removed category must not be accepted from inference")
+        } catch is Categorize.CategorizeError {}
+        let decoded = try JSONDecoder().decode(Categorize.Manifest.self,
+            from: Data(#"{"sourceStem":"fixture","category":"side_project"}"#.utf8))
+        try expect(decoded.category == .sideProject)
+        try expect(decoded.category.folderName == "side-project")
+        try expect(Categorize.Category(rawValue: "../outside") == nil)
+        try expect(Categorize.Category(name: "Family & Friends")?.folderName == "family-friends")
+        try expect(CaptainsLogConfig().configuredCategories == Categorize.Category.allCases)
+        do {
+            _ = try Categorize.renderedPrompt(logText: "fixture", config: CaptainsLogConfig(categories: []))
+            try expect(false, "An empty category configuration must ask the user to add a category")
+        } catch let error as Categorize.CategorizeError { try expect(error == .noCategories) }
+    }
+
+    test("Categorize: parses a single XML category") {
+        let validOutputs: [(String, Categorize.Category)] = [
+            ("<category>personal</category>", .personal),
+            ("<category>professional</category>", .professional),
+            ("<category>side_project</category>", .sideProject),
+            ("<CATEGORY>  PERSONAL  </CATEGORY>", .personal),
+            ("prefix\n<category> PROFESSIONAL </category>\nsuffix", .professional),
+        ]
+        for (raw, expected) in validOutputs {
+            try expect(try Categorize.parseCategory(raw) == expected, "Failed to parse \(raw)")
+        }
+    }
+
+    test("Categorize: rejects malformed and unsupported XML categories") {
+        let invalidOutputs = [
+            "personal",
+            "<category></category>",
+            "<category>side-project</category>",
+            "<category><value>personal</value></category>",
+        ]
+        for raw in invalidOutputs {
+            do {
+                _ = try Categorize.parseCategory(raw)
+                try expect(false, "Expected invalid category output to throw: \(raw)")
+            } catch let error as Categorize.CategorizeError {
+                try expect(error == .invalidXML(outputByteCount: raw.utf8.count))
+            }
+        }
+    }
+
+    test("Recorder audio level: RMS handles silence, mixed samples, and empty buffers") {
+        let mixed = [1 as Float, 1, 0, 0]
+        let rms = mixed.withUnsafeBufferPointer { AudioLevel.rootMeanSquare(of: $0) }
+        try expect(rms != nil && abs(rms! - sqrt(0.5)) < 0.0001)
+        let silence = [0 as Float, 0]
+        try expect(silence.withUnsafeBufferPointer { AudioLevel.rootMeanSquare(of: $0) } == 0)
+        let empty: [Float] = []
+        try expect(empty.withUnsafeBufferPointer { AudioLevel.rootMeanSquare(of: $0) } == nil)
+    }
+
+    // MARK: - RecordingState Tests
+
+    await testAsync("Recorder: standalone capture never starts background inference") {
+        let events = LockedStringArray()
+        let created = LockedValue(0)
+        let operations = RecorderOperations(
+            listInputDevices: { [] },
+            makeEngine: { _ in TestRecorderAudioEngine(events: events) },
+            makeWriter: { _, _ in TestRecorderAudioWriter(events: events) },
+            waitForManualStop: { _ in },
+            makeEarlyTranscription: { created.set(created.get() + 1); return nil }
+        )
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("CaptainsLogStandalone-\(UUID())")
+        defer { try? FileManager.default.removeItem(at: root) }
+        try await Recorder.record(
+            to: root.appendingPathComponent("standalone.m4a"), duration: nil, deviceUID: nil,
+            stopTrigger: nil, levelCallback: nil, isPaused: { false }, operations: operations
+        )
+        try expect(created.get() == 0, "Standalone cl record must exit without a background native model")
+        try await Recorder.record(
+            to: root.appendingPathComponent("pipeline.m4a"), duration: nil, deviceUID: nil,
+            stopTrigger: nil, levelCallback: nil, isPaused: { false }, earlyTranscription: true, operations: operations
+        )
+        try expect(created.get() == 1, "App and record-and-process clients can explicitly own early work")
+    }
+
+    await testAsync("Recorder: selected device, tap writes, pause gating, and session release use injected audio operations") {
+        let device = AudioDevice(id: 42, name: "Test microphone", uid: "test-mic")
+        let events = LockedStringArray()
+        let selectedUID = LockedValue<String?>(nil)
+        let paused = LockedValue(false)
+        let levels = LockedValue<[Float]>([])
+        let (started, startedContinuation) = AsyncStream<Void>.makeStream()
+        let (stopTrigger, stopContinuation) = AsyncStream<Void>.makeStream()
+        let engine = TestRecorderAudioEngine(events: events) {
+            startedContinuation.yield(())
+            startedContinuation.finish()
+        }
+        let writer = TestRecorderAudioWriter(events: events)
+        let operations = RecorderOperations(
+            listInputDevices: { [device] },
+            makeEngine: { selected in
+                selectedUID.set(selected?.uid)
+                return engine
+            },
+            makeWriter: { url, format in
+                events.append("writer:\(url.lastPathComponent):\(format.sampleRate):\(format.channelCount)")
+                return writer
+            },
+            waitForManualStop: { _ in events.append("manualWait") }
+        )
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("CaptainsLogRecorderOperations-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let output = root.appendingPathComponent("audio/test-recording.m4a")
+
+        let task = Task {
+            try await Recorder.record(
+                to: output,
+                duration: nil,
+                deviceUID: "test-mic",
+                stopTrigger: stopTrigger,
+                levelCallback: { level in levels.set(levels.get() + [level]) },
+                isPaused: { paused.get() },
+                operations: operations
+            )
+        }
+        for await _ in started { break }
+
+        engine.emit([1, 1, 0, 0])
+        paused.set(true)
+        engine.emit([1, 1, 1, 1])
+        paused.set(false)
+        stopContinuation.yield(())
+        stopContinuation.finish()
+        try await task.value
+
+        try expect(selectedUID.get() == "test-mic", "The selected input must reach the engine adapter")
+        try expect(levels.get().count == 1, "Paused buffers must not update the level meter")
+        try expect(abs(levels.get()[0] - sqrt(0.5)) < 0.0001, "Audio level should be the input RMS")
+        try expect(events.snapshot().contains("write:4"), "Unpaused input should be written")
+        try expect(events.snapshot().filter { $0 == "write:4" }.count == 1, "Paused input must not be written")
+        try expect(events.snapshot().contains("writer:test-recording.m4a:48000.0:1"), "Writer must receive the target and input format")
+        try expect(events.snapshot().suffix(2).elementsEqual(["stop", "removeTap"]), "Stop must release the engine before removing its tap")
+        try expect(FileManager.default.fileExists(atPath: output.deletingLastPathComponent().path))
+    }
+
+    await testAsync("Recorder: unavailable selected input falls back to default device") {
+        let events = LockedStringArray()
+        let selectedUID = LockedValue<String?>("not-called")
+        let (started, startedContinuation) = AsyncStream<Void>.makeStream()
+        let (stopTrigger, stopContinuation) = AsyncStream<Void>.makeStream()
+        let engine = TestRecorderAudioEngine(events: events) {
+            startedContinuation.yield(())
+            startedContinuation.finish()
+        }
+        let operations = RecorderOperations(
+            listInputDevices: { [] },
+            makeEngine: { selected in
+                selectedUID.set(selected?.uid)
+                return engine
+            },
+            makeWriter: { _, _ in TestRecorderAudioWriter(events: events) },
+            waitForManualStop: { _ in events.append("manualWait") }
+        )
+        let output = FileManager.default.temporaryDirectory
+            .appendingPathComponent("CaptainsLogUnavailableMic-\(UUID().uuidString).m4a")
+        defer { try? FileManager.default.removeItem(at: output.deletingLastPathComponent()) }
+
+        let task = Task {
+            try await Recorder.record(
+                to: output,
+                duration: nil,
+                deviceUID: "missing-mic",
+                stopTrigger: stopTrigger,
+                levelCallback: nil,
+                isPaused: { false },
+                operations: operations
+            )
+        }
+        for await _ in started { break }
+        stopContinuation.yield(())
+        stopContinuation.finish()
+        try await task.value
+
+        try expect(selectedUID.get() == nil, "Unknown device UID should leave device selection to the system default")
+    }
+
+    await testAsync("Recorder: engine start failure stops engine and removes tap") {
+        let events = LockedStringArray()
+        let underlying = NSError(domain: "TestRecorder", code: 11)
+        let engine = TestRecorderAudioEngine(events: events, startError: underlying)
+        let operations = RecorderOperations(
+            listInputDevices: { [] },
+            makeEngine: { _ in engine },
+            makeWriter: { _, _ in TestRecorderAudioWriter(events: events) },
+            waitForManualStop: { _ in events.append("manualWait") }
+        )
+        let output = FileManager.default.temporaryDirectory
+            .appendingPathComponent("CaptainsLogEngineStartFailure-\(UUID().uuidString).m4a")
+        defer { try? FileManager.default.removeItem(at: output.deletingLastPathComponent()) }
+
+        do {
+            try await Recorder.record(
+                to: output,
+                duration: nil,
+                deviceUID: nil,
+                stopTrigger: nil,
+                levelCallback: nil,
+                isPaused: { false },
+                operations: operations
+            )
+            try expect(false, "Expected engine start to fail")
+        } catch let error as Recorder.RecorderError {
+            guard case .engineStartFailed(let cause) = error else {
+                try expect(false, "Expected engineStartFailed, got \(error)")
+                return
+            }
+            try expect((cause as NSError).code == underlying.code)
+        }
+        try expect(events.snapshot().suffix(2).elementsEqual(["stop", "removeTap"]))
+    }
+
+    await testAsync("Recorder: tap installation failure releases engine without starting it") {
+        let events = LockedStringArray()
+        let underlying = NSError(domain: "TestRecorder", code: 12)
+        let engine = TestRecorderAudioEngine(events: events, installError: underlying)
+        let operations = RecorderOperations(
+            listInputDevices: { [] },
+            makeEngine: { _ in engine },
+            makeWriter: { _, _ in TestRecorderAudioWriter(events: events) },
+            waitForManualStop: { _ in events.append("manualWait") }
+        )
+        let output = FileManager.default.temporaryDirectory
+            .appendingPathComponent("CaptainsLogTapInstallFailure-\(UUID().uuidString).m4a")
+        defer { try? FileManager.default.removeItem(at: output.deletingLastPathComponent()) }
+
+        do {
+            try await Recorder.record(
+                to: output,
+                duration: nil,
+                deviceUID: nil,
+                stopTrigger: nil,
+                levelCallback: nil,
+                isPaused: { false },
+                operations: operations
+            )
+            try expect(false, "Expected tap installation to fail")
+        } catch {
+            try expect((error as NSError).code == underlying.code)
+        }
+        try expect(events.snapshot().suffix(2).elementsEqual(["stop", "removeTap"]))
+        try expect(!events.snapshot().contains("start"))
+    }
+
+    await testAsync("Recorder: file write failures surface after the audio tap and engine are released") {
+        let events = LockedStringArray()
+        let (started, startedContinuation) = AsyncStream<Void>.makeStream()
+        let (stopTrigger, stopContinuation) = AsyncStream<Void>.makeStream()
+        let underlying = NSError(domain: "TestRecorder", code: 13)
+        let engine = TestRecorderAudioEngine(events: events) {
+            startedContinuation.yield(())
+            startedContinuation.finish()
+        }
+        let writer = TestRecorderAudioWriter(events: events, writeError: underlying)
+        let operations = RecorderOperations(
+            listInputDevices: { [] },
+            makeEngine: { _ in engine },
+            makeWriter: { _, _ in writer },
+            waitForManualStop: { _ in events.append("manualWait") }
+        )
+        let output = FileManager.default.temporaryDirectory
+            .appendingPathComponent("CaptainsLogWriteFailure-\(UUID().uuidString).m4a")
+        defer { try? FileManager.default.removeItem(at: output.deletingLastPathComponent()) }
+        let task = Task {
+            try await Recorder.record(
+                to: output,
+                duration: nil,
+                deviceUID: nil,
+                stopTrigger: stopTrigger,
+                levelCallback: nil,
+                isPaused: { false },
+                operations: operations
+            )
+        }
+        for await _ in started { break }
+        engine.emit([0.25, -0.25])
+        stopContinuation.yield(())
+        stopContinuation.finish()
+
+        do {
+            try await task.value
+            try expect(false, "Expected the tap writer error to surface")
+        } catch {
+            try expect((error as NSError).code == underlying.code)
+        }
+        try expect(events.snapshot().suffix(2).elementsEqual(["stop", "removeTap"]))
+    }
+
+    await testAsync("Recorder: manual stop path forwards the duration and releases the engine") {
+        let events = LockedStringArray()
+        let duration = LockedValue<TimeInterval?>(nil)
+        let deviceDiscoveryCalls = LockedValue(0)
+        let engine = TestRecorderAudioEngine(events: events)
+        let operations = RecorderOperations(
+            listInputDevices: { deviceDiscoveryCalls.set(deviceDiscoveryCalls.get() + 1); return [] },
+            makeEngine: { selected in
+                try expect(selected == nil, "No requested device should use the system default")
+                return engine
+            },
+            makeWriter: { _, _ in TestRecorderAudioWriter(events: events) },
+            waitForManualStop: { requestedDuration in
+                duration.set(requestedDuration)
+                events.append("manualWait")
+            }
+        )
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("CaptainsLogManualRecorderStop-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        try await Recorder.record(
+            to: root.appendingPathComponent("manual.m4a"),
+            duration: 3,
+            deviceUID: nil,
+            stopTrigger: nil,
+            levelCallback: nil,
+            isPaused: { false },
+            operations: operations
+        )
+
+        try expect(duration.get() == 3, "Manual stop adapter should receive the requested recording duration")
+        try expect(deviceDiscoveryCalls.get() == 0, "Device discovery is unnecessary when no UID is selected")
+        try expect(events.snapshot().contains("manualWait"))
+        try expect(events.snapshot().suffix(2).elementsEqual(["stop", "removeTap"]))
+    }
+
+    await testAsync("Recorder: output setup failures stop before tap or engine startup") {
+        let events = LockedStringArray()
+        let engineFailure = NSError(domain: "TestRecorderSetup", code: 21)
+        let outputRoot = FileManager.default.temporaryDirectory
+            .appendingPathComponent("CaptainsLogRecorderSetup-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: outputRoot) }
+        let device = AudioDevice(id: 7, name: "Test microphone", uid: "setup-mic")
+
+        let engineFailureOperations = RecorderOperations(
+            listInputDevices: { [device] },
+            makeEngine: { selected in
+                try expect(selected?.uid == "setup-mic")
+                events.append("makeEngine")
+                throw engineFailure
+            },
+            makeWriter: { _, _ in events.append("makeWriter"); return TestRecorderAudioWriter(events: events) },
+            waitForManualStop: { _ in events.append("manualWait") }
+        )
+        do {
+            try await Recorder.record(
+                to: outputRoot.appendingPathComponent("engine-failure.m4a"),
+                duration: nil,
+                deviceUID: "setup-mic",
+                stopTrigger: nil,
+                levelCallback: nil,
+                isPaused: { false },
+                operations: engineFailureOperations
+            )
+            try expect(false, "Expected engine creation to fail")
+        } catch {
+            try expect((error as NSError).code == engineFailure.code)
+        }
+        try expect(events.snapshot() == ["makeEngine"], "Writer and wait operations must not run after engine creation fails")
+
+        events.append("reset")
+        let writerFailure = NSError(domain: "TestRecorderSetup", code: 22)
+        let unusedEngine = TestRecorderAudioEngine(events: events)
+        let writerFailureOperations = RecorderOperations(
+            listInputDevices: { [] },
+            makeEngine: { _ in events.append("makeEngine"); return unusedEngine },
+            makeWriter: { _, _ in events.append("makeWriter"); throw writerFailure },
+            waitForManualStop: { _ in events.append("manualWait") }
+        )
+        do {
+            try await Recorder.record(
+                to: outputRoot.appendingPathComponent("writer-failure.m4a"),
+                duration: nil,
+                deviceUID: nil,
+                stopTrigger: nil,
+                levelCallback: nil,
+                isPaused: { false },
+                operations: writerFailureOperations
+            )
+            try expect(false, "Expected writer creation to fail")
+        } catch {
+            try expect((error as NSError).code == writerFailure.code)
+        }
+        try expect(events.snapshot().suffix(2).elementsEqual(["makeEngine", "makeWriter"]))
+        try expect(!events.snapshot().contains("start"), "Engine should not start without a writer")
+    }
+
+    await testAsync("Recorder: an already-finished stop trigger completes and releases the engine") {
+        let events = LockedStringArray()
+        let (stopTrigger, stopContinuation) = AsyncStream<Void>.makeStream()
+        stopContinuation.finish()
+        let engine = TestRecorderAudioEngine(events: events)
+        let operations = RecorderOperations(
+            listInputDevices: { [] },
+            makeEngine: { _ in engine },
+            makeWriter: { _, _ in TestRecorderAudioWriter(events: events) },
+            waitForManualStop: { _ in events.append("manualWait") }
+        )
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("CaptainsLogFinishedStopTrigger-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        try await Recorder.record(
+            to: root.appendingPathComponent("finished-trigger.m4a"),
+            duration: nil,
+            deviceUID: nil,
+            stopTrigger: stopTrigger,
+            levelCallback: nil,
+            isPaused: { false },
+            operations: operations
+        )
+        try expect(events.snapshot().contains("start"))
+        try expect(events.snapshot().suffix(2).elementsEqual(["stop", "removeTap"]))
+        try expect(!events.snapshot().contains("manualWait"))
+    }
+
+    await testAsync("Recorder: output directory failure occurs before device or engine operations") {
+        let events = LockedStringArray()
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("CaptainsLogRecorderDirectoryFailure-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let blocker = root.appendingPathComponent("not-a-directory")
+        try Data("fixture".utf8).write(to: blocker)
+        let operations = RecorderOperations(
+            listInputDevices: { events.append("listDevices"); return [] },
+            makeEngine: { _ in events.append("makeEngine"); return TestRecorderAudioEngine(events: events) },
+            makeWriter: { _, _ in events.append("makeWriter"); return TestRecorderAudioWriter(events: events) },
+            waitForManualStop: { _ in events.append("manualWait") }
+        )
+
+        do {
+            try await Recorder.record(
+                to: blocker.appendingPathComponent("audio.m4a"),
+                duration: nil,
+                deviceUID: "requested-mic",
+                stopTrigger: nil,
+                levelCallback: nil,
+                isPaused: { false },
+                operations: operations
+            )
+            try expect(false, "Expected recording directory creation to fail")
+        } catch {
+            try expect((error as NSError).code != 0)
+        }
+        try expect(events.snapshot().isEmpty, "Hardware operations must not begin when the output directory is unavailable")
+    }
+
+    test("RecordingState: initial audio level is zero") {
+        let recording = RecordingState()
+        try expect(recording.audioLevel == 0)
+    }
+
+    test("RecordingState: initial recording duration is zero") {
+        let recording = RecordingState()
+        try expect(recording.recordingDuration == 0)
+    }
+
+    test("RecordingState: initial isRecording is false") {
+        let recording = RecordingState()
+        try expect(recording.isRecording == false)
+    }
+
+    test("RecordingState: initialization does not enumerate audio devices") {
+        let calls = LockedStringArray()
+        let recording = RecordingState(dependencies: .init(
+            listInputDevices: { calls.append("list"); return [] },
+            defaultInputDevice: { calls.append("default"); return nil },
+            record: { _, _, _, _, _ in }
+        ))
+        try expect(recording.inputDevices.isEmpty)
+        try expect(calls.snapshot().isEmpty)
+    }
+
+    await testAsync("RecordingState: device refresh preserves a connected selection") {
+        let preferred = AudioDevice(id: 42, name: "Preferred microphone", uid: "preferred-mic")
+        let systemDefault = AudioDevice(id: 43, name: "Default microphone", uid: "default-mic")
+        let recording = RecordingState(dependencies: .init(
+            listInputDevices: { [preferred, systemDefault] },
+            defaultInputDevice: { systemDefault },
+            record: { _, _, _, _, _ in }
+        ))
+        recording.selectedDeviceUID = preferred.uid
+
+        await recording.refreshDevicesInBackground()
+
+        try expect(recording.inputDevices == [preferred, systemDefault])
+        try expect(
+            recording.selectedDeviceUID == preferred.uid,
+            "Refreshing the device list should not replace the user's connected selection"
+        )
+    }
+
+    await testAsync("RecordingState: device refresh falls back when the selected input disappears") {
+        let available = AudioDevice(id: 43, name: "Default microphone", uid: "default-mic")
+        let recording = RecordingState(dependencies: .init(
+            listInputDevices: { [available] },
+            defaultInputDevice: { available },
+            record: { _, _, _, _, _ in }
+        ))
+        recording.selectedDeviceUID = "disconnected-microphone"
+
+        await recording.refreshDevicesInBackground()
+
+        try expect(recording.inputDevices == [available])
+        try expect(
+            recording.selectedDeviceUID == available.uid,
+            "A disconnected selection should fall back to the current default input"
+        )
+    }
+
+    await testAsync("RecordingState: microphone preference survives restart and temporary fallbacks") {
+        // The runner sets CAPTAINS_LOG_CONFIG_PATH to its temporary fixture directory.
+        let previous = CaptainsLogConfig.load()
+        defer { try? previous.save() }
+        let preferred = AudioDevice(id: 42, name: "Fixture USB input", uid: "fixture-usb-input")
+        let fallback = AudioDevice(id: 43, name: "Fixture built-in input", uid: "fixture-built-in-input")
+        let original = RecordingState()
+        original.selectedDeviceUID = preferred.uid
+        try expect(CaptainsLogConfig.load().preferredRecordingDeviceUID == preferred.uid)
+        try expect(RecordingState().selectedDeviceUID == preferred.uid,
+                   "A new app recording state must load the saved microphone")
+
+        @MainActor
+        func state(devices: [AudioDevice], defaultDevice: AudioDevice?) -> RecordingState {
+            RecordingState(
+                dependencies: .init(
+                    listInputDevices: { devices }, defaultInputDevice: { defaultDevice },
+                    record: { _, _, _, _, _ in }
+                ),
+                preferredDeviceUID: CaptainsLogConfig.load().preferredRecordingDeviceUID,
+                saveDevicePreference: { uid in
+                    try CaptainsLogConfig.update { $0.preferredRecordingDeviceUID = uid }
+                }
+            )
+        }
+        let reconnected = state(devices: [fallback, preferred], defaultDevice: fallback)
+        await reconnected.refreshDevicesInBackground()
+        try expect(reconnected.selectedDeviceUID == preferred.uid)
+        reconnected.refreshDevices()
+        try expect(reconnected.selectedDeviceUID == preferred.uid)
+
+        let disconnected = state(devices: [fallback], defaultDevice: fallback)
+        await disconnected.refreshDevicesInBackground()
+        try expect(disconnected.selectedDeviceUID == fallback.uid)
+        try expect(CaptainsLogConfig.load().preferredRecordingDeviceUID == preferred.uid,
+                   "An automatic fallback must not replace the user's saved preference")
+        let staleDefault = state(devices: [fallback], defaultDevice: preferred)
+        staleDefault.refreshDevices()
+        try expect(staleDefault.selectedDeviceUID == fallback.uid,
+                   "A missing system default must fall back to an enumerated input")
+        let noInputs = state(devices: [], defaultDevice: preferred)
+        await noInputs.refreshDevicesInBackground()
+        try expect(noInputs.selectedDeviceUID == nil)
+        try expect(CaptainsLogConfig.load().preferredRecordingDeviceUID == preferred.uid)
+
+        disconnected.selectedDeviceUID = fallback.uid
+        try expect(RecordingState().selectedDeviceUID == fallback.uid,
+                   "Explicitly choosing the fallback should replace the preference")
+    }
+
+    test("RecordingState: stop recording when not recording does not crash") {
+        let recording = RecordingState()
+        recording.stopRecording()
+        try expect(recording.isRecording == false)
+    }
+
+    test("RecordingState: cancel recording when not recording does not crash") {
+        let recording = RecordingState()
+        recording.cancelRecording()
+        try expect(recording.isRecording == false)
+    }
+
+    await testAsync("RecordingState: error message is surfaced and cleared") {
+        let recording = RecordingState(dependencies: .init(
+            listInputDevices: { [] },
+            defaultInputDevice: { nil },
+            record: { _, _, stopTrigger, _, _ in
+                for await _ in stopTrigger { break }
+            }
+        ))
+        try expect(recording.errorMessage == nil)
+
+        // Manually set an error to simulate a prior failed recording
+        recording.errorMessage = "Simulated error"
+        try expect(recording.errorMessage == "Simulated error")
+
+        // Starting a new recording should clear the error
+        recording.startRecording(
+            dataDir: "/tmp/cl-test-recording",
+            onComplete: { _ in },
+            onError: { _ in }
+        )
+        try expect(recording.errorMessage == nil)
+        await Task.yield()
+        recording.cancelRecording()
+    }
+
+    await testAsync("RecordingState: fake recorder supports pause, resume, and stop") {
+        let (events, continuation) = AsyncStream<String>.makeStream()
+        let recorderInputs = LockedStringArray()
+        let recording = RecordingState(dependencies: .init(
+            listInputDevices: { [] },
+            defaultInputDevice: { nil },
+            record: { url, deviceUID, stopTrigger, levelCallback, isPaused in
+                recorderInputs.append(url.path)
+                recorderInputs.append(deviceUID ?? "<none>")
+                levelCallback?(0.75)
+                for await _ in stopTrigger { break }
+                try expect(isPaused() == false)
+            }
+        ))
+
+        let dataDir = FileManager.default.temporaryDirectory
+            .appendingPathComponent("CaptainsLogSelectedRecordingDevice-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: dataDir) }
+        recording.selectedDeviceUID = "preferred-mic"
+        recording.startRecording(
+            dataDir: dataDir.path,
+            onComplete: { _ in continuation.yield("complete"); continuation.finish() },
+            onError: { _ in continuation.yield("error"); continuation.finish() }
+        )
+        try expect(recording.isRecording)
+        await Task.yield()
+        recording.pauseRecording()
+        try expect(recording.isRecordingPaused)
+        recording.resumeRecording()
+        try expect(recording.isRecordingPaused == false)
+        recording.stopRecording()
+
+        var outcome: String?
+        for await event in events { outcome = event }
+        try expect(outcome == "complete")
+        try expect(recording.isRecording == false)
+        try expect(recording.audioLevel == 0)
+        let inputs = recorderInputs.snapshot()
+        try expect(inputs.count == 2)
+        let audioURL = URL(fileURLWithPath: inputs[0])
+        try expect(audioURL.deletingLastPathComponent().path ==
+            dataDir.appendingPathComponent(Pipeline.Directory.audio.path).path)
+        try expect(inputs[1] == "preferred-mic", "Recording must use the user's selected input device")
+        try expect(FileManager.default.fileExists(atPath: audioURL.deletingLastPathComponent().path))
+    }
+
+    await testAsync("AppState: consecutive recordings in the same minute create separate completed logs") {
+        let dataDir = FileManager.default.temporaryDirectory
+            .appendingPathComponent("CaptainsLogConsecutiveRecordings-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: dataDir) }
+        let fixture = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+            .appendingPathComponent("eval/suites/transcribe/audio/tng-nl01-vrije-dag-enterprise-corrected.m4a")
+        let fixtureAudio = try Data(contentsOf: fixture)
+        let transcript = try String(contentsOfFile: "eval/suites/transcribe/expected/tng-nl01-vrije-dag-enterprise-corrected.md", encoding: .utf8)
+        let cleaned = try String(contentsOfFile: "eval/suites/pipeline/tng-nl01/cleaned.md", encoding: .utf8)
+        let enriched = try String(contentsOfFile: "eval/suites/pipeline/tng-nl01/enriched.md", encoding: .utf8)
+        let processed = LockedStringArray()
+        let coordinator = ProcessingCoordinator { stem, directory, fromStage, progress in
+            processed.append(stem)
+            let operations = Pipeline.Operations(
+                transcribe: { _, _ in transcript }, cleanup: { _, _ in cleaned },
+                categorize: { _, _, _ in .personal },
+                filename: { _, _ in "\(stem)-fixture.md" },
+                enrich: { _, _, _, _ in enriched }
+            )
+            return try await Pipeline.resumeCommand(
+                stem: stem, dataDir: directory, fromStage: fromStage,
+                operations: operations, progress: progress
+            )
+        }
+        let recording = RecordingState(dependencies: .init(
+            listInputDevices: { [] },
+            defaultInputDevice: { nil },
+            record: { url, _, stopTrigger, _, _ in
+                try fixtureAudio.write(to: url)
+                for await _ in stopTrigger { break }
+            },
+            outputFilename: { "2026-11-07-1234.m4a" }
+        ))
+        let config = ConfigManager(loadContextFiles: false)
+        config.dataDir = dataDir.path
+        let state = AppState(config: config, recording: recording, processing: coordinator)
+        for expectedCount in 1...2 {
+            state.startRecording()
+            state.stopRecording()
+            let deadline = ContinuousClock.now + .seconds(3)
+            while (state.isRecording || coordinator.hasScheduledWork) && ContinuousClock.now < deadline {
+                try await Task.sleep(for: .milliseconds(10))
+            }
+            try expect(!state.isRecording && !coordinator.hasScheduledWork,
+                       "Each recording and its processing must finish before the next starts")
+            try expect(state.errorMessage == nil, "Both fixture recordings must complete successfully")
+            state.loadEntries()
+            try expect(state.allEntries.count == expectedCount && state.allEntries.allSatisfy { $0.stage == .done },
+                       "Stopping recording \(expectedCount) must leave \(expectedCount) completed logs")
+            try expect(state.pendingEntries.isEmpty, "Both recordings must finish processing")
+        }
+        let completedStems = state.allEntries.map(\.stem)
+        try expect(Set(completedStems).count == 2,
+                   "Recordings in one minute must not reuse a log stem")
+        try expect(Set(processed.snapshot()) == Set(completedStems),
+                   "Each stopped recording must pass through the processing queue")
+        let audioDir = dataDir.appendingPathComponent(Pipeline.Directory.audio.path)
+        let files = try FileManager.default.contentsOfDirectory(atPath: audioDir.path)
+        try expect(files.count == 2, "Each recording must retain its own original audio")
+        for stem in completedStems {
+            let audio = try Data(contentsOf: audioDir.appendingPathComponent("\(stem).m4a"))
+            try expect(audio == fixtureAudio, "Original audio must survive later recordings unchanged")
+        }
+        await coordinator.stopForTermination()
+    }
+
+    await testAsync("RecordingState: immediate stop and duplicate start use one recording operation") {
+        let (events, continuation) = AsyncStream<String>.makeStream()
+        let operationCalls = LockedStringArray()
+        let recording = RecordingState(dependencies: .init(
+            listInputDevices: { [] },
+            defaultInputDevice: { nil },
+            record: { _, _, stopTrigger, _, _ in
+                operationCalls.append("record")
+                for await _ in stopTrigger { break }
+            }
+        ))
+        let dataDir = FileManager.default.temporaryDirectory
+            .appendingPathComponent("CaptainsLogImmediateRecordingStop-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: dataDir) }
+
+        recording.startRecording(
+            dataDir: dataDir.path,
+            onComplete: { _ in continuation.yield("complete"); continuation.finish() },
+            onError: { _ in continuation.yield("error"); continuation.finish() }
+        )
+        recording.startRecording(
+            dataDir: dataDir.path,
+            onComplete: { _ in continuation.yield("duplicate-complete"); continuation.finish() },
+            onError: { _ in continuation.yield("duplicate-error"); continuation.finish() }
+        )
+        recording.stopRecording()
+
+        var outcome: String?
+        for await event in events { outcome = event }
+        try expect(operationCalls.snapshot() == ["record"], "A second start must not create another engine operation")
+        try expect(outcome == "complete", "Immediate stop should complete the one active recording cleanly")
+        try expect(recording.isRecording == false)
+        try expect(recording.recordingDuration == 0, "Immediate stop must stop the duration timer")
+        try expect(recording.errorMessage == nil)
+    }
+
+    await testAsync("RecordingState: cancelling a fake recording suppresses completion and errors") {
+        let (started, startedContinuation) = AsyncStream<Void>.makeStream()
+        let callbacks = LockedStringArray()
+        let recording = RecordingState(dependencies: .init(
+            listInputDevices: { [] },
+            defaultInputDevice: { nil },
+            record: { _, _, stopTrigger, levelCallback, _ in
+                levelCallback?(0.75)
+                startedContinuation.yield(())
+                for await _ in stopTrigger { break }
+            }
+        ))
+
+        recording.startRecording(
+            dataDir: FileManager.default.temporaryDirectory.path,
+            onComplete: { _ in callbacks.append("complete") },
+            onError: { _ in callbacks.append("error") }
+        )
+        for await _ in started { break }
+        recording.cancelRecording()
+        try await Task.sleep(for: .milliseconds(150))
+
+        try expect(recording.isRecording == false)
+        try expect(recording.audioLevel == 0)
+        try expect(recording.recordingDuration == 0, "Cancellation must stop the duration timer")
+        try expect(recording.errorMessage == nil)
+        try expect(callbacks.snapshot().isEmpty, "Cancellation must not report success or failure")
+    }
+
+    await testAsync("RecordingState: quit waits for writer release and suppresses processing") {
+        let events = LockedStringArray()
+        let (started, continuation) = AsyncStream<Void>.makeStream()
+        let recording = RecordingState(dependencies: .init(
+            listInputDevices: { [] }, defaultInputDevice: { nil },
+            record: { _, _, stopTrigger, _, _ in
+                continuation.yield(())
+                for await _ in stopTrigger { break }
+                events.append("writer-closed")
+            }
+        ))
+        recording.startRecording(dataDir: FileManager.default.temporaryDirectory.path,
+                                 onComplete: { _ in events.append("processing") },
+                                 onError: { _ in events.append("error") })
+        for await _ in started { break }
+        await recording.stopForTermination()
+        try expect(events.snapshot() == ["writer-closed"])
+        try expect(!recording.isRecording)
+        recording.startRecording(dataDir: FileManager.default.temporaryDirectory.path,
+                                 onComplete: { _ in events.append("late-processing") },
+                                 onError: { _ in events.append("late-error") })
+        await Task.yield()
+        try expect(!recording.isRecording, "Quit must reject a late recording before opening another writer")
+    }
+
+    await testAsync("RecordingState: cancellation errors are not surfaced as recording failures") {
+        let (started, startedContinuation) = AsyncStream<Void>.makeStream()
+        let callbacks = LockedStringArray()
+        let recording = RecordingState(dependencies: .init(
+            listInputDevices: { [] },
+            defaultInputDevice: { nil },
+            record: { _, _, stopTrigger, _, _ in
+                startedContinuation.yield(())
+                for await _ in stopTrigger { break }
+                throw CancellationError()
+            }
+        ))
+
+        recording.startRecording(
+            dataDir: FileManager.default.temporaryDirectory.path,
+            onComplete: { _ in callbacks.append("complete") },
+            onError: { _ in callbacks.append("error") }
+        )
+        for await _ in started { break }
+        recording.cancelRecording()
+        try await Task.sleep(for: .milliseconds(150))
+
+        try expect(recording.isRecording == false)
+        try expect(recording.audioLevel == 0)
+        try expect(recording.recordingDuration == 0, "Cancellation must stop the duration timer")
+        try expect(recording.errorMessage == nil)
+        try expect(callbacks.snapshot().isEmpty, "Cancellation must not call completion handlers")
+    }
+
+    await testAsync("RecordingState: fake recorder surfaces failures") {
+        let (events, continuation) = AsyncStream<String>.makeStream()
+        let recording = RecordingState(dependencies: .init(
+            listInputDevices: { [] },
+            defaultInputDevice: { nil },
+            record: { _, _, _, levelCallback, _ in
+                levelCallback?(0.75)
+                throw NSError(domain: "RecordingTests", code: 1, userInfo: [
+                    NSLocalizedDescriptionKey: "Synthetic recording failure",
+                ])
+            }
+        ))
+
+        recording.startRecording(
+            dataDir: FileManager.default.temporaryDirectory.path,
+            onComplete: { _ in continuation.yield("complete"); continuation.finish() },
+            onError: { _ in continuation.yield("error"); continuation.finish() }
+        )
+
+        var outcome: String?
+        for await event in events { outcome = event }
+        try expect(outcome == "error")
+        try expect(recording.isRecording == false)
+        try expect(recording.errorMessage == "Synthetic recording failure")
+        try expect(recording.audioLevel == 0, "A failed recording must stop the audio meter")
+        try await Task.sleep(for: .milliseconds(150))
+        try expect(recording.recordingDuration == 0, "A failed recording must stop its duration timer")
+    }
+
+    await testAsync("AppState: recording guard no longer blocks on processing") {
+        let recording = RecordingState(dependencies: .init(
+            listInputDevices: { [] },
+            defaultInputDevice: { nil },
+            record: { _, _, stopTrigger, _, _ in
+                for await _ in stopTrigger { break }
+            }
+        ))
+        let appState = AppState(recording: recording)
+        // Simulate processing in progress
+        appState.processing.stage = .enriching
+        appState.models.modelState = .downloading(model: "Test", progress: 0.5)
+        try expect(appState.processing.isProcessing == true)
+        try expect(appState.modelsReady == false)
+
+        // The old guard blocked on processing.isProcessing.
+        // The new guard only blocks on recording.isRecording.
+        // Since we are not recording, startRecording should proceed.
+        appState.startRecording()
+
+        // The fake recorder remains active until stop, proving processing did not block it.
+        try expect(appState.isRecording == true)
+        try expect(appState.processing.stage == .enriching, "Recording must not overwrite the active pipeline stage")
+        await Task.yield()
+
+        appState.stopRecording()
+        for _ in 0..<100 where appState.isRecording {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        try expect(appState.isRecording == false)
+    }
+
+    await testAsync("AppState: recording failure updates the visible processing error") {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("CaptainsLogAppStateRecordFailure-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let config = ConfigManager(loadContextFiles: false)
+        config.dataDir = root.path
+        let recording = RecordingState(dependencies: .init(
+            listInputDevices: { [] },
+            defaultInputDevice: { nil },
+            record: { _, _, _, _, _ in
+                throw NSError(domain: "AppStateRecordingTests", code: 1, userInfo: [
+                    NSLocalizedDescriptionKey: "Synthetic microphone failure",
+                ])
+            }
+        ))
+        let appState = AppState(config: config, recording: recording)
+
+        appState.startRecording()
+        for _ in 0..<100 where appState.processing.stage != .error {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+
+        try expect(appState.processing.stage == .error)
+        try expect(appState.errorMessage == "Synthetic microphone failure")
+        try expect(appState.statusMessage == "Error: Synthetic microphone failure")
+        try expect(appState.isRecording == false)
+    }
+
+    // MARK: - ProcessingCoordinator Tests
+
+    test("ProcessingCoordinator: initial stage is idle") {
+        let coordinator = ProcessingCoordinator()
+        try expect(coordinator.stage == .idle)
+    }
+
+    test("ProcessingCoordinator: initial status message") {
+        let coordinator = ProcessingCoordinator()
+        try expect(coordinator.statusMessage == "Ready to record")
+    }
+
+    test("ProcessingCoordinator: initial error message is nil") {
+        let coordinator = ProcessingCoordinator()
+        try expect(coordinator.errorMessage == nil)
+    }
+
+    test("ProcessingCoordinator: initial processing stem is nil") {
+        let coordinator = ProcessingCoordinator()
+        try expect(coordinator.processingStem == nil)
+    }
+
+    test("ProcessingCoordinator: initial isProcessing is false") {
+        let coordinator = ProcessingCoordinator()
+        try expect(coordinator.isProcessing == false)
+    }
+
+    test("ProcessingCoordinator: isProcessing true for transcribing") {
+        let coordinator = ProcessingCoordinator()
+        coordinator.stage = .transcribing
+        try expect(coordinator.isProcessing == true)
+    }
+
+    test("ProcessingCoordinator: isProcessing true for cleaning") {
+        let coordinator = ProcessingCoordinator()
+        coordinator.stage = .cleaning
+        try expect(coordinator.isProcessing == true)
+    }
+
+    test("ProcessingCoordinator: isProcessing false for idle") {
+        let coordinator = ProcessingCoordinator()
+        coordinator.stage = .idle
+        try expect(coordinator.isProcessing == false)
+    }
+
+    test("ProcessingCoordinator: isProcessing false for done") {
+        let coordinator = ProcessingCoordinator()
+        coordinator.stage = .done
+        try expect(coordinator.isProcessing == false)
+    }
+
+    test("ProcessingCoordinator: pause processing resets state") {
+        let coordinator = ProcessingCoordinator()
+        coordinator.stage = .transcribing
+        coordinator.statusMessage = "Processing..."
+        coordinator.processingStem = "test"
+
+        coordinator.pauseProcessing()
+
+        try expect(coordinator.stage == .idle)
+        try expect(coordinator.statusMessage == "Paused")
+        try expect(coordinator.processingStem == nil)
+        try expect(coordinator.isProcessing == false)
+    }
+
+    test("ProcessingCoordinator: status message can be updated") {
+        let coordinator = ProcessingCoordinator()
+        coordinator.statusMessage = "custom"
+        try expect(coordinator.statusMessage == "custom")
+    }
+
+    test("ProcessingCoordinator: processing stem can be set") {
+        let coordinator = ProcessingCoordinator()
+        coordinator.processingStem = "2024-01-01"
+        try expect(coordinator.processingStem == "2024-01-01")
+    }
+
+    // MARK: - DirectoryWatcher Tests
+
+    await testAsync("DirectoryWatcher: reloads after changes inside a new custom category") {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        let reloads = LockedStringArray()
+        let watcher = DirectoryWatcher(onReload: { reloads.append("reload") })
+        defer {
+            watcher.stopWatching()
+            try? FileManager.default.removeItem(at: root)
+        }
+        @MainActor func expectReload(after change: () throws -> Void) async throws {
+            let previous = reloads.snapshot().count
+            try change()
+            for _ in 0..<200 where reloads.snapshot().count == previous {
+                try await Task.sleep(for: .milliseconds(10))
+            }
+            try expect(reloads.snapshot().count > previous, "External log changes should trigger a reload")
+        }
+        watcher.startWatching(dataDir: root.path)
+        let category = root.appendingPathComponent("logs/research")
+        for _ in 0..<200 where !FileManager.default.fileExists(atPath: category.deletingLastPathComponent().path) {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        let audio = root.appendingPathComponent("audio/ready")
+        try await expectReload { try Data().write(to: audio) }
+        try await expectReload { try FileManager.default.createDirectory(at: category, withIntermediateDirectories: false) }
+        let note = category.appendingPathComponent("fixture.md")
+        let fixture = try Data(contentsOf: URL(fileURLWithPath: "eval/suites/categorize/input/side-project-voice-app.md"))
+        try await expectReload { try fixture.write(to: note, options: .atomic) }
+        try await expectReload { try FileManager.default.removeItem(at: note) }
+    }
+
+    await testAsync("DirectoryWatcher: stopping cancels a pending reload") {
+        let reloads = LockedStringArray()
+        let watcher = DirectoryWatcher(onReload: { reloads.append("reload") })
+        watcher.scheduleReload()
+        watcher.stopWatching()
+
+        try await Task.sleep(for: .milliseconds(350))
+        try expect(reloads.snapshot().isEmpty, "Stopping should suppress an already scheduled reload")
+    }
+
+    await testAsync("DirectoryWatcher: coalesces rapid reload requests") {
+        let reloads = LockedStringArray()
+        let watcher = DirectoryWatcher(onReload: { reloads.append("reload") })
+        watcher.scheduleReload()
+        watcher.scheduleReload()
+        try await Task.sleep(for: .milliseconds(500))
+        try expect(reloads.snapshot() == ["reload"])
+    }
+
+    test("ModelStorage: disk usage and deletion preserve unrelated files and model IDs") {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let original = CaptainsLogConfig.load()
+        defer { try? original.save() }
+        let whisper = root.appendingPathComponent("whisper")
+        let bundle = whisper.appendingPathComponent("AudioEncoder.mlmodelc/weights")
+        try FileManager.default.createDirectory(at: bundle, withIntermediateDirectories: true)
+        try Data(repeating: 7, count: 8192).write(to: bundle.appendingPathComponent("weight.bin"))
+        let unrelated = whisper.appendingPathComponent("keep.txt")
+        try Data("keep".utf8).write(to: unrelated)
+        let qwen = root.appendingPathComponent(LLM.ggufFilename)
+        let otherModel = root.appendingPathComponent("other.gguf")
+        let embedding = root.appendingPathComponent("embedding.gguf")
+        for file in [qwen, otherModel, embedding] {
+            try Data(repeating: 3, count: 8192).write(to: file)
+        }
+        var config = original
+        config.whisperModel = "selected-whisper"
+        config.whisperModelFolder = whisper.path
+        config.qwenModelId = "selected-qwen"
+        config.qwenModelFolder = root.path
+        try config.save()
+        let usage = try ModelStorage.usage(config: config, embeddingURL: embedding)
+        try expect(usage.count == 3 && usage.allSatisfy { $0.installed && $0.bytes >= 8192 })
+        try FileManager.default.setAttributes([.immutable: true], ofItemAtPath: qwen.path)
+        defer { try? FileManager.default.setAttributes([.immutable: false], ofItemAtPath: qwen.path) }
+        do {
+            try ModelStorage.delete(.qwen, config: config, embeddingURL: embedding)
+            try expect(false, "Deleting the locked model should fail")
+        } catch let error as CocoaError where error.code == .fileWriteNoPermission {}
+        try expect(CaptainsLogConfig.load().qwenModelFolder == root.path, "A failed deletion must preserve the model path for retry")
+        try FileManager.default.setAttributes([.immutable: false], ofItemAtPath: qwen.path)
+        try ModelStorage.delete(.whisper, config: config, embeddingURL: embedding)
+        try ModelStorage.delete(.qwen, config: config, embeddingURL: embedding)
+        try ModelStorage.delete(.embeddings, config: config, embeddingURL: embedding)
+        let saved = CaptainsLogConfig.load()
+        try expect(saved.whisperModelFolder == nil && saved.qwenModelFolder == nil)
+        try expect(saved.whisperModel == "selected-whisper" && saved.qwenModelId == "selected-qwen")
+        try expect(FileManager.default.fileExists(atPath: unrelated.path))
+        try expect(FileManager.default.fileExists(atPath: otherModel.path))
+        try expect(!FileManager.default.fileExists(atPath: qwen.path))
+        try expect(!FileManager.default.fileExists(atPath: embedding.path))
+        let after = try ModelStorage.usage(config: saved, embeddingURL: embedding)
+        try expect(after.allSatisfy { !$0.installed && $0.bytes == 0 })
+        // A wrongly selected directory must not lose an unrelated config.json.
+        let unrelatedConfig = whisper.appendingPathComponent("config.json")
+        try Data("keep".utf8).write(to: unrelatedConfig)
+        try ModelStorage.delete(.whisper, config: config, embeddingURL: embedding)
+        try expect(FileManager.default.fileExists(atPath: unrelatedConfig.path))
+    }
+
+    await testAsync("ModelManager: deleting a pipeline model defers download until preparation") {
+        let calls = LockedStringArray()
+        let manager = ModelManager(dependencies: .init(
+            clearStaleConfig: {}, cleanCorruptedMetadata: {},
+            whisperIsDownloaded: { false }, qwenIsDownloaded: { false },
+            downloadWhisper: { _ in calls.append("whisper") },
+            downloadQwen: { _ in calls.append("qwen") }
+        ))
+        manager.didDeleteModel(.embeddings)
+        try expect(manager.modelsReady)
+        manager.didDeleteModel(.whisper)
+        try expect(!manager.modelsReady && calls.snapshot().isEmpty)
+        let state = AppState(config: ConfigManager(loadContextFiles: false), models: manager)
+        try expect(state.canInstallUpdate, "Intentionally deleted models should not block an idle update")
+        await manager.downloadModelsIfNeeded()
+        try expect(manager.modelsReady && !manager.needsDownload)
+        try expect(calls.snapshot() == ["whisper", "qwen"])
+    }
+
+    test("AppState: model deletion rechecks busy state before touching files") {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("ModelDeletion-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let weights = root.appendingPathComponent("fixture.gguf")
+        try Data("synthetic model placeholder".utf8).write(to: weights)
+        let previousFolder = CaptainsLogConfig.load().qwenModelFolder
+        defer { try? CaptainsLogConfig.update { $0.qwenModelFolder = previousFolder } }
+        try CaptainsLogConfig.update { $0.qwenModelFolder = root.path }
+        let state = AppState(config: ConfigManager(loadContextFiles: false))
+        state.models.modelState = .downloading(model: "fixture", progress: 0)
+        try expect(!state.canDeleteModels)
+        var rejected = false
+        do { try state.deleteModel(.qwen) } catch { rejected = true }
+        try expect(rejected, "Deletion must reject an active model download")
+        try expect(FileManager.default.fileExists(atPath: weights.path))
+        try expect(CaptainsLogConfig.load().qwenModelFolder == root.path)
+        state.models.modelState = .ready
+        try expect(state.canDeleteModels)
+        try state.deleteModel(.qwen)
+        try expect(!FileManager.default.fileExists(atPath: weights.path))
+        try expect(state.config.qwenModelFolder.isEmpty)
+        try expect(!state.models.modelsReady)
+    }
+
+    // MARK: - ModelManager Tests
+
+    test("ModelManager: initial model state is ready") {
+        let manager = ModelManager()
+        try expect(manager.modelState == .ready)
+    }
+
+    test("ModelManager: models ready returns true when ready") {
+        let manager = ModelManager()
+        try expect(manager.modelsReady == true)
+    }
+
+    test("ModelManager: models ready returns false when downloading") {
+        let manager = ModelManager()
+        manager.modelState = .downloading(model: "Test", progress: 0.5)
+        try expect(manager.modelsReady == false)
+    }
+
+    test("ModelManager: models ready returns false when error") {
+        let manager = ModelManager()
+        manager.modelState = .error("test")
+        try expect(manager.modelsReady == false)
+    }
+
+    test("ModelManager: model state can be set to downloading") {
+        let manager = ModelManager()
+        manager.modelState = .downloading(model: "Whisper", progress: 0.5)
+        if case .downloading(let model, let progress) = manager.modelState {
+            try expect(model == "Whisper")
+            try expect(progress == 0.5)
+        }
+    }
+
+    test("ModelManager: model state can be reset to ready") {
+        let manager = ModelManager()
+        manager.modelState = .downloading(model: "Test", progress: 0.5)
+        manager.modelState = .ready
+        try expect(manager.modelState == .ready)
+    }
+
+    test("ModelManager: model availability requires directories and Qwen requires a GGUF file") {
+        let fm = FileManager.default
+        let root = fm.temporaryDirectory
+            .appendingPathComponent("CaptainsLogModelAvailability-\(UUID().uuidString)", isDirectory: true)
+        defer { try? fm.removeItem(at: root) }
+
+        let whisperFolder = root.appendingPathComponent("whisper", isDirectory: true)
+        let qwenFolder = root.appendingPathComponent("qwen", isDirectory: true)
+        let regularFile = root.appendingPathComponent("not-a-folder")
+        let missingFolder = root.appendingPathComponent("missing", isDirectory: true)
+
+        try expect(!ModelManager.whisperModelIsDownloaded(config: CaptainsLogConfig()))
+        try expect(!ModelManager.qwenModelIsDownloaded(config: CaptainsLogConfig()))
+        try expect(!ModelManager.whisperModelIsDownloaded(
+            config: CaptainsLogConfig(whisperModelFolder: missingFolder.path)
+        ))
+        try expect(!ModelManager.qwenModelIsDownloaded(
+            config: CaptainsLogConfig(qwenModelFolder: missingFolder.path)
+        ))
+
+        try fm.createDirectory(at: root, withIntermediateDirectories: true)
+        try "not a directory".write(to: regularFile, atomically: true, encoding: .utf8)
+        try expect(!ModelManager.whisperModelIsDownloaded(
+            config: CaptainsLogConfig(whisperModelFolder: regularFile.path)
+        ), "A regular file must not satisfy the Whisper model-folder check")
+        try expect(!ModelManager.qwenModelIsDownloaded(
+            config: CaptainsLogConfig(qwenModelFolder: regularFile.path)
+        ), "A regular file must not satisfy the Qwen model-folder check")
+
+        try fm.createDirectory(at: whisperFolder, withIntermediateDirectories: true)
+        try fm.createDirectory(at: qwenFolder, withIntermediateDirectories: true)
+        let unrelatedFile = qwenFolder.appendingPathComponent("README.txt")
+        try "not a model".write(to: unrelatedFile, atomically: true, encoding: .utf8)
+        let whisperConfig = CaptainsLogConfig(whisperModelFolder: whisperFolder.path)
+        try expect(!ModelManager.whisperModelIsDownloaded(config: whisperConfig),
+                   "An empty folder must not bypass incomplete-download recovery")
+        for component in ["MelSpectrogram", "AudioEncoder", "TextDecoder"] {
+            let weight = whisperFolder.appendingPathComponent("\(component).mlmodelc/weights/weight.bin")
+            try fm.createDirectory(at: weight.deletingLastPathComponent(), withIntermediateDirectories: true)
+            if component != "MelSpectrogram" { try Data("synthetic weight marker".utf8).write(to: weight) }
+        }
+        try expect(ModelManager.whisperModelIsDownloaded(config: whisperConfig),
+                   "Mel spectrogram transform may have no learned weight file")
+        try fm.removeItem(at: whisperFolder.appendingPathComponent("TextDecoder.mlmodelc/weights/weight.bin"))
+        try expect(!ModelManager.whisperModelIsDownloaded(config: whisperConfig),
+                   "A missing decoder weight must trigger recovery instead of the launch fast path")
+        try expect(!ModelManager.qwenModelIsDownloaded(
+            config: CaptainsLogConfig(qwenModelFolder: qwenFolder.path)
+        ), "Qwen should remain unavailable until a GGUF model file exists")
+
+        try Data("synthetic GGUF marker".utf8).write(to: qwenFolder.appendingPathComponent("model.gguf"))
+        try expect(ModelManager.qwenModelIsDownloaded(
+            config: CaptainsLogConfig(qwenModelFolder: qwenFolder.path)
+        ))
+    }
+
+    await testAsync("ModelManager: downloads missing models with injected operations") {
+        let calls = LockedStringArray()
+        let manager = ModelManager(dependencies: .init(
+            clearStaleConfig: { calls.append("clear-stale") },
+            cleanCorruptedMetadata: { calls.append("clean-metadata") },
+            whisperIsDownloaded: { false },
+            qwenIsDownloaded: { false },
+            downloadWhisper: { _ in calls.append("download-whisper") },
+            downloadQwen: { _ in calls.append("download-qwen") }
+        ))
+
+        await manager.downloadModelsIfNeeded()
+
+        try expect(manager.modelState == .ready)
+        try expect(calls.snapshot() == [
+            "clear-stale", "clean-metadata", "download-whisper", "download-qwen",
+        ])
+    }
+
+    await testAsync("ModelManager: rechecks availability after missing-model recovery") {
+        let repaired = LockedValue(false)
+        let downloaded = LockedValue(false)
+        let manager = ModelManager(dependencies: .init(
+            clearStaleConfig: {}, cleanCorruptedMetadata: { repaired.set(true) },
+            whisperIsDownloaded: { repaired.get() }, qwenIsDownloaded: { true },
+            downloadWhisper: { _ in downloaded.set(true) }, downloadQwen: { _ in }
+        ))
+        await manager.downloadModelsIfNeeded()
+        try expect(repaired.get() && manager.modelsReady)
+        try expect(!downloaded.get(), "Recovery should not redownload a repaired prepared model")
+    }
+
+    await testAsync("ModelManager: skips downloads when both models are already available") {
+        let calls = LockedStringArray()
+        let manager = ModelManager(dependencies: .init(
+            clearStaleConfig: { calls.append("clear-stale") },
+            cleanCorruptedMetadata: { calls.append("clean-metadata") },
+            whisperIsDownloaded: { calls.append("whisper-ready"); return true },
+            qwenIsDownloaded: { calls.append("qwen-ready"); return true },
+            downloadWhisper: { _ in calls.append("download-whisper") },
+            downloadQwen: { _ in calls.append("download-qwen") }
+        ))
+
+        await manager.downloadModelsIfNeeded()
+
+        try expect(manager.modelState == .ready)
+        try expect(calls.snapshot() == ["clear-stale", "whisper-ready", "qwen-ready"])
+    }
+
+    await testAsync("ModelManager startup: prepared models bypass slow recovery scan") {
+        let recovery = LockedValue(false)
+        let manager = ModelManager(dependencies: .init(
+            clearStaleConfig: {},
+            cleanCorruptedMetadata: { recovery.set(true); Thread.sleep(forTimeInterval: 0.2) },
+            whisperIsDownloaded: { true }, qwenIsDownloaded: { true },
+            downloadWhisper: { _ in throw CancellationError() },
+            downloadQwen: { _ in throw CancellationError() }
+        ))
+        let start = ContinuousClock.now
+        await manager.downloadModelsIfNeeded()
+        try expect(!recovery.get(), "Normal startup must not traverse cache recovery directories")
+        try expect(start.duration(to: .now) < .milliseconds(100), "Prepared model readiness regressed to recovery-scan latency")
+        try expect(manager.modelsReady)
+    }
+
+    await testAsync("ModelManager: downloads only Qwen when Whisper is already available") {
+        let calls = LockedStringArray()
+        let manager = ModelManager(dependencies: .init(
+            clearStaleConfig: {},
+            cleanCorruptedMetadata: {},
+            whisperIsDownloaded: { true },
+            qwenIsDownloaded: { false },
+            downloadWhisper: { _ in calls.append("download-whisper") },
+            downloadQwen: { _ in calls.append("download-qwen") }
+        ))
+
+        await manager.downloadModelsIfNeeded()
+
+        try expect(manager.modelState == .ready)
+        try expect(calls.snapshot() == ["download-qwen"], "The available Whisper model must not download again")
+    }
+
+    await testAsync("ModelManager: publishes each model download's progress") {
+        let calls = LockedStringArray()
+        let whisperGate = AsyncTestGate()
+        let qwenGate = AsyncTestGate()
+        let manager = ModelManager(dependencies: .init(
+            clearStaleConfig: {},
+            cleanCorruptedMetadata: {},
+            whisperIsDownloaded: { false },
+            qwenIsDownloaded: { false },
+            downloadWhisper: { reportProgress in
+                calls.append("download-whisper")
+                let progress = Progress(totalUnitCount: 4)
+                progress.completedUnitCount = 2
+                reportProgress(progress)
+                await whisperGate.wait()
+            },
+            downloadQwen: { reportProgress in
+                calls.append("download-qwen")
+                let progress = Progress(totalUnitCount: 4)
+                progress.completedUnitCount = 3
+                reportProgress(progress)
+                await qwenGate.wait()
+            }
+        ))
+
+        let download = Task { await manager.downloadModelsIfNeeded() }
+        let whisperProgress = ModelState.downloading(
+            model: "Whisper (speech-to-text)", progress: 0.5)
+        for _ in 0..<100 where manager.modelState != whisperProgress {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        try expect(manager.modelState == whisperProgress)
+        try expect(calls.snapshot() == ["download-whisper"])
+
+        await whisperGate.open()
+        let qwenProgress = ModelState.downloading(
+            model: "Qwen 3.5 (text processing)", progress: 0.75)
+        for _ in 0..<100 where manager.modelState != qwenProgress {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        try expect(manager.modelState == qwenProgress)
+        try expect(calls.snapshot() == ["download-whisper", "download-qwen"])
+
+        await qwenGate.open()
+        await download.value
+        try expect(manager.modelState == .ready)
+    }
+
+    test("ModelManager: removes stale Whisper download metadata") {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("CaptainsLogModelManagerTests-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        let staleMetadata = root
+            .appendingPathComponent(".cache/huggingface/download/openai_whisper-large-v2", isDirectory: true)
+            .appendingPathComponent("config.json.metadata")
+        let otherMetadata = root
+            .appendingPathComponent(".cache/huggingface/download/openai_whisper-large-v2", isDirectory: true)
+            .appendingPathComponent("generation_config.json.metadata")
+        try FileManager.default.createDirectory(
+            at: staleMetadata.deletingLastPathComponent(),
+            withIntermediateDirectories: true
+        )
+        try "corrupted".write(to: staleMetadata, atomically: true, encoding: .utf8)
+        try "keep".write(to: otherMetadata, atomically: true, encoding: .utf8)
+
+        ModelManager.removeDownloadMetadata(in: root)
+
+        try expect(!FileManager.default.fileExists(atPath: staleMetadata.path))
+        try expect(FileManager.default.fileExists(atPath: otherMetadata.path))
+    }
+
+    await testAsync("ModelManager: late progress cannot hide a failed download") {
+        let retainedProgress = LockedValue<(@Sendable (Progress) -> Void)?>(nil)
+        let manager = ModelManager(dependencies: .init(
+            clearStaleConfig: {}, cleanCorruptedMetadata: {},
+            whisperIsDownloaded: { false }, qwenIsDownloaded: { true },
+            downloadWhisper: { reportProgress in
+                retainedProgress.set(reportProgress)
+                throw NSError(domain: "ModelTests", code: 90, userInfo: [
+                    NSLocalizedDescriptionKey: "Synthetic download failure",
+                ])
+            }, downloadQwen: { _ in }
+        ))
+        await manager.downloadModelsIfNeeded()
+        let delayedProgress = Progress(totalUnitCount: 4)
+        delayedProgress.completedUnitCount = 2
+        retainedProgress.get()?(delayedProgress)
+        try await Task.sleep(for: .milliseconds(20))
+        try expect(manager.modelState == .error("Synthetic download failure"),
+                   "Late progress must not replace the error with a stuck download")
+        try expect(manager.needsDownload && !manager.modelsReady,
+                   "A failed missing-model download must remain unavailable for processing")
+    }
+
+    await testAsync("ModelManager: late progress cannot replace completed model readiness") {
+        let retainedProgress = LockedValue<(@Sendable (Progress) -> Void)?>(nil)
+        let manager = ModelManager(dependencies: .init(
+            clearStaleConfig: {}, cleanCorruptedMetadata: {},
+            whisperIsDownloaded: { false }, qwenIsDownloaded: { true },
+            downloadWhisper: { reportProgress in
+                retainedProgress.set(reportProgress)
+            }, downloadQwen: { _ in }
+        ))
+        await manager.downloadModelsIfNeeded()
+        let delayedProgress = Progress(totalUnitCount: 4)
+        delayedProgress.completedUnitCount = 2
+        retainedProgress.get()?(delayedProgress)
+        try await Task.sleep(for: .milliseconds(20))
+        try expect(manager.modelsReady, "Queued progress must not leave completed setup downloading")
+    }
+
+    await testAsync("ModelManager: interrupted download remains unavailable and retryable") {
+        let manager = ModelManager(dependencies: .init(
+            clearStaleConfig: {},
+            cleanCorruptedMetadata: {},
+            whisperIsDownloaded: { false },
+            qwenIsDownloaded: { true },
+            downloadWhisper: { _ in throw CancellationError() },
+            downloadQwen: { _ in }
+        ))
+
+        await manager.downloadModelsIfNeeded()
+        try expect(!manager.modelsReady && manager.needsDownload,
+                   "Interrupted model setup cannot report ready while the model is missing")
+        if case .error(let message) = manager.modelState {
+            try expect(!message.isEmpty, "Interrupted downloads need an actionable error")
+        } else {
+            throw NSError(domain: "ModelTests", code: 90, userInfo: [
+                NSLocalizedDescriptionKey: "Interrupted setup must show a retryable error",
+            ])
+        }
+    }
+
+    await testAsync("ModelManager: interrupted network download remains unavailable and retryable") {
+        let manager = ModelManager(dependencies: .init(
+            clearStaleConfig: {},
+            cleanCorruptedMetadata: {},
+            whisperIsDownloaded: { false },
+            qwenIsDownloaded: { true },
+            downloadWhisper: { _ in throw URLError(.cancelled) },
+            downloadQwen: { _ in }
+        ))
+
+        await manager.downloadModelsIfNeeded()
+        try expect(!manager.modelsReady && manager.needsDownload,
+                   "Interrupted model setup cannot report ready while the model is missing")
+        if case .error(let message) = manager.modelState {
+            try expect(!message.isEmpty, "Interrupted downloads need an actionable error")
+        } else {
+            throw NSError(domain: "ModelTests", code: 90, userInfo: [
+                NSLocalizedDescriptionKey: "Interrupted setup must show a retryable error",
+            ])
+        }
+    }
+
+    await testAsync("ModelManager: ensureModelsDownloaded calls readiness after both downloads") {
+        let ready = LockedStringArray()
+        let manager = ModelManager(dependencies: .init(
+            clearStaleConfig: {},
+            cleanCorruptedMetadata: {},
+            whisperIsDownloaded: { true },
+            qwenIsDownloaded: { true },
+            downloadWhisper: { _ in },
+            downloadQwen: { _ in }
+        ))
+
+        manager.ensureModelsDownloaded { ready.append("ready") }
+        for _ in 0..<100 where ready.snapshot().isEmpty {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        try expect(ready.snapshot() == ["ready"])
+        try expect(manager.modelState == .ready)
+    }
+
+    await testAsync("ModelManager: ensureModelsDownloaded does not call readiness after a download failure") {
+        let ready = LockedStringArray()
+        let manager = ModelManager(dependencies: .init(
+            clearStaleConfig: {},
+            cleanCorruptedMetadata: {},
+            whisperIsDownloaded: { true },
+            qwenIsDownloaded: { false },
+            downloadWhisper: { _ in },
+            downloadQwen: { _ in
+                throw NSError(domain: "ModelTests", code: 2, userInfo: [
+                    NSLocalizedDescriptionKey: "Synthetic Qwen failure",
+                ])
+            }
+        ))
+
+        manager.ensureModelsDownloaded { ready.append("ready") }
+        for _ in 0..<100 {
+            if case .error = manager.modelState { break }
+            try await Task.sleep(for: .milliseconds(10))
+        }
+
+        try expect(manager.modelState == .error("Synthetic Qwen failure"))
+        try expect(ready.snapshot().isEmpty, "Readiness must not be reported after a failed download")
+    }
+
+    await testAsync("ModelManager: surfaces non-cancellation download failures") {
+        let manager = ModelManager(dependencies: .init(
+            clearStaleConfig: {},
+            cleanCorruptedMetadata: {},
+            whisperIsDownloaded: { false },
+            qwenIsDownloaded: { true },
+            downloadWhisper: { _ in
+                throw NSError(domain: "ModelTests", code: 1, userInfo: [
+                    NSLocalizedDescriptionKey: "Synthetic download failure",
+                ])
+            },
+            downloadQwen: { _ in }
+        ))
+
+        await manager.downloadModelsIfNeeded()
+        try expect(manager.modelState == .error("Synthetic download failure"))
+    }
+
+    await testAsync("ModelManager: retry after download failure restores readiness") {
+        let shouldFail = LockedValue(true)
+        let ready = LockedStringArray()
+        let manager = ModelManager(dependencies: .init(
+            clearStaleConfig: {}, cleanCorruptedMetadata: {},
+            whisperIsDownloaded: { true }, qwenIsDownloaded: { false },
+            downloadWhisper: { _ in },
+            downloadQwen: { _ in
+                if shouldFail.get() { throw URLError(.notConnectedToInternet) }
+            }
+        ))
+        await manager.downloadModelsIfNeeded()
+        try expect(!manager.modelsReady && manager.needsDownload)
+        shouldFail.set(false)
+        manager.ensureModelsDownloaded { ready.append("ready") }
+        for _ in 0..<100 where ready.snapshot().isEmpty {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        try expect(manager.modelsReady && !manager.needsDownload)
+        try expect(ready.snapshot() == ["ready"], "Retry must resume work waiting for models")
+    }
+
+    await testAsync("ModelManager: metadata download failure clears stale Whisper config") {
+        let fm = FileManager.default
+        let root = fm.temporaryDirectory
+            .appendingPathComponent("CaptainsLogModelMetadataFailure-\(UUID().uuidString)", isDirectory: true)
+        defer { try? fm.removeItem(at: root) }
+        try fm.createDirectory(at: root, withIntermediateDirectories: true)
+
+        let priorConfigPath = getenv("CAPTAINS_LOG_CONFIG_PATH").map { String(cString: $0) }
+        let isolatedConfigPath = root.appendingPathComponent("config.json").path
+        setenv("CAPTAINS_LOG_CONFIG_PATH", isolatedConfigPath, 1)
+        defer {
+            if let priorConfigPath {
+                setenv("CAPTAINS_LOG_CONFIG_PATH", priorConfigPath, 1)
+            } else {
+                unsetenv("CAPTAINS_LOG_CONFIG_PATH")
+            }
+        }
+
+        try CaptainsLogConfig(
+            dataDir: root.path,
+            whisperModelFolder: "/stale/whisper-model",
+            whisperModel: "synthetic-whisper",
+            qwenModelId: "synthetic-qwen"
+        ).save()
+
+        let manager = ModelManager(dependencies: .init(
+            clearStaleConfig: {},
+            cleanCorruptedMetadata: {},
+            whisperIsDownloaded: { false },
+            qwenIsDownloaded: { true },
+            downloadWhisper: { _ in
+                throw NSError(domain: "ModelTests", code: 2, userInfo: [
+                    NSLocalizedDescriptionKey: "Corrupted Whisper metadata detected",
+                ])
+            },
+            downloadQwen: { _ in }
+        ))
+
+        await manager.downloadModelsIfNeeded()
+
+        let saved = CaptainsLogConfig.load()
+        try expect(manager.modelState == .error("Corrupted Whisper metadata detected"))
+        try expect(saved.whisperModel == nil, "A metadata failure should clear the stale Whisper model selection")
+        try expect(saved.whisperModelFolder == nil, "A metadata failure should clear the stale Whisper model folder")
+        try expect(saved.qwenModelId == "synthetic-qwen", "Whisper recovery must preserve unrelated model settings")
+    }
+
+    // MARK: - AppState Tests
+
+    test("AppState: config manager accessible") {
+        let appState = AppState()
+        _ = appState.config.dataDir
+    }
+
+    test("AppState: recording state accessible") {
+        let appState = AppState()
+        _ = appState.recording.audioLevel
+    }
+
+    test("AppState: processing coordinator accessible") {
+        let appState = AppState()
+        _ = appState.processing.stage
+    }
+
+    test("AppState: model manager accessible") {
+        let appState = AppState()
+        _ = appState.models.modelState
+    }
+
+    test("AppState: directory watcher accessible") {
+        let appState = AppState()
+        _ = appState.directoryWatcher.onReload
+    }
+
+    test("AppState: computed properties passthrough") {
+        let appState = AppState()
+        try expect(appState.stage == appState.processing.stage)
+        try expect(appState.audioLevel == appState.recording.audioLevel)
+        try expect(appState.statusMessage == appState.processing.statusMessage)
+        try expect(appState.modelState == appState.models.modelState)
+        try expect(appState.isProcessing == appState.processing.isProcessing)
+        try expect(appState.isRecording == appState.recording.isRecording)
+        try expect(appState.dataDir == appState.config.dataDir)
+        try expect(appState.needsFirstRun == appState.config.needsFirstRun)
+        try expect(appState.modelsReady == appState.models.modelsReady)
+    }
+
+    test("AppState: exposes model settings, recording state, processing identity, and version") {
+        let config = ConfigManager(loadContextFiles: false)
+        let appState = AppState(config: config)
+
+        appState.whisperModel = "synthetic-whisper"
+        appState.whisperModelFolder = "/tmp/synthetic-whisper"
+        appState.qwenModelId = "synthetic-qwen"
+        appState.qwenModelFolder = "/tmp/synthetic-qwen.gguf"
+
+        try expect(appState.whisperModel == "synthetic-whisper")
+        try expect(appState.whisperModelFolder == "/tmp/synthetic-whisper")
+        try expect(appState.qwenModelId == "synthetic-qwen")
+        try expect(appState.qwenModelFolder == "/tmp/synthetic-qwen.gguf")
+        try expect(config.whisperModel == appState.whisperModel)
+        try expect(config.whisperModelFolder == appState.whisperModelFolder)
+        try expect(config.qwenModelId == appState.qwenModelId)
+        try expect(config.qwenModelFolder == appState.qwenModelFolder)
+        try expect(appState.recordingDuration == appState.recording.recordingDuration)
+        try expect(appState.isRecordingPaused == appState.recording.isRecordingPaused)
+        try expect(appState.processingStem == appState.processing.processingStem)
+        try expect(appState.versionString == "vdev · dev")
+    }
+
+    test("AppState: selected device UID can be set") {
+        let appState = AppState()
+        appState.selectedDeviceUID = "test-uid"
+        try expect(appState.selectedDeviceUID == "test-uid")
+        try expect(appState.recording.selectedDeviceUID == "test-uid")
+    }
+
+    test("AppState: personal context passthrough") {
+        let appState = AppState()
+        appState.personalContext = "test"
+        try expect(appState.personalContext == "test")
+        try expect(appState.config.personalContext == "test")
+    }
+
+    test("AppState: corrections passthrough") {
+        let appState = AppState()
+        appState.corrections = "test"
+        try expect(appState.corrections == "test")
+        try expect(appState.config.corrections == "test")
+    }
+
+    test("AppState: refreshing devices uses injected devices and replaces a disconnected selection") {
+        let preferred = AudioDevice(id: 42, name: "Fixture microphone", uid: "fixture-mic")
+        let systemDefault = AudioDevice(id: 43, name: "Fixture default", uid: "fixture-default")
+        let recording = RecordingState(dependencies: .init(
+            listInputDevices: { [preferred, systemDefault] },
+            defaultInputDevice: { systemDefault },
+            record: { _, _, _, _, _ in }
+        ))
+        recording.selectedDeviceUID = "disconnected-mic"
+        let appState = AppState(recording: recording)
+
+        appState.refreshDevices()
+
+        try expect(appState.inputDevices == [preferred, systemDefault], "AppState should publish the injected device list")
+        try expect(appState.selectedDeviceUID == systemDefault.uid, "A disconnected selection should fall back to the injected default")
+    }
+
+    await testAsync("AppState: directory watcher reload adds and removes entries from its configured data folder") {
+        let fm = FileManager.default
+        let root = fm.temporaryDirectory
+            .appendingPathComponent("CaptainsLogWatcherReload-\(UUID().uuidString)", isDirectory: true)
+        try fm.createDirectory(at: root, withIntermediateDirectories: true)
+        let watcher = DirectoryWatcher()
+        defer {
+            watcher.stopWatching()
+            try? fm.removeItem(at: root)
+        }
+        let config = ConfigManager()
+        config.dataDir = root.path
+        let appState = AppState(config: config, directoryWatcher: watcher)
+        appState.configureDirectoryWatcher()
+
+        let stem = "2025-01-14-0830"
+        let transcript = root.appendingPathComponent(".pipeline/01-transcribed/\(stem).md")
+        let fixture = URL(fileURLWithPath: fm.currentDirectoryPath)
+            .appendingPathComponent("eval/suites/transcribe/history/expected/durins-volk.md")
+        try fm.createDirectory(at: transcript.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try fm.copyItem(at: fixture, to: transcript)
+        watcher.scheduleReload()
+
+        let deadline = ContinuousClock.now + .seconds(2)
+        while !appState.allEntries.contains(where: { $0.stem == stem }) && ContinuousClock.now < deadline {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        try expect(
+            appState.allEntries.map(\.stem) == [stem],
+            "A watcher reload should repopulate Logs from the configured data folder"
+        )
+
+        try fm.removeItem(at: transcript)
+        watcher.scheduleReload()
+        let removalDeadline = ContinuousClock.now + .seconds(2)
+        while appState.allEntries.contains(where: { $0.stem == stem }) && ContinuousClock.now < removalDeadline {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        try expect(appState.allEntries.isEmpty, "A watcher reload should remove deleted entries from Logs")
+    }
+
+    test("AppState: deleting processing outputs preserves audio and exposes the normal pending queue") {
+        let fm = FileManager.default
+        let root = fm.temporaryDirectory.appendingPathComponent("DeleteProcessingOutputs-\(UUID().uuidString)")
+        defer { try? fm.removeItem(at: root) }
+        let stem = "2025-01-14-0730"
+        let audio = root.appendingPathComponent("audio/\(stem).m4a")
+        let audioFixture = URL(fileURLWithPath: fm.currentDirectoryPath)
+            .appendingPathComponent("eval/suites/transcribe/audio/tng-nl01-vrije-dag-enterprise-corrected.m4a")
+        try fm.createDirectory(at: audio.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try fm.copyItem(at: audioFixture, to: audio)
+        let originalAudio = try Data(contentsOf: audio)
+        let outputFixture = URL(fileURLWithPath: fm.currentDirectoryPath)
+            .appendingPathComponent("eval/suites/pipeline/tng-nl01/cleaned.md")
+        for path in [".pipeline/01-transcribed/\(stem).md", ".pipeline/02-logs/\(stem).md",
+                     ".pipeline/reprocessing-backups/previous/logs/orphan.md", "logs/side-project/orphan.md"] {
+            let output = root.appendingPathComponent(path)
+            try fm.createDirectory(at: output.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try fm.copyItem(at: outputFixture, to: output)
+        }
+        let context = root.appendingPathComponent("context/personal_info.md")
+        try fm.createDirectory(at: context.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try fm.copyItem(at: outputFixture, to: context)
+        let originalContext = try Data(contentsOf: context)
+        let config = ConfigManager(loadContextFiles: false)
+        config.dataDir = root.path
+        let models = ModelManager()
+        models.didDeleteModel(.whisper)
+        let appState = AppState(config: config, models: models)
+        appState.loadEntries()
+        try expect(appState.canDeleteProcessingOutputs, "Deletion should not require downloaded models")
+
+        appState.deleteProcessingOutputs()
+
+        try expect(!fm.fileExists(atPath: root.appendingPathComponent(".pipeline").path))
+        try expect(!fm.fileExists(atPath: root.appendingPathComponent("logs").path))
+        try expect(try Data(contentsOf: audio) == originalAudio, "Original recording must be byte-for-byte unchanged")
+        try expect(try Data(contentsOf: context) == originalContext, "Context must remain unchanged")
+        try expect(appState.pendingEntries.map(\.stem) == [stem], "Audio must return to the existing pending list")
+        try expect(appState.pendingEntries.first?.stage == .transcribing)
+        try expect(!appState.processing.hasScheduledWork, "Deletion must not automatically start processing")
+        appState.deleteProcessingOutputs()
+        try expect(appState.errorMessage == nil, "Repeated deletion of empty outputs should succeed")
+    }
+
+    test("AppState: deleting processing outputs is blocked for active and queued work") {
+        let fm = FileManager.default
+        let root = fm.temporaryDirectory.appendingPathComponent("DeleteOutputsActive-\(UUID().uuidString)")
+        defer { try? fm.removeItem(at: root) }
+        let transcript = root.appendingPathComponent(".pipeline/01-transcribed/2025-01-14-0730.md")
+        try fm.createDirectory(at: transcript.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try fm.copyItem(at: URL(fileURLWithPath: fm.currentDirectoryPath)
+            .appendingPathComponent("eval/suites/transcribe/expected/tng-nl01-vrije-dag-enterprise-corrected.md"), to: transcript)
+        let config = ConfigManager(loadContextFiles: false)
+        config.dataDir = root.path
+        let processing = ProcessingCoordinator()
+        let appState = AppState(config: config, processing: processing)
+        processing.processingStem = "2025-01-14-0730"
+        try expect(!appState.canDeleteProcessingOutputs)
+        appState.deleteProcessingOutputs()
+        try expect(fm.fileExists(atPath: transcript.path))
+        processing.processingStem = nil
+        processing.queueProcessing(stem: "2025-01-14-0730")
+        try expect(!appState.canDeleteProcessingOutputs)
+        appState.deleteProcessingOutputs()
+        try expect(fm.fileExists(atPath: transcript.path))
+    }
+
+    test("AppState: pause processing delegates to coordinator") {
+        let appState = AppState()
+        appState.pauseProcessing()
+        try expect(appState.processing.stage == .idle)
+    }
+
+    await testAsync("AppState: batch resume keeps a failed entry visible and continues to the next one") {
+        let fm = FileManager.default
+        let root = fm.temporaryDirectory
+            .appendingPathComponent("CaptainsLogAppStateBatchResume-\(UUID().uuidString)", isDirectory: true)
+        defer { try? fm.removeItem(at: root) }
+        let stems = ["2025-01-14-0830", "2025-01-15-1015"]
+        let fixture = URL(fileURLWithPath: fm.currentDirectoryPath)
+            .appendingPathComponent("eval/suites/transcribe/history/expected/durins-volk.md")
+        for stem in stems {
+            let transcript = root.appendingPathComponent(".pipeline/01-transcribed/\(stem).md")
+            try fm.createDirectory(at: transcript.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try fm.copyItem(at: fixture, to: transcript)
+        }
+
+        let config = ConfigManager()
+        config.dataDir = root.path
+        let resumed = LockedStringArray()
+        let processing = ProcessingCoordinator { requestedStem, _, fromStage, _ in
+            resumed.append("\(requestedStem):\(fromStage?.rawValue ?? "nil")")
+            let firstEntryAttempts = resumed.snapshot().filter { $0.hasPrefix("\(stems[0]):") }.count
+            if requestedStem == stems[0] && firstEntryAttempts == 1 {
+                throw NSError(domain: "AppStateBatchResume", code: 1, userInfo: [NSLocalizedDescriptionKey: "First entry failed"])
+            }
+            return Pipeline.Result(
+                audioPath: "\(requestedStem).m4a",
+                transcriptPath: "\(requestedStem).transcript.md",
+                cleanedPath: "\(requestedStem).cleaned.md",
+                renamedPath: "\(requestedStem).renamed.md",
+                enrichedPath: "\(requestedStem).enriched.md",
+                slug: requestedStem,
+                category: .personal
+            )
+        }
+        let appState = AppState(config: config, processing: processing)
+        appState.loadEntries()
+        try expect(appState.pendingEntries.map(\.stem) == stems.sorted(by: >), "Fixture transcripts should be pending in Logs order before resume")
+
+        appState.batchResumePending()
+        let deadline = ContinuousClock.now + .seconds(2)
+        while processing.stage != .done && ContinuousClock.now < deadline {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+
+        try expect(
+            resumed.snapshot() == stems.sorted(by: >).map { "\($0):cleaning" },
+            "AppState should resume every pending entry from its detected cleaning stage"
+        )
+        try expect(processing.stage == .done, "AppState should expose completion after the batch finishes")
+        try expect(processing.statusMessage == "Done", "AppState should expose the completed batch status")
+        let entries = appState.allEntries
+        try expect(entries.map(\.stem) == stems.sorted(by: >), "Both entries should remain visible in Logs order after the batch")
+        let failedEntry = entries.first { $0.stem == stems[0] }
+        let successfulEntry = entries.first { $0.stem == stems[1] }
+        try expect(failedEntry?.processingError == "First entry failed", "The failed entry should expose its retryable error")
+        try expect(successfulEntry?.processingError == nil, "The later successful entry should not inherit the earlier error")
+
+        appState.resumeProcessing(stem: stems[0], fromStage: .cleaning)
+        try expect(processing.errorMessage == nil, "Starting a retry should clear the previous visible failure")
+        let retryDeadline = ContinuousClock.now + .seconds(2)
+        while (resumed.snapshot().count < 3 || processing.stage != .done) && ContinuousClock.now < retryDeadline {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        try expect(resumed.snapshot().last == "\(stems[0]):cleaning", "Retry should resume the failed entry from its recorded stage")
+        try expect(processing.stage == .done, "Successful retry should complete the entry")
+        try expect(
+            appState.allEntries.first(where: { $0.stem == stems[0] })?.processingError == nil,
+            "Successful retry should clear the error from the Logs row"
+        )
+    }
+
+    test("Onboarding: completing first run dismisses setup and persists the launch choice") {
+        let defaults = UserDefaults.standard
+        let key = "CaptainsLogHasLaunched"
+        let priorValue = defaults.object(forKey: key)
+        defer {
+            if let priorValue {
+                defaults.set(priorValue, forKey: key)
+            } else {
+                defaults.removeObject(forKey: key)
+            }
+        }
+        defaults.removeObject(forKey: key)
+
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("Onboarding-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let config = ConfigManager()
+        let appState = AppState(config: config)
+        config.dataDir = root.path
+        try expect(appState.needsFirstRun, "Fresh install should show onboarding")
+        appState.completeFirstRun()
+        try expect(!appState.needsFirstRun, "Completing setup should dismiss onboarding")
+        try expect(defaults.bool(forKey: key), "Setup completion should persist across launches")
+        try expect(CaptainsLogConfig.load().dataDir == root.path,
+                   "Completing setup must save the selected folder before an immediate quit")
+
+        let beforeDownload = ConfigManager(loadContextFiles: false)
+        let downloadedModel = root.appendingPathComponent("downloaded-whisper")
+        try FileManager.default.createDirectory(at: downloadedModel, withIntermediateDirectories: true)
+        try CaptainsLogConfig.update { $0.whisperModelFolder = downloadedModel.path }
+        beforeDownload.completeFirstRun()
+        try expect(CaptainsLogConfig.load().whisperModelFolder == downloadedModel.path,
+                   "Completing setup without pending edits must preserve a model downloaded during onboarding")
+    }
+
+    test("Onboarding fixture: completing setup stays complete after relaunch") {
+        let defaults = UserDefaults.standard
+        let key = "CaptainsLogHasLaunched"
+        let priorValue = defaults.object(forKey: key)
+        defer {
+            if let priorValue { defaults.set(priorValue, forKey: key) }
+            else { defaults.removeObject(forKey: key) }
+        }
+        defaults.removeObject(forKey: key)
+        let appState = AppState(config: ConfigManager())
+        appState.applyDesignFixture(named: "onboarding")
+        try expect(appState.needsFirstRun)
+        appState.completeFirstRun()
+        let reopened = AppState(config: ConfigManager())
+        reopened.applyDesignFixture(named: "onboarding")
+        try expect(!reopened.needsFirstRun, "The interactive fixture must preserve real setup completion")
+    }
+
+    test("Onboarding policy: first run appears only for an unlaunched non-demo app") {
+        let cases: [(Bool, Bool, Bool)] = [
+            (false, false, true),
+            (true, false, false),
+            (false, true, false),
+            (true, true, false),
+        ]
+        for (hasLaunched, demoMode, expected) in cases {
+            try expect(
+                FirstRunPresentationPolicy.shouldPresent(hasLaunched: hasLaunched, demoMode: demoMode) == expected,
+                "Unexpected onboarding decision for launched=\(hasLaunched), demo=\(demoMode)"
+            )
+        }
+    }
+
+    test("Config: migration round-trip preserves values") {
+        var config = CaptainsLogConfig(schemaVersion: 0, dataDir: "/tmp/migration-test")
+        CaptainsLogConfig.migrate(from: config.schemaVersion, to: &config)
+        try expect(config.schemaVersion == CaptainsLogConfig.currentSchemaVersion)
+        try expect(config.dataDir == "/tmp/migration-test")
+    }
+
+    test("Pipeline: detectNextStage handles malformed trees") {
+        let fm = FileManager.default
+        let dataDir = fm.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
+        defer { try? fm.removeItem(at: dataDir) }
+
+        // Empty directory: should fall back to transcribing
+        try? fm.createDirectory(at: dataDir, withIntermediateDirectories: true)
+        let emptyStage = Pipeline.detectNextStage(stem: "2025-01-01-test", dataDir: dataDir.path)
+        try expect(emptyStage == .transcribing)
+
+        // Only transcript exists: should detect cleaning
+        let transcriptDir = dataDir.appendingPathComponent(".pipeline/01-transcribed")
+        try? fm.createDirectory(at: transcriptDir, withIntermediateDirectories: true)
+        try? "test".write(to: transcriptDir.appendingPathComponent("2025-01-01-test.md"), atomically: true, encoding: .utf8)
+        let transcriptStage = Pipeline.detectNextStage(stem: "2025-01-01-test", dataDir: dataDir.path)
+        try expect(transcriptStage == .cleaning)
+
+        // A cleaned entry without a category manifest should be categorized
+        let logsDir = dataDir.appendingPathComponent(".pipeline/02-logs")
+        try? fm.createDirectory(at: logsDir, withIntermediateDirectories: true)
+        try? "cleaned".write(to: logsDir.appendingPathComponent("2025-01-01-test.md"), atomically: true, encoding: .utf8)
+        let cleanedStage = Pipeline.detectNextStage(stem: "2025-01-01-test", dataDir: dataDir.path)
+        try expect(cleanedStage == .categorizing)
+    }
+
+    test("Pipeline: detectNextStage treats directories as incomplete artifacts") {
+        let fm = FileManager.default
+        let dataDir = fm.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
+        defer { try? fm.removeItem(at: dataDir) }
+        let stem = "2025-01-01-directory-artifact"
+        let slug = "2025-01-01-directory-artifact"
+
+        let transcript = dataDir.appendingPathComponent(".pipeline/01-transcribed/\(stem).md")
+        try fm.createDirectory(at: transcript, withIntermediateDirectories: true)
+        try expect(Pipeline.detectNextStage(stem: stem, dataDir: dataDir.path) == .transcribing)
+
+        try fm.removeItem(at: transcript)
+        try fm.createDirectory(at: transcript.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try "transcript".write(to: transcript, atomically: true, encoding: .utf8)
+        let cleaned = dataDir.appendingPathComponent(".pipeline/02-logs/\(stem).md")
+        try fm.createDirectory(at: cleaned, withIntermediateDirectories: true)
+        try expect(Pipeline.detectNextStage(stem: stem, dataDir: dataDir.path) == .cleaning)
+
+        try fm.removeItem(at: cleaned)
+        try fm.createDirectory(at: cleaned.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try "cleaned".write(to: cleaned, atomically: true, encoding: .utf8)
+        try Categorize.writeManifest(.init(sourceStem: stem, category: .personal), dataDirURL: dataDir)
+
+        let marker = dataDir.appendingPathComponent(".pipeline/04-rename/\(stem).slug.txt")
+        try fm.createDirectory(at: marker.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try slug.write(to: marker, atomically: true, encoding: .utf8)
+        let renamed = dataDir.appendingPathComponent(".pipeline/04-rename/\(slug).md")
+        try fm.createDirectory(at: renamed, withIntermediateDirectories: true)
+        try expect(Pipeline.detectNextStage(stem: stem, dataDir: dataDir.path) == .naming)
+
+        try fm.removeItem(at: renamed)
+        try "renamed".write(to: renamed, atomically: true, encoding: .utf8)
+        let enriched = dataDir.appendingPathComponent("logs/personal/\(slug).md")
+        try fm.createDirectory(at: enriched, withIntermediateDirectories: true)
+        try expect(Pipeline.detectNextStage(stem: stem, dataDir: dataDir.path) == .enriching)
+    }
+
+    test("ProcessingCoordinator: cancellation resets state") {
+        let coordinator = ProcessingCoordinator()
+        coordinator.stage = .transcribing
+        coordinator.statusMessage = "Working..."
+        coordinator.processingStem = "test-stem"
+
+        coordinator.pauseProcessing()
+
+        try expect(coordinator.stage == .idle)
+        try expect(coordinator.statusMessage == "Paused")
+        try expect(coordinator.processingStem == nil)
+        try expect(coordinator.isProcessing == false)
+    }
+
+    test("Field Notes: waveform generation accepts arbitrary hash seeds") {
+        for seed in [Int.min, -1, 0, 1, Int.max] {
+            let ticks = FieldNotesAudioRuler.tickHeights(seed: seed, count: 48, height: 24)
+            try expect(ticks.count == 48)
+            try expect(ticks.allSatisfy { $0 >= 2 })
+        }
+        try expect(FieldNotesAudioRuler.tickHeights(seed: 1, count: -1, height: 24).isEmpty)
+    }
+
+    await runUpdateTests()
+    runCoreCoverageTests()
+    if !lightweightUnitOnly {
+        await runAppWorkflowCoverageTests()
+        await runSearchCoverageTests()
+        await runCoordinatorCoverageTests()
+        await runPipelineOrchestrationCoverageTests()
+    }
+
+    // Print results
+    print("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+    print("Tests run: \(testsRun)")
+    print("Tests passed: \(testsPassed)")
+    print("Tests failed: \(testsFailed)")
+    print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n")
+
+    if testsFailed > 0 {
+        exit(1)
+    }
+}
+
+@MainActor
+private final class UpdateManagerHarness {
+    var now = Date(timeIntervalSince1970: 10_000)
+    var events: [String] = []
+    var supported = true
+    var installed = false
+    var checkError: Error?
+    var installError: Error?
+    var restartError: Error?
+    var holdRestart = false
+    var restartCompletion: (@MainActor (Error?) -> Void)?
+    let available: AppUpdater.Status
+    let current: AppUpdater.Status
+
+    init(fixtures: URL) throws {
+        available = try AppUpdater.parseStatus(Data(contentsOf: fixtures.appendingPathComponent("available.json")))
+        current = try AppUpdater.parseStatus(Data(contentsOf: fixtures.appendingPathComponent("current.json")))
+        let dataDir = CaptainsLogConfig.configURL.deletingLastPathComponent().appendingPathComponent("data")
+        try FileManager.default.createDirectory(at: dataDir, withIntermediateDirectories: true)
+        try CaptainsLogConfig(automaticUpdateChecks: true, automaticUpdates: true, dataDir: dataDir.path).save()
+    }
+
+    func dependencies(appPath: String? = nil) -> UpdateManager.Dependencies {
+        .init(
+            supported: { self.supported }, appPath: appPath ?? available.appPath,
+            appVersion: available.installedVersion, now: { self.now },
+            check: {
+                self.events.append("check")
+                if let error = self.checkError { throw error }
+                return self.installed ? self.current : self.available
+            },
+            install: {
+                self.events.append("install")
+                if let error = self.installError { throw error }
+                self.installed = true
+            },
+            relaunch: { completion in
+                self.events.append("relaunch")
+                if self.holdRestart { self.restartCompletion = completion }
+                else { completion(self.restartError) }
+            },
+            terminate: { self.events.append("terminate") }
+        )
+    }
+}
+
+@MainActor
+private func runUpdateManagerTests(fixtures: URL) async {
+    let root = FileManager.default.temporaryDirectory.appendingPathComponent("UpdateManagerTests-\(UUID().uuidString)")
+    try? FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+    let previousConfig = ProcessInfo.processInfo.environment["CAPTAINS_LOG_CONFIG_PATH"]
+    setenv("CAPTAINS_LOG_CONFIG_PATH", root.appendingPathComponent("config.json").path, 1)
+    defer {
+        if let previousConfig { setenv("CAPTAINS_LOG_CONFIG_PATH", previousConfig, 1) }
+        else { unsetenv("CAPTAINS_LOG_CONFIG_PATH") }
+        try? FileManager.default.removeItem(at: root)
+    }
+
+    await testAsync("UpdateManager: automatic flow uses the real Homebrew fixture transport through installation and restart") {
+        let state = root.appendingPathComponent("installed")
+        let log = root.appendingPathComponent("commands")
+        setenv("CAPTAINS_LOG_UPDATE_FIXTURE_STATE", state.path, 1)
+        setenv("CAPTAINS_LOG_UPDATE_FIXTURE_LOG", log.path, 1)
+        defer {
+            unsetenv("CAPTAINS_LOG_UPDATE_FIXTURE_STATE")
+            unsetenv("CAPTAINS_LOG_UPDATE_FIXTURE_LOG")
+        }
+        try CaptainsLogConfig(automaticUpdateChecks: true, automaticUpdates: true).save()
+        let updater = AppUpdater(brewURL: fixtures.appendingPathComponent("brew-fixture.sh"))
+        var lifecycle: [String] = []
+        let manager = UpdateManager(dependencies: .init(
+            supported: { true }, appPath: "/Applications/CaptainsLog.app", appVersion: "0.1.0", now: { Date() },
+            check: { try await updater.check() },
+            install: { try await updater.install() },
+            relaunch: { completion in lifecycle.append("relaunch"); completion(nil) },
+            terminate: { lifecycle.append("terminate") }
+        ))
+        await manager.runScheduledUpdate { false }
+        try expect(manager.availableVersion == "0.1.1" && !FileManager.default.fileExists(atPath: state.path))
+        try expect(lifecycle.isEmpty)
+        await manager.runScheduledUpdate { true }
+        try expect(FileManager.default.fileExists(atPath: state.path))
+        try expect(manager.needsRestart && manager.availableVersion == nil)
+        try expect(lifecycle == ["relaunch", "terminate"])
+        let commands = try String(contentsOf: log, encoding: .utf8).split(separator: "\n")
+        try expect(commands.filter { $0.hasPrefix("upgrade ") }.count == 1)
+        try expect(commands.contains("upgrade --cask --no-quit --require-sha vnglst/tap/captainslog"))
+    }
+
+    await testAsync("UpdateManager: redesigned Settings preferences persist and control automatic installation") {
+        let harness = try UpdateManagerHarness(fixtures: fixtures)
+        let manager = UpdateManager(dependencies: harness.dependencies())
+        manager.setAutomaticChecks(false)
+        manager.setAutomaticUpdates(false)
+        let restored = UpdateManager(dependencies: harness.dependencies())
+        try expect(!restored.automaticChecks && !restored.automaticUpdates)
+        await manager.runScheduledUpdate { true }
+        try expect(harness.events.isEmpty)
+        // Manual checks still work when automatic checking is turned off.
+        await manager.check()
+        try expect(manager.availableVersion == "0.1.1")
+        manager.setAutomaticChecks(true)
+        await manager.runScheduledUpdate { true }
+        try expect(harness.events == ["check"], "Turning on checks must not enable automatic installation")
+        manager.setAutomaticUpdates(true)
+        await manager.runScheduledUpdate { true }
+        try expect(harness.events == ["check", "install", "relaunch", "terminate"])
+    }
+
+    await testAsync("AppState updates: model setup, recording, paused recording, and every processing stage block installation") {
+        let harness = try UpdateManagerHarness(fixtures: fixtures)
+        let manager = UpdateManager(dependencies: harness.dependencies())
+        let state = AppState(updates: manager, config: ConfigManager(loadContextFiles: false))
+        await manager.check()
+        state.models.modelState = .downloading(model: "fixture", progress: 0.5)
+        try expect(!state.canInstallUpdate)
+        await state.installUpdate()
+        state.models.modelState = .ready
+        for stage in [AppStage.transcribing, .cleaning, .categorizing, .naming, .enriching] {
+            state.processing.stage = stage
+            try expect(!state.canInstallUpdate)
+            await state.installUpdate()
+            await manager.runScheduledUpdate { state.canInstallUpdate }
+        }
+        state.processing.stage = .idle
+        for paused in [false, true] {
+            state.recording.applyDesignFixture(isPaused: paused, duration: 10, audioLevel: 0.1)
+            try expect(!state.canInstallUpdate)
+            await state.installUpdate()
+            await manager.runScheduledUpdate { state.canInstallUpdate }
+            state.recording.cancelRecording()
+        }
+        try expect(harness.events == ["check"], "Busy states must not install or restart")
+        try expect(state.canInstallUpdate)
+        await manager.runScheduledUpdate { state.canInstallUpdate }
+        try expect(harness.events == ["check", "install", "relaunch", "terminate"])
+    }
+
+    await testAsync("AppState updates: queued processing blocks installation before its first progress callback") {
+        let harness = try UpdateManagerHarness(fixtures: fixtures)
+        let manager = UpdateManager(dependencies: harness.dependencies())
+        let processing = ProcessingCoordinator(resumePipeline: { _, _, _, _ in
+            try await Task.sleep(for: .seconds(60))
+            throw CancellationError()
+        })
+        let state = AppState(updates: manager, config: ConfigManager(loadContextFiles: false), processing: processing)
+        state.models.modelState = .ready
+        await manager.check()
+        processing.queueProcessing(stem: "synthetic-queued-update-test")
+        try expect(!state.isProcessing && processing.hasScheduledWork && !state.canInstallUpdate)
+        await state.installUpdate()
+        processing.pauseProcessing()
+        processing.resumeEntry(stem: "synthetic-update-test", fromStage: .transcribing,
+            dataDir: root.path, onComplete: {}, onError: { _ in })
+        defer { processing.pauseProcessing() }
+        // Deliberately assert before yielding to the reserved processing task.
+        try expect(state.isProcessing && processing.hasScheduledWork, "Accepted work is visibly active before the first callback")
+        try expect(!state.canInstallUpdate)
+        await state.installUpdate()
+        await manager.runScheduledUpdate { state.canInstallUpdate }
+        try expect(harness.events == ["check"])
+    }
+
+    await testAsync("UpdateManager: real monitor iteration waits for idle, installs once, then restarts") {
+        let harness = try UpdateManagerHarness(fixtures: fixtures)
+        let manager = UpdateManager(dependencies: harness.dependencies())
+        await manager.runScheduledUpdate { false }
+        try expect(harness.events == ["check"] && manager.availableVersion == "0.1.1")
+        await manager.runScheduledUpdate { false }
+        try expect(harness.events == ["check"], "Busy polling must not refresh metadata or install")
+        await manager.runScheduledUpdate { true }
+        try expect(harness.events == ["check", "install", "relaunch", "terminate"])
+        try expect(manager.needsRestart && !manager.isInstalling && !manager.isChecking)
+        await manager.runScheduledUpdate { true }
+        try expect(harness.events.count == 4, "Successful installation must not repeat")
+    }
+
+    await testAsync("UpdateManager: check failures keep the app running and respect the daily interval") {
+        let harness = try UpdateManagerHarness(fixtures: fixtures)
+        harness.checkError = AppUpdater.UpdateError.commandFailed("fixture check failed")
+        let manager = UpdateManager(dependencies: harness.dependencies())
+        await manager.runScheduledUpdate { true }
+        try expect(harness.events == ["check"] && !manager.needsRestart && !manager.isChecking)
+        try expect(manager.message.contains("fixture check failed"))
+        harness.checkError = nil
+        harness.now.addTimeInterval(86_399)
+        await manager.runScheduledUpdate { true }
+        try expect(harness.events == ["check"])
+        harness.now.addTimeInterval(1)
+        await manager.runScheduledUpdate { true }
+        try expect(harness.events == ["check", "check", "install", "relaunch", "terminate"])
+    }
+
+    await testAsync("UpdateManager: failed installs do not restart, and retry only after an hour") {
+        let harness = try UpdateManagerHarness(fixtures: fixtures)
+        harness.installError = AppUpdater.UpdateError.commandFailed("fixture install failed")
+        let manager = UpdateManager(dependencies: harness.dependencies())
+        await manager.runScheduledUpdate { true }
+        try expect(harness.events == ["check", "install"])
+        try expect(!manager.needsRestart && !manager.isInstalling && manager.availableVersion != nil)
+        try expect(manager.message.contains("fixture install failed"))
+        harness.installError = nil
+        harness.now.addTimeInterval(3_599)
+        await manager.runScheduledUpdate { true }
+        try expect(harness.events == ["check", "install"])
+        harness.now.addTimeInterval(1)
+        await manager.runScheduledUpdate { true }
+        try expect(harness.events == ["check", "install", "install", "relaunch", "terminate"])
+    }
+
+    await testAsync("UpdateManager: restart failure preserves the running app and permits manual retry") {
+        let harness = try UpdateManagerHarness(fixtures: fixtures)
+        harness.restartError = AppUpdater.UpdateError.commandFailed("fixture relaunch failed")
+        let manager = UpdateManager(dependencies: harness.dependencies())
+        await manager.runScheduledUpdate { true }
+        try expect(harness.events == ["check", "install", "relaunch"])
+        try expect(manager.needsRestart && !manager.isRestarting && manager.message.contains("Could not restart"))
+        harness.restartError = nil
+        manager.restart()
+        try expect(harness.events == ["check", "install", "relaunch", "relaunch", "terminate"])
+    }
+
+    await testAsync("UpdateManager: overlapping restart actions launch only one replacement") {
+        let harness = try UpdateManagerHarness(fixtures: fixtures)
+        harness.holdRestart = true
+        let manager = UpdateManager(dependencies: harness.dependencies())
+        await manager.check()
+        await manager.install()
+        manager.restart()
+        manager.restart()
+        try expect(manager.isRestarting && harness.events == ["check", "install", "relaunch"])
+        harness.restartCompletion?(nil)
+        try expect(!manager.isRestarting && harness.events.last == "terminate")
+    }
+
+    await testAsync("UpdateManager: unsupported runs and a different installed bundle cannot auto-update") {
+        let harness = try UpdateManagerHarness(fixtures: fixtures)
+        harness.supported = false
+        let manager = UpdateManager(dependencies: harness.dependencies())
+        await manager.runScheduledUpdate { true }
+        await manager.check()
+        await manager.install()
+        try expect(harness.events.isEmpty)
+        harness.supported = true
+        let other = UpdateManager(dependencies: harness.dependencies(appPath: "/tmp/Other.app"))
+        await other.runScheduledUpdate { true }
+        try expect(harness.events == ["check"] && other.availableVersion == nil && !other.needsRestart)
+    }
+}
+
+@MainActor
+func runUpdateTests() async {
+    let fixtures = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+        .appendingPathComponent("eval/suites/update/input")
+    test("Updater: installed and available cask versions") {
+        let status = try AppUpdater.parseStatus(Data(contentsOf: fixtures.appendingPathComponent("available.json")))
+        try expect(status.updateAvailable && status.installedVersion == "0.1.0")
+        try expect(status.availableVersion == "0.1.1")
+        let current = try AppUpdater.parseStatus(Data(contentsOf: fixtures.appendingPathComponent("current.json")))
+        try expect(!current.updateAvailable)
+    }
+    test("Updater: rejects malformed, unrelated, and uninstalled casks") {
+        let source = try String(contentsOf: fixtures.appendingPathComponent("available.json"), encoding: .utf8)
+        for value in ["{}", source.replacingOccurrences(of: "vnglst/tap/captainslog", with: "other/tap/app"),
+                      source.replacingOccurrences(of: "\"installed\":\"0.1.0\"", with: "\"installed\":null")] {
+            do {
+                _ = try AppUpdater.parseStatus(Data(value.utf8))
+                throw NSError(domain: "TestError", code: 1)
+            } catch is AppUpdater.UpdateError { }
+        }
+    }
+    test("Updater: automatic installation requires idle state, enabled preferences, and retry delay") {
+        let now = Date(timeIntervalSince1970: 10_000)
+        func allowed(checks: Bool = true, updates: Bool = true, available: Bool = true,
+                     idle: Bool = true, attempt: Date? = nil) -> Bool {
+            UpdatePolicy.shouldInstall(automaticChecks: checks, automaticUpdates: updates,
+                updateAvailable: available, isIdle: idle, lastAttempt: attempt, now: now)
+        }
+        try expect(allowed())
+        try expect(!allowed(checks: false) && !allowed(updates: false))
+        try expect(!allowed(available: false) && !allowed(idle: false))
+        try expect(!allowed(attempt: now))
+        try expect(allowed(attempt: now.addingTimeInterval(-3600)))
+        try expect(!UpdatePolicy.isDue(now, interval: 86400, now: now))
+        try expect(UpdatePolicy.isDue(nil, interval: 86400, now: now))
+    }
+    test("Updater: older config retains enabled default") {
+        let old = try JSONDecoder().decode(CaptainsLogConfig.self, from: Data("{\"schemaVersion\":1}".utf8))
+        try expect(old.automaticUpdateChecks == nil && old.automaticUpdates == nil)
+        var config = old
+        config.automaticUpdateChecks = false
+        config.automaticUpdates = false
+        let restored = try JSONDecoder().decode(CaptainsLogConfig.self, from: JSONEncoder().encode(config))
+        try expect(restored.automaticUpdateChecks == false && restored.automaticUpdates == false)
+    }
+    await testAsync("Updater: fixture check, upgrade, and failure propagation") {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("UpdateTests-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer {
+            for key in ["CAPTAINS_LOG_UPDATE_FIXTURE_STATE", "CAPTAINS_LOG_UPDATE_FIXTURE_LOG", "CAPTAINS_LOG_UPDATE_FIXTURE_FAIL"] { unsetenv(key) }
+            try? FileManager.default.removeItem(at: root)
+        }
+        let state = root.appendingPathComponent("installed")
+        let log = root.appendingPathComponent("commands")
+        setenv("CAPTAINS_LOG_UPDATE_FIXTURE_STATE", state.path, 1)
+        setenv("CAPTAINS_LOG_UPDATE_FIXTURE_LOG", log.path, 1)
+        let updater = AppUpdater(brewURL: fixtures.appendingPathComponent("brew-fixture.sh"))
+        let before = try await updater.check()
+        try expect(before.updateAvailable)
+        try expect(!FileManager.default.fileExists(atPath: state.path), "Checking must not install")
+        try await updater.install()
+        let after = try await updater.check(refresh: false)
+        try expect(!after.updateAvailable)
+        let commands = try String(contentsOf: log, encoding: .utf8)
+        try expect(commands.contains("upgrade --cask --no-quit --require-sha vnglst/tap/captainslog"))
+        setenv("CAPTAINS_LOG_UPDATE_FIXTURE_FAIL", "update", 1)
+        do {
+            _ = try await updater.check()
+            throw NSError(domain: "TestError", code: 1)
+        } catch let error as AppUpdater.UpdateError {
+            try expect(error.localizedDescription.contains("Synthetic network failure"))
+        }
+    }
+    await testAsync("Updater: missing Homebrew is actionable") {
+        do {
+            _ = try await AppUpdater(brewURL: URL(fileURLWithPath: "/nonexistent/brew")).check()
+            throw NSError(domain: "TestError", code: 1)
+        } catch let error as AppUpdater.UpdateError {
+            try expect(error.localizedDescription.contains("Homebrew"))
+        }
+    }
+    await runUpdateManagerTests(fixtures: fixtures)
+
+}
+
+#if DEBUG
+/// Explicit native regression; never part of the default or --unit suite.
+@MainActor
+func runNativeRecordingBusyCheck() async throws {
+    let fm = FileManager.default
+    let repository = URL(fileURLWithPath: fm.currentDirectoryPath).resolvingSymlinksInPath()
+    func failure(_ message: String) -> NSError {
+        NSError(domain: "NativeRecordingBusyCheck", code: 1, userInfo: [NSLocalizedDescriptionKey: message])
+    }
+    func isWithin(_ url: URL, _ root: URL) -> Bool { url.path.hasPrefix(root.path + "/") }
+    guard fm.fileExists(atPath: repository.appendingPathComponent("Package.swift").path),
+          let suppliedConfig = ProcessInfo.processInfo.environment["CAPTAINS_LOG_CONFIG_PATH"] else {
+        throw failure("Run from the repository with an explicit isolated config; default config is forbidden.")
+    }
+    let callerConfig = URL(fileURLWithPath: suppliedConfig).resolvingSymlinksInPath()
+    let permittedRoots = [repository.appendingPathComponent("tmp").resolvingSymlinksInPath(),
+                          URL(fileURLWithPath: "/private/tmp").resolvingSymlinksInPath(), fm.temporaryDirectory.resolvingSymlinksInPath()]
+    guard permittedRoots.contains(where: { isWithin(callerConfig, $0) }) else {
+        throw failure("Caller config must be inside repository tmp or system temporary storage.")
+    }
+    let supplied = try JSONDecoder().decode(CaptainsLogConfig.self, from: Data(contentsOf: callerConfig))
+    guard supplied.schemaVersion == CaptainsLogConfig.currentSchemaVersion,
+          let model = supplied.whisperModel, !model.isEmpty,
+          let folder = supplied.whisperModelFolder else {
+        throw failure("Precondition failed: explicit current-schema cached Whisper model fields are required.")
+    }
+    var directory: ObjCBool = false
+    guard fm.fileExists(atPath: folder, isDirectory: &directory), directory.boolValue else {
+        throw failure("Precondition failed: cached Whisper model folder is unavailable.")
+    }
+    let fixture = repository.appendingPathComponent("eval/suites/transcribe/history/audio/durins-volk.m4a").resolvingSymlinksInPath()
+    guard isWithin(fixture, repository.appendingPathComponent("eval/suites/transcribe").resolvingSymlinksInPath()) else {
+        throw failure("Fixture must resolve inside the repository evaluation directory.")
+    }
+    let owned = fm.temporaryDirectory.appendingPathComponent("CaptainsLogNativeBusy-\(UUID())")
+    let evidence = callerConfig.deletingLastPathComponent().appendingPathComponent("native-busy-\(UUID())")
+    try fm.createDirectory(at: owned.appendingPathComponent("data"), withIntermediateDirectories: true)
+    try fm.createDirectory(at: evidence, withIntermediateDirectories: true)
+    let priorTrace = ProcessInfo.processInfo.environment["CAPTAINSLOG_PERFORMANCE_TRACE"]
+    let trace = evidence.appendingPathComponent("trace.txt")
+    defer {
+        setenv("CAPTAINS_LOG_CONFIG_PATH", suppliedConfig, 1)
+        if let priorTrace { setenv("CAPTAINSLOG_PERFORMANCE_TRACE", priorTrace, 1) }
+        else { unsetenv("CAPTAINSLOG_PERFORMANCE_TRACE") }
+        try? fm.removeItem(at: owned)
+    }
+    // Never copy caller categories, data paths, update preferences, or text-model fields.
+    let config = CaptainsLogConfig(dataDir: owned.appendingPathComponent("data").path,
+                                  whisperModelFolder: folder, whisperModel: model)
+    setenv("CAPTAINS_LOG_CONFIG_PATH", owned.appendingPathComponent("config.json").path, 1)
+    setenv("CAPTAINSLOG_PERFORMANCE_TRACE", trace.path, 1)
+    try config.save()
+    let audio = try AVAudioFile(forReading: fixture)
+    let frameCount = AVAudioFrameCount(ceil(40 * audio.processingFormat.sampleRate))
+    guard let pcm = AVAudioPCMBuffer(pcmFormat: audio.processingFormat, frameCapacity: frameCount) else {
+        throw failure("Unable to allocate the fixture PCM buffer.")
+    }
+    try audio.read(into: pcm, frameCount: frameCount)
+    guard pcm.frameLength == frameCount, let channel = pcm.floatChannelData?[0] else {
+        throw failure("Fixture must supply forty seconds of readable PCM.")
+    }
+    let rms = AudioLevel.rootMeanSquare(of: UnsafeBufferPointer(start: channel, count: Int(pcm.frameLength)))
+    let recorded = owned.appendingPathComponent("fixture-recording.caf")
+    var writer: AVAudioFile? = try AVAudioFile(forWriting: recorded, settings: pcm.format.settings)
+    try writer?.write(from: pcm)
+    writer = nil
+    var early: RecordingTranscription?
+    var native: Task<String, Error>?
+    var taking: Task<String?, Never>?
+    func waitFor(_ label: String, seconds: TimeInterval, until ready: @Sendable () -> Bool) async throws {
+        let deadline = ContinuousClock.now.advanced(by: .seconds(seconds))
+        while !ready() {
+            try Task.checkCancellation()
+            guard ContinuousClock.now < deadline else { throw failure("Timed out waiting for " + label) }
+            try await Task.sleep(for: .milliseconds(10))
+        }
+    }
+    do {
+        // Real CPU, thermal, and cached-model checks: no test admission overrides.
+        early = try RecordingTranscription()
+        let nativeFinished = LockedValue(false)
+        let job = Task.detached {
+            defer { nativeFinished.set(true) }
+            return try await Transcriber.transcribe(audioPath: fixture.path)
+        }
+        native = job
+        try await waitFor("ordinary Whisper admission", seconds: 120) {
+            AppPerformanceTrace.hasMarked("whisper-loader Loading models...") || nativeFinished.get()
+        }
+        guard !nativeFinished.get() else {
+            throw failure("Inconclusive: ordinary Whisper ended before the busy request could be submitted.")
+        }
+        // A forty-second buffer finalizes one real PCM chunk immediately. It
+        // goes through the normal worker and native onlyIfIdle path.
+        early!.append(RecorderAudioBuffer(frameLength: Int(pcm.frameLength), rootMeanSquare: rms, nativeBuffer: pcm))
+        try await waitFor("recording-time busy refusal", seconds: 30) {
+            ["recording-chunk-refused-busy", "recording-chunk-refused-capacity", "recording-chunk-refused-model-changed",
+             "recording-chunk-refused-model", "recording-chunk-refused-error", "recording-chunk-refused-cancelled",
+             "recording-chunk-complete"].contains(where: AppPerformanceTrace.hasMarked)
+        }
+        guard AppPerformanceTrace.hasMarked("recording-chunk-refused-busy"),
+              !AppPerformanceTrace.hasMarked("recording-chunk-complete") else {
+            throw failure("Recording-time busy refusal was not established before Stop; precondition refusal or completion is inconclusive.")
+        }
+        AppPerformanceTrace.mark("native-busy-check-before-stop-confirmed")
+        await early!.finish(audioPath: recorded.path, cancelled: false)
+        let takeFinished = LockedValue(false)
+        let pending = Task {
+            defer { takeFinished.set(true) }
+            return await RecordingTranscription.take(recorded.path)
+        }
+        taking = pending
+        try await waitFor("speculative busy refusal", seconds: 30) { takeFinished.get() }
+        let speculative = await pending.value
+        guard speculative == nil,
+              AppPerformanceTrace.hasMarked("recording-chunk-refused-busy"),
+              !AppPerformanceTrace.hasMarked("recording-chunk-complete"),
+              !AppPerformanceTrace.hasMarked("recording-transcript-reused") else {
+            throw failure("Busy admission was not established; capacity/model refusal or speculative completion is inconclusive. Inspect " + trace.path)
+        }
+        try await waitFor("ordinary native fixture completion", seconds: 600) { nativeFinished.get() }
+        let transcript = try await job.value
+        guard !transcript.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            throw failure("Ordinary native Whisper returned no transcript.")
+        }
+        try transcript.write(to: evidence.appendingPathComponent("ordinary-whisper.md"), atomically: true, encoding: .utf8)
+        try "Passed: real Whisper completed; recording chunk refused busy; no speculative output.\n".write(
+            to: evidence.appendingPathComponent("result.txt"), atomically: true, encoding: .utf8)
+        print("Native recording busy check passed. Evidence: \(evidence.path)")
+    } catch {
+        taking?.cancel()
+        native?.cancel()
+        if let early { await early.finish(audioPath: recorded.path, cancelled: true) }
+        await RecordingTranscription.discard(recorded.path)
+        _ = await taking?.value
+        if let native { _ = await native.result }
+        let reason = AppPerformanceTrace.hasMarked("recording-admission-refused-capacity") ||
+                     AppPerformanceTrace.hasMarked("recording-chunk-refused-capacity")
+            ? "CPU/thermal precondition refused; inconclusive, no bypass.\n" : "Failed/inconclusive: \(error.localizedDescription)\n"
+        try? reason.write(to: evidence.appendingPathComponent("result.txt"), atomically: true, encoding: .utf8)
+        print("Native busy check did not pass. Evidence: \(evidence.path)")
+        throw error
+    }
+}
+#endif
+
+@main
+struct TestRunner {
+    @MainActor
+    static func main() async {
+        if CommandLine.arguments.contains("--native-recording-busy") {
+            #if DEBUG
+            do { try await runNativeRecordingBusyCheck() }
+            catch { fputs("Native recording busy check failed: \(error.localizedDescription)\n", stderr); exit(1) }
+            #else
+            fputs("Native recording busy check requires a DEBUG build.\n", stderr)
+            exit(64)
+            #endif
+            return
+        }
+        lightweightUnitOnly = CommandLine.arguments.contains("--unit")
+        let testRoot = configureIsolatedTestEnvironment()
+        defer {
+            unsetenv("CAPTAINS_LOG_CONFIG_PATH")
+            try? FileManager.default.removeItem(at: testRoot)
+        }
+        await runTests()
+    }
+}

@@ -15,7 +15,7 @@ final class FixtureRecordingEngine: RecorderAudioEngine, @unchecked Sendable {
               let path = env["CAPTAINSLOG_RECORDING_FIXTURE_PATH"] else { return nil }
         let url = URL(fileURLWithPath: path).resolvingSymlinksInPath()
         let repository = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
-        let fixtureRoots = ["eval/transcribe/audio", "eval/transcribe/history/audio"].map { repository.appendingPathComponent($0).resolvingSymlinksInPath() }
+        let fixtureRoots = ["eval/suites/transcribe/audio", "eval/suites/transcribe/history/audio"].map { repository.appendingPathComponent($0).resolvingSymlinksInPath() }
         guard FileManager.default.fileExists(atPath: repository.appendingPathComponent("Package.swift").path),
               fixtureRoots.contains(where: { url.path.hasPrefix($0.path + "/") }) else { throw CocoaError(.fileReadNoPermission) }
         return try FixtureRecordingEngine(url: url)

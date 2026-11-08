@@ -4,24 +4,25 @@ Read `README.md` before working here. Follow its product requirements, build ins
 
 ## Repository navigation
 
-For development commands, start with `make help` and [the command guide](./scripts/README.md).
+For development commands, start with `make help` and [the command guide](scripts/README.md).
 For code changes, use the entry points below.
 
 | Area | Start here |
 |---|---|
-| App launch and demo setup | [AppMain.swift](./Sources/CaptainsLogApp/AppMain.swift), [DemoMode.swift](./Sources/CaptainsLogApp/DemoMode.swift) |
-| Logs UI and Settings | [FieldNotesContentView.swift](./Sources/CaptainsLog/FieldNotesContentView.swift); spelling editor: [FieldNotesCorrectionsEditor.swift](./Sources/CaptainsLog/FieldNotesCorrectionsEditor.swift) |
-| App processing and audio discovery | [ProcessingCoordinator.swift](./Sources/CaptainsLog/ProcessingCoordinator.swift), [DirectoryWatcher.swift](./Sources/CaptainsLog/DirectoryWatcher.swift), [Pipeline.swift](./Sources/CaptainsLogCore/Pipeline.swift) |
-| Pipeline stages and native inference | [CaptainsLogCore](./Sources/CaptainsLogCore/): `Transcriber.swift`, `Cleanup.swift`, `Categorize.swift`, `Filename.swift`, `Enrich.swift`, `LLM.swift` |
-| Prompts and prompt loading | [prompts/](./prompts/), [PromptLoader.swift](./Sources/CaptainsLogCore/PromptLoader.swift), [PromptResolver.swift](./Sources/CaptainsLogCore/PromptResolver.swift) |
-| Configuration and corrections | [Config.swift](./Sources/CaptainsLogCore/Config.swift), [ConfigManager.swift](./Sources/CaptainsLog/ConfigManager.swift), [CorrectionDocument.swift](./Sources/CaptainsLog/CorrectionDocument.swift) |
-| CLI commands and evaluation batches | [CL.swift](./Sources/cl/CL.swift), [EvalBatch.swift](./eval/CLI/EvalBatch.swift) |
-| Updates | [AppUpdater.swift](./Sources/CaptainsLogCore/AppUpdater.swift), [UpdateManager.swift](./Sources/CaptainsLog/UpdateManager.swift) |
-| Tests and synthetic fixtures | [run-tests/main.swift](./Sources/run-tests/main.swift), [eval/](./eval/), [stage review skills](./eval/skills/) |
-| Build, packaging, runtime checks and releases | [Tool implementation map](./scripts/README.md#implementation-map), [Package.swift](./Package.swift), [release workflow](./.github/workflows/release.yml) |
+| App launch and demo setup | [AppMain.swift](Sources/CaptainsLogApp/AppMain.swift), [DemoMode.swift](Sources/CaptainsLogApp/DemoMode.swift) |
+| Logs UI and Settings | [FieldNotesContentView.swift](Sources/CaptainsLog/FieldNotesContentView.swift); spelling editor: [FieldNotesCorrectionsEditor.swift](Sources/CaptainsLog/FieldNotesCorrectionsEditor.swift) |
+| App processing and audio discovery | [ProcessingCoordinator.swift](Sources/CaptainsLog/ProcessingCoordinator.swift), [DirectoryWatcher.swift](Sources/CaptainsLog/DirectoryWatcher.swift), [Pipeline.swift](Sources/CaptainsLogCore/Pipeline.swift) |
+| Pipeline stages and native inference | [CaptainsLogCore](Sources/CaptainsLogCore): `Transcriber.swift`, `Cleanup.swift`, `Categorize.swift`, `Filename.swift`, `Enrich.swift`, `LLM.swift` |
+| Prompts and prompt loading | [Resources/prompts/](Resources/prompts), [PromptLoader.swift](Sources/CaptainsLogCore/PromptLoader.swift), [PromptResolver.swift](Sources/CaptainsLogCore/PromptResolver.swift) |
+| Configuration and corrections | [Config.swift](Sources/CaptainsLogCore/Config.swift), [ConfigManager.swift](Sources/CaptainsLog/ConfigManager.swift), [CorrectionDocument.swift](Sources/CaptainsLog/CorrectionDocument.swift) |
+| CLI commands and evaluation batches | [CL.swift](Sources/cl/CL.swift), [EvalBatch.swift](Sources/cl/EvalBatch.swift) |
+| Updates | [AppUpdater.swift](Sources/CaptainsLogCore/AppUpdater.swift), [UpdateManager.swift](Sources/CaptainsLog/UpdateManager.swift) |
+| Native UI previews | [DesignFixtures.swift](Sources/CaptainsLog/Previews/DesignFixtures.swift) |
+| Tests and synthetic fixtures | [CaptainsLogTests/main.swift](Tests/CaptainsLogTests/main.swift), [eval/](eval), [stage review skills](eval/skills) |
+| Build, packaging, runtime checks and releases | [Tool implementation map](scripts/README.md#implementation-map), [Package.swift](Package.swift), [release workflow](.github/workflows/release.yml) |
 
-Use `rg --files Sources scripts eval/tools eval/CLI` to locate files before reading them. CLI command
-types share `CL.swift`, tests share `run-tests/main.swift`, and tooling entrypoint
+Use `rg --files Sources Tests Packages scripts eval/tools` to locate files before reading them. CLI command
+types share `CL.swift`, tests share `Tests/CaptainsLogTests/main.swift`, and tooling entrypoint
 names do not necessarily match their implementation filenames. Current commands
 and runtime setup live in README.md and the command guide; ADRs preserve dated
 decisions and may describe older implementation details.
@@ -72,8 +73,8 @@ backlog task edit TASK-1 --status "Complete"  # After your review
 ## Privacy
 
 - Never read, copy, or use personal recordings or data from `processed/`, Obsidian, or CaptainsLog data folders for tests, evaluations, reproductions, or debugging.
-- Use only repository fixtures under `eval/`, including `eval/transcribe/audio/` for audio tests. Treat evaluation inputs as synthetic fixtures; do not replace them with personal recordings.
-- Set `CAPTAINS_LOG_CONFIG_PATH` to an isolated temporary config and data directory for CLI/app checks. Bypass default demo seeding; `demo/` and hard-coded design examples are presentation material, not evaluation inputs.
+- Use only repository fixtures under `eval/`, including `eval/suites/transcribe/audio/` for audio tests. Treat evaluation inputs as synthetic fixtures; do not replace them with personal recordings.
+- Set `CAPTAINS_LOG_CONFIG_PATH` to an isolated temporary config and data directory for CLI/app checks. Bypass default demo seeding; hard-coded design examples are presentation material, not evaluation inputs.
 
 ## Evaluations
 
@@ -100,7 +101,7 @@ or token savings without measurements and comparable timing scopes.
 - Keep `CHANGELOG.md` and release notes concise: describe meaningful changes under `Unreleased`, combining related work instead of listing every commit. Keep backlog updates, agent-policy and ADR bookkeeping, and planned work out of both. Backlog-only commits do not need a changelog entry; other changes still require coverage in the same commit. Review `git status`, `git diff`, and `git log` so nothing is missed. Backfill using release tags as boundaries; do not invent earlier history.
 - Prepare releases with `make release BUMP=auto|patch|minor|major|version` (preview with `ARGS=--dry-run`, push with `ARGS=--publish`). By default it infers the highest bump from commits after the latest reachable release tag: fix/perf → patch, feat → minor, breaking → major (minor for 0.x); maintenance-only commits do not trigger a release. Manual overrides remain available. It updates `VERSION`, dates and moves Unreleased entries, updates Git comparison links, runs sequential release checks, and creates a commit and tag. Record archive/cask publication in each release; generated cask-only version/checksum commits are covered by that entry. Follow the release checklist in `README.md` and review evaluation semantics before publishing.
 - Existing ADRs are immutable. Never edit, shorten, rename, delete or change the status or date of an existing record. Document changes in a new numbered ADR that links to the record it supersedes; leave the original untouched. ALL content for a new ADR must come from the owner, including decisions, context, rationale, alternatives and consequences. Agents may edit or rewrite owner-supplied wording for the new record but must never originate ADR content. Create an ADR, including a superseding record, only when the owner explicitly requests it and supplies its content; ask for anything missing. Read relevant ADRs before architectural changes. For an authorized new ADR, use `adrs` and keep it within 300 words (up to 500 for essential owner-supplied rationale). This rule overrides conflicting architecture-documentation guidance.
-- Keep `docs/` exclusively for numbered ADRs, with no plans, reports, guides or subfolders. Use the CLI for authorized owner-supplied task content, status changes and checking existing items. Keep synthetic reference data under `eval/` or `demo/`, separate from active suites when unused.
+- Keep `docs/` exclusively for numbered ADRs, with no plans, reports, guides or subfolders. Use the CLI for authorized owner-supplied task content, status changes and checking existing items. Keep synthetic reference data under `eval/fixtures/`, separate from active suites when unused.
 - Keep current commands and isolation rules in README and the existing script/skill instructions. Report evaluation evidence, native UI limits and legacy-code review in chat or PRs; do not add them to tasks or ADRs yourself. Do not add new evidence to ADR-007. Check downstream SwiftPM clients, previews, debug flags and resource dependencies before deleting apparently unused public symbols or vendored headers.
 
 ## Architecture decision tools

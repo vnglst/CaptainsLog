@@ -58,9 +58,9 @@ extension Tools {
         try require(!eval.evidence(dir, [item]), "Empty normalized reference accepted")
         try require(!fm.fileExists(atPath: report.appendingPathComponent("wer.json").path), "Stale score survived failed revalidation")
         let fixtureRoot = dir.appendingPathComponent("fixture-root"), fixtureTools = Tools(root: fixtureRoot)
-        let fixtureAudio = fixtureRoot.appendingPathComponent("eval/transcribe/audio/check.m4a"), fixtureReference = fixtureRoot.appendingPathComponent("eval/transcribe/expected/check.md")
+        let fixtureAudio = fixtureRoot.appendingPathComponent("eval/suites/transcribe/audio/check.m4a"), fixtureReference = fixtureRoot.appendingPathComponent("eval/suites/transcribe/expected/check.md")
         try write(fixtureAudio, "synthetic fixture bytes"); try write(fixtureReference, "a reference")
-        let manifest = fixtureRoot.appendingPathComponent("eval/transcribe/cases.json")
+        let manifest = fixtureRoot.appendingPathComponent("eval/suites/transcribe/cases.json")
         let entry: EvalItem = ["language": "Dutch", "reference_status": "model-assisted", "audio_sha256": try hash(fixtureAudio), "reference_sha256": try hash(fixtureReference)]
         try json(manifest, ["check": entry])
         try require(Evaluator(fixtureTools).transcriptionCases().count == 1, "Pinned transcription case rejected")

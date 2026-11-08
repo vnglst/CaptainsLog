@@ -70,8 +70,8 @@ extension Tools {
             let referenceURL = savedFile("expected", "expected.md"), reference = try admittedText(referenceURL), referenceHash = try hash(referenceURL)
             let output = savedFile("output", "output.md")
             let transcript = fm.fileExists(atPath: output.path) ? try admittedText(output) : nil
-            let liveDefinition = path("eval/transcribe/review/\(name).json")
-            let definitionURL = fm.fileExists(atPath: liveDefinition.path) ? liveDefinition : path("eval/transcribe/history/review/\(name).json")
+            let liveDefinition = path("eval/suites/transcribe/review/\(name).json")
+            let definitionURL = fm.fileExists(atPath: liveDefinition.path) ? liveDefinition : path("eval/suites/transcribe/history/review/\(name).json")
             let definition = fm.fileExists(atPath: definitionURL.path) ? try json(definitionURL) as? EvalItem : nil
             let duplicate = audioCases.filter { evaluator.string($0, "name") == name }.count > 1
             let baseID = evaluator.string(definition ?? [:], "id", "recording-\(index)")
@@ -177,14 +177,14 @@ extension Tools {
                 passages.append(["id": id, "short_id": evaluator.string(p, "short_id", "\(offset + 1)"), "title": evaluator.string(p, "title", "Passage \(offset + 1)"), "start_seconds": start, "end_seconds": min(end, duration), "clip_start": start, "clip_end": min(end, duration), "audio": audioPath, "reference": ref.excerpt(a, b), "app_transcript": generatedBoundaries.map { generated!.excerpt($0[a], $0[b]) } as Any? ?? NSNull(), "second_transcript": comparedBoundaries.map { compared!.excerpt($0[a], $0[b]) } as Any? ?? NSNull(), "context": context, "model_errors": modelErrors, "check": evaluator.string(p, "check", "Listen for the exact words and any restarts. Text alignment is approximate; use the full transcript for context.")])
             }
             var carried: [String] = []
-            let provenanceURL = path("eval/transcribe/review/\(name).provenance.json")
+            let provenanceURL = path("eval/suites/transcribe/review/\(name).provenance.json")
             if let sourceName = fixture["reference_check"] as? EvalItem, let parent = sourceName["derived_from"] as? String,
                let provenance = (try? json(provenanceURL)) as? EvalItem,
                let editMap = provenance["edit_map"] as? EvalItem, editMap["corrected_sha256"] as? String == audioHash,
-               let sourceDefinition = (try? json(path("eval/transcribe/history/review/\(parent).json"))) as? EvalItem,
+               let sourceDefinition = (try? json(path("eval/suites/transcribe/history/review/\(parent).json"))) as? EvalItem,
                sourceDefinition["audio_sha256"] as? String == provenance["source_audio_sha256"] as? String,
                sourceDefinition["reference_sha256"] as? String == provenance["source_reference_sha256"] as? String {
-                let sourceText = ReviewText(try read(path("eval/transcribe/history/expected/\(parent).md")))
+                let sourceText = ReviewText(try read(path("eval/suites/transcribe/history/expected/\(parent).md")))
                 var originals = sourceDefinition["passages"] as? [EvalItem] ?? []
                 for i in originals.indices {
                     if let a = originals[i]["reference_start_word"] as? Int, let b = originals[i]["reference_end_word"] as? Int { originals[i]["reference"] = sourceText.excerpt(a, b) }
@@ -235,7 +235,7 @@ extension Tools {
         }
         let sessionFile = path("tmp/eval-review-last-session.json"), catalog = path("tmp/eval-review-sessions.json")
         if run == nil {
-            guard let latest = try latestReviewSession(file: sessionFile, catalog: catalog, searchRoots: [path("eval/transcribe/history"), path("tmp")]) else {
+            guard let latest = try latestReviewSession(file: sessionFile, catalog: catalog, searchRoots: [path("eval/suites/transcribe/history"), path("tmp")]) else {
                 throw ToolFailure("No saved transcript review found. Specify RUN_DIR for the first review.", status: 2)
             }
             run = latest.run; port = port ?? latest.port

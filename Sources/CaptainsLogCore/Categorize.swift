@@ -1,7 +1,7 @@
 import Foundation
 
 public enum Categorize {
-    public static let defaultPromptPath = "prompts/categorize.md"
+    public static let defaultPromptPath = "Resources/prompts/categorize.md"
     public static let defaultMaxTokens = 64
     public static let defaultTemperature: Float = 0.1
 

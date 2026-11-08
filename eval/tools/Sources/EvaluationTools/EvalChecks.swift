@@ -10,7 +10,7 @@ extension Tools {
         guard let command = args.first else { throw ToolFailure("unexpected fixture command") }
         let root = URL(fileURLWithPath: environment["EVAL_FIXTURE_ROOT"]!), calls = URL(fileURLWithPath: environment["EVAL_FIXTURE_CALLS"]!)
         let previous = (try? read(calls)) ?? ""; try write(calls, previous + command + "\n")
-        func source(_ value: String) throws -> String { try read(root.appendingPathComponent("eval/" + value)) }
+        func source(_ value: String) throws -> String { try read(root.appendingPathComponent("eval/suites/" + value)) }
         func value(_ flag: String) throws -> String { guard let i = args.firstIndex(of: flag), i+1 < args.count else { throw ToolFailure("Missing fixture argument \(flag)") }; return args[i+1] }
         func enriched(_ data: [String: Any], _ body: String) throws -> String { "---\n" + (try Yams.dump(object: data)) + "---\n\n" + body }
         switch command {
@@ -37,7 +37,7 @@ extension Tools {
             if let trace = environment["EVAL_FIXTURE_PIPELINE_ARGS"] { try json(path(trace), args) }
             let data = path(environment["CAPTAINS_LOG_DATA_DIR"]!), input = path(try value("--input"))
             let stem = input.deletingPathExtension().lastPathComponent
-            let settings = (try json(root.appendingPathComponent("eval/pipeline/cases.json")) as! [String: EvalItem])[stem]!
+            let settings = (try json(root.appendingPathComponent("eval/suites/pipeline/cases.json")) as! [String: EvalItem])[stem]!
             let expected = settings["expected"] as! [String: String]
             let transcript = try read(root.appendingPathComponent(expected["transcribe"]!)), cleaned = try read(root.appendingPathComponent(expected["cleanup"]!))
             let formatterDate = DateFormatter(); formatterDate.dateFormat = "yyyy-MM-dd"
@@ -120,13 +120,13 @@ extension Tools {
         try assert(metadata["status"] as? String == "passed-mechanical-checks" && (metadata["fixture_hashes"] as? EvalItem)?.count == 42, "suite metadata incomplete")
         let regression = manifest.first { eval.string($0, "name") == "04_fictional_name_loop" }!
         try assert(eval.string(regression, "date") == "2025-02-18" && eval.string(regression, "recording_time") == "20:30" && regression["seed"] as? Int == 42, "enrichment case settings lost")
-        try assert(read(suite.appendingPathComponent("enrich-cases.json")) == read(path("eval/enrich/cases.json")), "enrichment manifest not snapshotted")
+        try assert(read(suite.appendingPathComponent("enrich-cases.json")) == read(path("eval/suites/enrich/cases.json")), "enrichment manifest not snapshotted")
         var seeded: [EvalItem] = [["stage": "filename"], ["stage": "categorize", "seed": 2026], ["stage": "enrich", "seed": 1], ["stage": "cleanup"], ["stage": "transcribe"]]
         eval.seedCombinedCases(&seeded)
         try assert(seeded[0]["seed"] as? Int == 42 && seeded[1]["seed"] as? Int == 2026 && seeded[2]["seed"] as? Int == 1, "combined fixture seeds must default42 and preserve explicit seeds")
         try assert(seeded[3]["seed"] == nil && seeded[4]["seed"] == nil, "combined fixture seed policy must not change other stages")
         try assert(try eval.cases(["filename"]).allSatisfy { $0["seed"] == nil }, "standalone filename fixtures must retain random defaults")
-        try write(eval.file(regression, "input"), read(eval.file(regression, "input")) + "Changed fixture."); try assert(eval.validate(regression).hasPrefix("FAIL:"), "changed saved regression source accepted"); try copy(path("eval/enrich/input/04_fictional_name_loop.md"), eval.file(regression, "input"))
+        try write(eval.file(regression, "input"), read(eval.file(regression, "input")) + "Changed fixture."); try assert(eval.validate(regression).hasPrefix("FAIL:"), "changed saved regression source accepted"); try copy(path("eval/suites/enrich/input/04_fictional_name_loop.md"), eval.file(regression, "input"))
         let (focused, focusedResult) = try runFixture("focused", ["--stage", "filename", "--case", "04_short_entry", "--baseline", suite.path], ["CAPTAINS_LOG_EVAL_WHISPER_FOLDER": "/missing-whisper"]); savedRuns.append(focused); try assert(focusedResult.status == 0, "focused fixture required unrelated model: \(focusedResult.output)"); try assert((try json(focused.appendingPathComponent("manifest.json")) as? [EvalItem])?.count == 1, "focused run included other cases")
         response = try cli(["--stage", "filename"], env.merging(["CAPTAINS_LOG_EVAL_RUN_DIR": focused.path]) { _, n in n }); try assert(response.status == 2 && response.output.contains("already exists"), "run overwrite accepted")
         let (enrich, enrichResult) = try runFixture("enrich-only", ["--enrich"], ["CAPTAINS_LOG_EVAL_WHISPER_FOLDER": "/missing-whisper"]); savedRuns.append(enrich); try assert(enrichResult.status == 0 && (try json(enrich.appendingPathComponent("manifest.json")) as? [EvalItem])?.count == 4, "enrichment alias failed: \(enrichResult.output)")

@@ -90,11 +90,11 @@ extension Tools {
         try bundleRuntime([products.path, app.path, executable.path, cli.path]); try checkRuntime([app.path])
         if exists("Resources/AppIcon.icns") { try copy(path("Resources/AppIcon.icns"), resources.appendingPathComponent("AppIcon.icns")) }
         else { print("Warning: Resources/AppIcon.icns not found. Run make icons to generate.") }
-        if exists("prompts") { try run(["ditto", path("prompts").path, resources.appendingPathComponent("prompts").path]) }
+        if exists("Resources/prompts") { try run(["ditto", path("Resources/prompts").path, resources.appendingPathComponent("prompts").path]) }
         let notices = resources.appendingPathComponent("ThirdPartyLicenses")
         for name in ["LICENSE", "THIRD-PARTY-NOTICES.md"] { try copy(path(name), resources.appendingPathComponent(name)) }
         for name in ["LICENSE-MIT", "LICENSE-APACHE"] { try copy(path("Sources/CSQLiteVec/\(name)"), notices.appendingPathComponent("sqlite-vec/\(name)")) }
-        for name in ["LICENSE", "THIRD-PARTY-LICENSES.txt"] { try copy(path("Sources/NativeRuntime/\(name)"), notices.appendingPathComponent("llama.cpp/\(name)")) }
+        for name in ["LICENSE", "THIRD-PARTY-LICENSES.txt"] { try copy(path("Resources/licenses/llama.cpp/\(name)"), notices.appendingPathComponent("llama.cpp/\(name)")) }
         for checkouts in [path(".build/checkouts"), path("Vendor")] {
             for file in files(checkouts, recursive: true) {
                 let name = file.lastPathComponent.uppercased()

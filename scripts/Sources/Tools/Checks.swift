@@ -9,7 +9,7 @@ extension Tools {
         environment["CAPTAINS_LOG_UPDATE_FIXTURE_STATE"] = dir.appendingPathComponent("installed").path
         environment["CAPTAINS_LOG_UPDATE_FIXTURE_LOG"] = dir.appendingPathComponent("commands").path
         try run(["swift", "build", "--product", "cl"])
-        let cl = try capture(["swift", "build", "--show-bin-path"]) + "/cl", fixture = path("eval/update/input/brew-fixture.sh").path
+        let cl = try capture(["swift", "build", "--show-bin-path"]) + "/cl", fixture = path("eval/suites/update/input/brew-fixture.sh").path
         func update(_ name: String, _ extra: [String]) throws -> CommandResult { try run([cl, "update"] + extra + ["--brew-path", fixture], log: dir.appendingPathComponent(name + ".log")) }
         let check = try update("check", ["--check"])
         try require(!exists(environment["CAPTAINS_LOG_UPDATE_FIXTURE_STATE"]!) && check.output.contains("Update available"), "Update check mutated installation or failed to report availability")
@@ -35,7 +35,7 @@ extension Tools {
         for key in keys { try require(!(environment[key] ?? "").isEmpty, "Set \(key) to an already-installed model before running this opt-in smoke.", status: 2) }
         for key in [keys[1], keys[3]] { var directory: ObjCBool = false; try require(fm.fileExists(atPath: environment[key]!, isDirectory: &directory) && directory.boolValue, "Model folder does not exist: \(environment[key]!)", status: 2) }
         try require(files(path(environment[keys[3]]!)).contains { $0.pathExtension == "gguf" }, "Qwen model folder must contain an installed .gguf file.", status: 2)
-        let fixture = path("eval/transcribe/audio/durins-volk.m4a")
+        let fixture = path("eval/suites/transcribe/audio/durins-volk.m4a")
         try require(nonempty(fixture), "Synthetic transcription fixture missing", status: 2)
         let dir = try temporary("captainslog-model-smoke-"); defer { try? fm.removeItem(at: dir) }; try isolated(dir)
         for (key, value) in [("whisperModel", environment[keys[0]]!), ("whisperModelFolder", environment[keys[1]]!), ("qwenModelId", environment[keys[2]]!), ("qwenModelFolder", environment[keys[3]]!)] { try run(["swift", "run", "cl", "config", "set", key, value], quiet: true) }
@@ -78,7 +78,7 @@ extension Tools {
         try bundleRuntime([bin.path, app.path, executable.path])
         // Match the packaged app: launch working directories are not guaranteed
         // to contain the repository's relative prompt paths.
-        try run(["ditto", path("prompts").path, app.appendingPathComponent("Contents/Resources/prompts").path])
+        try run(["ditto", path("Resources/prompts").path, app.appendingPathComponent("Contents/Resources/prompts").path])
         let plist: [String: String] = ["CFBundleExecutable": "CaptainsLogUITest", "CFBundleIdentifier": identifier, "CFBundleName": "CaptainsLog UI Eval", "CFBundlePackageType": "APPL", "LSMinimumSystemVersion": "26.0"]
         try PropertyListSerialization.data(fromPropertyList: plist, format: .xml, options: 0).write(to: app.appendingPathComponent("Contents/Info.plist"))
         try run(["codesign", "--force", "--deep", "--sign", "-", app.path]); try run(["codesign", "--verify", "--deep", "--strict", app.path])
