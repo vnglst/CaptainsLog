@@ -703,6 +703,8 @@ private struct FieldNotesEntryRow: View {
                         .lineLimit(2)
                 }
 
+                Spacer(minLength: 0)
+
                 HStack(spacing: FieldNotes.Spacing.s) {
                     if !entry.tags.isEmpty {
                         Text(entry.tags.prefix(3).map { "#\($0)" }.joined(separator: "   "))
@@ -737,6 +739,7 @@ private struct FieldNotesEntryRow: View {
                     .accessibilityLabel("Actions for \(entry.displayName)")
                 }
             }
+            .frame(height: 128, alignment: .top)
         }
         .padding(.vertical, FieldNotes.Spacing.m)
         .padding(.horizontal, FieldNotes.Spacing.s)
