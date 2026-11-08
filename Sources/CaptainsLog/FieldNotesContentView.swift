@@ -1433,12 +1433,25 @@ private struct FieldNotesSettingsView: View {
                     else { Task { await appState.installUpdate() } }
                 }
             }
-            helper(appState.updates.supported ? appState.updates.message
-                : "Auto-updates are available in the installed app, outside demo mode.")
-                .lineLimit(3)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .frame(height: 48, alignment: .topLeading)
-                .help(appState.updates.message)
+            if appState.updates.isInstalling {
+                HStack(spacing: 10) {
+                    ProgressView()
+                        .progressViewStyle(.linear)
+                        .frame(width: 72)
+                        .accessibilityLabel("Update progress")
+                    helper("Downloading and installing update…")
+                        .lineLimit(2)
+                }
+                .frame(maxWidth: .infinity, minHeight: 48, alignment: .leading)
+                .help("Downloading and installing update…")
+            } else {
+                helper(appState.updates.supported ? appState.updates.message
+                    : "Auto-updates are available in the installed app, outside demo mode.")
+                    .lineLimit(3)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .frame(height: 48, alignment: .topLeading)
+                    .help(appState.updates.message)
+            }
         }
     }
 

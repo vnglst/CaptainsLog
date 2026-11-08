@@ -12,6 +12,8 @@ entry. Git links provide the complete commit history for each release.
 
 ## [Unreleased]
 
+- Show update installation progress in Settings.
+
 ## [0.7.1] - 2026-11-08
 
 - Add a technical overview subpage to the website, with architecture, pipeline, processing lifecycle and search diagrams, plus model roles.
