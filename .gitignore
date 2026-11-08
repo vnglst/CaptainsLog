@@ -21,3 +21,4 @@ tmp/
 
 # Local agent permissions and machine-specific settings
 .claude/settings.local.json
+.github/copilot/
