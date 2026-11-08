@@ -12,6 +12,8 @@ entry. Git links provide the complete commit history for each release.
 
 ## [Unreleased]
 
+- Clarify on the website that the CLI works independently of the Mac app, using the same local models and processing pipeline.
+
 - Remove a personal microphone device name from a repository screenshot.
 
 - Organize production code, tests, local packages, resources and evaluation suites into conventional folders, remove source symlinks, and update development documentation.
