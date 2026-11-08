@@ -94,7 +94,7 @@ tests-app-performance:
 
 # The optimized loaded-library startup budget, using the existing native harness.
 tests-startup:
-	$(MAKE) tests-app-performance RUN_DIR="$(RUN_DIR)" ARGS="--startup-only --startup-entries=1000 --startup-max-seconds=1.2 $(ARGS)"
+	$(MAKE) tests-app-performance RUN_DIR="$(RUN_DIR)" ARGS="--startup-only --startup-entries=1000 --startup-max-seconds=1.2 --startup-cold-max-seconds=5 $(ARGS)"
 
 tests-search-shutdown:
 	@test -n "$(RUN_DIR)"
