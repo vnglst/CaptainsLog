@@ -7,7 +7,7 @@ import Darwin
 let args = CommandLine.arguments
 let env = ProcessInfo.processInfo.environment
 func require(_ condition: Bool, _ message: String) { if !condition { fputs(message + "\n", stderr); exit(1) } }
-require(args.count >= 3, "usage: test-app-performance.swift APP_EXECUTABLE OUTPUT_DIR [--baseline] [--startup-only] [--quit-during-loading] [--startup-entries=1000] [--startup-max-seconds=5] [--startup-runs=3]")
+require(args.count >= 3, "usage: test-app-performance.swift APP_EXECUTABLE OUTPUT_DIR [--baseline] [--startup-only] [--quit-during-loading] [--startup-entries=1000] [--startup-max-seconds=5] [--startup-cold-max-seconds=5] [--startup-runs=3]")
 let startupOnly = args.contains("--startup-only")
 let quitDuringLoading = args.contains("--quit-during-loading")
 let entriesOption = args.dropFirst(3).first { $0.hasPrefix("--startup-entries=") }
@@ -17,9 +17,15 @@ require(runsOption == nil || (startupRuns > 0 && startupRuns <= 20), "Startup ru
 let limitOption = args.dropFirst(3).first { $0.hasPrefix("--startup-max-seconds=") }
 let startupLimit = limitOption.flatMap { Double($0.split(separator: "=").last ?? "") } ?? 5
 require((limitOption == nil || Double(limitOption!.split(separator: "=").last ?? "") != nil) && startupLimit > 0 && startupLimit.isFinite, "Startup limit must be positive and finite")
+// A newly built executable can pay one-time dyld/OS cache costs. Opt in to a
+// separate first-launch limit; subsequent launches retain the startup budget.
+let coldLimitOption = args.dropFirst(3).first { $0.hasPrefix("--startup-cold-max-seconds=") }
+let coldStartupLimit = coldLimitOption.flatMap { Double($0.split(separator: "=", omittingEmptySubsequences: false).last ?? "") }
+require(coldLimitOption == nil || coldStartupLimit.map { $0 > 0 && $0.isFinite } == true,
+        "Cold startup limit must be positive and finite")
 let startupEntries = entriesOption.flatMap { Int($0.split(separator: "=").last ?? "") } ?? 0
 require(entriesOption == nil || (startupEntries > 0 && startupEntries <= 10000), "Startup fixture count must be 1...10000")
-require(args.dropFirst(3).allSatisfy { $0 == "--baseline" || $0 == "--startup-only" || $0 == "--quit-during-loading" || $0 == entriesOption || $0 == limitOption || $0 == runsOption }, "Unknown performance option")
+require(args.dropFirst(3).allSatisfy { $0 == "--baseline" || $0 == "--startup-only" || $0 == "--quit-during-loading" || $0 == entriesOption || $0 == limitOption || $0 == coldLimitOption || $0 == runsOption }, "Unknown performance option")
 require(!args[2].isEmpty, "A new absolute output directory is required")
 require(args[2].hasPrefix("/"), "Use an absolute output directory")
 let processTimeoutValue = env["CAPTAINSLOG_PERFORMANCE_PROCESS_TIMEOUT"]
@@ -58,7 +64,7 @@ if startupEntries > 0 {
         startupFixtureHashes[path] = try sha256(path)
     }
 }
-let metadata: [String: Any] = ["revision": String(decoding: revisionData, as: UTF8.self).trimmingCharacters(in: .whitespacesAndNewlines), "executable": URL(fileURLWithPath: args[1]).standardizedFileURL.path, "binarySHA256": try sha256(args[1]), "fixtureSHA256": try sha256(fixture.path), "modelSHA256": modelHashes, "operatingSystem": ProcessInfo.processInfo.operatingSystemVersionString, "processorCount": ProcessInfo.processInfo.processorCount, "promptChunkSize": 128, "baselineThresholdsDisabled": baseline, "startupFixtureEntries": startupEntries, "startupFixtureSHA256": startupFixtureHashes, "startupLimitSeconds": startupLimit, "startupOnlyControlledStop": startupOnly, "quitDuringLoading": quitDuringLoading, "startupRuns": startupRuns, "processingWatchdogSeconds": processTimeout]
+let metadata: [String: Any] = ["revision": String(decoding: revisionData, as: UTF8.self).trimmingCharacters(in: .whitespacesAndNewlines), "executable": URL(fileURLWithPath: args[1]).standardizedFileURL.path, "binarySHA256": try sha256(args[1]), "fixtureSHA256": try sha256(fixture.path), "modelSHA256": modelHashes, "operatingSystem": ProcessInfo.processInfo.operatingSystemVersionString, "processorCount": ProcessInfo.processInfo.processorCount, "promptChunkSize": 128, "baselineThresholdsDisabled": baseline, "startupFixtureEntries": startupEntries, "startupFixtureSHA256": startupFixtureHashes, "startupLimitSeconds": startupLimit, "coldStartupLimitSeconds": coldStartupLimit ?? startupLimit, "startupOnlyControlledStop": startupOnly, "quitDuringLoading": quitDuringLoading, "startupRuns": startupRuns, "processingWatchdogSeconds": processTimeout]
 try JSONSerialization.data(withJSONObject: metadata, options: [.prettyPrinted, .sortedKeys]).write(to: output.appendingPathComponent("metadata.json"))
 var results: [[String: Any]] = []
 let startupModes = (1...startupRuns).map { "startup-\($0)" }
@@ -174,7 +180,8 @@ for mode in modes {
     }
     let startup = markers["models-ready"].map { $0 - started } ?? -1
     let close = startupOnly ? -1 : markers["quit-request"].map { finished - $0 } ?? -1
-    let record: [String: Any] = ["mode": mode, "startupSeconds": startup, "closeSeconds": close, "exitStatus": process.terminationStatus, "normalExit": process.terminationReason == .exit, "processingSeconds": markers["pipeline-complete"].map { $0 - (markers["models-ready"] ?? started) } ?? -1, "timedOut": timedOut, "pipelineFailed": markers["pipeline-failed"] != nil, "stoppedAfterReadiness": stoppedAfterReadiness, "markers": markers]
+    let effectiveStartupLimit = mode == "startup-1" ? (coldStartupLimit ?? startupLimit) : startupLimit
+    let record: [String: Any] = ["startupLimitSeconds": effectiveStartupLimit, "mode": mode, "startupSeconds": startup, "closeSeconds": close, "exitStatus": process.terminationStatus, "normalExit": process.terminationReason == .exit, "processingSeconds": markers["pipeline-complete"].map { $0 - (markers["models-ready"] ?? started) } ?? -1, "timedOut": timedOut, "pipelineFailed": markers["pipeline-failed"] != nil, "stoppedAfterReadiness": stoppedAfterReadiness, "markers": markers]
     results.append(record)
     try JSONSerialization.data(withJSONObject: results, options: [.prettyPrinted, .sortedKeys]).write(to: output.appendingPathComponent("results.json"))
     print("\(mode): startup \(startup)s, close \(close)s, exit \(process.terminationStatus), timeout \(timedOut)")
@@ -184,7 +191,7 @@ for mode in modes {
         } else {
             require(!timedOut && process.terminationStatus == 0 && process.terminationReason == .exit, "Native check did not terminate cleanly")
         }
-        require(startup >= 0 && startup < startupLimit, "Startup readiness exceeded \(startupLimit) seconds")
+        require(startup >= 0 && startup < effectiveStartupLimit, "Startup readiness exceeded \(effectiveStartupLimit) seconds")
         if mode == "processing-close" && quitDuringLoading {
             require(markers["whisper-loader Loading text decoder"] != nil && markers["quit-request"] != nil && markers["delegate-terminate"] != nil, "Quit must occur during native model initialization")
             require(close >= 0 && close < 3, "Quit during model initialization exceeded 3 seconds")

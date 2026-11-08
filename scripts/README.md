@@ -46,7 +46,7 @@ evaluations remain a separate `make evals` command.
 | `make tests-evals` | Model-free evaluation orchestration fixtures. |
 | `make tests-enrich` | Build, then check enrichment validation and CLI seed boundaries without inference. |
 | `make tests-model` | Opt-in installed-model smoke test; requires the four `CAPTAINSLOG_*_MODEL_*` variables in its helper. |
-| `make tests-startup RUN_DIR=/absolute/new/output` | Check three native launches with 1,000 fixture entries against the optimized 1.2-second startup budget; requires prepared Whisper/Qwen paths and the app closed. |
+| `make tests-startup RUN_DIR=/absolute/new/output` | Check three native launches with 1,000 fixture entries: five seconds for the first launch and 1.2 seconds for subsequent launches; requires prepared Whisper/Qwen paths and the app closed. |
 | `make tests-app-performance RUN_DIR=/absolute/new/output` | Opt-in native startup and quit-during-decoding regression check. Quit the app first; supply prepared `CAPTAINSLOG_WHISPER_MODEL_FOLDER` and `CAPTAINSLOG_QWEN_MODEL_FOLDER`. Debug-only, eval audio and isolated config/data; no microphone. |
 | `make tests-search-shutdown RUN_DIR=/absolute/new/output` | Opt-in native cached-search/quit regression check using eval content, isolated config and prepared E5/Qwen/Whisper models. Keep all other native work stopped; `ARGS=--baseline` retains a failing exit for comparison. |
 | Debug `run-tests --native-recording-busy` (invoke built binary directly) | Opt-in Core-only busy-admission check with real cached Whisper and eval audio; run from repository root with `CAPTAINS_LOG_CONFIG_PATH` under repository `tmp` or system temporary storage. Preserves CPU/model gates, creates its own isolated data, and requires the exclusive native slot. No GUI or microphone. |
@@ -112,7 +112,12 @@ cleanup and enrichment fixtures. Each launch copies the same fixture bytes into
 fresh isolated data; the count is retained in metadata. Use the same count and
 binary build configuration for before/after comparisons. Set
 `--startup-max-seconds=1.2` to enforce a tighter loaded-library regression limit;
-`--startup-runs=7` increases repetitions.
+`--startup-runs=7` increases repetitions. `make tests-startup RUN_DIR=...` selects
+1,000 fixture entries and these three launches, allowing five seconds for the first
+launch because it may pay cold OS caches after a build, and enforcing 1.2 seconds
+for the remaining warm launches. The optional `--startup-cold-max-seconds=5` applies
+only to `startup-1`; without it every launch uses `--startup-max-seconds` as before.
+Metadata and each result retain the selected limits.
 Startup-only mode allows one second for normal quit, then stops only its owned
 idle process if needed after readiness and records this
 controlled stop separately; it provides no closing measurement. The default
