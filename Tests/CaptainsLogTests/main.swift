@@ -1863,16 +1863,18 @@ func runCoreCoverageTests() {
         let entryURL = root.appendingPathComponent("2026-07-10-review.md")
         try """
         ---
-        summary: "Shipped the review"
+        summary: "Reviewed the Darmok encounter"
         tags:
-          - work
-          - release
+          - language
+          - "reflection"
+          - 'communication'
         projects:
-          - CaptainsLog
+          - "Metaphor Notebook"
+          - 'Transporter Review'
         recording_time: "08:30"
         ---
 
-        Entry body.
+        The Enterprise transporter records preserve the failed rescue attempts at El-Adrel.
         """.write(to: entryURL, atomically: true, encoding: .utf8)
 
         let entry = LogEntry.from(Pipeline.EntryListing(
@@ -1883,11 +1885,11 @@ func runCoreCoverageTests() {
             latestPath: entryURL.path
         ))
 
-        try expect(entry.summary == "Shipped the review")
-        try expect(entry.tags == ["work", "release"])
-        try expect(entry.projects == ["CaptainsLog"])
+        try expect(entry.summary == "Reviewed the Darmok encounter")
+        try expect(entry.tags == ["language", "reflection", "communication"])
+        try expect(entry.projects == ["Metaphor Notebook", "Transporter Review"])
         try expect(entry.recordingTime == "08:30")
-        try expect(entry.readableBody() == "Entry body.")
+        try expect(entry.readableBody() == "The Enterprise transporter records preserve the failed rescue attempts at El-Adrel.")
         guard let recordingDate = entry.recordingDate else {
             throw NSError(domain: "TestError", code: 1, userInfo: [NSLocalizedDescriptionKey: "Expected recording date"])
         }
