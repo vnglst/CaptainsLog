@@ -14,7 +14,7 @@ entry. Git links provide the complete commit history for each release.
 
 - Keep log rows the same height before summaries and tags are available.
 - Add a step-by-step demo video recording scenario.
-- Replace banking-themed demo and enrichment examples with an Enterprise engineer’s reflections on Darmok; rewrite the unrecorded English and German scripts around the encounter.
+- Replace banking-themed demo and enrichment examples with an Enterprise engineer’s reflections on Darmok; rewrite the unrecorded English and German scripts around the encounter and align the log-loading checks with the updated fixture.
 
 ## [0.7.2] - 2026-11-08
 
