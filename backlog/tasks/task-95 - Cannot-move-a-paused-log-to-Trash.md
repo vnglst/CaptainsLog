@@ -1,10 +1,10 @@
 ---
 id: TASK-95
 title: Reflect paused processing in global notification
-status: Next
+status: Verify
 assignee: []
 created_date: '2026-11-08T12:02:00Z'
-updated_date: '2026-11-08T12:03:00Z'
+updated_date: '2026-11-08T16:33:00Z'
 labels: []
 dependencies: []
 type: bug

@@ -1,9 +1,10 @@
 ---
 id: TASK-97
 title: Remove the option to delete models and start downloading missing models
-status: Next
+status: Verify
 assignee: []
 created_date: '2026-11-08T15:35:00Z'
+updated_date: '2026-11-08T16:33:00Z'
 labels: []
 dependencies: []
 ordinal: 88000

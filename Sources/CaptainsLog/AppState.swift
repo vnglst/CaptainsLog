@@ -534,7 +534,12 @@ struct LogEntry: Identifiable, Sendable {
             let trimmed = line.trimmingCharacters(in: .whitespaces)
             // List item under current collecting key
             if trimmed.hasPrefix("- "), let key = collectingKey {
-                let value = String(trimmed.dropFirst(2)).trimmingCharacters(in: .whitespaces)
+                var value = String(trimmed.dropFirst(2)).trimmingCharacters(in: .whitespaces)
+                if value.count >= 2,
+                   (value.hasPrefix("\"") && value.hasSuffix("\"")) ||
+                   (value.hasPrefix("'") && value.hasSuffix("'")) {
+                    value = String(value.dropFirst().dropLast())
+                }
                 if key == "tags" { tags.append(value) }
                 if key == "projects" { projects.append(value) }
                 continue
