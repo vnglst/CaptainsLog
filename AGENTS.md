@@ -76,6 +76,11 @@ backlog task edit TASK-1 --status "Complete"  # After your review
 - Use only repository fixtures under `eval/`, including `eval/suites/transcribe/audio/` for audio tests. Treat evaluation inputs as synthetic fixtures; do not replace them with personal recordings.
 - Set `CAPTAINS_LOG_CONFIG_PATH` to an isolated temporary config and data directory for CLI/app checks. Bypass default demo seeding; hard-coded design examples are presentation material, not evaluation inputs.
 
+## Mock, test, evaluation and demo data
+
+- Create all mock, test, evaluation and demo content with a Star Trek: The Next Generation theme, grounded in real episodes about language and communication, such as Darmok. Write personal logs from an Enterprise engineer who was there during the Darmok encounter; keep invented crew-level details consistent with the episode.
+- Preserve existing recordings and their matching scripts, transcripts and evaluation references. Update unrecorded scripts and their expected outputs together.
+
 ## Evaluations
 
 Stage-specific evaluation workflows live in `eval/skills/<stage>-eval/SKILL.md` for transcription, cleanup, filename, and enrichment. Use the relevant workflow when evaluating output. Reports should describe concrete changes and semantic impact, including missing or added content and hallucinations; scores alone are not enough. Human review makes the final quality judgment.

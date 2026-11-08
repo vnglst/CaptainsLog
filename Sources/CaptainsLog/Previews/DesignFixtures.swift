@@ -120,42 +120,42 @@ extension AppState {
                 return copy
             }
             processing.stage = .cleaning
-            processing.statusMessage = "Cleaning Rethinking the processing queue..."
+            processing.statusMessage = "Cleaning Darmok: transporter rescue attempts..."
             processing.processingStem = "2026-08-30-1028"
         case "search":
             entries = Self.fixtureEntries
             search.applyFixture(
-                query: "making local AI easier to understand",
+                query: "understanding Tamarian stories",
                 results: [
                     SearchResult(
                         stem: "2026-08-28-1107",
-                        slug: "research-notes-user-onboarding",
-                        displayName: "Research notes: user onboarding",
+                        slug: "darmok-words-and-shared-stories",
+                        displayName: "Darmok: words and shared stories",
                         path: "",
-                        excerpt: "Observations about communicating local setup and model preparation clearly, without hiding what happens on this Mac.",
+                        excerpt: "An Enterprise engineer reflects on why translated Tamarian words still needed shared stories.",
                         distance: 0,
                         matchKind: .keyword,
-                        matchedTerms: ["local", "setup", "model"]
+                        matchedTerms: ["Tamarian", "stories"]
                     ),
                     SearchResult(
                         stem: "2026-08-30-1028",
-                        slug: "rethinking-the-processing-queue",
-                        displayName: "Rethinking the processing queue",
+                        slug: "darmok-transporter-rescue-attempts",
+                        displayName: "Darmok: transporter rescue attempts",
                         path: "",
-                        excerpt: "A design note on reducing context switching and letting independent work flow through the local pipeline.",
+                        excerpt: "An engineering log about the scattering field that blocked the rescue at El-Adrel.",
                         distance: 0.19,
                         matchKind: .semantic,
-                        matchedTerms: ["local"]
+                        matchedTerms: ["Tamarian"]
                     ),
                 ]
             )
         case "indexing":
             entries = Self.fixtureEntries
             search.applyFixture(
-                query: "react vulnerability",
+                query: "Tamarian language",
                 results: [],
                 state: .indexing(
-                    message: "Indexing React vulnerability Rabobank demo DLL leasing",
+                    message: "Indexing Darmok engineering logs",
                     completed: 39,
                     total: 68
                 )
@@ -169,27 +169,27 @@ extension AppState {
         [
             fixture(
                 stem: "2026-08-30-1028",
-                name: "Rethinking the processing queue",
-                summary: "A design note on reducing context switching and letting independent work flow through the pipeline.",
-                tags: ["product", "process", "ai"]
+                name: "Darmok: transporter rescue attempts",
+                summary: "An Enterprise engineer recalls blocked transporter attempts during the Darmok encounter.",
+                tags: ["darmok", "transporters", "engineering"]
             ),
             fixture(
                 stem: "2026-08-30-0915",
-                name: "Morning walk: Dutch and English",
-                summary: "Notes on keeping language context explicit during cleanup and enrichment.",
-                tags: ["language", "research"]
+                name: "Darmok: after the engineering watch",
+                summary: "Off duty in Ten Forward, reflecting on Dathon and the cost of understanding.",
+                tags: ["language", "reflection"]
             ),
             fixture(
                 stem: "2026-08-29-1642",
-                name: "Weekly team sync takeaways",
-                summary: "The decisions, questions, and follow-ups worth carrying into next week.",
-                tags: ["team", "planning"]
+                name: "Darmok: incident report still in draft",
+                summary: "Transporter records are saved; timestamp checks and Geordi’s review remain planned.",
+                tags: ["engineering", "report"]
             ),
             fixture(
                 stem: "2026-08-28-1107",
-                name: "Research notes: user onboarding",
-                summary: "Observations about communicating local setup and model preparation clearly.",
-                tags: ["research", "onboarding"]
+                name: "Darmok: words and shared stories",
+                summary: "Translating words did not explain the stories behind the Tamarian language.",
+                tags: ["language", "stories"]
             ),
         ]
     }

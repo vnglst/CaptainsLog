@@ -15,7 +15,7 @@ extension Tools {
         func enriched(_ data: [String: Any], _ body: String) throws -> String { "---\n" + (try Yams.dump(object: data)) + "---\n\n" + body }
         switch command {
         case "enrich" where args.contains("--print-prompt"):
-            guard let seed = UInt64(try value("--seed")), seed < 4294967295 else { throw ToolFailure("Error: invalid seed") }; print("FinanceHub")
+            guard let seed = UInt64(try value("--seed")), seed < 4294967295 else { throw ToolFailure("Error: invalid seed") }; print("Metaphor Notebook")
         case "eval-batch":
             guard let items = try json(path(value("--manifest"))) as? [EvalItem] else { throw ToolFailure("Invalid fixture batch") }
             for item in items {

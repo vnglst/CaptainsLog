@@ -12,6 +12,8 @@ entry. Git links provide the complete commit history for each release.
 
 ## [Unreleased]
 
+- Replace banking-themed demo and enrichment examples with an Enterprise engineer’s reflections on Darmok; rewrite the unrecorded English and German scripts around the encounter.
+
 ## [0.7.2] - 2026-11-08
 
 - Keep book audio recordings in evaluation suites only, excluding them from the demo library.

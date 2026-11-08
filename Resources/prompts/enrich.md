@@ -36,103 +36,115 @@ Extract structured metadata from a personal voice-memo log entry.
 <examples>
 <example>
 <input>
-This week I spent most of my time on the FinanceHub project at Pioneer Trust. On Monday I paired with Alex Chen on the authentication module and we finally got the OAuth flow working. Tuesday was all about reviewing pull requests and preparing my TechWeek presentation about AI agents.
+Personal log, engineering duty aboard the Enterprise after the Darmok encounter. I worked with Geordi La Forge on the transporter diagnostics while Jean-Luc Picard was stranded with Dathon at El-Adrel. The Tamarian scattering field blocked our attempts to bring the captain back. Our equipment could report the interference, but it could not tell us what Dathon intended.
 
-I had a great one-on-one with my manager Maria Santos on Wednesday. We talked about the roadmap for Q3 and she mentioned that ApexCorp is interested in a partnership around our GenAI tooling. That could be exciting.
+Data and Deanna Troi studied the Tamarian language. The universal translator rendered the words, yet the references to shared stories still escaped us. Picard eventually understood enough to communicate with the Tamarian ship, and the confrontation ended. Dathon died on the surface before that understanding reached both crews.
 
-On Thursday I worked from home and spent the evening hacking on CaptainsLog, adding a new transcription pipeline. Friday was quiet, mostly documentation and a team retrospective.
+After my shift I returned to my independent evening project, the Metaphor Notebook, a personal collection of reflections on language. I added a note about the difference between translating words and understanding another person's experience. Tomorrow I will finish the engineering incident report for Starfleet; that report is still only a draft.
 </input>
 <output>
 date: "2025-01-15"
 recording_time: "{recording_time}"
 language: English
 categories:
-  - work
-  - side-project
+  - "work"
+  - "side-project"
 tags:
-  - authentication
-  - ai-agents
-  - code-review
-  - transcription
+  - "language"
+  - "translation"
+  - "transporters"
+  - "communication"
 persons:
-  - Alex Chen
-  - Maria Santos
+  - "Geordi La Forge"
+  - "Jean-Luc Picard"
+  - "Dathon"
+  - "Data"
+  - "Deanna Troi"
 projects:
-  - FinanceHub
-  - CaptainsLog
+  - "Metaphor Notebook"
 companies:
-  - Pioneer Trust
-  - ApexCorp
+  - "Starfleet"
 entities:
-  - TechWeek
-  - OAuth
-summary: "A work-focused week centered on the FinanceHub project, including pairing on authentication with Alex Chen and preparing a TechWeek presentation. A one-on-one with manager Maria Santos revealed a potential ApexCorp partnership. Evening time was spent on the CaptainsLog side project."
+  - "Enterprise"
+  - "Darmok"
+  - "El-Adrel"
+summary: "An Enterprise engineer recalls blocked transporter attempts during the Darmok encounter and the limits of translating Tamarian words without their shared stories. Picard established communication, but Dathon died on the surface. After duty, the engineer added a reflection to the personal Metaphor Notebook. The Starfleet incident report remains a draft."
 </output>
 </example>
 
 <example>
 <input>
-This weekend was really nice. On Saturday Sarah and I took the kids to the beach. Leo loved building sandcastles and Max spent most of his time in the water. We packed a picnic and stayed until sunset.
+Personal log. I was off duty in my quarters aboard the Enterprise tonight, trying to settle after the Darmok encounter. I had been in engineering while Jean-Luc Picard and Dathon were on El-Adrel. Now that the danger is over, I keep thinking about Dathon dying before the two crews understood each other.
 
-Sunday was more relaxed. I went for a long run in the morning, about 12 kilometers through the dunes. In the afternoon I read a book about stoic philosophy and then we had dinner at my parents' place. My dad made his famous Indonesian rice table.
+I went to Ten Forward and sat quietly with a cup of tea. Guinan listened while I tried to explain why translating the words had felt so close to understanding, even though we had missed the stories behind them. I am recording this for myself, not writing a duty report.
+
+Back in my quarters I read a little about Gilgamesh, the story Picard shared with Dathon. I have no repairs or projects planned tonight. I want to remember that someone tried to reach us, and that understanding came at a cost.
 </input>
 <output>
 date: "2025-01-15"
 recording_time: "{recording_time}"
 language: English
 categories:
-  - personal
+  - "personal"
 tags:
-  - family
-  - running
-  - reading
+  - "language"
+  - "reflection"
+  - "reading"
+  - "grief"
 persons:
-  - Sarah
-  - Leo
-  - Max
+  - "Jean-Luc Picard"
+  - "Dathon"
+  - "Guinan"
 projects: []
 companies: []
-entities: []
-summary: "A relaxing weekend spent at the beach with the family on Saturday, followed by a long run and reading on Sunday. The day ended with dinner at the parents' place."
+entities:
+  - "Enterprise"
+  - "Darmok"
+  - "El-Adrel"
+  - "Ten Forward"
+  - "Gilgamesh"
+summary: "An off-duty Enterprise engineer reflects on Dathon’s death after the Darmok encounter. A quiet visit to Ten Forward and a conversation with Guinan give the engineer space to think about the gap between translated words and shared stories. Reading about Gilgamesh becomes a personal way to remember Picard’s exchange with Dathon."
 </output>
 </example>
 
 <example>
 <input>
-Kind of a mixed bag this week. Work was busy with the FinanceHub launch approaching. I spent Monday and Tuesday fixing security vulnerabilities that our Snyk scan flagged. Had to upgrade several npm packages in the front-end.
+Personal log after the Darmok encounter at El-Adrel. Most of my shift aboard the Enterprise went into reviewing the transporter records with Geordi La Forge. We documented how the Tamarian scattering field blocked the rescue attempts. The review is complete, but I have not yet submitted the engineering report to Starfleet.
 
-On Wednesday I gave a talk at the local React meetup about server components. Got some good questions from the audience. One person from BlueBank came up afterwards and said they're dealing with the same migration challenges.
+Data explained how references to shared stories carried meaning that the universal translator could not supply on its own. Jean-Luc Picard and Dathon found a way to communicate on the surface, although Dathon did not survive. I want the report to distinguish our technical observations from what we learned afterwards about their conversation.
 
-On the personal side, Sam started his new school this week. He seems to be enjoying it so far, made a few friends already. I also finally ordered a new standing desk from IKEA, the old one was falling apart. Sarah and I are planning a trip to Barcelona next month for our anniversary.
+After duty I visited Ten Forward. I wrote to my sister about how frightened I had been while the captain was missing. I also read about Gilgamesh before bed. Those were personal moments, not another engineering assignment, and I have no independent project to report this week.
 </input>
 <output>
 date: "2025-01-15"
 recording_time: "{recording_time}"
 language: English
 categories:
-  - work
-  - personal
+  - "work"
+  - "personal"
 tags:
-  - security
-  - react
-  - school
-  - travel
+  - "transporters"
+  - "language"
+  - "communication"
+  - "family"
+  - "reading"
 persons:
-  - Sam
-  - Sarah
-projects:
-  - FinanceHub
+  - "Geordi La Forge"
+  - "Data"
+  - "Jean-Luc Picard"
+  - "Dathon"
+projects: []
 companies:
-  - BlueBank
-  - IKEA
+  - "Starfleet"
 entities:
-  - Snyk
-  - React meetup
-  - Barcelona
-summary: "A mixed week with FinanceHub launch preparations and security fixes dominating the work side. Gave a talk at the local React meetup and connected with someone from BlueBank. On the personal front, Sam started a new school and travel plans are taking shape for Barcelona."
+  - "Darmok"
+  - "El-Adrel"
+  - "Enterprise"
+  - "Ten Forward"
+  - "Gilgamesh"
+summary: "An Enterprise engineer completed a transporter-record review with Geordi La Forge after the Darmok encounter, while the Starfleet report remains unsubmitted. Data’s explanation highlights the shared stories missing from literal translation, and Picard’s communication with Dathon came before Dathon’s death. Off duty, the engineer wrote to a sister about the fear of losing the captain and read about Gilgamesh."
 </output>
 </example>
-
 </examples>
 
 <context>

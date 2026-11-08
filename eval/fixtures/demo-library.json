@@ -23,6 +23,6 @@
     }
   ],
   "pending": [
-    { "stem": "2025-01-16-0900", "transcript": "suites/cleanup/input/book-reference.md" }
+    { "stem": "2025-01-16-0900", "transcript": "suites/enrich/input/03_mixed_topics.md" }
   ]
 }

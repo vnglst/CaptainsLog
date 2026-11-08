@@ -1,5 +1,5 @@
-This week I spent most of my time on the FinanceHub project at Pioneer Trust. On Monday I paired with Alex Chen on the authentication module and we finally got the OAuth flow working. Tuesday was all about reviewing pull requests and preparing my TechWeek presentation about AI agents.
+Personal log, engineering duty aboard the Enterprise after the Darmok encounter. I worked with Geordi La Forge on the transporter diagnostics while Jean-Luc Picard was stranded with Dathon at El-Adrel. The Tamarian scattering field blocked our attempts to bring the captain back. Our equipment could report the interference, but it could not tell us what Dathon intended.
 
-I had a great one-on-one with my manager Maria Santos on Wednesday. We talked about the roadmap for Q3 and he mentioned that ApexCorp is interested in a partnership around our GenAI tooling. That could be exciting.
+Data and Deanna Troi studied the Tamarian language. The universal translator rendered the words, yet the references to shared stories still escaped us. Picard eventually understood enough to communicate with the Tamarian ship, and the confrontation ended. Dathon died on the surface before that understanding reached both crews.
 
-On Thursday I worked from home and spent the evening hacking on CaptainsLog, adding a new transcription pipeline. Friday was quiet, mostly documentation and a team retrospective.
+After my shift I returned to my independent evening project, the Metaphor Notebook, a personal collection of reflections on language. I added a note about the difference between translating words and understanding another person's experience. Tomorrow I will finish the engineering incident report for Starfleet; that report is still only a draft.

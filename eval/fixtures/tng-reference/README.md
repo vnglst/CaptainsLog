@@ -8,13 +8,15 @@ English and German audio are still to be recorded.
 
 | Script | Language | Topic |
 |---|---|---|
-| [A week aboard the Enterprise](tng-01-work-week-review.md) | English | A warp nacelle warning, a probe survey and an external repair |
+| [A week aboard the Enterprise](tng-01-work-week-review.md) | English | An engineer’s transporter duty and personal reflections during Darmok |
 | [Een vrije dag op de Enterprise](tng-nl01-vrije-dag-enterprise.md) | Dutch | The holodeck, Alexander and Molly, Ten Forward and upcoming duties |
-| [Sensorstörung auf der Enterprise](tng-de01-sensorstoerung.md) | German | Conflicting sensor readings, a repair and unfinished checks |
+| [Sensorstörung auf der Enterprise](tng-de01-sensorstoerung.md) | German | Darmok from engineering: blocked rescue attempts and the limits of translation |
 
-The narrator is an unnamed crew member. The stories take place aboard the ship,
-with watch duties, engineering work, exploration and time off among the crew.
-They are invented recording material, not accounts of specific televised episodes.
+The unrecorded English and German scripts follow an unnamed Enterprise engineer
+who was aboard during Darmok (TNG, season 5, episode 2). The encounter follows the
+episode; the engineer’s duties and personal reflections are invented. Episode
+reference: [StarTrek.com’s Darmok retrospective](https://www.startrek.com/en-un/news/one-trek-mind-deciphering-darmok).
+The recorded Dutch script and its matching references remain unchanged.
 The spoken language is conversational rather than a formal mission report.
 
 Each file pairs its narration with a lightly cleaned version, example metadata

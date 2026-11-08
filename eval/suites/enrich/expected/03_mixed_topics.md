@@ -3,24 +3,27 @@ date: "2025-01-15"
 recording_time: "12:00"
 language: English
 categories:
-  - work
-  - personal
+  - "work"
+  - "personal"
 tags:
-  - security
-  - react
-  - school
-  - travel
+  - "transporters"
+  - "language"
+  - "communication"
+  - "family"
+  - "reading"
 persons:
-  - Sam
-  - Sarah
-projects:
-  - FinanceHub
+  - "Geordi La Forge"
+  - "Data"
+  - "Jean-Luc Picard"
+  - "Dathon"
+projects: []
 companies:
-  - BlueBank
-  - IKEA
+  - "Starfleet"
 entities:
-  - Snyk
-  - React meetup
-  - Barcelona
-summary: "A mixed week with FinanceHub launch preparations and security fixes dominating the work side. Gave a talk at the local React meetup and connected with someone from BlueBank. On the personal front, Sam started a new school and travel plans are taking shape for Barcelona."
+  - "Darmok"
+  - "El-Adrel"
+  - "Enterprise"
+  - "Ten Forward"
+  - "Gilgamesh"
+summary: "An Enterprise engineer completed a transporter-record review with Geordi La Forge after the Darmok encounter, while the Starfleet report remains unsubmitted. Data’s explanation highlights the shared stories missing from literal translation, and Picard’s communication with Dathon came before Dathon’s death. Off duty, the engineer wrote to a sister about the fear of losing the captain and read about Gilgamesh."
 ---

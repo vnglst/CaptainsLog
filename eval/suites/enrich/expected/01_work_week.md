@@ -3,26 +3,26 @@ date: "2025-01-15"
 recording_time: "12:00"
 language: English
 categories:
-  - work
-  - side-project
+  - "work"
+  - "side-project"
 tags:
-  - authentication
-  - ai-agents
-  - code-review
-  - transcription
-  - documentation
+  - "language"
+  - "translation"
+  - "transporters"
+  - "communication"
 persons:
-  - Alex Chen
-  - Maria Santos
+  - "Geordi La Forge"
+  - "Jean-Luc Picard"
+  - "Dathon"
+  - "Data"
+  - "Deanna Troi"
 projects:
-  - FinanceHub
-  - CaptainsLog
+  - "Metaphor Notebook"
 companies:
-  - Pioneer Trust
-  - ApexCorp
+  - "Starfleet"
 entities:
-  - TechWeek
-  - OAuth
-  - GenAI
-summary: "A work-focused week centered on the FinanceHub project, including pairing on authentication with Alex Chen and preparing an TechWeek presentation. A one-on-one with manager Maria Santos revealed a potential ApexCorp partnership. Evening time was spent on the CaptainsLog side project."
+  - "Enterprise"
+  - "Darmok"
+  - "El-Adrel"
+summary: "An Enterprise engineer recalls blocked transporter attempts during the Darmok encounter and the limits of translating Tamarian words without their shared stories. Picard established communication, but Dathon died on the surface. After duty, the engineer added a reflection to the personal Metaphor Notebook. The Starfleet incident report remains a draft."
 ---

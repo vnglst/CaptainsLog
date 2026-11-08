@@ -99,9 +99,9 @@ extension Tools {
         try check("repeated summary", "summary exceeds") { d, _ in d["summary"] = String(repeating: "Repeated sentence. ", count: 200); return nil }
         try check("unquoted colon becomes mapping", "entities must contain strings") { d, _ in d["entities"] = [["Star Trek": "The Next Generation"]]; return nil }
         try check("nested empty list", "persons must contain strings") { d, _ in d["persons"] = [Array<String>()]; return nil }
-        try check("scalar list", "projects must contain strings") { d, _ in d["projects"] = "FinanceHub"; return nil }
-        try check("duplicate list item", "duplicate projects") { d, _ in d["projects"] = (d["projects"] as! [String]) + ["financehub"]; return nil }
-        try check("cross-field duplicate", "entity duplicates") { d, _ in d["entities"] = (d["entities"] as! [String]) + ["FinanceHub"]; return nil }
+        try check("scalar list", "projects must contain strings") { d, _ in d["projects"] = "Metaphor Notebook"; return nil }
+        try check("duplicate list item", "duplicate projects") { d, _ in d["projects"] = (d["projects"] as! [String]) + ["metaphor notebook"]; return nil }
+        try check("cross-field duplicate", "entity duplicates") { d, _ in d["entities"] = (d["entities"] as! [String]) + ["Metaphor Notebook"]; return nil }
         try check("runaway entity list", "entities exceeds") { d, _ in d["entities"] = (1...65).map { "Entity \($0)" }; return nil }
         try check("oversized metadata", "metadata exceeds") { d, _ in d["entities"] = [String(repeating: "x", count: 12000)]; return nil }
         try check("invalid category", "invalid categories") { d, _ in d["categories"] = ["imaginary"]; return nil }
@@ -133,7 +133,7 @@ extension Tools {
         print("PASS: enrichment case manifest and regression fixture fingerprints")
         for seed in ["0", "42", "4294967294"] {
             let result = try run([cl, "enrich", "--input", "eval/suites/enrich/input/01_work_week.md", "--seed", seed, "--print-prompt"], quiet: true, log: dir.appendingPathComponent("seed-\(seed).txt"))
-            try require(result.output.contains("FinanceHub"), "Valid seed prompt lacks fixture content: \(seed)")
+            try require(result.output.contains("Metaphor Notebook"), "Valid seed prompt lacks fixture content: \(seed)")
         }
         for seed in ["-1", "4294967295", "4294967296"] {
             let result = try run([cl, "enrich", "--input", "eval/suites/enrich/input/01_work_week.md", "--seed", seed, "--print-prompt"], quiet: true, allowFailure: true, log: dir.appendingPathComponent("invalid-\(seed).txt"))

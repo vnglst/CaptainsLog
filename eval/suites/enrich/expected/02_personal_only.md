@@ -3,16 +3,23 @@ date: "2025-01-15"
 recording_time: "12:00"
 language: English
 categories:
-  - personal
+  - "personal"
 tags:
-  - family
-  - running
-  - reading
-  - beach
-  - food
+  - "language"
+  - "reflection"
+  - "reading"
+  - "grief"
 persons:
-  - Sarah
-  - Leo
-  - Max
-summary: "A relaxing weekend spent at the beach with the family on Saturday, followed by a long run and reading on Sunday. The day ended with dinner at the parents' place."
+  - "Jean-Luc Picard"
+  - "Dathon"
+  - "Guinan"
+projects: []
+companies: []
+entities:
+  - "Enterprise"
+  - "Darmok"
+  - "El-Adrel"
+  - "Ten Forward"
+  - "Gilgamesh"
+summary: "An off-duty Enterprise engineer reflects on Dathon’s death after the Darmok encounter. A quiet visit to Ten Forward and a conversation with Guinan give the engineer space to think about the gap between translated words and shared stories. Reading about Gilgamesh becomes a personal way to remember Picard’s exchange with Dathon."
 ---

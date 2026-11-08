@@ -1,3 +1,5 @@
-This weekend was really nice. On Saturday Sarah and I took the kids to the beach. Leo loved building sandcastles and Max spent most of his time in the water. We packed a picnic and stayed until sunset.
+Personal log. I was off duty in my quarters aboard the Enterprise tonight, trying to settle after the Darmok encounter. I had been in engineering while Jean-Luc Picard and Dathon were on El-Adrel. Now that the danger is over, I keep thinking about Dathon dying before the two crews understood each other.
 
-Sunday was more relaxed. I went for a long run in the morning, about 12 kilometers through the dunes. In the afternoon I read a book about stoic philosophy and then we had dinner at my parents' place. My dad made his famous Indonesian rice table.
+I went to Ten Forward and sat quietly with a cup of tea. Guinan listened while I tried to explain why translating the words had felt so close to understanding, even though we had missed the stories behind them. I am recording this for myself, not writing a duty report.
+
+Back in my quarters I read a little about Gilgamesh, the story Picard shared with Dathon. I have no repairs or projects planned tonight. I want to remember that someone tried to reach us, and that understanding came at a cost.
