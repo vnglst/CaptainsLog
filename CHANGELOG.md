@@ -12,6 +12,8 @@ entry. Git links provide the complete commit history for each release.
 
 ## [Unreleased]
 
+- Show when paused processing is still stopping before Move to Trash becomes available.
+
 - Add a step-by-step demo video recording scenario.
 - Replace banking-themed demo and enrichment examples with an Enterprise engineer’s reflections on Darmok; rewrite the unrecorded English and German scripts around the encounter.
 

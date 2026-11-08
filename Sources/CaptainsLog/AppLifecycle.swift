@@ -98,7 +98,9 @@ public final class AppLifecycle {
         if recording == .finishing { parts.append("Saving recording…") }
         else if isRecording { parts.append(isRecordingPaused ? "Recording paused" : "Recording") }
         if modelState != .ready { parts.append(modelStatusMessage) }
-        if worker == .draining { parts.append("Waiting for previous processing to stop…") }
+        if worker == .draining {
+            parts.append(queue.isEmpty ? "Pausing processing…" : "Waiting for previous processing to stop…")
+        }
         else if let stem = processingStem {
             parts.append("\(processingStage.rawValue.capitalized): \(stem)")
         } else if !queue.isEmpty && !modelsReady { parts.append("Waiting for local models") }
