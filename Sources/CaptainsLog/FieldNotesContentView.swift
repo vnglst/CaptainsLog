@@ -680,7 +680,7 @@ private struct FieldNotesEntryRow: View {
             }
             .frame(width: 56, alignment: .trailing)
 
-            VStack(alignment: .leading, spacing: FieldNotes.Spacing.xs) {
+            VStack(alignment: .leading, spacing: 6) {
                 HStack(alignment: .firstTextBaseline, spacing: FieldNotes.Spacing.s) {
                     Text(entry.displayName)
                         .font(FieldNotes.Typography.body(16, weight: .semibold))
@@ -690,20 +690,21 @@ private struct FieldNotesEntryRow: View {
                     status
                 }
 
-                if let summary = entry.summary, !summary.isEmpty {
-                    Text(summary)
-                        .font(FieldNotes.Typography.body(13))
-                        .foregroundStyle(FieldNotes.ColorToken.secondaryText)
-                        .lineLimit(2)
+                ZStack(alignment: .topLeading) {
+                    if let error = entry.processingError {
+                        Text(error)
+                            .font(FieldNotes.Typography.metadata(11))
+                            .foregroundStyle(FieldNotes.ColorToken.danger)
+                            .lineLimit(2)
+                    } else if let summary = entry.summary, !summary.isEmpty {
+                        Text(summary)
+                            .font(FieldNotes.Typography.body(13))
+                            .foregroundStyle(FieldNotes.ColorToken.secondaryText)
+                            .lineLimit(2)
+                    }
                 }
-                if let error = entry.processingError {
-                    Text(error)
-                        .font(FieldNotes.Typography.metadata(11))
-                        .foregroundStyle(FieldNotes.ColorToken.danger)
-                        .lineLimit(2)
-                }
-
-                Spacer(minLength: 0)
+                .frame(maxWidth: .infinity, alignment: .topLeading)
+                .frame(height: 34, alignment: .topLeading)
 
                 HStack(spacing: FieldNotes.Spacing.s) {
                     if !entry.tags.isEmpty {
@@ -739,9 +740,9 @@ private struct FieldNotesEntryRow: View {
                     .accessibilityLabel("Actions for \(entry.displayName)")
                 }
             }
-            .frame(height: 128, alignment: .top)
+            .frame(height: 92, alignment: .top)
         }
-        .padding(.vertical, FieldNotes.Spacing.m)
+        .padding(.vertical, FieldNotes.Spacing.s)
         .padding(.horizontal, FieldNotes.Spacing.s)
         .contentShape(Rectangle())
         .background(isHovered && behavior.canOpen ? FieldNotes.ColorToken.raisedSurface.opacity(0.65) : .clear)

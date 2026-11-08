@@ -4,7 +4,7 @@ title: Fix height of a log in UI
 status: Verify
 assignee: []
 created_date: '2026-11-08T12:04:00Z'
-updated_date: '2026-11-08T16:33:00Z'
+updated_date: '2026-11-08T18:41:00Z'
 labels: []
 dependencies: []
 ordinal: 87000
