@@ -439,7 +439,7 @@
 
 <p>The app worker queue and native inference gate have different jobs: <a href="https://github.com/vnglst/CaptainsLog/blob/main/Sources/CaptainsLogCore/NativeInferenceLifecycle.swift"><code>NativeInferenceLifecycle</code></a> serializes native operations and drains native resources during shutdown. Quit also waits for recording finalization; the <a href="https://github.com/vnglst/CaptainsLog/blob/main/Sources/CaptainsLog/AppTerminationCoordinator.swift"><code>AppTerminationCoordinator</code></a> races graceful teardown against a two-second deadline, requiring audio closure before the deadline exit.</p>
 
-<p>For changes to app processing or queue behavior, run <code>make tests</code>; <code>make tests-unit</code> excludes coordinator coverage. Model-backed fixture evaluations separately check stage output quality; neither a diagram nor deterministic tests establish native inference quality. See <a href="https://github.com/vnglst/CaptainsLog#testing">Testing</a>.</p>
+<p>For changes to app processing or queue behavior, run <code>make tests</code>; <code>make tests-unit</code> excludes coordinator coverage. Model-backed fixture evaluations separately check stage output quality; neither a diagram nor deterministic tests establish native inference quality. See <a href="https://github.com/vnglst/CaptainsLog/blob/main/CONTRIBUTING.md#testing">Testing</a>.</p>
 </section>
 
 <section id="search" aria-labelledby="search-title">
