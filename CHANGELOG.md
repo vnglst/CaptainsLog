@@ -15,7 +15,7 @@ entry. Git links provide the complete commit history for each release.
 - Clarify the website’s file-based Markdown workflow and compatibility with Obsidian and other tools.
 
 - Shorten the README and contributor quick start; move detailed operational references into linked agent guides.
-- Refresh the website walkthrough video, poster and duration, and fit the player to the new recording’s proportions.
+- Refresh the website walkthrough video, poster and duration, fit the player to the new recording’s proportions, and version the poster URL to prevent stale cached images.
 
 ## [0.8.0] - 2026-11-10
 
