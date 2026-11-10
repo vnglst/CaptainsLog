@@ -24,7 +24,7 @@ Website visits use the same self-hosted Plausible script and `koenvangilst.nl` d
 
 The hero embeds the demo video hosted at <https://files.koenvangilst.nl/u/GjP2Vu.mp4> with native playback controls and inline playback on mobile. It is an 80-second silent recording using demo data (2244 × 2160, 17.2 MB). The player preserves the recording’s proportions and fits the viewport width and height without cropping the app. A proportional border radius softens the recording’s outer corners; a narrow desktop border remains visible.
 
-To replace the recording, update the video source, fallback link, dimensions and descriptive caption in `index.html`, and generate a new `assets/app-walkthrough-<sha256-prefix>.jpg` poster with the first eight characters of its SHA-256 in the filename. Update the poster URL too: the host caches images as immutable for a year. Adjust the CSS aspect ratio if the new recording has different proportions. The video host must support HTTP byte ranges for seeking. There is no autoplay; only metadata loads before playback.
+To replace the recording, update the video source, fallback link, dimensions and descriptive caption in `index.html`, and generate a new `assets/app-walkthrough-<sha256-prefix>.jpg` poster with the first eight characters of its SHA-256 in the filename. Update the poster URL too: the host caches images as immutable for a year. Adjust the CSS aspect ratio if the new recording has different proportions. The video host must support HTTP byte ranges for seeking. The video autoplays muted, loops, and plays inline, with native controls available to pause or seek. Browsers that block autoplay keep the poster and manual playback controls.
 
 ## Content sources
 
