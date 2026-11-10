@@ -14,7 +14,7 @@ required. `make help` lists available targets.
 | `make tests` | Run the deterministic framework-free suite with temporary config/data. `ARGS=--unit` or `make tests-unit` selects model-free unit checks. |
 | `make evals` | Run the full audio pipeline then all stage suites, sequentially. `MODE=pipeline` / `MODE=suites` selects one; `STAGE=filename CASE="fixture stem"` selects focused cases. |
 | `make packaging` | Build the release app and CLI, bundle native libraries and notices, sign ad hoc, and create `dist/CaptainsLog-VERSION.zip`. |
-| `make release` | Infer version from Conventional Commits and prepare a local release on clean main. `BUMP=patch`, `minor`, `major` or an explicit version overrides `auto`; `ARGS=--dry-run` previews and `ARGS=--publish` publishes. See the [release checklist](../CONTRIBUTING.md#changelog-and-releases). |
+| `make release` | Infer version from Conventional Commits and prepare a local release on clean main. `BUMP=patch`, `minor`, `major` or an explicit version overrides `auto`; `ARGS=--dry-run` previews and `ARGS=--publish` publishes. See the [release checklist](../agent-guides/releases.md#changelog-and-releases). |
 
 Use `make cli ARGS="delete-outputs --confirm"` with the app quit to delete all
 intermediate results, finished logs and legacy backups while retaining audio and
@@ -62,7 +62,7 @@ Make keeps targets sequential even with `-j`; separate invocations still must no
 run model jobs concurrently. Evaluations use only repository `eval/` fixtures and
 isolated config/data. The UI harness is for presentation inspection; its processing
 and recording controls invoke real models or hardware. Checks bypass default demo
-seeding. See the [testing workflow](../CONTRIBUTING.md#testing) and stage skills in
+seeding. See the [testing workflow](../agent-guides/development.md#testing) and stage skills in
 [`eval/skills/`](../eval/skills) for quality gates and semantic review requirements.
 
 ### Cached native search shutdown check

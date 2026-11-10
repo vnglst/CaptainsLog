@@ -28,7 +28,7 @@ The runner snapshots fixtures, isolates config/data, records model/runtime
 identity, and prints a review bundle under its temporary run directory. Text
 cases reuse one model sequentially with fresh contexts and samplers. Stage `history/generated/` and `history/reports/` folders preserve previous results; new run bundles contain their own outputs, validation and per-case reports.
 
-See [evaluation commands and isolation](../CONTRIBUTING.md#fixture-evaluations) and the
+See [evaluation commands and isolation](../agent-guides/evaluations.md#fixture-evaluations) and the
 [stage review skills](skills) for semantic review. Discovery and saved-run
 validation do not load inference models. Generation requires the selected models;
 never run concurrent inference jobs or use personal recordings. Model evaluations

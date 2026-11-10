@@ -12,6 +12,8 @@ entry. Git links provide the complete commit history for each release.
 
 ## [Unreleased]
 
+- Shorten the README and contributor quick start; move detailed operational references into linked agent guides.
+
 ## [0.8.0] - 2026-11-10
 
 - Focus the README on app installation and use; move contributor instructions into a linked guide and update documentation links.
