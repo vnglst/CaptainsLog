@@ -12,6 +12,8 @@ entry. Git links provide the complete commit history for each release.
 
 ## [Unreleased]
 
+- Refresh the website walkthrough video, poster and duration, and fit the player to the new recording’s proportions.
+
 - Focus the README on app installation and use; move contributor instructions into a linked guide and update documentation links.
 
 - Add an app walkthrough to the website with a responsive video player, explain how personal name and term corrections improve the final transcript, and document the shared hosting publication process.
