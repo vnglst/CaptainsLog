@@ -12,6 +12,8 @@ entry. Git links provide the complete commit history for each release.
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-11-10
+
 - Focus the README on app installation and use; move contributor instructions into a linked guide and update documentation links.
 
 - Add an app walkthrough to the website with a responsive video player, explain how personal name and term corrections improve the final transcript, and document the shared hosting publication process.
@@ -21,6 +23,10 @@ entry. Git links provide the complete commit history for each release.
 - Display quoted tags and project names without surrounding quotation marks.
 - Add a step-by-step demo video recording scenario.
 - Replace banking-themed demo and enrichment examples with an Enterprise engineer’s reflections on Darmok; rewrite the unrecorded English and German scripts around the encounter and align the log-loading checks with the updated fixture.
+
+### Release
+
+- Publish the 0.8.0 app/CLI archive and matching Homebrew cask version and checksum.
 
 ## [0.7.2] - 2026-11-08
 
@@ -393,7 +399,8 @@ entry. Git links provide the complete commit history for each release.
 
 - Make release tests work on clean runners without preinstalled inference models.
 
-[Unreleased]: https://github.com/vnglst/CaptainsLog/compare/v0.7.2...HEAD
+[Unreleased]: https://github.com/vnglst/CaptainsLog/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/vnglst/CaptainsLog/compare/v0.7.2...v0.8.0
 [0.7.2]: https://github.com/vnglst/CaptainsLog/compare/v0.7.1...v0.7.2
 [0.7.1]: https://github.com/vnglst/CaptainsLog/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/vnglst/CaptainsLog/compare/v0.6.3...v0.7.0
