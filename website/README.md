@@ -22,7 +22,7 @@ Website visits use the same self-hosted Plausible script and `koenvangilst.nl` d
 
 ## App walkthrough
 
-The hero embeds the demo video hosted at <https://files.koenvangilst.nl/u/hV5EMz.mp4> with native playback controls and inline playback on mobile. It is a silent recording using demo data. The player preserves the recording’s proportions and fits the viewport width and height without cropping the app. Proportional corner clipping follows the captured macOS window and hides the blue desktop corners at every player size.
+The hero embeds the demo video hosted at <https://files.koenvangilst.nl/u/GjP2Vu.mp4> with native playback controls and inline playback on mobile. It is an 80-second silent recording using demo data (2244 × 2160, 17.2 MB). The player preserves the recording’s proportions and fits the viewport width and height without cropping the app. Proportional corner clipping softens the recording’s outer corners; a narrow desktop border remains visible.
 
 To replace the recording, update the video source, fallback link, dimensions and descriptive caption in `index.html`, and refresh `assets/app-walkthrough.jpg`. Adjust the CSS aspect ratio if the new recording has different proportions. The video host must support HTTP byte ranges for seeking. There is no autoplay; only metadata loads before playback.
 
