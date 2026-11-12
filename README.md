@@ -4,6 +4,10 @@ Turn spoken thoughts into clear, searchable notes. CaptainsLog records, transcri
 cleans up and organizes your audio on your Mac, without uploading recordings or notes.
 It’s free, open source and inspired by Star Trek’s captain’s logs.
 
+[![CaptainsLog walkthrough: browsing notes, personal context, search, recording and processing](website/assets/readme-walkthrough.gif)](https://captainslog.koenvangilst.nl/#watch)
+
+Quick preview at 4× speed. [Watch the full 80-second video](https://files.koenvangilst.nl/u/GjP2Vu.mp4).
+
 ## Install
 
 Requires **Apple Silicon and macOS 26 or later**. An M4 MacBook Air with 16 GB

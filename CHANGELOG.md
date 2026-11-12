@@ -12,6 +12,8 @@ entry. Git links provide the complete commit history for each release.
 
 ## [Unreleased]
 
+- Add an animated README preview linking to the full app walkthrough.
+
 - Clarify the website’s file-based Markdown workflow and compatibility with Obsidian and other tools.
 
 - Shorten the README and contributor quick start; move detailed operational references into linked agent guides.
