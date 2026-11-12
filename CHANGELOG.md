@@ -12,7 +12,7 @@ entry. Git links provide the complete commit history for each release.
 
 ## [Unreleased]
 
-- Add an animated README preview at the supplied video’s playback speed, linking to the full app walkthrough.
+- Add an animated README preview spanning the text column at the supplied video’s playback speed, linking to the full app walkthrough.
 
 - Clarify the website’s file-based Markdown workflow and compatibility with Obsidian and other tools.
 
