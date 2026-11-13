@@ -12,6 +12,8 @@ entry. Git links provide the complete commit history for each release.
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-11-13
+
 - Report refused Trash moves, tolerate outputs already removed outside the app, and preserve log identity so deletion can be retried.
 
 - Add an animated README preview spanning the text column at the supplied video’s playback speed, linking to the full app walkthrough.
@@ -20,6 +22,10 @@ entry. Git links provide the complete commit history for each release.
 
 - Shorten the README and contributor quick start; move detailed operational references into linked agent guides.
 - Refresh the website walkthrough video, poster and duration, fit the player to the new recording’s proportions, version the poster URL to prevent stale cached images, and autoplay the muted walkthrough on a loop.
+
+### Release
+
+- Publish the 0.9.0 app/CLI archive and matching Homebrew cask version and checksum.
 
 ## [0.8.0] - 2026-11-10
 
@@ -408,7 +414,8 @@ entry. Git links provide the complete commit history for each release.
 
 - Make release tests work on clean runners without preinstalled inference models.
 
-[Unreleased]: https://github.com/vnglst/CaptainsLog/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/vnglst/CaptainsLog/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/vnglst/CaptainsLog/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/vnglst/CaptainsLog/compare/v0.7.2...v0.8.0
 [0.7.2]: https://github.com/vnglst/CaptainsLog/compare/v0.7.1...v0.7.2
 [0.7.1]: https://github.com/vnglst/CaptainsLog/compare/v0.7.0...v0.7.1
