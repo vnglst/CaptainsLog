@@ -1407,6 +1407,71 @@ func runAppWorkflowCoverageTests() async {
         try expect(candidates.allSatisfy { !fm.fileExists(atPath: $0) }, "Delete should remove all fixture artifacts from the data directory")
     }
 
+    test("AppState: deleting a completed log after its final Markdown is moved away removes every remaining artifact") {
+        let fm = FileManager.default
+        let root = fm.temporaryDirectory
+            .appendingPathComponent("CaptainsLogDeleteWorkflow-\(UUID().uuidString)", isDirectory: true)
+        defer { try? fm.removeItem(at: root) }
+        let repository = URL(fileURLWithPath: fm.currentDirectoryPath)
+        let completedFixture = repository.appendingPathComponent("eval/suites/enrich/expected/02_personal_only.md")
+        let transcriptFixture = repository.appendingPathComponent("eval/suites/transcribe/history/expected/durins-volk.md")
+        let audioFixture = repository.appendingPathComponent("eval/suites/transcribe/history/audio/durins-volk.m4a")
+        let stem = "2025-01-15-1200"
+        let slug = "2025-01-15-remembering-dathon"
+
+        let enriched = root.appendingPathComponent("logs/personal/\(slug).md")
+        let renamedDir = root.appendingPathComponent(".pipeline/04-rename")
+        let cleaned = root.appendingPathComponent(".pipeline/02-logs/\(stem).md")
+        let transcript = root.appendingPathComponent(".pipeline/01-transcribed/\(stem).md")
+        let audio = root.appendingPathComponent("audio/\(stem).m4a")
+        try fm.createDirectory(at: enriched.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try fm.createDirectory(at: renamedDir, withIntermediateDirectories: true)
+        try fm.createDirectory(at: cleaned.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try fm.createDirectory(at: transcript.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try fm.createDirectory(at: audio.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try fm.copyItem(at: completedFixture, to: enriched)
+        try fm.copyItem(at: completedFixture, to: renamedDir.appendingPathComponent("\(slug).md"))
+        try fm.copyItem(at: completedFixture, to: cleaned)
+        try fm.copyItem(at: transcriptFixture, to: transcript)
+        try fm.copyItem(at: audioFixture, to: audio)
+        try slug.write(
+            to: renamedDir.appendingPathComponent("\(stem).slug.txt"),
+            atomically: true,
+            encoding: .utf8
+        )
+        try Categorize.writeManifest(.init(sourceStem: stem, category: .personal), dataDirURL: root)
+
+        let movedMarkdown = root.appendingPathComponent("moved-away.md")
+        let trashDirectory = root.appendingPathComponent("trash", isDirectory: true)
+        try fm.createDirectory(at: trashDirectory, withIntermediateDirectories: true)
+        let moved = LockedStringArray()
+        let config = ConfigManager()
+        config.dataDir = root.path
+        let appState = AppState(config: config, moveToTrash: { url in
+            moved.append(url.path)
+            if fm.fileExists(atPath: url.path) {
+                try? fm.moveItem(at: url, to: trashDirectory.appendingPathComponent(UUID().uuidString))
+            }
+        })
+        appState.loadEntries()
+        try expect(appState.allEntries.count == 1, "Completed log should appear before deletion")
+        try expect(appState.allEntries[0].stage == .done, "Fixture entry should be complete before deletion")
+
+        try fm.moveItem(at: enriched, to: movedMarkdown)
+        appState.loadEntries()
+        try expect(appState.allEntries.count == 1, "Moved log must remain listed until trashed")
+        let entry = appState.allEntries[0]
+        try expect(entry.stage == .enriching, "Missing final Markdown should leave a paused enrichment entry")
+        try expect(appState.canDeleteEntry(stem: entry.stem), "Paused entry must allow Trash")
+        let candidates = Pipeline.deletionCandidatePaths(stem: stem, slug: slug, dataDir: root.path)
+        appState.deleteEntry(stem: entry.stem, slug: entry.slug)
+
+        try expect(moved.snapshot().sorted() == candidates.sorted(), "Delete should send every pipeline artifact to Trash")
+        try expect(fm.fileExists(atPath: movedMarkdown.path), "Moved Markdown must remain untouched")
+        try expect(appState.allEntries.isEmpty, "Deleted entry should disappear from the Logs list")
+        try expect(candidates.allSatisfy { !fm.fileExists(atPath: $0) }, "Delete should remove all fixture artifacts from the data directory")
+    }
+
     test("AppState: cannot delete an entry while its pipeline is processing it") {
         let fm = FileManager.default
         let root = fm.temporaryDirectory
@@ -1433,6 +1498,8 @@ func runAppWorkflowCoverageTests() async {
         try expect(fm.fileExists(atPath: transcript.path), "Active transcript must remain on disk")
         try expect(appState.allEntries.map(\.stem) == [stem], "Active entry must remain visible")
     }
+
+    runTrashRetryRegressions()
 
     test("AppState: a failed Trash move leaves the fixture entry visible") {
         let fm = FileManager.default
@@ -7310,6 +7377,7 @@ func runTests() async {
     await runUpdateTests()
     runCoreCoverageTests()
     if !lightweightUnitOnly {
+        runTrashPermissionRegression()
         await runAppWorkflowCoverageTests()
         await runSearchCoverageTests()
         await runCoordinatorCoverageTests()
@@ -7808,6 +7876,89 @@ func runNativeRecordingBusyCheck() async throws {
     }
 }
 #endif
+
+@MainActor
+func runTrashPermissionRegression() {
+    test("AppState: a refused Trash move reports why the paused entry remains") {
+        let fm = FileManager.default
+        let root = fm.temporaryDirectory.appendingPathComponent("CaptainsLogTrashPermission-\(UUID().uuidString)")
+        let stem = "2025-01-15-1200"
+        let transcript = root.appendingPathComponent(".pipeline/01-transcribed/\(stem).md")
+        let source = URL(fileURLWithPath: fm.currentDirectoryPath)
+            .appendingPathComponent("eval/suites/enrich/input/02_personal_only.md")
+        try fm.createDirectory(at: transcript.deletingLastPathComponent(), withIntermediateDirectories: true)
+        defer {
+            try? fm.setAttributes([.posixPermissions: 0o700], ofItemAtPath: transcript.deletingLastPathComponent().path)
+            try? fm.removeItem(at: root)
+        }
+        try fm.copyItem(at: source, to: transcript)
+        let config = ConfigManager()
+        config.dataDir = root.path
+        let state = AppState(config: config)
+        state.loadEntries()
+        try expect(state.allEntries.count == 1, "Transcribed fixture should appear before deletion")
+        try fm.setAttributes([.posixPermissions: 0o500], ofItemAtPath: transcript.deletingLastPathComponent().path)
+
+        state.deleteEntry(stem: stem, slug: nil)
+
+        try expect(fm.fileExists(atPath: transcript.path), "macOS must refuse moving a file out of a read-only directory")
+        try expect(state.allEntries.count == 1, "Refused Trash move must keep its entry visible")
+        try expect(state.errorMessage != nil, "A refused Trash move must explain why the entry was not deleted")
+        try expect(state.statusMessage == state.errorMessage, "The visible notification must explain the Trash failure")
+        try fm.setAttributes([.posixPermissions: 0o700], ofItemAtPath: transcript.deletingLastPathComponent().path)
+        state.deleteEntry(stem: stem, slug: nil)
+        try expect(state.allEntries.isEmpty, "Retry should delete the entry once macOS allows the move")
+        try expect(state.errorMessage == nil, "A successful retry must clear the Trash failure")
+    }
+}
+
+@MainActor
+func runTrashRetryRegressions() {
+    for refusal in [CocoaError.Code.fileWriteNoPermission, .fileNoSuchFile] {
+        test("AppState: refused named artifact preserves identity for Trash retry (\(refusal.rawValue))") {
+            let fm = FileManager.default
+            let root = fm.temporaryDirectory.appendingPathComponent("CaptainsLogTrashRetry-\(UUID().uuidString)")
+            defer { try? fm.removeItem(at: root) }
+            let stem = "2025-01-15-1200"
+            let slug = "2025-01-15-remembering-dathon"
+            let marker = root.appendingPathComponent(".pipeline/04-rename/\(stem).slug.txt")
+            let renamed = root.appendingPathComponent(".pipeline/04-rename/\(slug).md")
+            let transcript = root.appendingPathComponent(".pipeline/01-transcribed/\(stem).md")
+            let trash = root.appendingPathComponent("trash")
+            let fixture = URL(fileURLWithPath: fm.currentDirectoryPath)
+                .appendingPathComponent("eval/suites/enrich/input/02_personal_only.md")
+            for folder in [marker.deletingLastPathComponent(), transcript.deletingLastPathComponent(), trash] {
+                try fm.createDirectory(at: folder, withIntermediateDirectories: true)
+            }
+            try fm.copyItem(at: fixture, to: renamed)
+            try fm.copyItem(at: fixture, to: transcript)
+            try slug.write(to: marker, atomically: true, encoding: .utf8)
+            try Categorize.writeManifest(.init(sourceStem: stem, category: .personal), dataDirURL: root)
+            let manifest = Categorize.manifestURL(stem: stem, dataDirURL: root)
+            var refuseRename = true
+            let config = ConfigManager()
+            config.dataDir = root.path
+            let state = AppState(config: config, moveToTrash: { url in
+                if url == renamed && refuseRename { throw CocoaError(refusal) }
+                try fm.moveItem(at: url, to: trash.appendingPathComponent(UUID().uuidString))
+            })
+            state.loadEntries()
+            state.deleteEntry(stem: stem, slug: slug)
+            try expect(!fm.fileExists(atPath: transcript.path), "Files before the refusal should have moved")
+            try expect(fm.fileExists(atPath: marker.path), "Refused move must preserve the slug marker")
+            try expect(fm.fileExists(atPath: manifest.path), "Refused move must preserve the category manifest")
+            try expect(state.allEntries.first?.slug == slug, "A partial deletion must retain its named row")
+            try expect(state.errorMessage?.contains(renamed.lastPathComponent) == true, "The error should identify the refused artifact")
+
+            refuseRename = false
+            state.deleteEntry(stem: stem, slug: state.allEntries.first?.slug)
+            try expect(state.allEntries.isEmpty, "Retry must remove the named entry")
+            try expect(!fm.fileExists(atPath: renamed.path), "Retry must not orphan the named artifact")
+            try expect(!fm.fileExists(atPath: marker.path) && !fm.fileExists(atPath: manifest.path), "Successful retry must remove identifying metadata")
+            try expect(state.errorMessage == nil, "Successful retry should clear the refusal")
+        }
+    }
+}
 
 @main
 struct TestRunner {

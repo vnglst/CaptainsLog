@@ -28,7 +28,8 @@ public final class AppState {
     public let models: ModelManager
     public let directoryWatcher: DirectoryWatcher
     public let search: SearchManager
-    private let moveToTrash: (URL) -> Void
+    private let moveToTrash: (URL) throws -> Void
+    private var deletionError: String?
     private var entryLoadGeneration = 0
     private let entryLoader: @Sendable (String) -> [LogEntry]
     public var lifecycle: AppLifecycle { processing.lifecycle }
@@ -65,8 +66,8 @@ public final class AppState {
     public var stage: AppStage { processing.stage }
     public var audioLevel: Float { recording.audioLevel }
     public var recordingDuration: TimeInterval { recording.recordingDuration }
-    public var statusMessage: String { lifecycle.statusMessage }
-    public var errorMessage: String? { lifecycle.processingError ?? lifecycle.recordingError }
+    public var statusMessage: String { deletionError ?? lifecycle.statusMessage }
+    public var errorMessage: String? { deletionError ?? lifecycle.processingError ?? lifecycle.recordingError }
     public var modelState: ModelState { models.modelState }
     public var inputDevices: [AudioDevice] { recording.inputDevices }
     public var selectedDeviceUID: String? {
@@ -134,7 +135,7 @@ public final class AppState {
         processing = ProcessingCoordinator()
         models = ModelManager()
         search = SearchManager()
-        moveToTrash = { url in try? FileManager.default.trashItem(at: url, resultingItemURL: nil) }
+        moveToTrash = { url in try FileManager.default.trashItem(at: url, resultingItemURL: nil) }
         entryLoader = AppState.defaultEntryLoader
         // Initialize with placeholder closure - will be configured after init
         directoryWatcher = DirectoryWatcher(onReload: { })
@@ -151,8 +152,8 @@ public final class AppState {
         models: ModelManager = ModelManager(),
         search: SearchManager = SearchManager(),
         directoryWatcher: DirectoryWatcher = DirectoryWatcher(onReload: { }),
-        moveToTrash: @escaping (URL) -> Void = {
-            try? FileManager.default.trashItem(at: $0, resultingItemURL: nil)
+        moveToTrash: @escaping (URL) throws -> Void = {
+            try FileManager.default.trashItem(at: $0, resultingItemURL: nil)
         },
         entryLoader: @escaping @Sendable (String) -> [LogEntry] = AppState.defaultEntryLoader
     ) {
@@ -363,10 +364,33 @@ public final class AppState {
             slug: slug,
             dataDir: config.dataDir
         )
-        for path in candidates {
-            moveToTrash(URL(fileURLWithPath: path))
+        deletionError = nil
+        let root = URL(fileURLWithPath: config.dataDir)
+        // Keep the entry's identity until its content has moved successfully,
+        // so a refused move can be retried without orphaning named artifacts.
+        let metadata = [
+            Categorize.manifestURL(stem: stem, dataDirURL: root).path,
+            root.appendingPathComponent(Pipeline.Directory.rename.path)
+                .appendingPathComponent("\(stem).slug.txt").path,
+        ]
+        let ordered = candidates.filter { !metadata.contains($0) } + metadata
+        for path in ordered {
+            do {
+                try moveToTrash(URL(fileURLWithPath: path))
+            } catch {
+                let error = error as NSError
+                // Outputs may already have been moved or deleted outside the app.
+                if error.domain == NSCocoaErrorDomain,
+                   [NSFileNoSuchFileError, NSFileReadNoSuchFileError].contains(error.code),
+                   !FileManager.default.fileExists(atPath: path) {
+                    continue
+                }
+                deletionError = "Couldn’t move \(URL(fileURLWithPath: path).lastPathComponent) to the Trash: \(error.localizedDescription)"
+                break
+            }
         }
         loadEntries()
+        search.invalidateIndex(dataDir: config.dataDir)
     }
 
     public func ensureModelsDownloaded() {
